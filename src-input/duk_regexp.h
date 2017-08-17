@@ -36,9 +36,9 @@
 #define DUK_REOP_ASSERT_NOT_WORD_BOUNDARY  19
 
 /* flags */
-#define DUK_RE_FLAG_GLOBAL                 (1 << 0)
-#define DUK_RE_FLAG_IGNORE_CASE            (1 << 1)
-#define DUK_RE_FLAG_MULTILINE              (1 << 2)
+#define DUK_RE_FLAG_GLOBAL                 (1U << 0)
+#define DUK_RE_FLAG_IGNORE_CASE            (1U << 1)
+#define DUK_RE_FLAG_MULTILINE              (1U << 2)
 
 struct duk_re_matcher_ctx {
 	duk_hthread *thr;

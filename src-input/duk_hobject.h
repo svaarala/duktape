@@ -294,11 +294,11 @@
 /* Flags used for property attributes in duk_propdesc and packed flags.
  * Must fit into 8 bits.
  */
-#define DUK_PROPDESC_FLAG_WRITABLE              (1 << 0)    /* E5 Section 8.6.1 */
-#define DUK_PROPDESC_FLAG_ENUMERABLE            (1 << 1)    /* E5 Section 8.6.1 */
-#define DUK_PROPDESC_FLAG_CONFIGURABLE          (1 << 2)    /* E5 Section 8.6.1 */
-#define DUK_PROPDESC_FLAG_ACCESSOR              (1 << 3)    /* accessor */
-#define DUK_PROPDESC_FLAG_VIRTUAL               (1 << 4)    /* property is virtual: used in duk_propdesc, never stored
+#define DUK_PROPDESC_FLAG_WRITABLE              (1U << 0)    /* E5 Section 8.6.1 */
+#define DUK_PROPDESC_FLAG_ENUMERABLE            (1U << 1)    /* E5 Section 8.6.1 */
+#define DUK_PROPDESC_FLAG_CONFIGURABLE          (1U << 2)    /* E5 Section 8.6.1 */
+#define DUK_PROPDESC_FLAG_ACCESSOR              (1U << 3)    /* accessor */
+#define DUK_PROPDESC_FLAG_VIRTUAL               (1U << 4)    /* property is virtual: used in duk_propdesc, never stored
                                                              * (used by e.g. buffer virtual properties)
                                                              */
 #define DUK_PROPDESC_FLAGS_MASK                 (DUK_PROPDESC_FLAG_WRITABLE | \
@@ -309,7 +309,7 @@
 /* Additional flags which are passed in the same flags argument as property
  * flags but are not stored in object properties.
  */
-#define DUK_PROPDESC_FLAG_NO_OVERWRITE          (1 << 4)    /* internal define property: skip write silently if exists */
+#define DUK_PROPDESC_FLAG_NO_OVERWRITE          (1U << 4)    /* internal define property: skip write silently if exists */
 
 /* Convenience defines for property attributes. */
 #define DUK_PROPDESC_FLAGS_NONE                 0
@@ -324,8 +324,8 @@
                                                  DUK_PROPDESC_FLAG_CONFIGURABLE)
 
 /* Flags for duk_hobject_get_own_propdesc() and variants. */
-#define DUK_GETDESC_FLAG_PUSH_VALUE          (1 << 0)  /* push value to stack */
-#define DUK_GETDESC_FLAG_IGNORE_PROTOLOOP    (1 << 1)  /* don't throw for prototype loop */
+#define DUK_GETDESC_FLAG_PUSH_VALUE          (1U << 0)  /* push value to stack */
+#define DUK_GETDESC_FLAG_IGNORE_PROTOLOOP    (1U << 1)  /* don't throw for prototype loop */
 
 /*
  *  Macro for object validity check
@@ -905,7 +905,7 @@ DUK_INTERNAL_DECL void duk_hobject_resize_arraypart(duk_hthread *thr,
 /* low-level property functions */
 DUK_INTERNAL_DECL duk_bool_t duk_hobject_find_existing_entry(duk_heap *heap, duk_hobject *obj, duk_hstring *key, duk_int_t *e_idx, duk_int_t *h_idx);
 DUK_INTERNAL_DECL duk_tval *duk_hobject_find_existing_entry_tval_ptr(duk_heap *heap, duk_hobject *obj, duk_hstring *key);
-DUK_INTERNAL_DECL duk_tval *duk_hobject_find_existing_entry_tval_ptr_and_attrs(duk_heap *heap, duk_hobject *obj, duk_hstring *key, duk_int_t *out_attrs);
+DUK_INTERNAL_DECL duk_tval *duk_hobject_find_existing_entry_tval_ptr_and_attrs(duk_heap *heap, duk_hobject *obj, duk_hstring *key, duk_uint_t *out_attrs);
 DUK_INTERNAL_DECL duk_tval *duk_hobject_find_existing_array_entry_tval_ptr(duk_heap *heap, duk_hobject *obj, duk_uarridx_t i);
 DUK_INTERNAL_DECL duk_bool_t duk_hobject_get_own_propdesc(duk_hthread *thr, duk_hobject *obj, duk_hstring *key, duk_propdesc *out_desc, duk_small_uint_t flags);
 
@@ -922,8 +922,8 @@ DUK_INTERNAL_DECL duk_bool_t duk_hobject_delprop(duk_hthread *thr, duk_tval *tv_
 DUK_INTERNAL_DECL duk_bool_t duk_hobject_hasprop(duk_hthread *thr, duk_tval *tv_obj, duk_tval *tv_key);
 
 /* internal property functions */
-#define DUK_DELPROP_FLAG_THROW  (1 << 0)
-#define DUK_DELPROP_FLAG_FORCE  (1 << 1)
+#define DUK_DELPROP_FLAG_THROW  (1U << 0)
+#define DUK_DELPROP_FLAG_FORCE  (1U << 1)
 DUK_INTERNAL_DECL duk_bool_t duk_hobject_delprop_raw(duk_hthread *thr, duk_hobject *obj, duk_hstring *key, duk_small_uint_t flags);
 DUK_INTERNAL_DECL duk_bool_t duk_hobject_hasprop_raw(duk_hthread *thr, duk_hobject *obj, duk_hstring *key);
 DUK_INTERNAL_DECL void duk_hobject_define_property_internal(duk_hthread *thr, duk_hobject *obj, duk_hstring *key, duk_small_uint_t flags);

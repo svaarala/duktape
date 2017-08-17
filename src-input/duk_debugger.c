@@ -341,7 +341,7 @@ DUK_LOCAL duk_uint32_t duk__debug_read_uint32_raw(duk_hthread *thr) {
 	       (duk_uint32_t) buf[3];
 }
 
-DUK_LOCAL duk_uint32_t duk__debug_read_int32_raw(duk_hthread *thr) {
+DUK_LOCAL duk_int32_t duk__debug_read_int32_raw(duk_hthread *thr) {
 	return (duk_int32_t) duk__debug_read_uint32_raw(thr);
 }
 
@@ -980,7 +980,7 @@ DUK_INTERNAL void duk_debug_write_error_eom(duk_hthread *thr, duk_small_uint_t e
 
 DUK_INTERNAL void duk_debug_write_notify(duk_hthread *thr, duk_small_uint_t command) {
 	duk_debug_write_byte(thr, DUK_DBG_IB_NOTIFY);
-	duk_debug_write_int(thr, command);
+	duk_debug_write_int(thr, (duk_int32_t) command);
 }
 
 DUK_INTERNAL void duk_debug_write_eom(duk_hthread *thr) {
@@ -1065,7 +1065,7 @@ DUK_INTERNAL void duk_debug_send_throw(duk_hthread *thr, duk_bool_t fatal) {
 	DUK_ASSERT(thr->valstack_top > thr->valstack);  /* At least: ... [err] */
 
 	duk_debug_write_notify(thr, DUK_DBG_CMD_THROW);
-	duk_debug_write_int(thr, fatal);
+	duk_debug_write_int(thr, (duk_int32_t) fatal);
 
 	/* Report thrown value to client coerced to string */
 	duk_dup_top(thr);
@@ -1124,7 +1124,7 @@ DUK_LOCAL duk_bool_t duk__debug_skip_dvalue(duk_hthread *thr) {
 		return 0;
 	}
 	if (x >= 0x60) {
-		duk_debug_skip_bytes(thr, x - 0x60);
+		duk_debug_skip_bytes(thr, (duk_size_t) (x - 0x60));
 		return 0;
 	}
 	switch(x) {
@@ -1694,9 +1694,9 @@ DUK_LOCAL void duk__debug_dump_heaphdr(duk_hthread *thr, duk_heap *heap, duk_hea
 	case DUK_HTYPE_STRING: {
 		duk_hstring *h = (duk_hstring *) hdr;
 
-		duk_debug_write_uint(thr, (duk_int32_t) DUK_HSTRING_GET_BYTELEN(h));
-		duk_debug_write_uint(thr, (duk_int32_t) DUK_HSTRING_GET_CHARLEN(h));
-		duk_debug_write_uint(thr, (duk_int32_t) DUK_HSTRING_GET_HASH(h));
+		duk_debug_write_uint(thr, (duk_uint32_t) DUK_HSTRING_GET_BYTELEN(h));
+		duk_debug_write_uint(thr, (duk_uint32_t) DUK_HSTRING_GET_CHARLEN(h));
+		duk_debug_write_uint(thr, (duk_uint32_t) DUK_HSTRING_GET_HASH(h));
 		duk_debug_write_hstring(thr, h);
 		break;
 	}
@@ -2164,7 +2164,7 @@ DUK_LOCAL void duk__debug_handle_get_heap_obj_info(duk_hthread *thr, duk_heap *h
 			duk_harray *h_arr;
 			h_arr = (duk_harray *) h_obj;
 
-			duk__debug_getinfo_prop_int(thr, "length", h_arr->length);
+			duk__debug_getinfo_prop_uint(thr, "length", (duk_uint_t) h_arr->length);
 			duk__debug_getinfo_prop_bool(thr, "length_nonwritable", h_arr->length_nonwritable);
 		}
 
@@ -2352,8 +2352,8 @@ DUK_LOCAL void duk__debug_handle_get_obj_prop_desc_range(duk_hthread *thr, duk_h
 	DUK_UNREF(heap);
 
 	h = duk_debug_read_any_ptr(thr);
-	idx_start = duk_debug_read_int(thr);
-	idx_end = duk_debug_read_int(thr);
+	idx_start = (duk_uint_t) duk_debug_read_int(thr);
+	idx_end = (duk_uint_t) duk_debug_read_int(thr);
 	if (h == NULL || DUK_HEAPHDR_GET_TYPE(h) != DUK_HTYPE_OBJECT) {
 		goto fail_args;
 	}
@@ -2761,7 +2761,7 @@ DUK_INTERNAL duk_small_int_t duk_debug_add_breakpoint(duk_hthread *thr, duk_hstr
 	b->line = line;
 	DUK_HSTRING_INCREF(thr, filename);
 
-	return heap->dbg_breakpoint_count - 1;  /* index */
+	return (duk_small_int_t) (heap->dbg_breakpoint_count - 1);  /* index */
 }
 
 DUK_INTERNAL duk_bool_t duk_debug_remove_breakpoint(duk_hthread *thr, duk_small_uint_t breakpoint_index) {

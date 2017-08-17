@@ -36,13 +36,12 @@
  * Chosen so that when a regconst is cast to duk_int32_t, all consts are
  * negative values.
  */
-#define DUK_REGCONST_CONST_MARKER    0x80000000UL
+#define DUK_REGCONST_CONST_MARKER    DUK_INT32_MIN  /* = -0x80000000 */
 
-/* type to represent a reg/const reference during compilation */
-typedef duk_uint32_t duk_regconst_t;
-
-/* type to represent a straight register reference, with <0 indicating none */
-typedef duk_int32_t duk_reg_t;
+/* Type to represent a reg/const reference during compilation, with <0
+ * indicating a constant.  Some call sites also use -1 to indicate 'none'.
+ */
+typedef duk_int32_t duk_regconst_t;
 
 typedef struct {
 	duk_small_uint_t t;          /* DUK_ISPEC_XXX */
@@ -82,8 +81,8 @@ struct duk_compiler_instr {
  *  Compiler state
  */
 
-#define DUK_LABEL_FLAG_ALLOW_BREAK       (1 << 0)
-#define DUK_LABEL_FLAG_ALLOW_CONTINUE    (1 << 1)
+#define DUK_LABEL_FLAG_ALLOW_BREAK       (1U << 0)
+#define DUK_LABEL_FLAG_ALLOW_CONTINUE    (1U << 1)
 
 #define DUK_DECL_TYPE_VAR                0
 #define DUK_DECL_TYPE_FUNC               1
@@ -141,14 +140,14 @@ struct duk_compiler_func {
 	duk_idx_t varmap_idx;
 
 	/* Temp reg handling. */
-	duk_reg_t temp_first;               /* first register that is a temporary (below: variables) */
-	duk_reg_t temp_next;                /* next temporary register to allocate */
-	duk_reg_t temp_max;                 /* highest value of temp_reg (temp_max - 1 is highest used reg) */
+	duk_regconst_t temp_first;           /* first register that is a temporary (below: variables) */
+	duk_regconst_t temp_next;            /* next temporary register to allocate */
+	duk_regconst_t temp_max;             /* highest value of temp_reg (temp_max - 1 is highest used reg) */
 
 	/* Shuffle registers if large number of regs/consts. */
-	duk_reg_t shuffle1;
-	duk_reg_t shuffle2;
-	duk_reg_t shuffle3;
+	duk_regconst_t shuffle1;
+	duk_regconst_t shuffle2;
+	duk_regconst_t shuffle3;
 
 	/* Stats for current expression being parsed. */
 	duk_int_t nud_count;
@@ -164,7 +163,7 @@ struct duk_compiler_func {
 	duk_int_t with_depth;               /* with stack depth (affects identifier lookups) */
 	duk_int_t fnum_next;                /* inner function numbering */
 	duk_int_t num_formals;              /* number of formal arguments */
-	duk_reg_t reg_stmt_value;           /* register for writing value of 'non-empty' statements (global or eval code), -1 is marker */
+	duk_regconst_t reg_stmt_value;      /* register for writing value of 'non-empty' statements (global or eval code), -1 is marker */
 #if defined(DUK_USE_DEBUGGER_SUPPORT)
 	duk_int_t min_line;                 /* XXX: typing (duk_hcompfunc has duk_uint32_t) */
 	duk_int_t max_line;

@@ -105,7 +105,7 @@ void *duk_alloc_hybrid_init(void) {
 #if defined(DUK_ALLOC_HYBRID_DEBUG)
 		printf("Pool %d: size %ld, count %ld\n", i, (long) pool_sizes[i].size, (long) pool_sizes[i].count);
 #endif
-		total_size += pool_sizes[i].size * pool_sizes[i].count;
+		total_size += pool_sizes[i].size * (size_t) pool_sizes[i].count;
 		if (pool_sizes[i].size > max_size) {
 			max_size = pool_sizes[i].size;
 		}
@@ -127,7 +127,7 @@ void *duk_alloc_hybrid_init(void) {
 		pool_header *hdr = st->headers + i;
 
 		hdr->alloc_start = p;
-		hdr->alloc_end = p + pool_sizes[i].size * pool_sizes[i].count;
+		hdr->alloc_end = p + pool_sizes[i].size * (size_t) pool_sizes[i].count;
 		hdr->free = (pool_free_entry *) (void *) p;
 		hdr->size = pool_sizes[i].size;
 		hdr->count = pool_sizes[i].count;

@@ -703,10 +703,10 @@ DUK_INTERNAL duk_ret_t duk_bi_typedarray_constructor(duk_hthread *thr) {
 	 * handle that yet).  So map both class and prototype from the
 	 * element type.
 	 */
-	magic = duk_get_current_magic(thr);
-	shift = magic & 0x03;               /* bits 0...1: shift */
-	elem_type = (magic >> 2) & 0x0f;    /* bits 2...5: type */
-	elem_size = 1 << shift;
+	magic = (duk_small_uint_t) duk_get_current_magic(thr);
+	shift = magic & 0x03U;               /* bits 0...1: shift */
+	elem_type = (magic >> 2) & 0x0fU;    /* bits 2...5: type */
+	elem_size = 1U << shift;
 	align_mask = elem_size - 1;
 	DUK_ASSERT(elem_type < sizeof(duk__buffer_proto_from_elemtype) / sizeof(duk_uint8_t));
 	proto_bidx = duk__buffer_proto_from_elemtype[elem_type];
@@ -795,7 +795,7 @@ DUK_INTERNAL duk_ret_t duk_bi_typedarray_constructor(duk_hthread *thr) {
 			                               DUK_HOBJECT_FLAG_EXTENSIBLE |
 			                               DUK_HOBJECT_FLAG_BUFOBJ |
 			                               DUK_HOBJECT_CLASS_AS_FLAGS(class_num),
-			                               proto_bidx);
+			                               (duk_small_int_t) proto_bidx);
 			h_val = h_bufarg->buf;
 			if (h_val == NULL) {
 				DUK_DCERROR_TYPE_INVALID_ARGS(thr);
@@ -902,7 +902,7 @@ DUK_INTERNAL duk_ret_t duk_bi_typedarray_constructor(duk_hthread *thr) {
 	                               DUK_HOBJECT_FLAG_EXTENSIBLE |
 	                               DUK_HOBJECT_FLAG_BUFOBJ |
 	                               DUK_HOBJECT_CLASS_AS_FLAGS(class_num),
-	                               proto_bidx);
+	                               (duk_small_int_t) proto_bidx);
 
 	h_bufobj->buf = h_val;
 	DUK_HBUFFER_INCREF(thr, h_val);
@@ -963,7 +963,7 @@ DUK_INTERNAL duk_ret_t duk_bi_typedarray_constructor(duk_hthread *thr) {
 		DUK_ASSERT(h_bufarg->buf != NULL);
 		DUK_ASSERT(DUK_HBUFOBJ_VALID_SLICE(h_bufarg));
 
-		src_elem_size = 1 << h_bufarg->shift;
+		src_elem_size = (duk_small_uint_t) (1U << h_bufarg->shift);
 		dst_elem_size = elem_size;
 
 		p_src = DUK_HBUFOBJ_GET_SLICE_BASE(thr->heap, h_bufarg);
@@ -1200,7 +1200,7 @@ DUK_INTERNAL duk_ret_t duk_bi_nodejs_buffer_tostring(duk_hthread *thr) {
 
 	/* Neutered or uncovered, TypeError. */
 	if (h_this->buf == NULL ||
-	    !DUK_HBUFOBJ_VALID_BYTEOFFSET_EXCL(h_this, start_offset + slice_length)) {
+	    !DUK_HBUFOBJ_VALID_BYTEOFFSET_EXCL(h_this, (duk_size_t) start_offset + slice_length)) {
 		DUK_DCERROR_TYPE_INVALID_ARGS(thr);
 	}
 
@@ -1210,7 +1210,7 @@ DUK_INTERNAL duk_ret_t duk_bi_nodejs_buffer_tostring(duk_hthread *thr) {
 	 * its stability is difficult).
 	 */
 
-	DUK_ASSERT(DUK_HBUFOBJ_VALID_BYTEOFFSET_EXCL(h_this, start_offset + slice_length));
+	DUK_ASSERT(DUK_HBUFOBJ_VALID_BYTEOFFSET_EXCL(h_this, (duk_size_t) start_offset + slice_length));
 	DUK_MEMCPY((void *) buf_slice,
 	           (const void *) (DUK_HBUFOBJ_GET_SLICE_BASE(thr->heap, h_this) + start_offset),
 	           (size_t) slice_length);
@@ -1281,8 +1281,8 @@ DUK_INTERNAL duk_ret_t duk_bi_buffer_compare_shared(duk_hthread *thr) {
 
 	/* XXX: keep support for plain buffers and non-Node.js buffers? */
 
-	magic = duk_get_current_magic(thr);
-	if (magic & 0x02) {
+	magic = (duk_small_uint_t) duk_get_current_magic(thr);
+	if (magic & 0x02U) {
 		/* Static call style. */
 		h_bufarg1 = duk__require_bufobj_value(thr, 0);
 		h_bufarg2 = duk__require_bufobj_value(thr, 1);
@@ -1309,7 +1309,7 @@ DUK_INTERNAL duk_ret_t duk_bi_buffer_compare_shared(duk_hthread *thr) {
 		comp_res = -1;  /* either nonzero value is ok */
 	}
 
-	if (magic & 0x01) {
+	if (magic & 0x01U) {
 		/* compare: similar to string comparison but for buffer data. */
 		duk_push_int(thr, comp_res);
 	} else {
@@ -1379,7 +1379,7 @@ DUK_INTERNAL duk_ret_t duk_bi_nodejs_buffer_fill(duk_hthread *thr) {
 	} else if (fill_str_len > 1) {
 		duk_size_t i, n, t;
 
-		for (i = 0, n = (fill_end - fill_offset), t = 0; i < n; i++) {
+		for (i = 0, n = (duk_size_t) (fill_end - fill_offset), t = 0; i < n; i++) {
 			p[i] = fill_str_ptr[t++];
 			if (t >= fill_str_len) {
 				t = 0;
@@ -1490,7 +1490,7 @@ DUK_INTERNAL duk_ret_t duk_bi_nodejs_buffer_copy(duk_hthread *thr) {
 	}
 	if (source_uend >= (duk_uint_t) source_length) {
 		/* Source end clamped silently to available length. */
-		source_uend = source_length;
+		source_uend = (duk_uint_t) source_length;
 	}
 	copy_size = source_uend - source_ustart;
 	if (target_ustart + copy_size > (duk_uint_t) target_length) {
@@ -1775,8 +1775,8 @@ DUK_INTERNAL duk_ret_t duk_bi_typedarray_set(duk_hthread *thr) {
 		 * numbers are handled which should be side effect safe.
 		 */
 
-		src_elem_size = 1 << h_bufarg->shift;
-		dst_elem_size = 1 << h_this->shift;
+		src_elem_size = (duk_small_uint_t) (1U << h_bufarg->shift);
+		dst_elem_size = (duk_small_uint_t) (1U << h_this->shift);
 		p_src = p_src_base;
 		p_dst = p_dst_base;
 		p_src_end = p_src_base + src_length;
@@ -1953,6 +1953,8 @@ DUK_INTERNAL duk_ret_t duk_bi_buffer_slice_shared(duk_hthread *thr) {
 	                                   &start_offset,
 	                                   &end_offset);
 	DUK_ASSERT(end_offset >= start_offset);
+	DUK_ASSERT(start_offset >= 0);
+	DUK_ASSERT(end_offset >= 0);
 	slice_length = (duk_uint_t) (end_offset - start_offset);
 
 	/* The resulting buffer object gets the same class and prototype as
@@ -2020,7 +2022,7 @@ DUK_INTERNAL duk_ret_t duk_bi_buffer_slice_shared(duk_hthread *thr) {
 		h_bufobj->buf = h_val;
 		DUK_HBUFFER_INCREF(thr, h_val);
 		h_bufobj->length = slice_length;
-		h_bufobj->offset = (duk_uint_t) (h_this->offset + start_offset);
+		h_bufobj->offset = h_this->offset + (duk_uint_t) start_offset;
 
 		/* Copy the .buffer property, needed for TypedArray.prototype.subarray().
 		 *
@@ -2120,7 +2122,7 @@ DUK_INTERNAL duk_ret_t duk_bi_nodejs_buffer_byte_length(duk_hthread *thr) {
 #if defined(DUK_USE_BUFFEROBJECT_SUPPORT)
 DUK_INTERNAL duk_ret_t duk_bi_nodejs_buffer_concat(duk_hthread *thr) {
 	duk_hobject *h_arg;
-	duk_int_t total_length = 0;
+	duk_uint_t total_length;
 	duk_hbufobj *h_bufobj;
 	duk_hbufobj *h_bufres;
 	duk_hbuffer *h_val;
@@ -2137,6 +2139,7 @@ DUK_INTERNAL duk_ret_t duk_bi_nodejs_buffer_concat(duk_hthread *thr) {
 
 	/* Compute result length and validate argument buffers. */
 	n = (duk_uint_t) duk_get_length(thr, 0);
+	total_length = 0;
 	for (i = 0; i < n; i++) {
 		/* Neutered checks not necessary here: neutered buffers have
 		 * zero 'length' so we'll effectively skip them.
@@ -2146,6 +2149,9 @@ DUK_INTERNAL duk_ret_t duk_bi_nodejs_buffer_concat(duk_hthread *thr) {
 		h_bufobj = duk__require_bufobj_value(thr, 2);
 		DUK_ASSERT(h_bufobj != NULL);
 		total_length += h_bufobj->length;
+		if (DUK_UNLIKELY(total_length < h_bufobj->length)) {
+			DUK_DCERROR_RANGE_INVALID_ARGS(thr);  /* Wrapped. */
+		}
 		duk_pop(thr);
 	}
 	/* In Node.js v0.12.1 a 1-element array is special and won't create a
@@ -2153,7 +2159,7 @@ DUK_INTERNAL duk_ret_t duk_bi_nodejs_buffer_concat(duk_hthread *thr) {
 	 */
 
 	/* User totalLength overrides a computed length, but we'll check
-	 * every copy in the copy loop.  Note that duk_to_uint() can
+	 * every copy in the copy loop.  Note that duk_to_int() can
 	 * technically have arbitrary side effects so we need to recheck
 	 * the buffers in the copy loop.
 	 */
@@ -2161,10 +2167,12 @@ DUK_INTERNAL duk_ret_t duk_bi_nodejs_buffer_concat(duk_hthread *thr) {
 		/* For n == 0, Node.js ignores totalLength argument and
 		 * returns a zero length buffer.
 		 */
-		total_length = duk_to_int(thr, 1);
-	}
-	if (total_length < 0) {
-		DUK_DCERROR_RANGE_INVALID_ARGS(thr);
+		duk_int_t total_length_signed;
+		total_length_signed = duk_to_int(thr, 1);
+		if (total_length_signed < 0) {
+			DUK_DCERROR_RANGE_INVALID_ARGS(thr);
+		}
+		total_length = (duk_uint_t) total_length_signed;
 	}
 
 	h_bufres = duk_push_bufobj_raw(thr,
@@ -2176,7 +2184,7 @@ DUK_INTERNAL duk_ret_t duk_bi_nodejs_buffer_concat(duk_hthread *thr) {
 
 	p = (duk_uint8_t *) duk_push_fixed_buffer_zero(thr, total_length);  /* must be zeroed, all bytes not necessarily written over */
 	DUK_ASSERT(p != NULL);
-	space_left = total_length;
+	space_left = (duk_size_t) total_length;
 
 	for (i = 0; i < n; i++) {
 		DUK_ASSERT_TOP(thr, 4);  /* [ array totalLength bufres buf ] */
@@ -2449,7 +2457,7 @@ DUK_INTERNAL duk_ret_t duk_bi_buffer_readfield(duk_hthread *thr) {
 
 		if (magic_signed) {
 			/* Shift to sign extend. */
-			shift_tmp = 64 - (field_bytelen * 8);
+			shift_tmp = (duk_small_uint_t) (64U - (duk_small_uint_t) field_bytelen * 8U);
 			tmp = (tmp << shift_tmp) >> shift_tmp;
 		}
 
@@ -2747,7 +2755,7 @@ DUK_INTERNAL duk_ret_t duk_bi_buffer_writefield(duk_hthread *thr) {
 		 */
 		return 0;
 	}
-	duk_push_uint(thr, offset + nbytes);
+	duk_push_uint(thr, offset + (duk_uint_t) nbytes);
 	return 1;
 
  fail_neutered:
@@ -2763,7 +2771,7 @@ DUK_INTERNAL duk_ret_t duk_bi_buffer_writefield(duk_hthread *thr) {
 		if (magic_typedarray) {
 			return 0;
 		}
-		duk_push_uint(thr, offset + nbytes);
+		duk_push_uint(thr, offset + (duk_uint_t) nbytes);
 		return 1;
 	}
 	DUK_DCERROR_RANGE_INVALID_ARGS(thr);

@@ -14,12 +14,12 @@
  */
 
 /* Initial valstack size, roughly 0.7kiB. */
-#define DUK_VALSTACK_INITIAL_SIZE       96
+#define DUK_VALSTACK_INITIAL_SIZE       96U
 
 /* Internal extra elements assumed on function entry, always added to
  * user-defined 'extra' for e.g. the duk_check_stack() call.
  */
-#define DUK_VALSTACK_INTERNAL_EXTRA     32
+#define DUK_VALSTACK_INTERNAL_EXTRA     32U
 
 /* Number of elements guaranteed to be user accessible (in addition to call
  * arguments) on Duktape/C function entry.  This is the major public API
@@ -31,21 +31,21 @@
  *  Activation defines
  */
 
-#define DUK_ACT_FLAG_STRICT             (1 << 0)  /* function executes in strict mode */
-#define DUK_ACT_FLAG_TAILCALLED         (1 << 1)  /* activation has tail called one or more times */
-#define DUK_ACT_FLAG_CONSTRUCT          (1 << 2)  /* function executes as a constructor (called via "new") */
-#define DUK_ACT_FLAG_PREVENT_YIELD      (1 << 3)  /* activation prevents yield (native call or "new") */
-#define DUK_ACT_FLAG_DIRECT_EVAL        (1 << 4)  /* activation is a direct eval call */
-#define DUK_ACT_FLAG_CONSTRUCT_PROXY    (1 << 5)  /* activation is for Proxy 'construct' call, special return value handling */
-#define DUK_ACT_FLAG_BREAKPOINT_ACTIVE  (1 << 6)  /* activation has active breakpoint(s) */
+#define DUK_ACT_FLAG_STRICT             (1U << 0)  /* function executes in strict mode */
+#define DUK_ACT_FLAG_TAILCALLED         (1U << 1)  /* activation has tail called one or more times */
+#define DUK_ACT_FLAG_CONSTRUCT          (1U << 2)  /* function executes as a constructor (called via "new") */
+#define DUK_ACT_FLAG_PREVENT_YIELD      (1U << 3)  /* activation prevents yield (native call or "new") */
+#define DUK_ACT_FLAG_DIRECT_EVAL        (1U << 4)  /* activation is a direct eval call */
+#define DUK_ACT_FLAG_CONSTRUCT_PROXY    (1U << 5)  /* activation is for Proxy 'construct' call, special return value handling */
+#define DUK_ACT_FLAG_BREAKPOINT_ACTIVE  (1U << 6)  /* activation has active breakpoint(s) */
 
-#define DUK_ACT_GET_FUNC(act)        ((act)->func)
+#define DUK_ACT_GET_FUNC(act)           ((act)->func)
 
 /*
  *  Flags for __FILE__ / __LINE__ registered into tracedata
  */
 
-#define DUK_TB_FLAG_NOBLAME_FILELINE   (1 << 0)  /* don't report __FILE__ / __LINE__ as fileName/lineNumber */
+#define DUK_TB_FLAG_NOBLAME_FILELINE    (1U << 0)  /* don't report __FILE__ / __LINE__ as fileName/lineNumber */
 
 /*
  *  Catcher defines
@@ -60,10 +60,10 @@
 #define DUK_CAT_LABEL_BITS           24
 #define DUK_CAT_LABEL_SHIFT          8
 
-#define DUK_CAT_FLAG_CATCH_ENABLED          (1 << 4)   /* catch part will catch */
-#define DUK_CAT_FLAG_FINALLY_ENABLED        (1 << 5)   /* finally part will catch */
-#define DUK_CAT_FLAG_CATCH_BINDING_ENABLED  (1 << 6)   /* request to create catch binding */
-#define DUK_CAT_FLAG_LEXENV_ACTIVE          (1 << 7)   /* catch or with binding is currently active */
+#define DUK_CAT_FLAG_CATCH_ENABLED          (1U << 4)   /* catch part will catch */
+#define DUK_CAT_FLAG_FINALLY_ENABLED        (1U << 5)   /* finally part will catch */
+#define DUK_CAT_FLAG_CATCH_BINDING_ENABLED  (1U << 6)   /* request to create catch binding */
+#define DUK_CAT_FLAG_LEXENV_ACTIVE          (1U << 7)   /* catch or with binding is currently active */
 
 #define DUK_CAT_TYPE_UNKNOWN         0
 #define DUK_CAT_TYPE_TCF             1

@@ -133,7 +133,7 @@ DUK_INTERNAL void duk_bw_insert_raw_bytes(duk_hthread *thr, duk_bufwriter_ctx *b
 	DUK_UNREF(thr);
 
 	p_base = bw->p_base;
-	buf_sz = bw->p - p_base;
+	buf_sz = (duk_size_t) (bw->p - p_base);  /* constrained by maximum buffer size */
 	move_sz = buf_sz - dst_off;
 
 	DUK_ASSERT(p_base != NULL);  /* buffer size is >= 1 */
@@ -180,7 +180,7 @@ DUK_INTERNAL void duk_bw_insert_raw_slice(duk_hthread *thr, duk_bufwriter_ctx *b
 		src_off += len;
 	}
 
-	buf_sz = bw->p - p_base;
+	buf_sz = (duk_size_t) (bw->p - p_base);
 	move_sz = buf_sz - dst_off;
 
 	DUK_ASSERT(p_base != NULL);  /* buffer size is >= 1 */
@@ -218,7 +218,7 @@ DUK_INTERNAL duk_uint8_t *duk_bw_insert_raw_area(duk_hthread *thr, duk_bufwriter
 	DUK_UNREF(thr);
 
 	p_base = bw->p_base;
-	buf_sz = bw->p - p_base;
+	buf_sz = (duk_size_t) (bw->p - p_base);
 	move_sz = buf_sz - off;
 	p_dst = p_base + off + len;
 	p_src = p_base + off;

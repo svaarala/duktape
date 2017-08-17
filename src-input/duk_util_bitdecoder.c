@@ -41,7 +41,7 @@ DUK_INTERNAL duk_uint32_t duk_bd_decode(duk_bitdecoder_ctx *ctx, duk_small_int_t
 	 * to be cleared, we just ignore them on next round.
 	 */
 	shift = ctx->currbits - bits;
-	mask = (1 << bits) - 1;
+	mask = (((duk_uint32_t) 1U) << bits) - 1U;
 	tmp = (ctx->currval >> shift) & mask;
 	ctx->currbits = shift;  /* remaining */
 

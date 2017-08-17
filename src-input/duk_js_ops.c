@@ -283,7 +283,7 @@ DUK_INTERNAL duk_double_t duk_js_tointeger_number(duk_double_t x) {
 	/* NaN and Infinity have the same exponent so it's a cheap
 	 * initial check for the rare path.
 	 */
-	if (DUK_UNLIKELY(duk_double_is_nan_or_inf(x))) {
+	if (DUK_UNLIKELY(duk_double_is_nan_or_inf(x) != 0U)) {
 		if (duk_double_is_nan(x)) {
 			return 0.0;
 		} else {
@@ -518,7 +518,7 @@ DUK_LOCAL duk_bool_t duk__js_samevalue_number(duk_double_t x, duk_double_t y) {
 #endif  /* DUK_USE_PARANOID_MATH */
 }
 
-DUK_INTERNAL duk_bool_t duk_js_equals_helper(duk_hthread *thr, duk_tval *tv_x, duk_tval *tv_y, duk_small_int_t flags) {
+DUK_INTERNAL duk_bool_t duk_js_equals_helper(duk_hthread *thr, duk_tval *tv_x, duk_tval *tv_y, duk_small_uint_t flags) {
 	duk_uint_t type_mask_x;
 	duk_uint_t type_mask_y;
 
@@ -663,14 +663,14 @@ DUK_INTERNAL duk_bool_t duk_js_equals_helper(duk_hthread *thr, duk_tval *tv_x, d
 	 */
 	if (type_mask_x & DUK_TYPE_MASK_BOOLEAN) {
 		DUK_ASSERT(DUK_TVAL_GET_BOOLEAN(tv_x) == 0 || DUK_TVAL_GET_BOOLEAN(tv_x) == 1);
-		duk_push_int(thr, DUK_TVAL_GET_BOOLEAN(tv_x));
+		duk_push_uint(thr, DUK_TVAL_GET_BOOLEAN(tv_x));
 		duk_push_tval(thr, tv_y);
 		goto recursive_call;
 	}
 	if (type_mask_y & DUK_TYPE_MASK_BOOLEAN) {
 		DUK_ASSERT(DUK_TVAL_GET_BOOLEAN(tv_y) == 0 || DUK_TVAL_GET_BOOLEAN(tv_y) == 1);
 		duk_push_tval(thr, tv_x);
-		duk_push_int(thr, DUK_TVAL_GET_BOOLEAN(tv_y));
+		duk_push_uint(thr, DUK_TVAL_GET_BOOLEAN(tv_y));
 		goto recursive_call;
 	}
 
@@ -895,7 +895,7 @@ DUK_LOCAL duk_bool_t duk__compare_number(duk_bool_t retval, duk_double_t d1, duk
 }
 #endif  /* DUK_USE_PARANOID_MATH */
 
-DUK_INTERNAL duk_bool_t duk_js_compare_helper(duk_hthread *thr, duk_tval *tv_x, duk_tval *tv_y, duk_small_int_t flags) {
+DUK_INTERNAL duk_bool_t duk_js_compare_helper(duk_hthread *thr, duk_tval *tv_x, duk_tval *tv_y, duk_small_uint_t flags) {
 	duk_double_t d1, d2;
 	duk_small_int_t rc;
 	duk_bool_t retval;
@@ -1392,8 +1392,8 @@ DUK_INTERNAL duk_uarridx_t duk_js_to_arrayindex_hstring_fast_known(duk_hstring *
 			/* Scanning to NUL is always safe for interned strings. */
 			break;
 		}
-		DUK_ASSERT(t >= DUK_ASC_0 && t <= DUK_ASC_9);
-		res = res * 10U + (t - DUK_ASC_0);
+		DUK_ASSERT(t >= (duk_uint8_t) DUK_ASC_0 && t <= (duk_uint8_t) DUK_ASC_9);
+		res = res * 10U + (duk_uarridx_t) t - (duk_uarridx_t) DUK_ASC_0;
 	}
 	return res;
 }

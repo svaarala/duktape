@@ -322,8 +322,10 @@ DUK_INTERNAL duk_ret_t duk_bi_function_prototype_bind(duk_hthread *thr) {
 	h_bound->args = tv_res;
 	h_bound->nargs = bound_nargs;
 
-	duk_copy_tvals_incref(thr, tv_res, tv_prevbound, n_prevbound);
-	duk_copy_tvals_incref(thr, tv_res + n_prevbound, DUK_GET_TVAL_POSIDX(thr, 1), nargs);
+	DUK_ASSERT(n_prevbound >= 0);
+	duk_copy_tvals_incref(thr, tv_res, tv_prevbound, (duk_size_t) n_prevbound);
+	DUK_ASSERT(nargs >= 0);
+	duk_copy_tvals_incref(thr, tv_res + n_prevbound, DUK_GET_TVAL_POSIDX(thr, 1), (duk_size_t) nargs);
 
 	/* [ thisArg arg1 ... argN func boundFunc ] */
 
@@ -395,12 +397,12 @@ DUK_INTERNAL duk_ret_t duk_bi_native_function_length(duk_hthread *thr) {
 		func_nargs = h->nargs;
 		duk_push_int(thr, func_nargs == DUK_HNATFUNC_NARGS_VARARGS ? 0 : func_nargs);
 	} else if (DUK_TVAL_IS_LIGHTFUNC(tv)) {
-		duk_int_t lf_flags;
-		duk_int_t lf_len;
+		duk_small_uint_t lf_flags;
+		duk_small_uint_t lf_len;
 
 		lf_flags = DUK_TVAL_GET_LIGHTFUNC_FLAGS(tv);
 		lf_len = DUK_LFUNC_FLAGS_GET_LENGTH(lf_flags);
-		duk_push_int(thr, lf_len);
+		duk_push_uint(thr, lf_len);
 	} else {
 		goto fail_type;
 	}

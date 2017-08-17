@@ -570,7 +570,7 @@ DUK_LOCAL duk_uint_t duk__selftest_alloc_funcs(duk_alloc_function alloc_func,
 	}
 
 	for (i = 1; i <= 256; i++) {
-		ptr = alloc_func(udata, i);
+		ptr = alloc_func(udata, (duk_size_t) i);
 		if (ptr == NULL) {
 			DUK_D(DUK_DPRINT("alloc failed, ignore"));
 			continue;  /* alloc failed, ignore */

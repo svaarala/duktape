@@ -14,10 +14,10 @@
  *  Heap flags
  */
 
-#define DUK_HEAP_FLAG_MARKANDSWEEP_RECLIMIT_REACHED            (1 << 0)  /* mark-and-sweep marking reached a recursion limit and must use multi-pass marking */
-#define DUK_HEAP_FLAG_INTERRUPT_RUNNING                        (1 << 1)  /* executor interrupt running (used to avoid nested interrupts) */
-#define DUK_HEAP_FLAG_FINALIZER_NORESCUE                       (1 << 2)  /* heap destruction ongoing, finalizer rescue no longer possible */
-#define DUK_HEAP_FLAG_DEBUGGER_PAUSED                          (1 << 3)  /* debugger is paused: talk with debug client until step/resume */
+#define DUK_HEAP_FLAG_MARKANDSWEEP_RECLIMIT_REACHED            (1U << 0)  /* mark-and-sweep marking reached a recursion limit and must use multi-pass marking */
+#define DUK_HEAP_FLAG_INTERRUPT_RUNNING                        (1U << 1)  /* executor interrupt running (used to avoid nested interrupts) */
+#define DUK_HEAP_FLAG_FINALIZER_NORESCUE                       (1U << 2)  /* heap destruction ongoing, finalizer rescue no longer possible */
+#define DUK_HEAP_FLAG_DEBUGGER_PAUSED                          (1U << 3)  /* debugger is paused: talk with debug client until step/resume */
 
 #define DUK__HEAP_HAS_FLAGS(heap,bits)               ((heap)->flags & (bits))
 #define DUK__HEAP_SET_FLAGS(heap,bits)  do { \
@@ -66,22 +66,22 @@
 /* Emergency mark-and-sweep: try extra hard, even at the cost of
  * performance.
  */
-#define DUK_MS_FLAG_EMERGENCY                (1 << 0)
+#define DUK_MS_FLAG_EMERGENCY                (1U << 0)
 
 /* Voluntary mark-and-sweep: triggered periodically. */
-#define DUK_MS_FLAG_VOLUNTARY                (1 << 1)
+#define DUK_MS_FLAG_VOLUNTARY                (1U << 1)
 
 /* Postpone rescue decisions for reachable objects with FINALIZED set.
  * Used during finalize_list processing to avoid incorrect rescue
  * decisions due to finalize_list being a reachability root.
  */
-#define DUK_MS_FLAG_POSTPONE_RESCUE          (1 << 2)
+#define DUK_MS_FLAG_POSTPONE_RESCUE          (1U << 2)
 
 /* Don't compact objects; needed during object property table resize
  * to prevent a recursive resize.  It would suffice to protect only the
  * current object being resized, but this is not yet implemented.
  */
-#define DUK_MS_FLAG_NO_OBJECT_COMPACTION     (1 << 2)
+#define DUK_MS_FLAG_NO_OBJECT_COMPACTION     (1U << 3)
 
 /*
  *  Thread switching
@@ -520,8 +520,8 @@ struct duk_heap {
 	/* XXX: make active breakpoints actual copies instead of pointers? */
 
 	/* These are for rate limiting Status notifications and transport peeking. */
-	duk_uint32_t dbg_exec_counter;          /* cumulative opcode execution count (overflows are OK) */
-	duk_uint32_t dbg_last_counter;          /* value of dbg_exec_counter when we last did a Date-based check */
+	duk_uint_t dbg_exec_counter;            /* cumulative opcode execution count (overflows are OK) */
+	duk_uint_t dbg_last_counter;            /* value of dbg_exec_counter when we last did a Date-based check */
 	duk_double_t dbg_last_time;             /* time when status/peek was last done (Date-based rate limit) */
 
 	/* Used to support single-byte stream lookahead. */

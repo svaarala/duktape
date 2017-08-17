@@ -653,7 +653,7 @@ DUK_LOCAL duk_codepoint_t duk__lexer_parse_escape(duk_lexer_ctx *lex_ctx, duk_bo
 	duk_small_int_t digits;  /* Initial value 2 or 4 for fixed length escapes, 0 for ES2015 \u{H+}. */
 	duk_codepoint_t escval;
 	duk_codepoint_t x;
-	duk_small_int_t adv;
+	duk_small_uint_t adv;
 
 	DUK_ASSERT(DUK__L0() == DUK_ASC_BACKSLASH);  /* caller responsibilities */
 	DUK_ASSERT(DUK__L1() == DUK_ASC_LC_X || DUK__L1() == DUK_ASC_LC_U);
@@ -747,10 +747,10 @@ DUK_LOCAL duk_codepoint_t duk__lexer_parse_escape(duk_lexer_ctx *lex_ctx, duk_bo
  * RegExp octal escape parsing.  Window[0] must be the slash '\' and the first
  * digit must already be validated to be in [0-9] by the caller.
  */
-DUK_LOCAL duk_codepoint_t duk__lexer_parse_legacy_octal(duk_lexer_ctx *lex_ctx, duk_small_int_t *out_adv, duk_bool_t reject_annex_b) {
+DUK_LOCAL duk_codepoint_t duk__lexer_parse_legacy_octal(duk_lexer_ctx *lex_ctx, duk_small_uint_t *out_adv, duk_bool_t reject_annex_b) {
 	duk_codepoint_t cp;
 	duk_small_uint_t lookup_idx;
-	duk_small_int_t adv;
+	duk_small_uint_t adv;
 	duk_codepoint_t tmp;
 
 	DUK_ASSERT(out_adv != NULL);
@@ -806,7 +806,7 @@ DUK_LOCAL duk_codepoint_t duk__lexer_parse_legacy_octal(duk_lexer_ctx *lex_ctx, 
 
 /* XXX: move strict mode to lex_ctx? */
 DUK_LOCAL void duk__lexer_parse_string_literal(duk_lexer_ctx *lex_ctx, duk_token *out_token, duk_small_int_t quote, duk_bool_t strict_mode) {
-	duk_small_int_t adv;
+	duk_small_uint_t adv;
 
 	for (adv = 1 /* initial quote */ ;;) {
 		duk_codepoint_t x;
@@ -1035,7 +1035,7 @@ void duk_lexer_parse_js_input_element(duk_lexer_ctx *lex_ctx,
 	}
 
 	out_token->t = DUK_TOK_EOF;
-	out_token->t_nores = -1;  /* marker: copy t if not changed */
+	out_token->t_nores = DUK_TOK_INVALID;  /* marker: copy t if not changed */
 #if 0  /* not necessary to init, disabled for faster parsing */
 	out_token->num = DUK_DOUBLE_NAN;
 	out_token->str1 = NULL;
@@ -1508,7 +1508,7 @@ void duk_lexer_parse_js_input_element(duk_lexer_ctx *lex_ctx,
 		 *  parsing the identifier.  This has little practical impact.
 		 */
 
-		duk_small_int_t i, i_end;
+		duk_small_uint_t i, i_end;
 		duk_bool_t first = 1;
 		duk_hstring *str;
 
@@ -1580,7 +1580,8 @@ void duk_lexer_parse_js_input_element(duk_lexer_ctx *lex_ctx,
 		advtok = DUK__ADVTOK(0, DUK_TOK_IDENTIFIER);
 		if (out_token->num_escapes == 0) {
 			for (i = DUK_STRIDX_START_RESERVED; i < i_end; i++) {
-				DUK_ASSERT(i >= 0 && i < DUK_HEAP_NUM_STRINGS);
+				DUK_ASSERT_DISABLE(i >= 0);  /* unsigned */
+				DUK_ASSERT(i < DUK_HEAP_NUM_STRINGS);
 				if (DUK_HTHREAD_GET_STRING(lex_ctx->thr, i) == str) {
 					advtok = DUK__ADVTOK(0, DUK_STRIDX_TO_TOK(i));
 					break;
@@ -1621,7 +1622,7 @@ void duk_lexer_parse_js_input_element(duk_lexer_ctx *lex_ctx,
 		                         */
 		duk_small_uint_t s2n_flags;
 		duk_codepoint_t y, z;
-		duk_small_uint_t s2n_radix = 10;
+		duk_small_int_t s2n_radix = 10;
 		duk_small_uint_t pre_adv = 0;
 
 		DUK__INITBUFFER(lex_ctx);
@@ -1763,7 +1764,7 @@ void duk_lexer_parse_js_input_element(duk_lexer_ctx *lex_ctx,
 
 	DUK__ADVANCEBYTES(lex_ctx, advtok >> 8);
 	out_token->t = advtok & 0xff;
-	if (out_token->t_nores < 0) {
+	if (out_token->t_nores == DUK_TOK_INVALID) {
 		out_token->t_nores = out_token->t;
 	}
 	out_token->lineterm = got_lineterm;
@@ -1823,7 +1824,7 @@ void duk_lexer_parse_js_input_element(duk_lexer_ctx *lex_ctx,
  */
 
 DUK_INTERNAL void duk_lexer_parse_re_token(duk_lexer_ctx *lex_ctx, duk_re_token *out_token) {
-	duk_small_int_t advtok = 0;  /* init is unnecessary but suppresses "may be used uninitialized" warnings */
+	duk_small_uint_t advtok = 0;  /* init is unnecessary but suppresses "may be used uninitialized" warnings */
 	duk_codepoint_t x, y;
 
 	if (++lex_ctx->token_count >= lex_ctx->token_limit) {
@@ -1888,8 +1889,8 @@ DUK_INTERNAL void duk_lexer_parse_re_token(duk_lexer_ctx *lex_ctx, duk_re_token 
 	}
 	case DUK_ASC_LCURLY: {
 		/* Production allows 'DecimalDigits', including leading zeroes */
-		duk_uint_fast32_t val1 = 0;
-		duk_uint_fast32_t val2 = DUK_RE_QUANTIFIER_INFINITE;
+		duk_uint32_t val1 = 0;
+		duk_uint32_t val2 = DUK_RE_QUANTIFIER_INFINITE;
 		duk_small_int_t digits = 0;
 #if defined(DUK_USE_ES6_REGEXP_SYNTAX)
 		duk_lexer_point lex_pt;
@@ -1905,7 +1906,7 @@ DUK_INTERNAL void duk_lexer_parse_re_token(duk_lexer_ctx *lex_ctx, duk_re_token 
 			x = DUK__L0();
 			if (DUK__ISDIGIT(x)) {
 				digits++;
-				val1 = val1 * 10 + (duk_uint_fast32_t) duk__hexval(x);
+				val1 = val1 * 10 + (duk_uint32_t) duk__hexval(x);
 			} else if (x == DUK_ASC_COMMA) {
 				if (digits > DUK__MAX_RE_QUANT_DIGITS) {
 					goto invalid_quantifier;
@@ -2001,7 +2002,7 @@ DUK_INTERNAL void duk_lexer_parse_re_token(duk_lexer_ctx *lex_ctx, duk_re_token 
 			x = DUK__L2();
 			if ((x >= DUK_ASC_LC_A && x <= DUK_ASC_LC_Z) ||
 			    (x >= DUK_ASC_UC_A && x <= DUK_ASC_UC_Z)) {
-				out_token->num = (x % 32);
+				out_token->num = (duk_uint32_t) (x % 32);
 				advtok = DUK__ADVTOK(3, DUK_RETOK_ATOM_CHAR);
 			} else {
 				goto fail_escape;
@@ -2012,7 +2013,7 @@ DUK_INTERNAL void duk_lexer_parse_re_token(duk_lexer_ctx *lex_ctx, duk_re_token 
 			 * here.  The \u{H+} is only allowed in Unicode mode
 			 * which we don't support yet.
 			 */
-			out_token->num = duk__lexer_parse_escape(lex_ctx, 0 /*allow_es6*/);
+			out_token->num = (duk_uint32_t) duk__lexer_parse_escape(lex_ctx, 0 /*allow_es6*/);
 			advtok = DUK__ADVTOK(0, DUK_RETOK_ATOM_CHAR);
 		} else if (y == DUK_ASC_LC_D) {
 			advtok = DUK__ADVTOK(2, DUK_RETOK_ATOM_DIGIT);
@@ -2036,7 +2037,7 @@ DUK_INTERNAL void duk_lexer_parse_re_token(duk_lexer_ctx *lex_ctx, duk_re_token 
 				advtok = DUK__ADVTOK(2, DUK_RETOK_ATOM_CHAR);
 			} else {
 				/* XXX: shared parsing? */
-				duk_uint_fast32_t val = 0;
+				duk_uint32_t val = 0;
 				duk_small_int_t i;
 				for (i = 0; ; i++) {
 					if (i >= DUK__MAX_RE_DECESC_DIGITS) {
@@ -2047,7 +2048,7 @@ DUK_INTERNAL void duk_lexer_parse_re_token(duk_lexer_ctx *lex_ctx, duk_re_token 
 					if (!DUK__ISDIGIT(x)) {
 						break;
 					}
-					val = val * 10 + (duk_uint_fast32_t) duk__hexval(x);
+					val = val * 10 + (duk_uint32_t) duk__hexval(x);
 				}
 				/* DUK__L0() cannot be a digit, because the loop doesn't terminate if it is */
 				advtok = DUK__ADVTOK(0, DUK_RETOK_ATOM_BACKREFERENCE);
@@ -2073,7 +2074,7 @@ DUK_INTERNAL void duk_lexer_parse_re_token(duk_lexer_ctx *lex_ctx, duk_re_token 
 			 * test-regexp-identity-escape-dollar.js.
 			 */
 #endif  /* DUK_USE_ES6_REGEXP_SYNTAX */
-			out_token->num = y;
+			out_token->num = (duk_uint32_t) y;
 		} else {
 			goto fail_escape;
 		}
@@ -2140,7 +2141,7 @@ DUK_INTERNAL void duk_lexer_parse_re_token(duk_lexer_ctx *lex_ctx, duk_re_token 
 	default: {
 		/* PatternCharacter, all excluded characters are matched by cases above */
 		advtok = DUK__ADVTOK(1, DUK_RETOK_ATOM_CHAR);
-		out_token->num = x;
+		out_token->num = (duk_uint32_t) x;
 		break;
 	}
 	}
@@ -2219,7 +2220,7 @@ DUK_INTERNAL void duk_lexer_parse_re_ranges(duk_lexer_ctx *lex_ctx, duk_re_range
 	duk_codepoint_t ch;
 	duk_codepoint_t x;
 	duk_bool_t dash = 0;
-	duk_small_int_t adv = 0;
+	duk_small_uint_t adv = 0;
 
 	DUK_DD(DUK_DDPRINT("parsing regexp ranges"));
 

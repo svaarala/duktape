@@ -141,8 +141,8 @@ DUK_LOCAL duk_ret_t duk__error_getter_helper(duk_hthread *thr, duk_small_int_t o
 		/* Current tracedata contains 2 entries per callstack entry. */
 		for (i = 0; ; i += 2) {
 			duk_int_t pc;
-			duk_int_t line;
-			duk_int_t flags;
+			duk_uint_t line;
+			duk_uint_t flags;
 			duk_double_t d;
 			const char *funcname;
 			const char *filename;
@@ -150,11 +150,11 @@ DUK_LOCAL duk_ret_t duk__error_getter_helper(duk_hthread *thr, duk_small_int_t o
 			duk_hstring *h_name;
 
 			duk_require_stack(thr, 5);
-			duk_get_prop_index(thr, idx_td, i);
-			duk_get_prop_index(thr, idx_td, i + 1);
+			duk_get_prop_index(thr, idx_td, (duk_uarridx_t) i);
+			duk_get_prop_index(thr, idx_td, (duk_uarridx_t) (i + 1));
 			d = duk_to_number_m1(thr);
 			pc = (duk_int_t) DUK_FMOD(d, DUK_DOUBLE_2TO32);
-			flags = (duk_int_t) DUK_FLOOR(d / DUK_DOUBLE_2TO32);
+			flags = (duk_uint_t) DUK_FLOOR(d / DUK_DOUBLE_2TO32);
 			t = (duk_small_int_t) duk_get_type(thr, -2);
 
 			if (t == DUK_TYPE_OBJECT || t == DUK_TYPE_LIGHTFUNC) {
@@ -174,7 +174,7 @@ DUK_LOCAL duk_ret_t duk__error_getter_helper(duk_hthread *thr, duk_small_int_t o
 				duk_get_prop_stridx_short(thr, -3, DUK_STRIDX_FILE_NAME);
 
 #if defined(DUK_USE_PC2LINE)
-				line = duk_hobject_pc2line_query(thr, -4, (duk_uint_fast32_t) pc);
+				line = (duk_uint_t) duk_hobject_pc2line_query(thr, -4, (duk_uint_fast32_t) pc);
 #else
 				line = 0;
 #endif
@@ -188,7 +188,7 @@ DUK_LOCAL duk_ret_t duk__error_getter_helper(duk_hthread *thr, duk_small_int_t o
 					if (output_type == DUK__OUTPUT_TYPE_FILENAME) {
 						return 1;
 					} else if (output_type == DUK__OUTPUT_TYPE_LINENUMBER) {
-						duk_push_int(thr, line);
+						duk_push_uint(thr, line);
 						return 1;
 					}
 				}
@@ -223,10 +223,10 @@ DUK_LOCAL duk_ret_t duk__error_getter_helper(duk_hthread *thr, duk_small_int_t o
 					                 (const char *) ((flags & DUK_ACT_FLAG_DIRECT_EVAL) ? str_directeval : str_empty),
 					                 (const char *) ((flags & DUK_ACT_FLAG_PREVENT_YIELD) ? str_prevyield : str_empty));
 				} else {
-					duk_push_sprintf(thr, "at %s (%s:%ld)%s%s%s%s%s",
+					duk_push_sprintf(thr, "at %s (%s:%lu)%s%s%s%s%s",
 					                 (const char *) funcname,
 					                 (const char *) filename,
-					                 (long) line,
+					                 (unsigned long) line,
 					                 (const char *) ((flags & DUK_ACT_FLAG_STRICT) ? str_strict : str_empty),
 					                 (const char *) ((flags & DUK_ACT_FLAG_TAILCALLED) ? str_tailcall : str_empty),
 					                 (const char *) ((flags & DUK_ACT_FLAG_CONSTRUCT) ? str_construct : str_empty),
@@ -359,7 +359,7 @@ DUK_LOCAL duk_ret_t duk__error_setter_helper(duk_hthread *thr, duk_small_uint_t 
 	DUK_ASSERT_TOP(thr, 1);  /* fixed arg count: value */
 
 	duk_push_this(thr);
-	duk_push_hstring_stridx(thr, (duk_small_int_t) stridx_key);
+	duk_push_hstring_stridx(thr, stridx_key);
 	duk_dup_0(thr);
 
 	/* [ ... obj key value ] */

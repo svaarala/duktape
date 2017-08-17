@@ -161,7 +161,7 @@ DUK_LOCAL void duk__sort_enum_keys_es6(duk_hthread *thr, duk_hobject *h_obj, duk
 		if (idx != idx_insert) {
 			DUK_MEMMOVE((void *) (keys + idx_insert + 1),
 			            (const void *) (keys + idx_insert),
-			            (size_t) ((idx - idx_insert) * sizeof(duk_hstring *)));
+			            ((size_t) (idx - idx_insert) * sizeof(duk_hstring *)));
 			keys[idx_insert] = h_curr;
 		}
 	}
@@ -495,11 +495,11 @@ DUK_INTERNAL void duk_hobject_enumerator_create(duk_hthread *thr, duk_small_uint
 
 		if (!(enum_flags & DUK_ENUM_SORT_ARRAY_INDICES)) {
 #if defined(DUK_USE_PREFER_SIZE)
-			duk__sort_enum_keys_es6(thr, res, sort_start_index, sort_end_index);
+			duk__sort_enum_keys_es6(thr, res, (duk_int_fast32_t) sort_start_index, (duk_int_fast32_t) sort_end_index);
 #else
 			if (need_sort) {
 				DUK_DDD(DUK_DDDPRINT("need to sort"));
-				duk__sort_enum_keys_es6(thr, res, sort_start_index, sort_end_index);
+				duk__sort_enum_keys_es6(thr, res, (duk_int_fast32_t) sort_start_index, (duk_int_fast32_t) sort_end_index);
 			} else {
 				DUK_DDD(DUK_DDDPRINT("no need to sort"));
 			}
@@ -532,7 +532,7 @@ DUK_INTERNAL void duk_hobject_enumerator_create(duk_hthread *thr, duk_small_uint
 		/* Sort to ES2015 order which works for pure array incides but
 		 * also for mixed keys.
 		 */
-		duk__sort_enum_keys_es6(thr, res, DUK__ENUM_START_INDEX, DUK_HOBJECT_GET_ENEXT(res));
+		duk__sort_enum_keys_es6(thr, res, (duk_int_fast32_t) DUK__ENUM_START_INDEX, (duk_int_fast32_t) DUK_HOBJECT_GET_ENEXT(res));
 	}
 
 #if defined(DUK_USE_ES6_PROXY)

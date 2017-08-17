@@ -749,7 +749,7 @@ DUK_LOCAL void duk__regexp_match_helper(duk_hthread *thr, duk_small_int_t force_
 	re_ctx.bytecode = pc;
 
 	DUK_ASSERT(DUK_RE_FLAG_GLOBAL < 0x10000UL);  /* must fit into duk_small_int_t */
-	global = (duk_small_int_t) (force_global | (re_ctx.re_flags & DUK_RE_FLAG_GLOBAL));
+	global = (duk_small_int_t) (force_global | (duk_small_int_t) (re_ctx.re_flags & DUK_RE_FLAG_GLOBAL));
 
 	DUK_ASSERT(re_ctx.nsaved >= 2);
 	DUK_ASSERT((re_ctx.nsaved % 2) == 0);

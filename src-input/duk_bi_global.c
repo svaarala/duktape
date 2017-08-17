@@ -327,7 +327,7 @@ DUK_LOCAL void duk__transform_callback_decode_uri(duk__transform_context *tfm_ct
 			DUK_ASSERT(cp < 0x100000L);
 
 			DUK_BW_WRITE_RAW_XUTF8(tfm_ctx->thr, &tfm_ctx->bw, ((cp >> 10) + 0xd800L));
-			DUK_BW_WRITE_RAW_XUTF8(tfm_ctx->thr, &tfm_ctx->bw, ((cp & 0x03ffUL) + 0xdc00L));
+			DUK_BW_WRITE_RAW_XUTF8(tfm_ctx->thr, &tfm_ctx->bw, ((cp & 0x03ffL) + 0xdc00L));
 		} else {
 			DUK_BW_WRITE_RAW_XUTF8(tfm_ctx->thr, &tfm_ctx->bw, cp);
 		}
@@ -638,7 +638,7 @@ DUK_INTERNAL duk_ret_t duk_bi_global_object_parse_int(duk_hthread *thr) {
 	}
 
 	duk_dup_0(thr);
-	duk_numconv_parse(thr, radix, s2n_flags);
+	duk_numconv_parse(thr, (duk_small_int_t) radix, s2n_flags);
 	return 1;
 
  ret_nan:
@@ -650,12 +650,9 @@ DUK_INTERNAL duk_ret_t duk_bi_global_object_parse_int(duk_hthread *thr) {
 #if defined(DUK_USE_GLOBAL_BUILTIN)
 DUK_INTERNAL duk_ret_t duk_bi_global_object_parse_float(duk_hthread *thr) {
 	duk_small_uint_t s2n_flags;
-	duk_int32_t radix;
 
 	DUK_ASSERT_TOP(thr, 1);
 	duk_to_string(thr, 0);  /* Reject symbols. */
-
-	radix = 10;
 
 	/* XXX: check flags */
 	s2n_flags = DUK_S2N_FLAG_TRIM_WHITE |
@@ -669,7 +666,7 @@ DUK_INTERNAL duk_ret_t duk_bi_global_object_parse_float(duk_hthread *thr) {
 	            DUK_S2N_FLAG_ALLOW_EMPTY_FRAC |
 	            DUK_S2N_FLAG_ALLOW_LEADING_ZERO;
 
-	duk_numconv_parse(thr, radix, s2n_flags);
+	duk_numconv_parse(thr, 10 /*radix*/, s2n_flags);
 	return 1;
 }
 #endif  /* DUK_USE_GLOBAL_BUILTIN */
@@ -681,7 +678,7 @@ DUK_INTERNAL duk_ret_t duk_bi_global_object_parse_float(duk_hthread *thr) {
 #if defined(DUK_USE_GLOBAL_BUILTIN)
 DUK_INTERNAL duk_ret_t duk_bi_global_object_is_nan(duk_hthread *thr) {
 	duk_double_t d = duk_to_number(thr, 0);
-	duk_push_boolean(thr, DUK_ISNAN(d));
+	duk_push_boolean(thr, (duk_bool_t) DUK_ISNAN(d));
 	return 1;
 }
 #endif  /* DUK_USE_GLOBAL_BUILTIN */
@@ -689,7 +686,7 @@ DUK_INTERNAL duk_ret_t duk_bi_global_object_is_nan(duk_hthread *thr) {
 #if defined(DUK_USE_GLOBAL_BUILTIN)
 DUK_INTERNAL duk_ret_t duk_bi_global_object_is_finite(duk_hthread *thr) {
 	duk_double_t d = duk_to_number(thr, 0);
-	duk_push_boolean(thr, DUK_ISFINITE(d));
+	duk_push_boolean(thr, (duk_bool_t) DUK_ISFINITE(d));
 	return 1;
 }
 #endif  /* DUK_USE_GLOBAL_BUILTIN */

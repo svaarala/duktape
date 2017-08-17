@@ -347,8 +347,8 @@ DUK_INTERNAL duk_ret_t duk_bi_array_prototype_join_shared(duk_hthread *thr) {
 	                     (unsigned long) len));
 
 	/* The extra (+4) is tight. */
-	valstack_required = (len >= DUK__ARRAY_MID_JOIN_LIMIT ?
-	                     DUK__ARRAY_MID_JOIN_LIMIT : len) + 4;
+	valstack_required = (duk_idx_t) ((len >= DUK__ARRAY_MID_JOIN_LIMIT ?
+	                                  DUK__ARRAY_MID_JOIN_LIMIT : len) + 4);
 	duk_require_stack(thr, valstack_required);
 
 	duk_dup_0(thr);
@@ -487,11 +487,13 @@ DUK_LOCAL duk_ret_t duk__array_push_fastpath(duk_hthread *thr, duk_harray *h_arr
 	tv_arraypart = DUK_HOBJECT_A_GET_BASE(thr->heap, (duk_hobject *) h_arr);
 
 	n = (duk_idx_t) (thr->valstack_top - thr->valstack_bottom);
-	if (DUK_UNLIKELY(len + n < len)) {
+	DUK_ASSERT(n >= 0);
+	DUK_ASSERT((duk_uint32_t) n <= DUK_UINT32_MAX);
+	if (DUK_UNLIKELY(len + (duk_uint32_t) n < len)) {
 		DUK_D(DUK_DPRINT("Array.prototype.push() would go beyond 32-bit length, throw"));
 		DUK_DCERROR_RANGE_INVALID_LENGTH(thr);  /* != 0 return value returned as is by caller */
 	}
-	if (len + n > DUK_HOBJECT_GET_ASIZE((duk_hobject *) h_arr)) {
+	if (len + (duk_uint32_t) n > DUK_HOBJECT_GET_ASIZE((duk_hobject *) h_arr)) {
 		/* Array part would need to be extended.  Rely on slow path
 		 * for now.
 		 *
@@ -512,7 +514,7 @@ DUK_LOCAL duk_ret_t duk__array_push_fastpath(duk_hthread *thr, duk_harray *h_arr
 		tv_dst++;
 	}
 	thr->valstack_top = thr->valstack_bottom;
-	len += n;
+	len += (duk_uint32_t) n;
 	h_arr->length = len;
 
 	DUK_ASSERT((duk_uint_t) len == len);
@@ -568,9 +570,9 @@ DUK_INTERNAL duk_ret_t duk_bi_array_prototype_push(duk_hthread *thr) {
 
 	for (i = 0; i < n; i++) {
 		duk_dup(thr, i);
-		duk_put_prop_index(thr, -3, len + i);
+		duk_put_prop_index(thr, -3, (duk_uarridx_t) (len + (duk_uint32_t) i));
 	}
-	len += n;
+	len += (duk_uint32_t) n;
 
 	duk_push_u32(thr, len);
 	duk_dup_top(thr);
@@ -903,7 +905,8 @@ DUK_INTERNAL duk_ret_t duk_bi_array_prototype_sort(duk_hthread *thr) {
 
 DUK_INTERNAL duk_ret_t duk_bi_array_prototype_splice(duk_hthread *thr) {
 	duk_idx_t nargs;
-	duk_uint32_t len;
+	duk_uint32_t len_u32;
+	duk_int_t len;
 	duk_bool_t have_delcount;
 	duk_int_t item_count;
 	duk_int_t act_start;
@@ -924,13 +927,15 @@ DUK_INTERNAL duk_ret_t duk_bi_array_prototype_splice(duk_hthread *thr) {
 	/* XXX: len >= 0x80000000 won't work below because we need to be
 	 * able to represent -len.
 	 */
-	len = duk__push_this_obj_len_u32_limited(thr);
+	len_u32 = duk__push_this_obj_len_u32_limited(thr);
+	len = (duk_int_t) len_u32;
+	DUK_ASSERT(len >= 0);
 
-	act_start = duk_to_int_clamped(thr, 0, -((duk_int_t) len), (duk_int_t) len);
+	act_start = duk_to_int_clamped(thr, 0, -len, len);
 	if (act_start < 0) {
 		act_start = len + act_start;
 	}
-	DUK_ASSERT(act_start >= 0 && act_start <= (duk_int_t) len);
+	DUK_ASSERT(act_start >= 0 && act_start <= len);
 
 #if defined(DUK_USE_NONSTD_ARRAY_SPLICE_DELCOUNT)
 	if (have_delcount) {
@@ -950,8 +955,8 @@ DUK_INTERNAL duk_ret_t duk_bi_array_prototype_splice(duk_hthread *thr) {
 	DUK_ASSERT(nargs >= 2);
 	item_count = (duk_int_t) (nargs - 2);
 
-	DUK_ASSERT(del_count >= 0 && del_count <= (duk_int_t) len - act_start);
-	DUK_ASSERT(del_count + act_start <= (duk_int_t) len);
+	DUK_ASSERT(del_count >= 0 && del_count <= len - act_start);
+	DUK_ASSERT(del_count + act_start <= len);
 
 	/* For now, restrict result array into 32-bit length range. */
 	if (((duk_double_t) len) - ((duk_double_t) del_count) + ((duk_double_t) item_count) > (duk_double_t) DUK_UINT32_MAX) {
@@ -975,7 +980,7 @@ DUK_INTERNAL duk_ret_t duk_bi_array_prototype_splice(duk_hthread *thr) {
 
 	for (i = 0; i < del_count; i++) {
 		if (duk_get_prop_index(thr, -3, (duk_uarridx_t) (act_start + i))) {
-			duk_xdef_prop_index_wec(thr, -2, i);  /* throw flag irrelevant (false in std alg) */
+			duk_xdef_prop_index_wec(thr, -2, (duk_uarridx_t) i);  /* throw flag irrelevant (false in std alg) */
 		} else {
 			duk_pop_undefined(thr);
 		}
@@ -1053,7 +1058,7 @@ DUK_INTERNAL duk_ret_t duk_bi_array_prototype_splice(duk_hthread *thr) {
 	 * (but we checked above that this isn't the case here)
 	 */
 
-	duk_push_u32(thr, len - del_count + item_count);
+	duk_push_u32(thr, (duk_uint32_t) (len - del_count + item_count));
 	duk_put_prop_stridx_short(thr, -4, DUK_STRIDX_LENGTH);
 
 	/* result array is already at the top of stack */
@@ -1117,7 +1122,8 @@ DUK_INTERNAL duk_ret_t duk_bi_array_prototype_reverse(duk_hthread *thr) {
  */
 
 DUK_INTERNAL duk_ret_t duk_bi_array_prototype_slice(duk_hthread *thr) {
-	duk_uint32_t len;
+	duk_uint32_t len_u32;
+	duk_int_t len;
 	duk_int_t start, end;
 	duk_int_t i;
 	duk_uarridx_t idx;
@@ -1126,7 +1132,10 @@ DUK_INTERNAL duk_ret_t duk_bi_array_prototype_slice(duk_hthread *thr) {
 	/* XXX: len >= 0x80000000 won't work below because we need to be
 	 * able to represent -len.
 	 */
-	len = duk__push_this_obj_len_u32_limited(thr);
+	len_u32 = duk__push_this_obj_len_u32_limited(thr);
+	len = (duk_int_t) len_u32;
+	DUK_ASSERT(len >= 0);
+
 	duk_push_array(thr);
 
 	/* stack[0] = start
@@ -1136,7 +1145,7 @@ DUK_INTERNAL duk_ret_t duk_bi_array_prototype_slice(duk_hthread *thr) {
 	 * stack[4] = result array
 	 */
 
-	start = duk_to_int_clamped(thr, 0, -((duk_int_t) len), (duk_int_t) len);
+	start = duk_to_int_clamped(thr, 0, -len, len);
 	if (start < 0) {
 		start = len + start;
 	}
@@ -1146,13 +1155,13 @@ DUK_INTERNAL duk_ret_t duk_bi_array_prototype_slice(duk_hthread *thr) {
 	if (duk_is_undefined(thr, 1)) {
 		end = len;
 	} else {
-		end = duk_to_int_clamped(thr, 1, -((duk_int_t) len), (duk_int_t) len);
+		end = duk_to_int_clamped(thr, 1, -len, len);
 		if (end < 0) {
 			end = len + end;
 		}
 	}
-	DUK_ASSERT(start >= 0 && (duk_uint32_t) start <= len);
-	DUK_ASSERT(end >= 0 && (duk_uint32_t) end <= len);
+	DUK_ASSERT(start >= 0 && start <= len);
+	DUK_ASSERT(end >= 0 && end <= len);
 
 	idx = 0;
 	for (i = start; i < end; i++) {
@@ -1254,25 +1263,25 @@ DUK_INTERNAL duk_ret_t duk_bi_array_prototype_unshift(duk_hthread *thr) {
 		if (duk_get_prop_index(thr, -2, (duk_uarridx_t) i)) {
 			/* fromPresent = true */
 			/* [ ... ToObject(this) ToUint32(length) val ] */
-			duk_put_prop_index(thr, -3, (duk_uarridx_t) (i + nargs));  /* -> [ ... ToObject(this) ToUint32(length) ] */
+			duk_put_prop_index(thr, -3, (duk_uarridx_t) (i + (duk_uint32_t) nargs));  /* -> [ ... ToObject(this) ToUint32(length) ] */
 		} else {
 			/* fromPresent = false */
 			/* [ ... ToObject(this) ToUint32(length) val ] */
 			duk_pop_undefined(thr);
-			duk_del_prop_index(thr, -2, (duk_uarridx_t) (i + nargs));  /* -> [ ... ToObject(this) ToUint32(length) ] */
+			duk_del_prop_index(thr, -2, (duk_uarridx_t) (i + (duk_uint32_t) nargs));  /* -> [ ... ToObject(this) ToUint32(length) ] */
 		}
 		DUK_ASSERT_TOP(thr, nargs + 2);
 	}
 
 	for (i = 0; i < (duk_uint32_t) nargs; i++) {
 		DUK_ASSERT_TOP(thr, nargs + 2);
-		duk_dup(thr, i);  /* -> [ ... ToObject(this) ToUint32(length) arg[i] ] */
+		duk_dup(thr, (duk_idx_t) i);  /* -> [ ... ToObject(this) ToUint32(length) arg[i] ] */
 		duk_put_prop_index(thr, -3, (duk_uarridx_t) i);
 		DUK_ASSERT_TOP(thr, nargs + 2);
 	}
 
 	DUK_ASSERT_TOP(thr, nargs + 2);
-	duk_push_u32(thr, len + nargs);
+	duk_push_u32(thr, len + (duk_uint32_t) nargs);
 	duk_dup_top(thr);  /* -> [ ... ToObject(this) ToUint32(length) final_len final_len ] */
 	duk_put_prop_stridx_short(thr, -4, DUK_STRIDX_LENGTH);
 	return 1;
@@ -1555,7 +1564,7 @@ DUK_INTERNAL duk_ret_t duk_bi_array_prototype_reduce_shared(duk_hthread *thr) {
 
 	for (i = (idx_step >= 0 ? 0 : len - 1);
 	     i < len;  /* i >= 0 would always be true */
-	     i += idx_step) {
+	     i += (duk_uint32_t) idx_step) {
 		DUK_DDD(DUK_DDDPRINT("i=%ld, len=%ld, have_acc=%ld, top=%ld, acc=%!T",
 		                     (long) i, (long) len, (long) have_acc,
 		                     (long) duk_get_top(thr),

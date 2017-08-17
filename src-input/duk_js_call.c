@@ -274,7 +274,7 @@ DUK_LOCAL void duk__create_arguments_object(duk_hthread *thr,
 			DUK_DDD(DUK_DDDPRINT("strict function, index within formals (%ld < %ld)",
 			                     (long) idx, (long) n_formals));
 
-			duk_get_prop_index(thr, i_formals, idx);
+			duk_get_prop_index(thr, i_formals, (duk_uarridx_t) idx);
 			DUK_ASSERT(duk_is_string(thr, -1));
 
 			duk_dup_top(thr);  /* [ ... name name ] */
@@ -502,7 +502,7 @@ DUK_INTERNAL void duk_call_construct_postprocess(duk_hthread *thr, duk_small_uin
 	                                 DUK_TYPE_MASK_LIGHTFUNC)) {
 		DUK_DDD(DUK_DDDPRINT("replacement value"));
 	} else {
-		if (DUK_UNLIKELY(proxy_invariant)) {
+		if (DUK_UNLIKELY(proxy_invariant != 0U)) {
 			/* Proxy 'construct' return value invariant violated. */
 			DUK_ERROR_TYPE_INVALID_TRAP_RESULT(thr);
 		}
@@ -589,7 +589,7 @@ DUK_LOCAL void duk__handle_bound_chain_for_call(duk_hthread *thr,
 			duk_require_stack(thr, len);
 
 			tv_gap = duk_reserve_gap(thr, idx_func + 2, len);
-			duk_copy_tvals_incref(thr, tv_gap, tv_args, len);
+			duk_copy_tvals_incref(thr, tv_gap, tv_args, (duk_size_t) len);
 
 			/* [ ... func this <bound args> arg1 ... argN ] */
 
@@ -1439,7 +1439,9 @@ DUK_LOCAL duk_small_uint_t duk__call_setup_act_attempt_tailcall(duk_hthread *thr
 	duk_tval *tv1, *tv2;
 	duk_idx_t idx_args;
 	duk_small_uint_t flags1, flags2;
+#if defined(DUK_USE_DEBUGGER_SUPPORT)
 	duk_activation *prev_step_act;
+#endif
 
 	DUK_UNREF(entry_valstack_end_byteoff);
 
@@ -1467,14 +1469,14 @@ DUK_LOCAL duk_small_uint_t duk__call_setup_act_attempt_tailcall(duk_hthread *thr
 	 *   2. Constructor call, return value replacement object check.
 	 *   3. Proxy 'construct' trap call, return value invariant check.
 	 */
-	flags1 = ((act->flags & DUK_ACT_FLAG_CONSTRUCT) ? 1 : 0)
+	flags1 = (duk_small_uint_t) ((act->flags & DUK_ACT_FLAG_CONSTRUCT) ? 1 : 0)
 #if defined(DUK_USE_ES6_PROXY)
-	         | ((act->flags & DUK_ACT_FLAG_CONSTRUCT_PROXY) ? 2 : 0)
+	         | (duk_small_uint_t) ((act->flags & DUK_ACT_FLAG_CONSTRUCT_PROXY) ? 2 : 0)
 #endif
 	         ;
-	flags2 = ((call_flags & DUK_CALL_FLAG_CONSTRUCT) ? 1 : 0)
+	flags2 = (duk_small_uint_t) ((call_flags & DUK_CALL_FLAG_CONSTRUCT) ? 1 : 0)
 #if defined(DUK_USE_ES6_PROXY)
-	         | ((call_flags & DUK_CALL_FLAG_CONSTRUCT_PROXY) ? 2 : 0);
+	         | (duk_small_uint_t) ((call_flags & DUK_CALL_FLAG_CONSTRUCT_PROXY) ? 2 : 0);
 #endif
 	         ;
 	if (flags1 != flags2) {
@@ -1607,7 +1609,7 @@ DUK_LOCAL duk_small_uint_t duk__call_setup_act_attempt_tailcall(duk_hthread *thr
 	*out_nregs = ((duk_hcompfunc *) func)->nregs;
 	DUK_ASSERT(*out_nregs >= 0);
 	DUK_ASSERT(*out_nregs >= *out_nargs);
-	*out_vs_min_bytes = entry_valstack_bottom_byteoff + sizeof(duk_tval) * (*out_nregs + DUK_VALSTACK_INTERNAL_EXTRA);
+	*out_vs_min_bytes = entry_valstack_bottom_byteoff + sizeof(duk_tval) * ((duk_size_t) *out_nregs + DUK_VALSTACK_INTERNAL_EXTRA);
 
 
 #if defined(DUK_USE_NONSTD_FUNC_CALLER_PROPERTY)
@@ -1661,7 +1663,7 @@ DUK_LOCAL void duk__call_setup_act_not_tailcall(duk_hthread *thr,
 		 *  the Ecmascript call's retval_byteoff must be set for things to work.
 		 */
 
-		act->retval_byteoff = entry_valstack_bottom_byteoff + idx_func * sizeof(duk_tval);
+		act->retval_byteoff = entry_valstack_bottom_byteoff + (duk_size_t) idx_func * sizeof(duk_tval);
 	}
 
 	new_act->parent = act;
@@ -1701,7 +1703,7 @@ DUK_LOCAL void duk__call_setup_act_not_tailcall(duk_hthread *thr,
 			DUK_ASSERT(*out_nregs >= 0);
 			DUK_ASSERT(*out_nregs >= *out_nargs);
 			*out_vs_min_bytes = entry_valstack_bottom_byteoff +
-				sizeof(duk_tval) * (idx_func + 2 + *out_nregs + DUK_VALSTACK_INTERNAL_EXTRA);
+				sizeof(duk_tval) * ((duk_size_t) idx_func + 2U + (duk_size_t) *out_nregs + DUK_VALSTACK_INTERNAL_EXTRA);
 		} else {
 			/* True because of call target lookup checks. */
 			DUK_ASSERT(DUK_HOBJECT_IS_NATFUNC(func));
@@ -1710,7 +1712,7 @@ DUK_LOCAL void duk__call_setup_act_not_tailcall(duk_hthread *thr,
 			*out_nregs = *out_nargs;
 			if (*out_nargs >= 0) {
 				*out_vs_min_bytes = entry_valstack_bottom_byteoff +
-					sizeof(duk_tval) * (idx_func + 2 + *out_nregs + DUK_VALSTACK_API_ENTRY_MINIMUM + DUK_VALSTACK_INTERNAL_EXTRA);
+					sizeof(duk_tval) * ((duk_size_t) idx_func + 2U + (duk_size_t) *out_nregs + DUK_VALSTACK_API_ENTRY_MINIMUM + DUK_VALSTACK_INTERNAL_EXTRA);
 			} else {
 				/* Vararg function. */
 				duk_size_t valstack_top_byteoff = (duk_size_t) ((duk_uint8_t *) thr->valstack_top - ((duk_uint8_t *) thr->valstack));
@@ -1732,7 +1734,7 @@ DUK_LOCAL void duk__call_setup_act_not_tailcall(duk_hthread *thr,
 		*out_nargs = DUK_LFUNC_FLAGS_GET_NARGS(lf_flags);
 		if (*out_nargs != DUK_LFUNC_NARGS_VARARGS) {
 			*out_vs_min_bytes = entry_valstack_bottom_byteoff +
-				sizeof(duk_tval) * (idx_func + 2 + *out_nargs + DUK_VALSTACK_API_ENTRY_MINIMUM + DUK_VALSTACK_INTERNAL_EXTRA);
+				sizeof(duk_tval) * ((duk_size_t) idx_func + 2U + (duk_size_t) *out_nargs + DUK_VALSTACK_API_ENTRY_MINIMUM + DUK_VALSTACK_INTERNAL_EXTRA);
 		} else {
 			duk_size_t valstack_top_byteoff = (duk_size_t) ((duk_uint8_t *) thr->valstack_top - ((duk_uint8_t *) thr->valstack));
 			*out_vs_min_bytes = valstack_top_byteoff +
@@ -1751,7 +1753,7 @@ DUK_LOCAL void duk__call_setup_act_not_tailcall(duk_hthread *thr,
 #if defined(DUK_USE_DEBUGGER_SUPPORT)
 	act->prev_line = 0;
 #endif
-	act->bottom_byteoff = entry_valstack_bottom_byteoff + sizeof(duk_tval) * (idx_func + 2);
+	act->bottom_byteoff = entry_valstack_bottom_byteoff + sizeof(duk_tval) * ((duk_size_t) idx_func + 2U);
 #if 0
 	act->retval_byteoff = 0;   /* topmost activation retval_byteoff is considered garbage, no need to init */
 #endif
@@ -2000,7 +2002,7 @@ DUK_LOCAL duk_int_t duk__handle_call_raw(duk_hthread *thr,
 	 *  'this' binding, which replaces the current value at idx_func + 1.
 	 */
 
-	if (DUK_LIKELY(duk__resolve_target_fastpath_check(thr, idx_func, &func, call_flags))) {
+	if (DUK_LIKELY(duk__resolve_target_fastpath_check(thr, idx_func, &func, call_flags) != 0U)) {
 		DUK_DDD(DUK_DDDPRINT("fast path target resolve"));
 	} else {
 		DUK_DDD(DUK_DDDPRINT("slow path target resolve"));

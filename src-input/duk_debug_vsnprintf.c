@@ -791,8 +791,8 @@ DUK_LOCAL void duk__print_instr(duk__dprint_state *st, duk_instr_t ins) {
 	/* XXX: option to fix opcode length so it lines up nicely */
 
 	if (op == DUK_OP_JUMP) {
-		duk_int_t diff1 = DUK_DEC_ABC(ins) - DUK_BC_JUMP_BIAS;  /* from next pc */
-		duk_int_t diff2 = diff1 + 1;                            /* from curr pc */
+		duk_int_t diff1 = (duk_int_t) (DUK_DEC_ABC(ins) - DUK_BC_JUMP_BIAS);  /* from next pc */
+		duk_int_t diff2 = diff1 + 1;                                          /* from curr pc */
 
 		duk_fb_sprintf(fb, "%s %ld (to pc%c%ld)",
 		               (const char *) op_name, (long) diff1,
@@ -1034,7 +1034,7 @@ DUK_INTERNAL void duk_debug_format_funcptr(char *buf, duk_size_t buf_size, duk_u
 #else
 		ch = fptr[fptr_size - 1 - i];
 #endif
-		p += DUK_SNPRINTF((char *) p, left, "%02lx", (unsigned long) ch);
+		p += DUK_SNPRINTF((char *) p, (duk_size_t) left, "%02lx", (unsigned long) ch);
 	}
 }
 

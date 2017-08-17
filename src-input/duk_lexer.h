@@ -172,6 +172,8 @@ typedef void (*duk_re_range_callback)(void *user, duk_codepoint_t r1, duk_codepo
 
 #define DUK_TOK_MAXVAL                            101  /* inclusive */
 
+#define DUK_TOK_INVALID                           DUK_SMALL_UINT_MAX
+
 /* Convert heap string index to a token (reserved words) */
 #define DUK_STRIDX_TO_TOK(x)                        ((x) - DUK_STRIDX_START_RESERVED + DUK_TOK_START_RESERVED)
 
@@ -350,8 +352,8 @@ typedef void (*duk_re_range_callback)(void *user, duk_codepoint_t r1, duk_codepo
  * stale values otherwise.
  */
 struct duk_token {
-	duk_small_int_t t;            /* token type (with reserved word identification) */
-	duk_small_int_t t_nores;      /* token type (with reserved words as DUK_TOK_IDENTIFER) */
+	duk_small_uint_t t;           /* token type (with reserved word identification) */
+	duk_small_uint_t t_nores;     /* token type (with reserved words as DUK_TOK_IDENTIFER) */
 	duk_double_t num;             /* numeric value of token */
 	duk_hstring *str1;            /* string 1 of token (borrowed, stored to ctx->slot1_idx) */
 	duk_hstring *str2;            /* string 2 of token (borrowed, stored to ctx->slot2_idx) */
@@ -366,11 +368,11 @@ struct duk_token {
 
 /* A regexp token value. */
 struct duk_re_token {
-	duk_small_int_t t;           /* token type */
-	duk_small_int_t greedy;
-	duk_uint_fast32_t num;       /* numeric value (character, count) */
-	duk_uint_fast32_t qmin;
-	duk_uint_fast32_t qmax;
+	duk_small_uint_t t;          /* token type */
+	duk_small_uint_t greedy;
+	duk_uint32_t num;            /* numeric value (character, count) */
+	duk_uint32_t qmin;
+	duk_uint32_t qmax;
 };
 
 /* A structure for 'snapshotting' a point for rewinding */

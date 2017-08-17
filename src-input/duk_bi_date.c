@@ -234,7 +234,7 @@ DUK_LOCAL duk_bool_t duk__parse_string_iso8601_subset(duk_hthread *thr, const ch
 			}
 		} else {
 			duk_uint_fast32_t match_val;
-			duk_small_int_t sep_idx;
+			duk_small_uint_t sep_idx;
 
 			if (ndigits <= 0) {
 				goto reject;
@@ -989,7 +989,7 @@ DUK_LOCAL void duk__format_parts_iso8601(duk_int_t *parts, duk_int_t tzoffset, d
 		arg_hours = tmp / 60;
 		arg_minutes = tmp % 60;
 		DUK_ASSERT(arg_hours <= 24);  /* Even less is actually guaranteed for a valid tzoffset. */
-		arg_hours = arg_hours & 0x3fU;  /* For [0,24] this is a no-op, but fixes GCC 7 warning, see https://github.com/svaarala/duktape/issues/1602. */
+		arg_hours = arg_hours & 0x3f;  /* For [0,24] this is a no-op, but fixes GCC 7 warning, see https://github.com/svaarala/duktape/issues/1602. */
 
 		DUK_SNPRINTF(tzstr, sizeof(tzstr), fmt, (int) arg_hours, (int) arg_minutes);
 		tzstr[sizeof(tzstr) - 1] = (char) 0;
@@ -1178,7 +1178,7 @@ DUK_LOCAL duk_ret_t duk__set_part_helper(duk_hthread *thr, duk_small_uint_t flag
 			duk__twodigit_year_fixup(thr, (duk_idx_t) i);
 		}
 
-		dparts[idx] = duk_to_number(thr, i);
+		dparts[idx] = duk_to_number(thr, (duk_idx_t) i);
 
 		if (idx == DUK_DATE_IDX_DAY) {
 			/* Day-of-month is one-based in the API, but zero-based
@@ -1411,8 +1411,8 @@ static duk_uint16_t duk__date_magics[] = {
 };
 
 DUK_LOCAL duk_small_uint_t duk__date_get_indirect_magic(duk_hthread *thr) {
-	duk_small_int_t magicidx = (duk_small_uint_t) duk_get_current_magic(thr);
-	DUK_ASSERT(magicidx >= 0 && magicidx < (duk_small_int_t) (sizeof(duk__date_magics) / sizeof(duk_uint16_t)));
+	duk_small_uint_t magicidx = (duk_small_uint_t) duk_get_current_magic(thr);
+	DUK_ASSERT(magicidx < (duk_small_int_t) (sizeof(duk__date_magics) / sizeof(duk_uint16_t)));
 	return (duk_small_uint_t) duk__date_magics[magicidx];
 }
 

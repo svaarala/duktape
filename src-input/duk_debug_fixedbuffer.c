@@ -49,7 +49,7 @@ DUK_INTERNAL void duk_fb_sprintf(duk_fixedbuffer *fb, const char *fmt, ...) {
 			}
 		} else {
 			/* normal */
-			fb->offset += res;
+			fb->offset += (duk_size_t) res;
 		}
 	}
 	va_end(ap);

@@ -82,7 +82,7 @@ DUK_LOCAL_DECL void duk__enc_bufobj(duk_json_enc_ctx *js_ctx, duk_hbufobj *h_buf
 #if defined(DUK_USE_JSON_STRINGIFY_FASTPATH)
 DUK_LOCAL_DECL void duk__enc_buffer_json_fastpath(duk_json_enc_ctx *js_ctx, duk_hbuffer *h);
 #endif
-DUK_LOCAL_DECL void duk__enc_newline_indent(duk_json_enc_ctx *js_ctx, duk_int_t depth);
+DUK_LOCAL_DECL void duk__enc_newline_indent(duk_json_enc_ctx *js_ctx, duk_uint_t depth);
 
 /*
  *  Helper tables
@@ -281,7 +281,7 @@ DUK_LOCAL duk_uint_fast32_t duk__dec_decode_hex_escape(duk_json_dec_ctx *js_ctx,
 		DUK_ASSERT(duk_hex_dectab[0] == -1);
 		t = duk_hex_dectab[x & 0xff];
 		if (DUK_LIKELY(t >= 0)) {
-			res = (res * 16) + t;
+			res = (res * 16) + (duk_uint_fast32_t) t;
 		} else {
 			/* catches EOF and invalid digits */
 			goto syntax_error;
@@ -716,7 +716,7 @@ DUK_LOCAL void duk__dec_objarr_entry(duk_json_dec_ctx *js_ctx) {
 
 	/* c recursion check */
 
-	DUK_ASSERT(js_ctx->recursion_depth >= 0);
+	DUK_ASSERT_DISABLE(js_ctx->recursion_depth >= 0);  /* unsigned */
 	DUK_ASSERT(js_ctx->recursion_depth <= js_ctx->recursion_limit);
 	if (js_ctx->recursion_depth >= js_ctx->recursion_limit) {
 		DUK_ERROR_RANGE(thr, DUK_STR_JSONDEC_RECLIMIT);
@@ -1109,7 +1109,7 @@ DUK_LOCAL duk_uint8_t *duk__emit_esc_auto_fast(duk_json_enc_ctx *js_ctx, duk_uin
 
 #if defined(DUK_USE_JX)
 	if (DUK_LIKELY(cp < 0x100UL)) {
-		if (DUK_UNLIKELY(js_ctx->flag_ext_custom)) {
+		if (DUK_UNLIKELY(js_ctx->flag_ext_custom != 0U)) {
 			tmp = DUK__MKESC(2, DUK_ASC_BACKSLASH, DUK_ASC_LC_X);
 		} else {
 			tmp = DUK__MKESC(4, DUK_ASC_BACKSLASH, DUK_ASC_LC_U);
@@ -1120,7 +1120,7 @@ DUK_LOCAL duk_uint8_t *duk__emit_esc_auto_fast(duk_json_enc_ctx *js_ctx, duk_uin
 		tmp = DUK__MKESC(4, DUK_ASC_BACKSLASH, DUK_ASC_LC_U);
 	} else {
 #if defined(DUK_USE_JX)
-		if (DUK_LIKELY(js_ctx->flag_ext_custom)) {
+		if (DUK_LIKELY(js_ctx->flag_ext_custom != 0U)) {
 			tmp = DUK__MKESC(8, DUK_ASC_BACKSLASH, DUK_ASC_UC_U);
 		} else
 #endif
@@ -1667,7 +1667,7 @@ DUK_LOCAL void duk__enc_bufobj(duk_json_enc_ctx *js_ctx, duk_hbufobj *h_bufobj) 
  * directly related to indent depth.
  */
 #if defined(DUK_USE_PREFER_SIZE)
-DUK_LOCAL void duk__enc_newline_indent(duk_json_enc_ctx *js_ctx, duk_int_t depth) {
+DUK_LOCAL void duk__enc_newline_indent(duk_json_enc_ctx *js_ctx, duk_uint_t depth) {
 	DUK_ASSERT(js_ctx->h_gap != NULL);
 	DUK_ASSERT(DUK_HSTRING_GET_BYTELEN(js_ctx->h_gap) > 0);  /* caller guarantees */
 
@@ -1677,7 +1677,7 @@ DUK_LOCAL void duk__enc_newline_indent(duk_json_enc_ctx *js_ctx, duk_int_t depth
 	}
 }
 #else  /* DUK_USE_PREFER_SIZE */
-DUK_LOCAL void duk__enc_newline_indent(duk_json_enc_ctx *js_ctx, duk_int_t depth) {
+DUK_LOCAL void duk__enc_newline_indent(duk_json_enc_ctx *js_ctx, duk_uint_t depth) {
 	const duk_uint8_t *gap_data;
 	duk_size_t gap_len;
 	duk_size_t avail_bytes;   /* bytes of indent available for copying */
@@ -1769,7 +1769,7 @@ DUK_LOCAL void duk__enc_objarr_entry(duk_json_enc_ctx *js_ctx, duk_idx_t *entry_
 
 	/* C recursion check. */
 
-	DUK_ASSERT(js_ctx->recursion_depth >= 0);
+	DUK_ASSERT_DISABLE(js_ctx->recursion_depth >= 0);  /* unsigned */
 	DUK_ASSERT(js_ctx->recursion_depth <= js_ctx->recursion_limit);
 	if (js_ctx->recursion_depth >= js_ctx->recursion_limit) {
 		DUK_ERROR_RANGE(thr, DUK_STR_JSONENC_RECLIMIT);
@@ -1895,7 +1895,7 @@ DUK_LOCAL void duk__enc_object(duk_json_enc_ctx *js_ctx) {
 		DUK__UNEMIT_1(js_ctx);  /* eat trailing comma */
 		if (DUK_UNLIKELY(js_ctx->h_gap != NULL)) {
 			DUK_ASSERT(js_ctx->recursion_depth >= 1);
-			duk__enc_newline_indent(js_ctx, js_ctx->recursion_depth - 1);
+			duk__enc_newline_indent(js_ctx, js_ctx->recursion_depth - 1U);
 		}
 	}
 	DUK__EMIT_1(js_ctx, DUK_ASC_RCURLY);
@@ -1961,7 +1961,7 @@ DUK_LOCAL void duk__enc_array(duk_json_enc_ctx *js_ctx) {
 		DUK__UNEMIT_1(js_ctx);  /* eat trailing comma */
 		if (DUK_UNLIKELY(js_ctx->h_gap != NULL)) {
 			DUK_ASSERT(js_ctx->recursion_depth >= 1);
-			duk__enc_newline_indent(js_ctx, js_ctx->recursion_depth - 1);
+			duk__enc_newline_indent(js_ctx, js_ctx->recursion_depth - 1U);
 		}
 	}
 	DUK__EMIT_1(js_ctx, DUK_ASC_RBRACKET);
@@ -2365,7 +2365,7 @@ DUK_LOCAL duk_bool_t duk__json_stringify_fast_value(duk_json_enc_ctx *js_ctx, du
 		 * it (though it's OK to abort the fast path).
 		 */
 
-		DUK_ASSERT(js_ctx->recursion_depth >= 0);
+		DUK_ASSERT_DISABLE(js_ctx->recursion_depth >= 0);  /* unsigned */
 		DUK_ASSERT(js_ctx->recursion_depth <= js_ctx->recursion_limit);
 		if (js_ctx->recursion_depth >= js_ctx->recursion_limit) {
 			DUK_DD(DUK_DDPRINT("fast path recursion limit"));
@@ -2521,7 +2521,7 @@ DUK_LOCAL duk_bool_t duk__json_stringify_fast_value(duk_json_enc_ctx *js_ctx, du
 				DUK__UNEMIT_1(js_ctx);  /* eat trailing comma */
 				if (DUK_UNLIKELY(js_ctx->h_gap != NULL)) {
 					DUK_ASSERT(js_ctx->recursion_depth >= 1);
-					duk__enc_newline_indent(js_ctx, js_ctx->recursion_depth - 1);
+					duk__enc_newline_indent(js_ctx, js_ctx->recursion_depth - 1U);
 				}
 			}
 			DUK__EMIT_1(js_ctx, DUK_ASC_RCURLY);
@@ -2598,7 +2598,7 @@ DUK_LOCAL duk_bool_t duk__json_stringify_fast_value(duk_json_enc_ctx *js_ctx, du
 				DUK__UNEMIT_1(js_ctx);  /* eat trailing comma */
 				if (DUK_UNLIKELY(js_ctx->h_gap != NULL)) {
 					DUK_ASSERT(js_ctx->recursion_depth >= 1);
-					duk__enc_newline_indent(js_ctx, js_ctx->recursion_depth - 1);
+					duk__enc_newline_indent(js_ctx, js_ctx->recursion_depth - 1U);
 				}
 			}
 			DUK__EMIT_1(js_ctx, DUK_ASC_RBRACKET);
@@ -3051,7 +3051,7 @@ void duk_bi_json_stringify_helper(duk_hthread *thr,
 
 	h = duk_get_hobject(thr, idx_space);
 	if (h != NULL) {
-		int c = DUK_HOBJECT_GET_CLASS_NUMBER(h);
+		duk_small_uint_t c = DUK_HOBJECT_GET_CLASS_NUMBER(h);
 		if (c == DUK_HOBJECT_CLASS_NUMBER) {
 			duk_to_number(thr, idx_space);
 		} else if (c == DUK_HOBJECT_CLASS_STRING) {

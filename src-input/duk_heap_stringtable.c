@@ -479,7 +479,7 @@ DUK_LOCAL DUK_COLD DUK_NOINLINE void duk__strtable_resize_check(duk_heap *heap) 
 	DUK_STATS_INC(heap, stats_strtab_resize_check);
 
 	/* Prevent recursive resizing. */
-	if (DUK_UNLIKELY(heap->st_resizing)) {
+	if (DUK_UNLIKELY(heap->st_resizing != 0U)) {
 		DUK_D(DUK_DPRINT("prevent recursive strtable resize"));
 		return;
 	}
@@ -766,8 +766,8 @@ DUK_INTERNAL duk_hstring *duk_heap_strtable_intern(duk_heap *heap, const duk_uin
  */
 
 DUK_INTERNAL duk_hstring *duk_heap_strtable_intern_u32(duk_heap *heap, duk_uint32_t val) {
-	char buf[DUK__STRTAB_U32_MAX_STRLEN];
-	char *p;
+	duk_uint8_t buf[DUK__STRTAB_U32_MAX_STRLEN];
+	duk_uint8_t *p;
 
 	DUK_ASSERT(heap != NULL);
 

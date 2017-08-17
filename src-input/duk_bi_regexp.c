@@ -158,7 +158,7 @@ DUK_INTERNAL duk_ret_t duk_bi_regexp_prototype_flags(duk_hthread *thr) {
 /* Shared helper for providing .source, .global, .multiline, etc getters. */
 DUK_INTERNAL duk_ret_t duk_bi_regexp_prototype_shared_getter(duk_hthread *thr) {
 	duk_hstring *h_bc;
-	duk_small_int_t re_flags;
+	duk_small_uint_t re_flags;
 	duk_hobject *h;
 	duk_int_t magic;
 

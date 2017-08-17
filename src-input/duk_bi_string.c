@@ -170,7 +170,7 @@ DUK_LOCAL duk_ret_t duk__construct_from_codepoints(duk_hthread *thr, duk_bool_t 
 	n = duk_get_top(thr);
 
 	bw = &bw_alloc;
-	DUK_BW_INIT_PUSHBUF(thr, bw, n);  /* initial estimate for ASCII only codepoints */
+	DUK_BW_INIT_PUSHBUF(thr, bw, (duk_size_t) n);  /* initial estimate for ASCII only codepoints */
 
 	for (i = 0; i < n; i++) {
 		/* XXX: could improve bufwriter handling to write multiple codepoints
@@ -269,7 +269,7 @@ DUK_INTERNAL duk_ret_t duk_bi_string_prototype_char_at(duk_hthread *thr) {
 
 	(void) duk_push_this_coercible_to_string(thr);
 	pos = duk_to_int(thr, 0);
-	duk_substring(thr, -1, pos, pos + 1);
+	duk_substring(thr, -1, (duk_size_t) pos, (duk_size_t) (pos + 1));
 	return 1;
 }
 
@@ -308,7 +308,8 @@ DUK_INTERNAL duk_ret_t duk_bi_string_prototype_char_code_at(duk_hthread *thr) {
 		}
 		duk_push_nan(thr);
 	} else {
-		cp = (duk_uint32_t) duk_hstring_char_code_at_raw(thr, h, pos, (duk_bool_t) magic /*surrogate_aware*/);
+		DUK_ASSERT(pos >= 0);
+		cp = (duk_uint32_t) duk_hstring_char_code_at_raw(thr, h, (duk_uint_t) pos, (duk_bool_t) magic /*surrogate_aware*/);
 		duk_push_u32(thr, cp);
 	}
 	return 1;
@@ -456,7 +457,7 @@ DUK_INTERNAL duk_ret_t duk_bi_string_prototype_indexof_shared(duk_hthread *thr) 
 	duk_hstring *h_search;
 	duk_int_t clen_this;
 	duk_int_t cpos;
-	duk_small_int_t is_lastindexof = duk_get_current_magic(thr);  /* 0=indexOf, 1=lastIndexOf */
+	duk_small_uint_t is_lastindexof = (duk_small_uint_t) duk_get_current_magic(thr);  /* 0=indexOf, 1=lastIndexOf */
 
 	h_this = duk_push_this_coercible_to_string(thr);
 	DUK_ASSERT(h_this != NULL);
@@ -607,7 +608,7 @@ DUK_INTERNAL duk_ret_t duk_bi_string_prototype_replace(duk_hthread *thr) {
 
 			duk_get_prop_stridx_short(thr, -1, DUK_STRIDX_INDEX);
 			DUK_ASSERT(duk_is_number(thr, -1));
-			match_start_coff = duk_get_int(thr, -1);
+			match_start_coff = duk_get_uint(thr, -1);
 			duk_pop(thr);
 
 			duk_get_prop_index(thr, -1, 0);
@@ -626,7 +627,7 @@ DUK_INTERNAL duk_ret_t duk_bi_string_prototype_replace(duk_hthread *thr) {
 				DUK_DDD(DUK_DDDPRINT("empty match, bump lastIndex: %ld -> %ld",
 				                     (long) last_index, (long) (last_index + 1)));
 				duk_pop(thr);
-				duk_push_int(thr, last_index + 1);
+				duk_push_uint(thr, (duk_uint_t) (last_index + 1));
 				duk_put_prop_stridx_short(thr, 0, DUK_STRIDX_LAST_INDEX);
 			}
 
@@ -708,7 +709,7 @@ DUK_INTERNAL duk_ret_t duk_bi_string_prototype_replace(duk_hthread *thr) {
 				duk_require_stack(thr, match_caps + 2);
 				for (idx = 0; idx < match_caps; idx++) {
 					/* match followed by capture(s) */
-					duk_get_prop_index(thr, 4, idx);
+					duk_get_prop_index(thr, 4, (duk_uarridx_t) idx);
 				}
 			} else {
 #else  /* DUK_USE_REGEXP_SUPPORT */
@@ -717,7 +718,7 @@ DUK_INTERNAL duk_ret_t duk_bi_string_prototype_replace(duk_hthread *thr) {
 				/* match == search string, by definition */
 				duk_dup_0(thr);
 			}
-			duk_push_int(thr, match_start_coff);
+			duk_push_uint(thr, (duk_uint_t) match_start_coff);
 			duk_dup_2(thr);
 
 			/* [ ... replacer match [captures] match_char_offset input ] */
@@ -744,7 +745,8 @@ DUK_INTERNAL duk_ret_t duk_bi_string_prototype_replace(duk_hthread *thr) {
 				if (ch1 != DUK_ASC_DOLLAR) {
 					goto repl_write;
 				}
-				left = r_end - r;
+				DUK_ASSERT(r <= r_end);
+				left = (duk_size_t) (r_end - r);
 
 				if (left <= 0) {
 					goto repl_write;
@@ -968,7 +970,7 @@ DUK_INTERNAL duk_ret_t duk_bi_string_prototype_split(duk_hthread *thr) {
 
 			duk_get_prop_stridx_short(thr, -1, DUK_STRIDX_INDEX);
 			DUK_ASSERT(duk_is_number(thr, -1));
-			match_start_coff = duk_get_int(thr, -1);
+			match_start_coff = duk_get_uint(thr, -1);
 			match_start_boff = duk_heap_strcache_offset_char2byte(thr, h_input, match_start_coff);
 			duk_pop(thr);
 
@@ -980,13 +982,13 @@ DUK_INTERNAL duk_ret_t duk_bi_string_prototype_split(duk_hthread *thr) {
 
 			duk_get_prop_stridx_short(thr, 0, DUK_STRIDX_LAST_INDEX);
 			DUK_ASSERT(duk_is_number(thr, -1));
-			match_end_coff = duk_get_int(thr, -1);
+			match_end_coff = duk_get_uint(thr, -1);
 			match_end_boff = duk_heap_strcache_offset_char2byte(thr, h_input, match_end_coff);
 			duk_pop(thr);
 
 			/* empty match -> bump and continue */
 			if (prev_match_end_boff == match_end_boff) {
-				duk_push_int(thr, match_end_coff + 1);
+				duk_push_uint(thr, (duk_uint_t) (match_end_coff + 1));
 				duk_put_prop_stridx_short(thr, 0, DUK_STRIDX_LAST_INDEX);
 				duk_pop(thr);
 				continue;
@@ -1277,7 +1279,7 @@ DUK_INTERNAL duk_ret_t duk_bi_string_prototype_match(duk_hthread *thr) {
 		prev_last_index = this_index;
 
 		duk_get_prop_index(thr, -1, 0);  /* match string */
-		duk_put_prop_index(thr, 2, arr_idx);
+		duk_put_prop_index(thr, 2, (duk_uarridx_t) arr_idx);
 		arr_idx++;
 		duk_pop(thr);  /* res_obj */
 	}
@@ -1502,7 +1504,7 @@ DUK_INTERNAL duk_ret_t duk_bi_string_prototype_startswith_endswith(duk_hthread *
 		}
 		DUK_ASSERT(pos >= 0 && pos <= len);
 
-		p_cmp_start += duk_heap_strcache_offset_char2byte(thr, h, pos);
+		p_cmp_start += duk_heap_strcache_offset_char2byte(thr, h, (duk_uint_fast32_t) pos);
 	}
 
 	/* The main comparison can be done using a memcmp() rather than
@@ -1514,7 +1516,7 @@ DUK_INTERNAL duk_ret_t duk_bi_string_prototype_startswith_endswith(duk_hthread *
 
 	result = 0;
 	if (p_cmp_start >= DUK_HSTRING_GET_DATA(h) &&
-	    p_cmp_start - (const duk_uint8_t *) DUK_HSTRING_GET_DATA(h) + blen_search <= DUK_HSTRING_GET_BYTELEN(h)) {
+	    (duk_size_t) (p_cmp_start - (const duk_uint8_t *) DUK_HSTRING_GET_DATA(h)) + blen_search <= DUK_HSTRING_GET_BYTELEN(h)) {
 		if (DUK_MEMCMP((const void *) p_cmp_start,
 		               (const void *) DUK_HSTRING_GET_DATA(h_search),
 		               (size_t) blen_search) == 0) {

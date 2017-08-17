@@ -82,17 +82,17 @@ DUK_INTERNAL void duk_hobject_pc2line_pack(duk_hthread *thr, duk_compiler_instr 
 				duk_be_encode(be_ctx, 0, 1);
 			} else if (diff_line >= 1 && diff_line <= 4) {
 				/* 1 0 <2 bits> */
-				duk_be_encode(be_ctx, (0x02 << 2) + (diff_line - 1), 4);
+				duk_be_encode(be_ctx, (duk_uint32_t) ((0x02 << 2) + (diff_line - 1)), 4);
 			} else if (diff_line >= -0x80 && diff_line <= 0x7f) {
 				/* 1 1 0 <8 bits> */
 				DUK_ASSERT(diff_line + 0x80 >= 0 && diff_line + 0x80 <= 0xff);
-				duk_be_encode(be_ctx, (0x06 << 8) + (diff_line + 0x80), 11);
+				duk_be_encode(be_ctx, (duk_uint32_t) ((0x06 << 8) + (diff_line + 0x80)), 11);
 			} else {
 				/* 1 1 1 <32 bits>
 				 * Encode in two parts to avoid bitencode 24-bit limitation
 				 */
-				duk_be_encode(be_ctx, (0x07 << 16) + ((next_line >> 16) & 0xffffU), 19);
-				duk_be_encode(be_ctx, next_line & 0xffffU, 16);
+				duk_be_encode(be_ctx, (duk_uint32_t) ((0x07 << 16) + ((next_line >> 16) & 0xffff)), 19);
+				duk_be_encode(be_ctx, (duk_uint32_t) (next_line & 0xffff), 16);
 			}
 
 			curr_line = next_line;
