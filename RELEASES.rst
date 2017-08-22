@@ -2950,6 +2950,10 @@ Planned
 * Add DUK_HIDDEN_SYMBOL(), DUK_GLOBAL_SYMBOL(), DUK_LOCAL_SYMBOL(), and
   DUK_WELLKNOWN_SYMBOL() macros for creating symbol literals (GH-1673)
 
+* Change duk_bool_t type to unsigned integer (previously signed integer)
+  and make DUK_TYPE_xxx, DUK_TYPE_MASK_xxx, and flags constants unsigned
+  in the API header (GH-1688)
+
 * Add support for Proxy 'apply' and 'construct' traps (GH-1601)
 
 * Add minimal new.target support, evaluates to undefined for non-constructor
@@ -2985,6 +2989,11 @@ Planned
 
 * Make error message summary strings longer (32 -> 96 character) to better
   capture error messages for e.g. uncaught errors (GH-1653)
+
+* Add an explicit buffer size wrap check for Buffer.concat() (GH-1688)
+
+* Reject an attempt to unpack an array with >= 2G elements cleanly with a
+  RangeError rather than failing during the process (GH-1688)
 
 * Add DUK_USE_GET_MONOTONIC_TIME() to allow an application to provide a
   monotonic time source (similar to clock_gettime() CLOCK_MONOTONIC) which
@@ -3078,6 +3087,8 @@ Planned
   module-duktape, module-node, and duk-v1-compat extras (GH-1646)
 
 * Fix harmless GCC 7 -Wextra warning in Date built-in (GH-1646)
+
+* Fix -Wsign-conversion warnings for GCC / Clang (GH-1688)
 
 * Fix pointer size detection for MSVC2015 ARM32/ARM64 (GH-1577, GH-1675)
 
