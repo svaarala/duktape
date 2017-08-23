@@ -636,7 +636,7 @@ DUK_LOCAL void duk__sweep_stringtable(duk_heap *heap, duk_size_t *out_count_keep
  *  Sweep heap.
  */
 
-DUK_LOCAL void duk__sweep_heap(duk_heap *heap, duk_int_t flags, duk_size_t *out_count_keep) {
+DUK_LOCAL void duk__sweep_heap(duk_heap *heap, duk_small_uint_t flags, duk_size_t *out_count_keep) {
 	duk_heaphdr *prev;  /* last element that was left in the heap */
 	duk_heaphdr *curr;
 	duk_heaphdr *next;

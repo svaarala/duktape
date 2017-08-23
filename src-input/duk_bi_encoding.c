@@ -196,7 +196,7 @@ DUK_LOCAL void duk__utf8_encode_char(void *udata, duk_codepoint_t codepoint) {
 	/* Codepoint may be original input, a decoded surrogate pair, or may
 	 * have been replaced with U+FFFD.
 	 */
-	enc_ctx->out += duk_unicode_encode_xutf8(codepoint, enc_ctx->out);
+	enc_ctx->out += duk_unicode_encode_xutf8((duk_ucodepoint_t) codepoint, enc_ctx->out);
 }
 #endif  /* DUK_USE_ENCODING_BUILTINS */
 
@@ -306,7 +306,7 @@ DUK_LOCAL duk_ret_t duk__decode_helper(duk_hthread *thr, duk__decode_context *de
 			}
 		}
 
-		out += duk_unicode_encode_cesu8(codepoint, out);
+		out += duk_unicode_encode_cesu8((duk_ucodepoint_t) codepoint, out);
 		DUK_ASSERT(out <= output + (3 + (3 * len)));
 	}
 

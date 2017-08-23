@@ -95,7 +95,7 @@ DUK_LOCAL duk_uint8_t *duk__dump_string_prop(duk_hthread *thr, duk_uint8_t *p, d
 		DUK_ASSERT(h_str != NULL);
 	}
 	DUK_ASSERT(DUK_HSTRING_MAX_BYTELEN <= 0x7fffffffUL);  /* ensures no overflow */
-	p = DUK_BW_ENSURE_RAW(thr, bw_ctx, 4 + DUK_HSTRING_GET_BYTELEN(h_str), p);
+	p = DUK_BW_ENSURE_RAW(thr, bw_ctx, 4U + DUK_HSTRING_GET_BYTELEN(h_str), p);
 	p = duk__dump_hstring_raw(p, h_str);
 	return p;
 }
@@ -109,10 +109,10 @@ DUK_LOCAL duk_uint8_t *duk__dump_buffer_prop(duk_hthread *thr, duk_uint8_t *p, d
 		h_buf = DUK_TVAL_GET_BUFFER(tv);
 		DUK_ASSERT(h_buf != NULL);
 		DUK_ASSERT(DUK_HBUFFER_MAX_BYTELEN <= 0x7fffffffUL);  /* ensures no overflow */
-		p = DUK_BW_ENSURE_RAW(thr, bw_ctx, 4 + DUK_HBUFFER_GET_SIZE(h_buf), p);
+		p = DUK_BW_ENSURE_RAW(thr, bw_ctx, 4U + DUK_HBUFFER_GET_SIZE(h_buf), p);
 		p = duk__dump_hbuffer_raw(thr, p, h_buf);
 	} else {
-		p = DUK_BW_ENSURE_RAW(thr, bw_ctx, 4, p);
+		p = DUK_BW_ENSURE_RAW(thr, bw_ctx, 4U, p);
 		DUK_RAW_WRITE_U32_BE(p, 0);
 	}
 	return p;
@@ -128,7 +128,7 @@ DUK_LOCAL duk_uint8_t *duk__dump_uint32_prop(duk_hthread *thr, duk_uint8_t *p, d
 	} else {
 		val = def_value;
 	}
-	p = DUK_BW_ENSURE_RAW(thr, bw_ctx, 4, p);
+	p = DUK_BW_ENSURE_RAW(thr, bw_ctx, 4U, p);
 	DUK_RAW_WRITE_U32_BE(p, val);
 	return p;
 }
@@ -169,12 +169,12 @@ DUK_LOCAL duk_uint8_t *duk__dump_varmap(duk_hthread *thr, duk_uint8_t *p, duk_bu
 #endif
 
 			DUK_ASSERT(DUK_HSTRING_MAX_BYTELEN <= 0x7fffffffUL);  /* ensures no overflow */
-			p = DUK_BW_ENSURE_RAW(thr, bw_ctx, 4 + DUK_HSTRING_GET_BYTELEN(key) + 4, p);
+			p = DUK_BW_ENSURE_RAW(thr, bw_ctx, 4U + DUK_HSTRING_GET_BYTELEN(key) + 4U, p);
 			p = duk__dump_hstring_raw(p, key);
 			DUK_RAW_WRITE_U32_BE(p, val);
 		}
 	}
-	p = DUK_BW_ENSURE_RAW(thr, bw_ctx, 4, p);
+	p = DUK_BW_ENSURE_RAW(thr, bw_ctx, 4U, p);
 	DUK_RAW_WRITE_U32_BE(p, 0);  /* end of _Varmap */
 	return p;
 }
@@ -197,7 +197,7 @@ DUK_LOCAL duk_uint8_t *duk__dump_formals(duk_hthread *thr, duk_uint8_t *p, duk_b
 		DUK_ASSERT(DUK_HOBJECT_IS_ARRAY((duk_hobject *) h));
 		DUK_ASSERT(h->length <= DUK_HOBJECT_GET_ASIZE((duk_hobject *) h));
 
-		p = DUK_BW_ENSURE_RAW(thr, bw_ctx, 4, p);
+		p = DUK_BW_ENSURE_RAW(thr, bw_ctx, 4U, p);
 		DUK_ASSERT(h->length != DUK__NO_FORMALS);  /* limits */
 		DUK_RAW_WRITE_U32_BE(p, h->length);
 
@@ -214,12 +214,12 @@ DUK_LOCAL duk_uint8_t *duk__dump_formals(duk_hthread *thr, duk_uint8_t *p, duk_b
 			DUK_ASSERT(DUK_HSTRING_GET_BYTELEN(varname) >= 1);
 
 			DUK_ASSERT(DUK_HSTRING_MAX_BYTELEN <= 0x7fffffffUL);  /* ensures no overflow */
-			p = DUK_BW_ENSURE_RAW(thr, bw_ctx, 4 + DUK_HSTRING_GET_BYTELEN(varname), p);
+			p = DUK_BW_ENSURE_RAW(thr, bw_ctx, 4U + DUK_HSTRING_GET_BYTELEN(varname), p);
 			p = duk__dump_hstring_raw(p, varname);
 		}
 	} else {
 		DUK_DD(DUK_DDPRINT("dumping function without _Formals, emit marker to indicate missing _Formals"));
-		p = DUK_BW_ENSURE_RAW(thr, bw_ctx, 4, p);
+		p = DUK_BW_ENSURE_RAW(thr, bw_ctx, 4U, p);
 		DUK_RAW_WRITE_U32_BE(p, DUK__NO_FORMALS);  /* marker: no formals */
 	}
 	return p;
@@ -256,7 +256,7 @@ static duk_uint8_t *duk__dump_func(duk_hthread *thr, duk_hcompfunc *func, duk_bu
 
 	DUK_ASSERT(DUK_USE_ESBC_MAX_BYTES <= 0x7fffffffUL);  /* ensures no overflow */
 	count_instr = (duk_uint32_t) DUK_HCOMPFUNC_GET_CODE_COUNT(thr->heap, func);
-	p = DUK_BW_ENSURE_RAW(thr, bw_ctx, 3 * 4 + 2 * 2 + 3 * 4 + count_instr * 4, p);
+	p = DUK_BW_ENSURE_RAW(thr, bw_ctx, 3U * 4U + 2U * 2U + 3U * 4U + count_instr * 4U, p);
 
 	/* Fixed header info. */
 	tmp32 = count_instr;
@@ -311,12 +311,12 @@ static duk_uint8_t *duk__dump_func(duk_hthread *thr, duk_hcompfunc *func, duk_bu
 			h_str = DUK_TVAL_GET_STRING(tv);
 			DUK_ASSERT(h_str != NULL);
 			DUK_ASSERT(DUK_HSTRING_MAX_BYTELEN <= 0x7fffffffUL);  /* ensures no overflow */
-			p = DUK_BW_ENSURE_RAW(thr, bw_ctx, 1 + 4 + DUK_HSTRING_GET_BYTELEN(h_str), p),
+			p = DUK_BW_ENSURE_RAW(thr, bw_ctx, 1U + 4U + DUK_HSTRING_GET_BYTELEN(h_str), p),
 			*p++ = DUK__SER_STRING;
 			p = duk__dump_hstring_raw(p, h_str);
 		} else {
 			DUK_ASSERT(DUK_TVAL_IS_NUMBER(tv));
-			p = DUK_BW_ENSURE_RAW(thr, bw_ctx, 1 + 8, p);
+			p = DUK_BW_ENSURE_RAW(thr, bw_ctx, 1U + 8U, p);
 			*p++ = DUK__SER_NUMBER;
 			d = DUK_TVAL_GET_NUMBER(tv);
 			DUK_RAW_WRITE_DOUBLE_BE(p, d);
@@ -423,7 +423,7 @@ static duk_uint8_t *duk__load_func(duk_hthread *thr, duk_uint8_t *p, duk_uint8_t
 	 * inner functions being loaded.  Require enough space to handle
 	 * large functions correctly.
 	 */
-	duk_require_stack(thr, 2 + count_const + count_funcs);
+	duk_require_stack(thr, (duk_idx_t) (2 + count_const + count_funcs));
 	idx_base = duk_get_top(thr);
 
 	/* Push function object, init flags etc.  This must match

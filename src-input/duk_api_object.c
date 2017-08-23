@@ -95,7 +95,7 @@ DUK_LOCAL duk_bool_t duk__put_prop_shared(duk_hthread *thr, duk_idx_t obj_idx, d
 	duk_tval *tv_obj;
 	duk_tval *tv_key;
 	duk_tval *tv_val;
-	duk_small_int_t throw_flag;
+	duk_bool_t throw_flag;
 	duk_bool_t rc;
 
 	/* Note: copying tv_obj and tv_key to locals to shield against a valstack
@@ -173,7 +173,7 @@ DUK_INTERNAL duk_bool_t duk_put_prop_stridx_short_raw(duk_hthread *thr, duk_uint
 DUK_EXTERNAL duk_bool_t duk_del_prop(duk_hthread *thr, duk_idx_t obj_idx) {
 	duk_tval *tv_obj;
 	duk_tval *tv_key;
-	duk_small_int_t throw_flag;
+	duk_bool_t throw_flag;
 	duk_bool_t rc;
 
 	DUK_ASSERT_API_ENTRY(thr);

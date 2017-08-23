@@ -40,7 +40,7 @@ typedef struct {
 	duk_hobject *env;
 	duk_hobject *holder;      /* for object-bound identifiers */
 	duk_tval *value;          /* for register-bound and declarative env identifiers */
-	duk_int_t attrs;          /* property attributes for identifier (relevant if value != NULL) */
+	duk_uint_t attrs;         /* property attributes for identifier (relevant if value != NULL) */
 	duk_bool_t has_this;      /* for object-bound identifiers: provide 'this' binding */
 } duk__id_lookup_result;
 
@@ -926,8 +926,8 @@ duk_bool_t duk__get_identifier_reference(duk_hthread *thr,
 
 	sanity = DUK_HOBJECT_PROTOTYPE_CHAIN_SANITY;
 	while (env != NULL) {
-		duk_small_int_t cl;
-		duk_int_t attrs;
+		duk_small_uint_t cl;
+		duk_uint_t attrs;
 
 		DUK_DDD(DUK_DDDPRINT("duk__get_identifier_reference, name=%!O, considering env=%p -> %!iO",
 		                     (duk_heaphdr *) name,
@@ -1490,7 +1490,7 @@ duk_bool_t duk__declvar_helper(duk_hthread *thr,
                                duk_hobject *env,
                                duk_hstring *name,
                                duk_tval *val,
-                               duk_small_int_t prop_flags,
+                               duk_small_uint_t prop_flags,
                                duk_bool_t is_func_decl) {
 	duk_hobject *holder;
 	duk_bool_t parents;
@@ -1532,7 +1532,7 @@ duk_bool_t duk__declvar_helper(duk_hthread *thr,
 	if (duk__get_identifier_reference(thr, env, name, NULL, parents, &ref)) {
 		duk_int_t e_idx;
 		duk_int_t h_idx;
-		duk_small_int_t flags;
+		duk_small_uint_t flags;
 
 		/*
 		 *  Variable already declared, ignore re-declaration.
@@ -1718,7 +1718,7 @@ duk_bool_t duk_js_declvar_activation(duk_hthread *thr,
                                      duk_activation *act,
                                      duk_hstring *name,
                                      duk_tval *val,
-                                     duk_small_int_t prop_flags,
+                                     duk_small_uint_t prop_flags,
                                      duk_bool_t is_func_decl) {
 	duk_hobject *env;
 	duk_tval tv_val_copy;

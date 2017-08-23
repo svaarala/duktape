@@ -13,7 +13,7 @@ summary: |
 example: |
   duk_push_boolean(ctx, 0);  /* -> [ ... false ] */
   duk_push_boolean(ctx, 1);  /* -> [ ... false true ] */
-  duk_push_boolean(ctx, -3);  /* -> [ ... false true true ] */
+  duk_push_boolean(ctx, 123);  /* -> [ ... false true true ] */
 
 tags:
   - stack

@@ -1009,7 +1009,7 @@ duk_codepoint_t duk__case_transform_helper(duk_hthread *thr,
  *  Replace valstack top with case converted version.
  */
 
-DUK_INTERNAL void duk_unicode_case_convert_string(duk_hthread *thr, duk_small_int_t uppercase) {
+DUK_INTERNAL void duk_unicode_case_convert_string(duk_hthread *thr, duk_bool_t uppercase) {
 	duk_hstring *h_input;
 	duk_bufwriter_ctx bw_alloc;
 	duk_bufwriter_ctx *bw;

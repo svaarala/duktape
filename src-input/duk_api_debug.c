@@ -19,7 +19,7 @@ DUK_EXTERNAL void duk_push_context_dump(duk_hthread *thr) {
 	duk_push_array(thr);
 	for (idx = 0; idx < top; idx++) {
 		duk_dup(thr, idx);
-		duk_put_prop_index(thr, -2, idx);
+		duk_put_prop_index(thr, -2, (duk_uarridx_t) idx);
 	}
 
 	/* XXX: conversion errors should not propagate outwards.

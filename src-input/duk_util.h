@@ -301,7 +301,7 @@ struct duk_bufwriter_ctx {
 #define DUK_BW_WRITE_RAW_XUTF8(thr,bw_ctx,cp) do { \
 		duk_ucodepoint_t duk__cp; \
 		duk_small_int_t duk__enc_len; \
-		duk__cp = (cp); \
+		duk__cp = (duk_ucodepoint_t) (cp); \
 		DUK_BW_ASSERT_SPACE((thr), (bw_ctx), duk_unicode_get_xutf8_length(duk__cp)); \
 		duk__enc_len = duk_unicode_encode_xutf8(duk__cp, (bw_ctx)->p); \
 		(bw_ctx)->p += duk__enc_len; \

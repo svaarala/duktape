@@ -19,6 +19,12 @@ Upgrading from Duktape 2.1
 No action (other than recompiling) should be needed for most users to upgrade
 from Duktape v2.1.x.  Note the following:
 
+* The typedef for duk_bool_t was changed from duk_small_int_t (typically
+  'int') to duk_small_uint_t (typically 'unsigned int').  API constants for
+  DUK_TYPE_xxx, DUK_TYPE_MASK_xxx, flags, etc were changed to unsigned
+  (e.g. '(1U << 3)) to match their C type.  These changes may cause some
+  sign conversion warnings in application call sites.
+
 * There are public API macros to create different Symbol types as C literals.
   For example, DUK_HIDDEN_SYMBOL("myPointer") can now be used instead of
   manually creating the internal representation ("\xFF" "myPointer").

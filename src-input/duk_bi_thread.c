@@ -55,7 +55,7 @@ DUK_INTERNAL duk_ret_t duk_bi_thread_resume(duk_hthread *ctx) {
 	duk_hthread *thr = (duk_hthread *) ctx;
 	duk_hthread *thr_resume;
 	duk_hobject *caller_func;
-	duk_small_int_t is_error;
+	duk_small_uint_t is_error;
 
 	DUK_DDD(DUK_DDDPRINT("Duktape.Thread.resume(): thread=%!T, value=%!T, is_error=%!T",
 	                     (duk_tval *) duk_get_tval(thr, 0),
@@ -66,7 +66,7 @@ DUK_INTERNAL duk_ret_t duk_bi_thread_resume(duk_hthread *ctx) {
 	DUK_ASSERT(thr->heap->curr_thread == thr);
 
 	thr_resume = duk_require_hthread(thr, 0);
-	is_error = (duk_small_int_t) duk_to_boolean(thr, 2);
+	is_error = (duk_small_uint_t) duk_to_boolean(thr, 2);
 	duk_set_top(thr, 2);
 
 	/* [ thread value ] */
@@ -206,7 +206,7 @@ DUK_INTERNAL duk_ret_t duk_bi_thread_resume(duk_hthread *ctx) {
 #if defined(DUK_USE_COROUTINE_SUPPORT)
 DUK_INTERNAL duk_ret_t duk_bi_thread_yield(duk_hthread *thr) {
 	duk_hobject *caller_func;
-	duk_small_int_t is_error;
+	duk_small_uint_t is_error;
 
 	DUK_DDD(DUK_DDDPRINT("Duktape.Thread.yield(): value=%!T, is_error=%!T",
 	                     (duk_tval *) duk_get_tval(thr, 0),
@@ -215,7 +215,7 @@ DUK_INTERNAL duk_ret_t duk_bi_thread_yield(duk_hthread *thr) {
 	DUK_ASSERT(thr->state == DUK_HTHREAD_STATE_RUNNING);
 	DUK_ASSERT(thr->heap->curr_thread == thr);
 
-	is_error = (duk_small_int_t) duk_to_boolean(thr, 1);
+	is_error = (duk_small_uint_t) duk_to_boolean(thr, 1);
 	duk_set_top(thr, 1);
 
 	/* [ value ] */

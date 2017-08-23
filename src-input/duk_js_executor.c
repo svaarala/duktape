@@ -191,7 +191,7 @@ DUK_LOCAL DUK__INLINE_PERF void duk__vm_arith_add(duk_hthread *thr, duk_tval *tv
 	duk_replace(thr, (duk_idx_t) idx_z);  /* side effects */
 }
 
-DUK_LOCAL DUK__INLINE_PERF void duk__vm_arith_binary_op(duk_hthread *thr, duk_tval *tv_x, duk_tval *tv_y, duk_idx_t idx_z, duk_small_uint_fast_t opcode) {
+DUK_LOCAL DUK__INLINE_PERF void duk__vm_arith_binary_op(duk_hthread *thr, duk_tval *tv_x, duk_tval *tv_y, duk_uint_fast_t idx_z, duk_small_uint_fast_t opcode) {
 	/*
 	 *  Arithmetic operations other than '+' have number-only semantics
 	 *  and are implemented here.  The separate switch-case here means a
@@ -336,7 +336,7 @@ DUK_LOCAL DUK__INLINE_PERF void duk__vm_arith_binary_op(duk_hthread *thr, duk_tv
 
 #if defined(DUK_USE_EXEC_PREFER_SIZE)
 	duk_push_number(thr, du.d);  /* will NaN normalize result */
-	duk_replace(thr, idx_z);
+	duk_replace(thr, (duk_idx_t) idx_z);
 #else  /* DUK_USE_EXEC_PREFER_SIZE */
 	/* important to use normalized NaN with 8-byte tagged types */
 	DUK_DBLUNION_NORMALIZE_NAN_CHECK(&du);
@@ -474,7 +474,7 @@ DUK_LOCAL DUK__INLINE_PERF void duk__vm_bitwise_binary_op(duk_hthread *thr, duk_
 }
 
 /* In-place unary operation. */
-DUK_LOCAL DUK__INLINE_PERF void duk__vm_arith_unary_op(duk_hthread *thr, duk_idx_t idx_src, duk_idx_t idx_dst, duk_small_uint_fast_t opcode) {
+DUK_LOCAL DUK__INLINE_PERF void duk__vm_arith_unary_op(duk_hthread *thr, duk_uint_fast_t idx_src, duk_uint_fast_t idx_dst, duk_small_uint_fast_t opcode) {
 	/*
 	 *  Arithmetic operations other than '+' have number-only semantics
 	 *  and are implemented here.  The separate switch-case here means a
@@ -489,10 +489,10 @@ DUK_LOCAL DUK__INLINE_PERF void duk__vm_arith_unary_op(duk_hthread *thr, duk_idx
 
 	DUK_ASSERT(thr != NULL);
 	DUK_ASSERT(opcode == DUK_OP_UNM || opcode == DUK_OP_UNP);
-	DUK_ASSERT(idx_src >= 0);
-	DUK_ASSERT(idx_dst >= 0);
+	DUK_ASSERT_DISABLE(idx_src >= 0);
+	DUK_ASSERT_DISABLE(idx_dst >= 0);
 
-	tv = DUK_GET_TVAL_POSIDX(thr, idx_src);
+	tv = DUK_GET_TVAL_POSIDX(thr, (duk_idx_t) idx_src);
 
 #if defined(DUK_USE_FASTINT)
 	if (DUK_TVAL_IS_FASTINT(tv)) {
@@ -506,7 +506,7 @@ DUK_LOCAL DUK__INLINE_PERF void duk__vm_arith_unary_op(duk_hthread *thr, duk_idx
 			 */
 			if (DUK_LIKELY(v1 != DUK_FASTINT_MIN && v1 != 0)) {
 				v2 = -v1;
-				tv = DUK_GET_TVAL_POSIDX(thr, idx_dst);
+				tv = DUK_GET_TVAL_POSIDX(thr, (duk_idx_t) idx_dst);
 				DUK_TVAL_SET_FASTINT_UPDREF(thr, tv, v2);
 				return;
 			}
@@ -514,7 +514,7 @@ DUK_LOCAL DUK__INLINE_PERF void duk__vm_arith_unary_op(duk_hthread *thr, duk_idx
 			/* ToNumber() for a fastint is a no-op. */
 			DUK_ASSERT(opcode == DUK_OP_UNP);
 			v2 = v1;
-			tv = DUK_GET_TVAL_POSIDX(thr, idx_dst);
+			tv = DUK_GET_TVAL_POSIDX(thr, (duk_idx_t) idx_dst);
 			DUK_TVAL_SET_FASTINT_UPDREF(thr, tv, v2);
 			return;
 		}
@@ -535,7 +535,7 @@ DUK_LOCAL DUK__INLINE_PERF void duk__vm_arith_unary_op(duk_hthread *thr, duk_idx
 		du.d = d1;
 		DUK_ASSERT(DUK_DBLUNION_IS_NORMALIZED(&du));
 #if defined(DUK_USE_FASTINT)
-		tv = DUK_GET_TVAL_POSIDX(thr, idx_dst);
+		tv = DUK_GET_TVAL_POSIDX(thr, (duk_idx_t) idx_dst);
 		DUK_TVAL_SET_NUMBER_CHKFAST_UPDREF(thr, tv, du.d);  /* always 'fast', i.e. inlined */
 		return;
 #endif
@@ -547,7 +547,7 @@ DUK_LOCAL DUK__INLINE_PERF void duk__vm_arith_unary_op(duk_hthread *thr, duk_idx
 	}
 
 	/* XXX: size optimize: push+replace? */
-	tv = DUK_GET_TVAL_POSIDX(thr, idx_dst);
+	tv = DUK_GET_TVAL_POSIDX(thr, (duk_idx_t) idx_dst);
 	DUK_TVAL_SET_NUMBER_UPDREF(thr, tv, du.d);
 }
 
@@ -565,7 +565,7 @@ DUK_LOCAL DUK__INLINE_PERF void duk__vm_bitwise_not(duk_hthread *thr, duk_uint_f
 	DUK_ASSERT((duk_uint_t) idx_src < (duk_uint_t) duk_get_top(thr));
 	DUK_ASSERT((duk_uint_t) idx_dst < (duk_uint_t) duk_get_top(thr));
 
-	tv = DUK_GET_TVAL_POSIDX(thr, idx_src);
+	tv = DUK_GET_TVAL_POSIDX(thr, (duk_idx_t) idx_src);
 
 #if defined(DUK_USE_FASTINT)
 	if (DUK_TVAL_IS_FASTINT(tv)) {
@@ -581,11 +581,11 @@ DUK_LOCAL DUK__INLINE_PERF void duk__vm_bitwise_not(duk_hthread *thr, duk_uint_f
 
 	/* Result is always fastint compatible. */
 	i2 = ~i1;
-	tv = DUK_GET_TVAL_POSIDX(thr, idx_dst);
+	tv = DUK_GET_TVAL_POSIDX(thr, (duk_idx_t) idx_dst);
 	DUK_TVAL_SET_I32_UPDREF(thr, tv, i2);  /* side effects */
 }
 
-DUK_LOCAL DUK__INLINE_PERF void duk__vm_logical_not(duk_hthread *thr, duk_idx_t idx_src, duk_idx_t idx_dst) {
+DUK_LOCAL DUK__INLINE_PERF void duk__vm_logical_not(duk_hthread *thr, duk_uint_fast_t idx_src, duk_uint_fast_t idx_dst) {
 	/*
 	 *  E5 Section 11.4.9
 	 */
@@ -603,11 +603,11 @@ DUK_LOCAL DUK__INLINE_PERF void duk__vm_logical_not(duk_hthread *thr, duk_idx_t 
 	 * we can do it efficiently.  For footprint it would be better to use
 	 * duk_js_toboolean() and then push+replace to the result slot.
 	 */
-	tv = DUK_GET_TVAL_POSIDX(thr, idx_src);
+	tv = DUK_GET_TVAL_POSIDX(thr, (duk_idx_t) idx_src);
 	res = duk_js_toboolean(tv);  /* does not modify 'tv' */
 	DUK_ASSERT(res == 0 || res == 1);
 	res ^= 1;
-	tv = DUK_GET_TVAL_POSIDX(thr, idx_dst);
+	tv = DUK_GET_TVAL_POSIDX(thr, (duk_idx_t) idx_dst);
 	/* XXX: size optimize: push+replace? */
 	DUK_TVAL_SET_BOOLEAN_UPDREF(thr, tv, res);  /* side effects */
 }
@@ -689,7 +689,7 @@ DUK_LOCAL DUK__INLINE_PERF void duk__prepost_incdec_reg_helper(duk_hthread *thr,
 	DUK_TVAL_SET_NUMBER_UPDREF(thr, tv_dst, z);  /* side effects */
 }
 
-DUK_LOCAL DUK__INLINE_PERF void duk__prepost_incdec_var_helper(duk_hthread *thr, duk_small_uint_t idx_dst, duk_tval *tv_id, duk_small_uint_t op, duk_uint_t is_strict) {
+DUK_LOCAL DUK__INLINE_PERF void duk__prepost_incdec_var_helper(duk_hthread *thr, duk_small_uint_t idx_dst, duk_tval *tv_id, duk_small_uint_t op, duk_small_uint_t is_strict) {
 	duk_activation *act;
 	duk_double_t x, y;
 	duk_hstring *name;
@@ -746,7 +746,7 @@ DUK_LOCAL DUK__INLINE_PERF void duk__prepost_incdec_var_helper(duk_hthread *thr,
 #if defined(DUK_USE_EXEC_PREFER_SIZE)
 	duk_replace(thr, (duk_idx_t) idx_dst);
 #else  /* DUK_USE_EXEC_PREFER_SIZE */
-	DUK__REPLACE_TO_TVPTR(thr, DUK_GET_TVAL_POSIDX(thr, idx_dst));
+	DUK__REPLACE_TO_TVPTR(thr, DUK_GET_TVAL_POSIDX(thr, (duk_idx_t) idx_dst));
 #endif  /* DUK_USE_EXEC_PREFER_SIZE */
 }
 
@@ -1188,7 +1188,7 @@ DUK_LOCAL duk_small_uint_t duk__handle_longjmp(duk_hthread *thr, duk_activation 
 		} else {
 			/* Initial resume call. */
 			duk_small_uint_t call_flags;
-			duk_bool_t setup_rc;
+			duk_int_t setup_rc;
 
 			/* resumee: [... initial_func]  (currently actually: [initial_func]) */
 
@@ -1791,7 +1791,8 @@ DUK_LOCAL void duk__interrupt_handle_debugger(duk_hthread *thr, duk_bool_t *out_
 	}
 
 	/* XXX: remove heap->dbg_exec_counter, use heap->inst_count_interrupt instead? */
-	thr->heap->dbg_exec_counter += thr->interrupt_init;
+	DUK_ASSERT(thr->interrupt_init >= 0);
+	thr->heap->dbg_exec_counter += (duk_uint_t) thr->interrupt_init;
 	if (thr->heap->dbg_exec_counter - thr->heap->dbg_last_counter >= DUK_HEAP_DBG_RATELIMIT_OPCODES) {
 		/* Overflow of the execution counter is fine and doesn't break
 		 * anything here.
@@ -2217,9 +2218,9 @@ DUK_LOCAL DUK__NOINLINE_PERF void duk__handle_op_trycatch(duk_hthread *thr, duk_
 	 * error handling, so there's no side effect problem even if the
 	 * error value has a finalizer.
 	 */
-	duk_dup(thr, bc);  /* Stabilize value. */
-	duk_to_undefined(thr, bc);
-	duk_to_undefined(thr, bc + 1);
+	duk_dup(thr, (duk_idx_t) bc);  /* Stabilize value. */
+	duk_to_undefined(thr, (duk_idx_t) bc);
+	duk_to_undefined(thr, (duk_idx_t) (bc + 1));
 
 	/* Allocate catcher and populate it.  Doesn't have to
 	 * be fully atomic, but the catcher must be in a
@@ -2515,7 +2516,7 @@ DUK_LOCAL DUK__NOINLINE_PERF duk_small_uint_t duk__handle_op_endfin(duk_hthread 
 		                     "dismantle catcher, re-throw error",
 		                     (long) cont_type));
 
-		duk_err_setup_ljstate1(thr, (duk_small_int_t) cont_type, tv1);
+		duk_err_setup_ljstate1(thr, (duk_small_uint_t) cont_type, tv1);
 		/* No debugger Throw notify check on purpose (rethrow). */
 
 		DUK_ASSERT(thr->heap->lj.jmpbuf_ptr != NULL);  /* always in executor */
@@ -2615,7 +2616,7 @@ DUK_LOCAL duk_bool_t duk__executor_handle_call(duk_hthread *thr, duk_idx_t idx, 
 	 * target is (directly or indirectly) Reflect.construct(),
 	 * the call may change into a constructor call on the fly.
 	 */
-	rc = duk_handle_call_unprotected(thr, idx, call_flags);
+	rc = (duk_bool_t) duk_handle_call_unprotected(thr, idx, call_flags);
 	if (rc != 0) {
 		/* Ecma-to-ecma call possible, may or may not
 		 * be a tail call.  Avoid C recursion by
@@ -2667,7 +2668,9 @@ DUK_LOCAL duk_bool_t duk__executor_handle_call(duk_hthread *thr, duk_idx_t idx, 
 #else
 #define DUK__FUN()          ((duk_hcompfunc *) DUK_ACT_GET_FUNC((thr)->callstack_curr))
 #endif
-#define DUK__STRICT()       (DUK_HOBJECT_HAS_STRICT((duk_hobject *) DUK__FUN()))
+
+/* Strict flag. */
+#define DUK__STRICT()       ((duk_small_uint_t) DUK_HOBJECT_HAS_STRICT((duk_hobject *) DUK__FUN()))
 
 /* Reg/const access macros: these are very footprint and performance sensitive
  * so modify with care.  Arguments are sometimes evaluated multiple times which
@@ -4715,7 +4718,7 @@ DUK_LOCAL DUK_NOINLINE DUK_HOT void duk__js_execute_bytecode_inner(duk_hthread *
 		case DUK_OP_CALL14:
 		case DUK_OP_CALL15: {
 			/* Indirect variant. */
-			duk_idx_t nargs;
+			duk_uint_fast_t nargs;
 			duk_idx_t idx;
 			duk_small_uint_t call_flags;
 #if !defined(DUK_USE_EXEC_FUN_LOCAL)
@@ -4725,12 +4728,12 @@ DUK_LOCAL DUK_NOINLINE DUK_HOT void duk__js_execute_bytecode_inner(duk_hthread *
 			DUK_ASSERT((DUK_OP_CALL0 & 0x0fU) == 0);
 			DUK_ASSERT((ins & DUK_BC_CALL_FLAG_INDIRECT) != 0);
 
-			nargs = (duk_idx_t) DUK_DEC_A(ins);
+			nargs = (duk_uint_fast_t) DUK_DEC_A(ins);
 			DUK__LOOKUP_INDIRECT(nargs);
 			call_flags = (ins & 0x07U) | DUK_CALL_FLAG_ALLOW_ECMATOECMA;
 			idx = (duk_idx_t) DUK_DEC_BC(ins);
 
-			if (duk__executor_handle_call(thr, idx, nargs, call_flags)) {
+			if (duk__executor_handle_call(thr, idx, (duk_idx_t) nargs, call_flags)) {
 				DUK_ASSERT(thr->ptr_curr_pc == NULL);
 				goto restart_execution;
 			}
@@ -4833,8 +4836,8 @@ DUK_LOCAL DUK_NOINLINE DUK_HOT void duk__js_execute_bytecode_inner(duk_hthread *
 			 */
 			do {
 				/* XXX: faster initialization (direct access or better primitives) */
-				duk_dup(thr, idx);
-				duk_dup(thr, idx + 1);
+				duk_dup(thr, (duk_idx_t) idx);
+				duk_dup(thr, (duk_idx_t) (idx + 1));
 				duk_def_prop(thr, obj_idx, DUK_DEFPROP_HAVE_VALUE |
 				                           DUK_DEFPROP_FORCE |
 				                           DUK_DEFPROP_SET_WRITABLE |
@@ -4908,7 +4911,7 @@ DUK_LOCAL DUK_NOINLINE DUK_HOT void duk__js_execute_bytecode_inner(duk_hthread *
 				 * and finally set 'length' manually in the end (as already happens now).
 				 */
 
-				duk_dup(thr, idx);
+				duk_dup(thr, (duk_idx_t) idx);
 				duk_xdef_prop_index_wec(thr, obj_idx, arr_idx);
 
 				idx++;

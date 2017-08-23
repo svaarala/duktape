@@ -86,7 +86,8 @@ DUK_LOCAL duk_uint32_t duk__insert_u32(duk_re_compiler_ctx *re_ctx, duk_uint32_t
 	duk_small_int_t len;
 
 	len = duk_unicode_encode_xutf8((duk_ucodepoint_t) x, buf);
-	DUK_BW_INSERT_ENSURE_BYTES(re_ctx->thr, &re_ctx->bw, offset, buf, len);
+	DUK_ASSERT(len >= 0);
+	DUK_BW_INSERT_ENSURE_BYTES(re_ctx->thr, &re_ctx->bw, offset, buf, (duk_size_t) len);
 	return (duk_uint32_t) len;
 }
 
@@ -343,7 +344,7 @@ DUK_LOCAL duk_codepoint_t duk__re_canon_next_discontinuity(duk_codepoint_t start
 			 * block requires special handling.
 			 */
 			if (blk > start_blk) {
-				return blk << DUK_CANON_BITMAP_BLKSHIFT;
+				return (duk_codepoint_t) (blk << DUK_CANON_BITMAP_BLKSHIFT);
 			} else {
 				return start;
 			}
@@ -569,21 +570,21 @@ DUK_LOCAL void duk__parse_disjunction(duk_re_compiler_ctx *re_ctx, duk_bool_t ex
 				duk_uint32_t offset;
 
 				DUK_ASSERT(unpatched_disjunction_split >= 0);
-				offset = unpatched_disjunction_jump;
+				offset = (duk_uint32_t) unpatched_disjunction_jump;
 				offset += duk__insert_jump_offset(re_ctx,
 				                                  offset,
 				                                  (duk_int32_t) (DUK__RE_BUFLEN(re_ctx) - offset));
 				/* offset is now target of the pending split (right after jump) */
 				duk__insert_jump_offset(re_ctx,
-				                        unpatched_disjunction_split,
-				                        offset - unpatched_disjunction_split);
+				                        (duk_uint32_t) unpatched_disjunction_split,
+				                        (duk_int32_t) offset - unpatched_disjunction_split);
 			}
 
 			/* add a new pending split to the beginning of the entire disjunction */
 			(void) duk__insert_u32(re_ctx,
 			                       entry_offset,
 			                       DUK_REOP_SPLIT1);   /* prefer direct execution */
-			unpatched_disjunction_split = entry_offset + 1;   /* +1 for opcode */
+			unpatched_disjunction_split = (duk_int32_t) (entry_offset + 1);   /* +1 for opcode */
 
 			/* add a new pending match jump for latest finished alternative */
 			duk__append_reop(re_ctx, DUK_REOP_JUMP);
@@ -630,14 +631,14 @@ DUK_LOCAL void duk__parse_disjunction(duk_re_compiler_ctx *re_ctx, duk_bool_t ex
 				}
 
 				duk__append_reop(re_ctx, DUK_REOP_MATCH);   /* complete 'sub atom' */
-				atom_code_length = (duk_int32_t) (DUK__RE_BUFLEN(re_ctx) - atom_start_offset);
+				atom_code_length = (duk_int32_t) (DUK__RE_BUFLEN(re_ctx) - (duk_size_t) atom_start_offset);
 
-				offset = atom_start_offset;
+				offset = (duk_uint32_t) atom_start_offset;
 				if (re_ctx->curr_token.greedy) {
 					offset += duk__insert_u32(re_ctx, offset, DUK_REOP_SQGREEDY);
 					offset += duk__insert_u32(re_ctx, offset, qmin);
 					offset += duk__insert_u32(re_ctx, offset, qmax);
-					offset += duk__insert_u32(re_ctx, offset, atom_char_length);
+					offset += duk__insert_u32(re_ctx, offset, (duk_uint32_t) atom_char_length);
 					offset += duk__insert_jump_offset(re_ctx, offset, atom_code_length);
 				} else {
 					offset += duk__insert_u32(re_ctx, offset, DUK_REOP_SQMINIMAL);
@@ -677,9 +678,9 @@ DUK_LOCAL void duk__parse_disjunction(duk_re_compiler_ctx *re_ctx, duk_bool_t ex
 					                     (long) atom_start_captures, (long) re_ctx->captures));
 
 					/* insert (DUK_REOP_WIPERANGE, start, count) in reverse order so the order ends up right */
-					duk__insert_u32(re_ctx, atom_start_offset, (re_ctx->captures - atom_start_captures) * 2);
-					duk__insert_u32(re_ctx, atom_start_offset, (atom_start_captures + 1) * 2);
-					duk__insert_u32(re_ctx, atom_start_offset, DUK_REOP_WIPERANGE);
+					duk__insert_u32(re_ctx, (duk_uint32_t) atom_start_offset, (re_ctx->captures - atom_start_captures) * 2U);
+					duk__insert_u32(re_ctx, (duk_uint32_t) atom_start_offset, (atom_start_captures + 1) * 2);
+					duk__insert_u32(re_ctx, (duk_uint32_t) atom_start_offset, DUK_REOP_WIPERANGE);
 				} else {
 					DUK_DDD(DUK_DDDPRINT("no need to wipe captures: atom_start_captures == re_ctx->captures == %ld",
 					                     (long) atom_start_captures));
@@ -691,7 +692,7 @@ DUK_LOCAL void duk__parse_disjunction(duk_re_compiler_ctx *re_ctx, duk_bool_t ex
 				tmp_qmin = re_ctx->curr_token.qmin;
 				tmp_qmax = re_ctx->curr_token.qmax;
 				while (tmp_qmin > 0) {
-					duk__append_slice(re_ctx, atom_start_offset, atom_code_length);
+					duk__append_slice(re_ctx, (duk_uint32_t) atom_start_offset, (duk_uint32_t) atom_code_length);
 					tmp_qmin--;
 					if (tmp_qmax != DUK_RE_QUANTIFIER_INFINITE) {
 						tmp_qmax--;
@@ -709,7 +710,7 @@ DUK_LOCAL void duk__parse_disjunction(duk_re_compiler_ctx *re_ctx, duk_bool_t ex
 						 */
 						duk__append_reop(re_ctx, DUK_REOP_JUMP);
 						duk__append_jump_offset(re_ctx, atom_code_length);
-						duk__append_slice(re_ctx, atom_start_offset, atom_code_length);
+						duk__append_slice(re_ctx, (duk_uint32_t) atom_start_offset, (duk_uint32_t) atom_code_length);
 					}
 					if (re_ctx->curr_token.greedy) {
 						duk__append_reop(re_ctx, DUK_REOP_SPLIT2);   /* prefer jump */
@@ -736,7 +737,7 @@ DUK_LOCAL void duk__parse_disjunction(duk_re_compiler_ctx *re_ctx, duk_bool_t ex
 					 */
 					duk_uint32_t offset = (duk_uint32_t) DUK__RE_BUFLEN(re_ctx);
 					while (tmp_qmax > 0) {
-						duk__insert_slice(re_ctx, offset, atom_start_offset, atom_code_length);
+						duk__insert_slice(re_ctx, offset, (duk_uint32_t) atom_start_offset, (duk_uint32_t) atom_code_length);
 						if (re_ctx->curr_token.greedy) {
 							duk__insert_u32(re_ctx, offset, DUK_REOP_SPLIT1);   /* prefer direct */
 						} else {
@@ -750,7 +751,7 @@ DUK_LOCAL void duk__parse_disjunction(duk_re_compiler_ctx *re_ctx, duk_bool_t ex
 				}
 
 				/* remove the original 'template' atom */
-				duk__remove_slice(re_ctx, atom_start_offset, atom_code_length);
+				duk__remove_slice(re_ctx, (duk_uint32_t) atom_start_offset, (duk_uint32_t) atom_code_length);
 			}
 
 			/* 'taint' result as complex */
@@ -818,7 +819,7 @@ DUK_LOCAL void duk__parse_disjunction(duk_re_compiler_ctx *re_ctx, duk_bool_t ex
 			duk__append_reop(re_ctx, DUK_REOP_CHAR);
 			ch = re_ctx->curr_token.num;
 			if (re_ctx->re_flags & DUK_RE_FLAG_IGNORE_CASE) {
-				ch = duk_unicode_re_canonicalize_char(re_ctx->thr, ch);
+				ch = (duk_uint32_t) duk_unicode_re_canonicalize_char(re_ctx->thr, (duk_codepoint_t) ch);
 			}
 			duk__append_u32(re_ctx, ch);
 			break;
@@ -845,8 +846,8 @@ DUK_LOCAL void duk__parse_disjunction(duk_re_compiler_ctx *re_ctx, duk_bool_t ex
 
 			DUK_ASSERT(DUK_RETOK_ATOM_WHITE == DUK_RETOK_ATOM_DIGIT + 2);
 			DUK_ASSERT(DUK_RETOK_ATOM_WORD_CHAR == DUK_RETOK_ATOM_DIGIT + 4);
-			idx = (re_ctx->curr_token.t - DUK_RETOK_ATOM_DIGIT) >> 1;
-			DUK_ASSERT(idx <= 2);  /* Assume continuous token numbers; also checks negative underflow. */
+			idx = (duk_small_uint_t) ((re_ctx->curr_token.t - DUK_RETOK_ATOM_DIGIT) >> 1U);
+			DUK_ASSERT(idx <= 2U);  /* Assume continuous token numbers; also checks negative underflow. */
 
 			duk__append_range_atom_matcher(re_ctx, re_op, duk__re_range_lookup1[idx], duk__re_range_lookup2[idx]);
 			break;
@@ -967,14 +968,14 @@ DUK_LOCAL void duk__parse_disjunction(duk_re_compiler_ctx *re_ctx, duk_bool_t ex
 		duk_uint32_t offset;
 
 		DUK_ASSERT(unpatched_disjunction_split >= 0);
-		offset = unpatched_disjunction_jump;
+		offset = (duk_uint32_t) unpatched_disjunction_jump;
 		offset += duk__insert_jump_offset(re_ctx,
 		                                  offset,
 		                                  (duk_int32_t) (DUK__RE_BUFLEN(re_ctx) - offset));
 		/* offset is now target of the pending split (right after jump) */
 		duk__insert_jump_offset(re_ctx,
-		                        unpatched_disjunction_split,
-		                        offset - unpatched_disjunction_split);
+		                        (duk_uint32_t) unpatched_disjunction_split,
+		                        (duk_int32_t) offset - unpatched_disjunction_split);
 	}
 
 #if 0

@@ -53,8 +53,8 @@ typedef duk_uint_fast16_t duk_small_uint_fast_t;
 #define DUK_SMALL_UINT_FAST_MIN   DUK_UINT_FAST16_MIN
 #define DUK_SMALL_UINT_FAST_MAX   DUK_UINT_FAST16_MAX
 
-/* Boolean values are represented with the platform 'int'. */
-typedef duk_small_int_t duk_bool_t;
+/* Boolean values are represented with the platform 'unsigned int'. */
+typedef duk_small_uint_t duk_bool_t;
 #define DUK_BOOL_MIN              DUK_SMALL_INT_MIN
 #define DUK_BOOL_MAX              DUK_SMALL_INT_MAX
 

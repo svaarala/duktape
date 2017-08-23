@@ -89,10 +89,10 @@ DUK_LOCAL void duk__concat_and_join_helper(duk_hthread *thr, duk_idx_t count_in,
 
 	if (is_join) {
 		duk_replace(thr, -((duk_idx_t) count) - 2);  /* overwrite sep */
-		duk_pop_n(thr, count);
+		duk_pop_n(thr, (duk_idx_t) count);
 	} else {
 		duk_replace(thr, -((duk_idx_t) count) - 1);  /* overwrite str1 */
-		duk_pop_n(thr, count-1);
+		duk_pop_n(thr, (duk_idx_t) (count - 1));
 	}
 
 	/* [ ... buf ] */

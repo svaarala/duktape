@@ -239,7 +239,7 @@ DUK_INTERNAL duk_ret_t duk_bi_object_constructor_is_sealed_frozen_shared(duk_hth
 	duk_bool_t is_frozen;
 	duk_uint_t mask;
 
-	is_frozen = duk_get_current_magic(thr);
+	is_frozen = (duk_bool_t) duk_get_current_magic(thr);
 	mask = duk_get_type_mask(thr, 0);
 	if (mask & (DUK_TYPE_MASK_LIGHTFUNC | DUK_TYPE_MASK_BUFFER)) {
 		DUK_ASSERT(is_frozen == 0 || is_frozen == 1);
@@ -306,13 +306,13 @@ DUK_INTERNAL duk_ret_t duk_bi_object_prototype_is_prototype_of(duk_hthread *thr)
 
 #if defined(DUK_USE_OBJECT_BUILTIN)
 DUK_INTERNAL duk_ret_t duk_bi_object_prototype_has_own_property(duk_hthread *thr) {
-	return duk_hobject_object_ownprop_helper(thr, 0 /*required_desc_flags*/);
+	return (duk_ret_t) duk_hobject_object_ownprop_helper(thr, 0 /*required_desc_flags*/);
 }
 #endif  /* DUK_USE_OBJECT_BUILTIN */
 
 #if defined(DUK_USE_OBJECT_BUILTIN)
 DUK_INTERNAL duk_ret_t duk_bi_object_prototype_property_is_enumerable(duk_hthread *thr) {
-	return duk_hobject_object_ownprop_helper(thr, DUK_PROPDESC_FLAG_ENUMERABLE /*required_desc_flags*/);
+	return (duk_ret_t) duk_hobject_object_ownprop_helper(thr, DUK_PROPDESC_FLAG_ENUMERABLE /*required_desc_flags*/);
 }
 #endif  /* DUK_USE_OBJECT_BUILTIN */
 
@@ -487,7 +487,7 @@ DUK_INTERNAL duk_ret_t duk_bi_object_constructor_define_property(duk_hthread *th
 	duk_hobject *set;
 	duk_idx_t idx_value;
 	duk_uint_t defprop_flags;
-	duk_int_t magic;
+	duk_small_uint_t magic;
 	duk_bool_t throw_flag;
 	duk_bool_t ret;
 
@@ -501,7 +501,7 @@ DUK_INTERNAL duk_ret_t duk_bi_object_constructor_define_property(duk_hthread *th
 
 	/* [ obj key desc ] */
 
-	magic = duk_get_current_magic(thr);
+	magic = (duk_small_uint_t) duk_get_current_magic(thr);
 
 	/* Lightfuncs are currently supported by coercing to a temporary
 	 * Function object; changes will be allowed (the coerced value is
@@ -535,8 +535,8 @@ DUK_INTERNAL duk_ret_t duk_bi_object_constructor_define_property(duk_hthread *th
 	 *  Use Object.defineProperty() helper for the actual operation.
 	 */
 
-	DUK_ASSERT(magic == 0 || magic == 1);
-	throw_flag = magic ^ 1;
+	DUK_ASSERT(magic == 0U || magic == 1U);
+	throw_flag = magic ^ 1U;
 	ret = duk_hobject_define_property_helper(thr,
 	                                         defprop_flags,
 	                                         obj,
@@ -550,7 +550,7 @@ DUK_INTERNAL duk_ret_t duk_bi_object_constructor_define_property(duk_hthread *th
 	 * they're popped automatically.
 	 */
 
-	if (magic == 0) {
+	if (magic == 0U) {
 		/* Object.defineProperty(): return target object. */
 		duk_push_hobject(thr, obj);
 	} else {

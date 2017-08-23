@@ -456,23 +456,23 @@ typedef duk_uint32_t duk_instr_t;
  * but avoids shuffling in more cases.  Maybe not worth it.
  */
 /* DUK_OP_TRYCATCH flags in A. */
-#define DUK_BC_TRYCATCH_FLAG_HAVE_CATCH     (1 << 0)
-#define DUK_BC_TRYCATCH_FLAG_HAVE_FINALLY   (1 << 1)
-#define DUK_BC_TRYCATCH_FLAG_CATCH_BINDING  (1 << 2)
-#define DUK_BC_TRYCATCH_FLAG_WITH_BINDING   (1 << 3)
+#define DUK_BC_TRYCATCH_FLAG_HAVE_CATCH     (1U << 0)
+#define DUK_BC_TRYCATCH_FLAG_HAVE_FINALLY   (1U << 1)
+#define DUK_BC_TRYCATCH_FLAG_CATCH_BINDING  (1U << 2)
+#define DUK_BC_TRYCATCH_FLAG_WITH_BINDING   (1U << 3)
 
 /* DUK_OP_DECLVAR flags in A; bottom bits are reserved for propdesc flags
  * (DUK_PROPDESC_FLAG_XXX).
  */
-#define DUK_BC_DECLVAR_FLAG_FUNC_DECL       (1 << 4)  /* function declaration */
+#define DUK_BC_DECLVAR_FLAG_FUNC_DECL       (1U << 4)  /* function declaration */
 
 /* DUK_OP_CALLn flags, part of opcode field.  Three lowest bits must match
  * DUK_CALL_FLAG_xxx directly.
  */
-#define DUK_BC_CALL_FLAG_TAILCALL           (1 << 0)
-#define DUK_BC_CALL_FLAG_CONSTRUCT          (1 << 1)
-#define DUK_BC_CALL_FLAG_CALLED_AS_EVAL     (1 << 2)
-#define DUK_BC_CALL_FLAG_INDIRECT           (1 << 3)
+#define DUK_BC_CALL_FLAG_TAILCALL           (1U << 0)
+#define DUK_BC_CALL_FLAG_CONSTRUCT          (1U << 1)
+#define DUK_BC_CALL_FLAG_CALLED_AS_EVAL     (1U << 2)
+#define DUK_BC_CALL_FLAG_INDIRECT           (1U << 3)
 
 /* Misc constants and helper macros. */
 #define DUK_BC_LDINT_BIAS           (1L << 15)

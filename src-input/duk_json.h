@@ -6,10 +6,10 @@
 #define DUK_JSON_H_INCLUDED
 
 /* Encoding/decoding flags */
-#define DUK_JSON_FLAG_ASCII_ONLY              (1 << 0)  /* escape any non-ASCII characters */
-#define DUK_JSON_FLAG_AVOID_KEY_QUOTES        (1 << 1)  /* avoid key quotes when key is an ASCII Identifier */
-#define DUK_JSON_FLAG_EXT_CUSTOM              (1 << 2)  /* extended types: custom encoding */
-#define DUK_JSON_FLAG_EXT_COMPATIBLE          (1 << 3)  /* extended types: compatible encoding */
+#define DUK_JSON_FLAG_ASCII_ONLY              (1U << 0)  /* escape any non-ASCII characters */
+#define DUK_JSON_FLAG_AVOID_KEY_QUOTES        (1U << 1)  /* avoid key quotes when key is an ASCII Identifier */
+#define DUK_JSON_FLAG_EXT_CUSTOM              (1U << 2)  /* extended types: custom encoding */
+#define DUK_JSON_FLAG_EXT_COMPATIBLE          (1U << 3)  /* extended types: compatible encoding */
 
 /* How much stack to require on entry to object/array encode */
 #define DUK_JSON_ENC_REQSTACK                 32
@@ -36,8 +36,8 @@ typedef struct {
 	duk_small_uint_t flag_ext_compatible;
 	duk_small_uint_t flag_ext_custom_or_compatible;
 #endif
-	duk_int_t recursion_depth;
-	duk_int_t recursion_limit;
+	duk_uint_t recursion_depth;
+	duk_uint_t recursion_limit;
 	duk_uint_t mask_for_undefined;      /* type bit mask: types which certainly produce 'undefined' */
 #if defined(DUK_USE_JX) || defined(DUK_USE_JC)
 	duk_small_uint_t stridx_custom_undefined;

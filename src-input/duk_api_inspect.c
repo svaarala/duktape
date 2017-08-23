@@ -25,7 +25,7 @@ DUK_LOCAL void duk__inspect_multiple_uint(duk_hthread *thr, const char *fmt, duk
 		if (val >= 0) {
 			/* Negative values are markers to skip key. */
 			duk_push_string(thr, p_curr);
-			duk_push_uint(thr, val);
+			duk_push_int(thr, val);
 			duk_put_prop(thr, -3);
 		}
 	}
@@ -73,7 +73,7 @@ DUK_EXTERNAL void duk_inspect_value(duk_hthread *thr, duk_idx_t idx) {
 	h = (DUK_TVAL_IS_HEAP_ALLOCATED(tv) ? DUK_TVAL_GET_HEAPHDR(tv) : NULL);
 
 	vals[DUK__IDX_TYPE] = duk_get_type_tval(tv);
-	vals[DUK__IDX_ITAG] = (duk_uint_t) DUK_TVAL_GET_TAG(tv);
+	vals[DUK__IDX_ITAG] = (duk_int_t) DUK_TVAL_GET_TAG(tv);
 
 	duk_push_bare_object(thr);  /* Invalidates 'tv'. */
 	tv = NULL;
@@ -166,10 +166,10 @@ DUK_EXTERNAL void duk_inspect_value(duk_hthread *thr, duk_idx_t idx) {
 				vals[DUK__IDX_VARIANT] = 1;  /* buffer variant 1: dynamic */
 				vals[DUK__IDX_HBYTES] = (duk_uint_t) (sizeof(duk_hbuffer_dynamic));
 			}
-			vals[DUK__IDX_DBYTES] = (duk_uint_t) (DUK_HBUFFER_GET_SIZE(h_buf));
+			vals[DUK__IDX_DBYTES] = (duk_int_t) (DUK_HBUFFER_GET_SIZE(h_buf));
 		} else {
 			DUK_ASSERT(vals[DUK__IDX_VARIANT] == 0);  /* buffer variant 0: fixed */
-			vals[DUK__IDX_HBYTES] = (duk_uint_t) (sizeof(duk_hbuffer_fixed) + DUK_HBUFFER_GET_SIZE(h_buf));
+			vals[DUK__IDX_HBYTES] = (duk_int_t) (sizeof(duk_hbuffer_fixed) + DUK_HBUFFER_GET_SIZE(h_buf));
 		}
 		break;
 	}

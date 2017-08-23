@@ -355,7 +355,7 @@ DUK_LOCAL DUK_INLINE void duk__refcount_refzero_hobject(duk_heap *heap, duk_hobj
 	/* This finalizer check MUST BE side effect free.  It should also be
 	 * as fast as possible because it's applied to every object freed.
 	 */
-	if (DUK_UNLIKELY(DUK_HOBJECT_HAS_FINALIZER_FAST(heap, (duk_hobject *) hdr))) {
+	if (DUK_UNLIKELY(DUK_HOBJECT_HAS_FINALIZER_FAST(heap, (duk_hobject *) hdr) != 0U)) {
 		/* Special case: FINALIZED may be set if mark-and-sweep queued
 		 * object for finalization, the finalizer was executed (and
 		 * FINALIZED set), mark-and-sweep hasn't yet processed the
