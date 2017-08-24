@@ -49,8 +49,6 @@
 /flow
 /massif-*.out
 /ms_print.*
-/alljoyn-js
-/ajtcl
 /dukweb.js
 /debugger/jquery-ui-1.11.2.zip
 /debugger/jquery-ui-1.11.2/
