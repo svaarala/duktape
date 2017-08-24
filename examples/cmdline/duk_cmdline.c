@@ -85,20 +85,19 @@
 #endif
 #include "duktape.h"
 
-#if defined(DUK_CMDLINE_AJSHEAP)
-/* Defined in duk_cmdline_ajduk.c or alljoyn.js headers. */
-void ajsheap_init(void);
-void ajsheap_free(void);
-void ajsheap_dump(void);
-void ajsheap_register(duk_context *ctx);
-void ajsheap_start_exec_timeout(void);
-void ajsheap_clear_exec_timeout(void);
-void *ajsheap_alloc_wrapped(void *udata, duk_size_t size);
-void *ajsheap_realloc_wrapped(void *udata, void *ptr, duk_size_t size);
-void ajsheap_free_wrapped(void *udata, void *ptr);
-void *AJS_Alloc(void *udata, duk_size_t size);
-void *AJS_Realloc(void *udata, void *ptr, duk_size_t size);
-void AJS_Free(void *udata, void *ptr);
+#if defined(DUK_CMDLINE_LOWMEM)
+#include "duk_alloc_pool.h"
+/* Defined in duk_cmdline_lowmem.c. */
+extern void *lowmem_pool_ptr;
+void lowmem_init(void);
+void lowmem_free(void);
+void lowmem_dump(void);
+void lowmem_register(duk_context *ctx);
+void lowmem_start_exec_timeout(void);
+void lowmem_clear_exec_timeout(void);
+void *lowmem_alloc_wrapped(void *udata, duk_size_t size);
+void *lowmem_realloc_wrapped(void *udata, void *ptr, duk_size_t size);
+void lowmem_free_wrapped(void *udata, void *ptr);
 #endif
 
 #if defined(DUK_CMDLINE_DEBUGGER_SUPPORT)
@@ -297,15 +296,15 @@ static duk_ret_t wrapped_compile_execute(duk_context *ctx, void *udata) {
 	duk_load_function(ctx);
 #endif
 
-#if defined(DUK_CMDLINE_AJSHEAP)
-	ajsheap_start_exec_timeout();
+#if defined(DUK_CMDLINE_LOWMEM)
+	lowmem_start_exec_timeout();
 #endif
 
 	duk_push_global_object(ctx);  /* 'this' binding */
 	duk_call_method(ctx, 0);
 
-#if defined(DUK_CMDLINE_AJSHEAP)
-	ajsheap_clear_exec_timeout();
+#if defined(DUK_CMDLINE_LOWMEM)
+	lowmem_clear_exec_timeout();
 #endif
 
 	if (interactive_mode) {
@@ -635,8 +634,8 @@ static int handle_fh(duk_context *ctx, FILE *f, const char *filename, const char
 
 	rc = duk_safe_call(ctx, wrapped_compile_execute, NULL /*udata*/, 4 /*nargs*/, 1 /*nret*/);
 
-#if defined(DUK_CMDLINE_AJSHEAP)
-	ajsheap_clear_exec_timeout();
+#if defined(DUK_CMDLINE_LOWMEM)
+	lowmem_clear_exec_timeout();
 #endif
 
 	free(buf);
@@ -713,8 +712,8 @@ static int handle_eval(duk_context *ctx, char *code) {
 
 	rc = duk_safe_call(ctx, wrapped_compile_execute, NULL /*udata*/, 3 /*nargs*/, 1 /*nret*/);
 
-#if defined(DUK_CMDLINE_AJSHEAP)
-	ajsheap_clear_exec_timeout();
+#if defined(DUK_CMDLINE_LOWMEM)
+	lowmem_clear_exec_timeout();
 #endif
 
 	if (rc != DUK_EXEC_SUCCESS) {
@@ -778,8 +777,8 @@ static int handle_interactive(duk_context *ctx) {
 
 		rc = duk_safe_call(ctx, wrapped_compile_execute, NULL /*udata*/, 3 /*nargs*/, 1 /*nret*/);
 
-#if defined(DUK_CMDLINE_AJSHEAP)
-		ajsheap_clear_exec_timeout();
+#if defined(DUK_CMDLINE_LOWMEM)
+		lowmem_clear_exec_timeout();
 #endif
 
 		if (buffer) {
@@ -850,8 +849,8 @@ static int handle_interactive(duk_context *ctx) {
 
 		rc = duk_safe_call(ctx, wrapped_compile_execute, NULL /*udata*/, 3 /*nargs*/, 1 /*nret*/);
 
-#if defined(DUK_CMDLINE_AJSHEAP)
-		ajsheap_clear_exec_timeout();
+#if defined(DUK_CMDLINE_LOWMEM)
+		lowmem_clear_exec_timeout();
 #endif
 
 		if (rc != DUK_EXEC_SUCCESS) {
@@ -1051,12 +1050,12 @@ static void debugger_detached(duk_context *ctx, void *udata) {
 #define  ALLOC_LOGGING  1
 #define  ALLOC_TORTURE  2
 #define  ALLOC_HYBRID   3
-#define  ALLOC_AJSHEAP  4
+#define  ALLOC_LOWMEM   4
 
-static duk_context *create_duktape_heap(int alloc_provider, int debugger, int ajsheap_log) {
+static duk_context *create_duktape_heap(int alloc_provider, int debugger, int lowmem_log) {
 	duk_context *ctx;
 
-	(void) ajsheap_log;  /* suppress warning */
+	(void) lowmem_log;  /* suppress warning */
 
 	ctx = NULL;
 	if (!ctx && alloc_provider == ALLOC_LOGGING) {
@@ -1101,15 +1100,15 @@ static duk_context *create_duktape_heap(int alloc_provider, int debugger, int aj
 		fflush(stderr);
 #endif
 	}
-	if (!ctx && alloc_provider == ALLOC_AJSHEAP) {
-#if defined(DUK_CMDLINE_AJSHEAP)
-		ajsheap_init();
+	if (!ctx && alloc_provider == ALLOC_LOWMEM) {
+#if defined(DUK_CMDLINE_LOWMEM)
+		lowmem_init();
 
 		ctx = duk_create_heap(
-			ajsheap_log ? ajsheap_alloc_wrapped : AJS_Alloc,
-			ajsheap_log ? ajsheap_realloc_wrapped : AJS_Realloc,
-			ajsheap_log ? ajsheap_free_wrapped : AJS_Free,
-			(void *) 0xdeadbeef,  /* heap_udata: ignored by AjsHeap, use as marker */
+			lowmem_log ? lowmem_alloc_wrapped : duk_alloc_pool,
+			lowmem_log ? lowmem_realloc_wrapped : duk_realloc_pool,
+			lowmem_log ? lowmem_free_wrapped : duk_free_pool,
+			(void *) lowmem_pool_ptr,
 			cmdline_fatal_handler);
 #else
 		fprintf(stderr, "Warning: option --alloc-ajsheap ignored, no ajsheap allocator support\n");
@@ -1126,16 +1125,16 @@ static duk_context *create_duktape_heap(int alloc_provider, int debugger, int aj
 		exit(1);
 	}
 
-#if defined(DUK_CMDLINE_AJSHEAP)
-	if (alloc_provider == ALLOC_AJSHEAP) {
+#if defined(DUK_CMDLINE_LOWMEM)
+	if (alloc_provider == ALLOC_LOWMEM) {
 		fprintf(stdout, "Pool dump after heap creation\n");
-		ajsheap_dump();
+		lowmem_dump();
 	}
 #endif
 
-#if defined(DUK_CMDLINE_AJSHEAP)
-	if (alloc_provider == ALLOC_AJSHEAP) {
-		ajsheap_register(ctx);
+#if defined(DUK_CMDLINE_LOWMEM)
+	if (alloc_provider == ALLOC_LOWMEM) {
+		lowmem_register(ctx);
 	}
 #endif
 
@@ -1237,15 +1236,15 @@ static duk_context *create_duktape_heap(int alloc_provider, int debugger, int aj
 static void destroy_duktape_heap(duk_context *ctx, int alloc_provider) {
 	(void) alloc_provider;
 
-#if defined(DUK_CMDLINE_AJSHEAP)
-	if (alloc_provider == ALLOC_AJSHEAP) {
+#if defined(DUK_CMDLINE_LOWMEM)
+	if (alloc_provider == ALLOC_LOWMEM) {
 		fprintf(stdout, "Pool dump before duk_destroy_heap(), before forced gc\n");
-		ajsheap_dump();
+		lowmem_dump();
 
 		duk_gc(ctx, 0);
 
 		fprintf(stdout, "Pool dump before duk_destroy_heap(), after forced gc\n");
-		ajsheap_dump();
+		lowmem_dump();
 	}
 #endif
 
@@ -1253,12 +1252,12 @@ static void destroy_duktape_heap(duk_context *ctx, int alloc_provider) {
 		duk_destroy_heap(ctx);
 	}
 
-#if defined(DUK_CMDLINE_AJSHEAP)
-	if (alloc_provider == ALLOC_AJSHEAP) {
+#if defined(DUK_CMDLINE_LOWMEM)
+	if (alloc_provider == ALLOC_LOWMEM) {
 		fprintf(stdout, "Pool dump after duk_destroy_heap() (should have zero allocs)\n");
-		ajsheap_dump();
+		lowmem_dump();
 	}
-	ajsheap_free();
+	lowmem_free();
 #endif
 }
 
@@ -1274,7 +1273,7 @@ int main(int argc, char *argv[]) {
 	int interactive = 0;
 	int memlimit_high = 1;
 	int alloc_provider = ALLOC_DEFAULT;
-	int ajsheap_log = 0;
+	int lowmem_log = 0;
 	int debugger = 0;
 	int recreate_heap = 0;
 	int no_heap_destroy = 0;
@@ -1333,10 +1332,10 @@ int main(int argc, char *argv[]) {
 	);
 #endif  /* EMSCRIPTEN */
 
-#if defined(DUK_CMDLINE_AJSHEAP)
-	alloc_provider = ALLOC_AJSHEAP;
+#if defined(DUK_CMDLINE_LOWMEM)
+	alloc_provider = ALLOC_LOWMEM;
 #endif
-	(void) ajsheap_log;
+	(void) lowmem_log;
 
 	/*
 	 *  Signal handling setup
@@ -1382,10 +1381,10 @@ int main(int argc, char *argv[]) {
 			alloc_provider = ALLOC_TORTURE;
 		} else if (strcmp(arg, "--alloc-hybrid") == 0) {
 			alloc_provider = ALLOC_HYBRID;
-		} else if (strcmp(arg, "--alloc-ajsheap") == 0) {
-			alloc_provider = ALLOC_AJSHEAP;
-		} else if (strcmp(arg, "--ajsheap-log") == 0) {
-			ajsheap_log = 1;
+		} else if (strcmp(arg, "--alloc-lowmem") == 0) {
+			alloc_provider = ALLOC_LOWMEM;
+		} else if (strcmp(arg, "--lowmem-log") == 0) {
+			lowmem_log = 1;
 		} else if (strcmp(arg, "--debugger") == 0) {
 			debugger = 1;
 #if defined(DUK_CMDLINE_DEBUGGER_SUPPORT)
@@ -1427,7 +1426,7 @@ int main(int argc, char *argv[]) {
 	 *  Create heap
 	 */
 
-	ctx = create_duktape_heap(alloc_provider, debugger, ajsheap_log);
+	ctx = create_duktape_heap(alloc_provider, debugger, lowmem_log);
 
 	/*
 	 *  Execute any argument file(s)
@@ -1473,7 +1472,7 @@ int main(int argc, char *argv[]) {
 			}
 
 			destroy_duktape_heap(ctx, alloc_provider);
-			ctx = create_duktape_heap(alloc_provider, debugger, ajsheap_log);
+			ctx = create_duktape_heap(alloc_provider, debugger, lowmem_log);
 		}
 	}
 
@@ -1494,7 +1493,7 @@ int main(int argc, char *argv[]) {
 			}
 
 			destroy_duktape_heap(ctx, alloc_provider);
-			ctx = create_duktape_heap(alloc_provider, debugger, ajsheap_log);
+			ctx = create_duktape_heap(alloc_provider, debugger, lowmem_log);
 		}
 	}
 
@@ -1553,9 +1552,9 @@ int main(int argc, char *argv[]) {
 #if defined(DUK_CMDLINE_ALLOC_HYBRID)
 	                "   --alloc-hybrid     use hybrid allocator\n"
 #endif
-#if defined(DUK_CMDLINE_AJSHEAP)
-	                "   --alloc-ajsheap    use ajsheap allocator (enabled by default with 'ajduk')\n"
-	                "   --ajsheap-log      write alloc log to /tmp/ajduk-alloc-log.txt\n"
+#if defined(DUK_CMDLINE_LOWMEM)
+	                "   --alloc-lowmem     use pooled allocator (enabled by default for ajduk)\n"
+	                "   --lowmem-log       write alloc log to /tmp/ajduk-alloc-log.txt\n"
 #endif
 #if defined(DUK_CMDLINE_DEBUGGER_SUPPORT)
 			"   --debugger         start example debugger\n"
