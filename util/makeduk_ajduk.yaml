@@ -4,7 +4,7 @@
 #DUK_USE_DOUBLE_LINKED_HEAP: false
 
 DUK_USE_ALIGN_BY: 4
-DUK_USE_ASSERTIONS: true
+#DUK_USE_ASSERTIONS: true
 DUK_USE_LIGHTFUNC_BUILTINS: true
 DUK_USE_REFCOUNT16: true
 DUK_USE_REFCOUNT32: false
@@ -23,23 +23,23 @@ DUK_USE_STRTAB_RESIZE_CHECK_MASK: 63
 DUK_USE_STRTAB_PTRCOMP: true
 DUK_USE_HEAPPTR16: true
 DUK_USE_HEAPPTR_ENC16:
-  verbatim: "#define DUK_USE_HEAPPTR_ENC16(ud,p) ajsheap_enc16((ud),(p))"
+  verbatim: "#define DUK_USE_HEAPPTR_ENC16(ud,p) lowmem_enc16((ud),(p))"
 DUK_USE_HEAPPTR_DEC16:
-  verbatim: "#define DUK_USE_HEAPPTR_DEC16(ud,x) ajsheap_dec16((ud),(x))"
+  verbatim: "#define DUK_USE_HEAPPTR_DEC16(ud,x) lowmem_dec16((ud),(x))"
 #DUK_USE_EXTSTR_INTERN_CHECK:
-#  verbatim: "#define DUK_USE_EXTSTR_INTERN_CHECK(ud,ptr,len) ajsheap_extstr_check_1((ptr),(len))"
+#  verbatim: "#define DUK_USE_EXTSTR_INTERN_CHECK(ud,ptr,len) lowmem_extstr_check_1((ptr),(len))"
 #DUK_USE_EXTSTR_FREE:
-#  verbatim: "#define DUK_USE_EXTSTR_FREE(ud,ptr) ajsheap_extstr_free_1((ptr))"
+#  verbatim: "#define DUK_USE_EXTSTR_FREE(ud,ptr) lowmem_extstr_free_1((ptr))"
 DUK_USE_EXTSTR_INTERN_CHECK:
-  verbatim: "#define DUK_USE_EXTSTR_INTERN_CHECK(ud,ptr,len) ajsheap_extstr_check_2((ptr),(len))"
+  verbatim: "#define DUK_USE_EXTSTR_INTERN_CHECK(ud,ptr,len) lowmem_extstr_check_2((ptr),(len))"
 DUK_USE_EXTSTR_FREE:
-  verbatim: "#define DUK_USE_EXTSTR_FREE(ud,ptr) ajsheap_extstr_free_2((ptr))"
+  verbatim: "#define DUK_USE_EXTSTR_FREE(ud,ptr) lowmem_extstr_free_2((ptr))"
 #DUK_USE_EXTSTR_INTERN_CHECK:
-#  verbatim: "#define DUK_USE_EXTSTR_INTERN_CHECK(ud,ptr,len) ajsheap_extstr_check_3((ptr),(len))"
+#  verbatim: "#define DUK_USE_EXTSTR_INTERN_CHECK(ud,ptr,len) lowmem_extstr_check_3((ptr),(len))"
 #DUK_USE_EXTSTR_FREE:
-#  verbatim: "#define DUK_USE_EXTSTR_FREE(ud,ptr) ajsheap_extstr_free_3((ptr))"
+#  verbatim: "#define DUK_USE_EXTSTR_FREE(ud,ptr) lowmem_extstr_free_3((ptr))"
 DUK_USE_EXEC_TIMEOUT_CHECK:
-  verbatim: "#define DUK_USE_EXEC_TIMEOUT_CHECK(udata) ajsheap_exec_timeout_check(udata)"
+  verbatim: "#define DUK_USE_EXEC_TIMEOUT_CHECK(udata) lowmem_exec_timeout_check(udata)"
 #DUK_USE_ROM_STRINGS: true
 #DUK_USE_ROM_OBJECTS: true
 #DUK_USE_ROM_GLOBAL_INHERIT: true
