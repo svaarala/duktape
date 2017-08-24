@@ -380,7 +380,7 @@ The following may be appropriate when even less memory is available
 
   - When using pointer compression you need to add support for compressing
     ROM strings, see ``doc/objects-in-code-section.rst`` and a concrete
-    example in ``examples/cmdline/duk_cmdline_ajduk.c``.
+    example in ``examples/cmdline/duk_cmdline_lowmem.c``.
 
   - See ``doc/objects-in-code-section.rst`` for technical details and
     current limitations.
@@ -431,7 +431,7 @@ When ROM object/string support is enabled, pointer compression and
 decompression must support ROM pointer compression.  This is done by
 reserving a range of 16-bit compressed pointer values to represent
 ROM pointers, and to use a ROM pointer table to compress/decompress
-ROM pointers.  See ``examples/cmdline/duk_cmdline_ajduk.c`` for an
+ROM pointers.  See ``examples/cmdline/duk_cmdline_lowmem.c`` for an
 example.
 
 External string strategies (DUK_USE_EXTSTR_INTERN_CHECK)
@@ -469,7 +469,7 @@ scraping strings from C and Ecmascript code using regexps:
 
 There are concrete examples for some external string strategies in:
 
-* ``dist/examples/cmdline/duk_cmdline_ajduk.c``
+* ``dist/examples/cmdline/duk_cmdline_lowmem.c``
 
 Tuning pool sizes for a pool-based memory allocator
 ===================================================
