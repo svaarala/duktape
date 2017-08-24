@@ -81,8 +81,11 @@ CONFIGOPTS_NONDEBUG_PERF=--option-file config/examples/performance_sensitive.yam
 CONFIGOPTS_NONDEBUG_SIZE=--option-file config/examples/low_memory.yaml
 CONFIGOPTS_NONDEBUG_ROM=--rom-support --rom-auto-lightfunc --option-file util/makeduk_base.yaml -DDUK_USE_ROM_STRINGS -DDUK_USE_ROM_OBJECTS -DDUK_USE_ROM_GLOBAL_INHERIT -UDUK_USE_HSTRING_ARRIDX
 CONFIGOPTS_NONDEBUG_DUKLOW=--option-file config/examples/low_memory.yaml --option-file util/makeduk_duklow.yaml --fixup-file util/makeduk_duklow_fixup.h
+CONFIGOPTS_DEBUG_DUKLOW=$(CONFIGOPTS_NONDEBUG_DUKLOW) -DDUK_USE_ASSERTIONS -DDUK_USE_SELF_TESTS
 CONFIGOPTS_NONDEBUG_DUKLOW_ROM=--rom-support --rom-auto-lightfunc --option-file config/examples/low_memory.yaml --option-file util/makeduk_duklow.yaml --fixup-file util/makeduk_duklow_fixup.h --builtin-file util/example_user_builtins1.yaml --builtin-file util/example_user_builtins2.yaml -DDUK_USE_ROM_STRINGS -DDUK_USE_ROM_OBJECTS -DDUK_USE_ROM_GLOBAL_INHERIT -UDUK_USE_HSTRING_ARRIDX -UDUK_USE_DEBUG
+CONFIGOPTS_DEBUG_DUKLOW_ROM=$(CONFIGOPTS_NONDEBUG_DUKLOW_ROM) -DDUK_USE_ASSERTIONS -DDUK_USE_SELF_TESTS
 CONFIGOPTS_NONDEBUG_DUKLOW_NOREFC=--option-file config/examples/low_memory.yaml --option-file util/makeduk_duklow.yaml --fixup-file util/makeduk_duklow_fixup.h -UDUK_USE_REFERENCE_COUNTING -UDUK_USE_DOUBLE_LINKED_HEAP
+CONFIGOPTS_DEBUG_DUKLOW_NOREFC=$(CONFIGOPTS_NONDEBUG_DUKLOW_NOREFC) -DDUK_USE_ASSERTIONS -DDUK_USE_SELF_TESTS
 CONFIGOPTS_DEBUG=--option-file util/makeduk_base.yaml --option-file util/makeduk_debug.yaml
 CONFIGOPTS_DEBUG_SCANBUILD=--option-file util/makeduk_base.yaml --option-file util/makeduk_debug.yaml --option-file util/makeduk_scanbuild.yaml
 CONFIGOPTS_DEBUG_ROM=--rom-support --rom-auto-lightfunc --option-file util/makeduk_base.yaml --option-file util/makeduk_debug.yaml -DDUK_USE_ROM_STRINGS -DDUK_USE_ROM_OBJECTS -DDUK_USE_ROM_GLOBAL_INHERIT -UDUK_USE_HSTRING_ARRIDX
@@ -129,6 +132,7 @@ CCOPTS_SHARED += -Wmissing-prototypes
 CCOPTS_SHARED += -Wsign-conversion
 CCOPTS_SHARED += -fmax-errors=3  # prevent floods of errors if e.g. parenthesis missing
 CCOPTS_SHARED += -I./linenoise
+CCOPTS_SHARED += -I./examples/cmdline
 CCOPTS_SHARED += -I./examples/alloc-logging
 CCOPTS_SHARED += -I./examples/alloc-torture
 CCOPTS_SHARED += -I./examples/alloc-hybrid
@@ -162,11 +166,20 @@ CCOPTS_DUKLOW += -Wno-unused-parameter -Wno-pedantic -Wno-sign-compare -Wno-miss
 CCOPTS_DUKLOW += -UDUK_CMDLINE_FANCY -DDUK_CMDLINE_LOWMEM -D_POSIX_C_SOURCE=200809L
 CCOPTS_DUKLOW += -UDUK_CMDLINE_LOGGING_SUPPORT  # extras/logger init writes to Duktape.Logger, problem with ROM build
 CCOPTS_DUKLOW += -UDUK_CMDLINE_MODULE_SUPPORT  # extras/module-duktape init writes to Duktape.Logger, problem with ROM build
+CCOPTS_DUKLOW += -UDUK_CMDLINE_CONSOLE_SUPPORT
+CCOPTS_DUKLOW += -UDUK_CMDLINE_ALLOC_LOGGING
+CCOPTS_DUKLOW += -UDUK_CMDLINE_ALLOC_TORTURE
+CCOPTS_DUKLOW += -UDUK_CMDLINE_ALLOC_HYBRID
+CCOPTS_DUKLOW += -UDUK_CMDLINE_DEBUGGER_SUPPORT
+CCOPTS_DUKLOW += -UDUK_CMDLINE_FILEIO
+#CCOPTS_DUKLOW += -DDUK_ALLOC_POOL_DEBUG
+CCOPTS_DUKLOW += -DDUK_ALLOC_POOL_TRACK_WASTE  # quite fast, but not free so disable for performance comparison
+#CCOPTS_DUKLOW += -DDUK_ALLOC_POOL_TRACK_HIGHWATER  # VERY SLOW, just for manual testing
 
 ifdef SYSTEMROOT  # Windows
-CCLIBS  = -lm -lws2_32
+CCLIBS = -lm -lws2_32
 else
-CCLIBS	= -lm
+CCLIBS = -lm
 endif
 
 # Emscripten options:
@@ -319,12 +332,21 @@ prep/dukweb: prep
 prep/duklow-nondebug: prep
 	@rm -rf ./prep/duklow-nondebug
 	$(PYTHON) tools/configure.py --output-directory ./prep/duklow-nondebug --source-directory src-input --config-metadata config $(CONFIGOPTS_NONDEBUG_DUKLOW) --line-directives
+prep/duklow-debug: prep
+	@rm -rf ./prep/duklow-debug
+	$(PYTHON) tools/configure.py --output-directory ./prep/duklow-debug --source-directory src-input --config-metadata config $(CONFIGOPTS_DEBUG_DUKLOW) --line-directives
 prep/duklow-nondebug-rom: prep
 	@rm -rf ./prep/duklow-nondebug-rom
 	$(PYTHON) tools/configure.py --output-directory ./prep/duklow-nondebug-rom --source-directory src-input --config-metadata config $(CONFIGOPTS_NONDEBUG_DUKLOW_ROM) --line-directives
+prep/duklow-debug-rom: prep
+	@rm -rf ./prep/duklow-debug-rom
+	$(PYTHON) tools/configure.py --output-directory ./prep/duklow-debug-rom --source-directory src-input --config-metadata config $(CONFIGOPTS_DEBUG_DUKLOW_ROM) --line-directives
 prep/duklow-nondebug-norefc: prep
 	@rm -rf ./prep/duklow-nondebug-norefc
 	$(PYTHON) tools/configure.py --output-directory ./prep/duklow-nondebug-norefc --source-directory src-input --config-metadata config $(CONFIGOPTS_NONDEBUG_DUKLOW_NOREFC) --line-directives
+prep/duklow-debug-norefc: prep
+	@rm -rf ./prep/duklow-debug-norefc
+	$(PYTHON) tools/configure.py --output-directory ./prep/duklow-debug-norefc --source-directory src-input --config-metadata config $(CONFIGOPTS_DEBUG_DUKLOW_NOREFC) --line-directives
 
 # Library targets.
 libduktape.so.1.0.0: prep/nondebug
@@ -468,6 +490,17 @@ duk-low: linenoise prep/duklow-nondebug
 	@echo "*** SUCCESS:"
 	@ls -l $@
 	-@size $@
+dukd-low: linenoise prep/duklow-debug
+	$(CC) -o $@ \
+		-Iextras/alloc-pool/ -Iprep/duklow-debug \
+		$(CCOPTS_DEBUG) $(CCOPTS_DUKLOW) \
+		prep/duklow-debug/duktape.c $(DUKTAPE_CMDLINE_SOURCES) \
+		examples/cmdline/duk_cmdline_lowmem.c \
+		extras/alloc-pool/duk_alloc_pool.c \
+		-lm -lpthread
+	@echo "*** SUCCESS:"
+	@ls -l $@
+	-@size $@
 duk-low-rom: linenoise prep/duklow-nondebug-rom
 	$(CC) -o $@ \
 		-Iextras/alloc-pool/ -Iprep/duklow-nondebug-rom \
@@ -479,11 +512,33 @@ duk-low-rom: linenoise prep/duklow-nondebug-rom
 	@echo "*** SUCCESS:"
 	@ls -l $@
 	-@size $@
+dukd-low-rom: linenoise prep/duklow-debug-rom
+	$(CC) -o $@ \
+		-Iextras/alloc-pool/ -Iprep/duklow-debug-rom \
+		$(CCOPTS_DEBUG) $(CCOPTS_DUKLOW) \
+		prep/duklow-debug-rom/duktape.c $(DUKTAPE_CMDLINE_SOURCES) \
+		examples/cmdline/duk_cmdline_lowmem.c \
+		extras/alloc-pool/duk_alloc_pool.c \
+		-lm -lpthread
+	@echo "*** SUCCESS:"
+	@ls -l $@
+	-@size $@
 duk-low-norefc: linenoise prep/duklow-nondebug-norefc
 	$(CC) -o $@ \
 		-Iextras/alloc-pool/ -Iprep/duklow-nondebug-norefc \
 		$(CCOPTS_NONDEBUG) $(CCOPTS_DUKLOW) \
 		prep/duklow-nondebug-norefc/duktape.c $(DUKTAPE_CMDLINE_SOURCES) \
+		examples/cmdline/duk_cmdline_lowmem.c \
+		extras/alloc-pool/duk_alloc_pool.c \
+		-lm -lpthread
+	@echo "*** SUCCESS:"
+	@ls -l $@
+	-@size $@
+dukd-low-norefc: linenoise prep/duklow-debug-norefc
+	$(CC) -o $@ \
+		-Iextras/alloc-pool/ -Iprep/duklow-debug-norefc \
+		$(CCOPTS_DEBUG) $(CCOPTS_DUKLOW) \
+		prep/duklow-debug-norefc/duktape.c $(DUKTAPE_CMDLINE_SOURCES) \
 		examples/cmdline/duk_cmdline_lowmem.c \
 		extras/alloc-pool/duk_alloc_pool.c \
 		-lm -lpthread
