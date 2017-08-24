@@ -159,7 +159,7 @@ void *duk_alloc_pool_init(char *buffer,
 #endif
 
 	for (i = 0; i < num_pools; i++) {
-		n = states[i].count;
+		n = (int) states[i].count;
 		if (n > 0) {
 			states[i].first = (duk_pool_free *) p;
 			for (j = 0; j < n; j++) {
