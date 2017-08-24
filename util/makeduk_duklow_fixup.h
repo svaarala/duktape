@@ -1,4 +1,4 @@
-/* Ajduk fixups. */
+/* duk-low fixups. */
 
 extern uint8_t *lowmem_ram;
 extern duk_uint16_t lowmem_enc16(void *ud, void *p);
@@ -10,3 +10,6 @@ extern void lowmem_extstr_free_1(const void *ptr);
 extern void lowmem_extstr_free_2(const void *ptr);
 extern void lowmem_extstr_free_3(const void *ptr);
 extern duk_bool_t lowmem_exec_timeout_check(void *udata);
+
+/* Needed for inline pointer compression functions. */
+#include "duk_alloc_pool.h"
