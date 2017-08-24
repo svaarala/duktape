@@ -367,7 +367,7 @@ The following may be appropriate when even less memory is available
     enabled by default because it increases the size of ``duktape.c``
     considerably.  Add the option ``--rom-auto-lightfunc`` to convert
     built-in function properties into lightfuncs to reduce ROM footprint.
-    (See repo Makefile ``ajduk-rom`` target for some very simple examples.)
+    (See repo Makefile ``duk-low-rom`` target for some very simple examples.)
 
   - Moving built-ins into ROM makes them read-only which has some side
     effects.  Some side effects are technical compliance issues while
@@ -395,7 +395,7 @@ The following may be appropriate when even less memory is available
 
     + ``src-input/builtins.yaml``: documents some more format details
 
-    + Repo Makefile ``ajduk-rom`` target: illustrates how to run
+    + Repo Makefile ``duk-low-rom`` target: illustrates how to run
       ``configure.py`` with user builtins
 
 * Consider using lightfuncs for representing function properties of ROM
@@ -510,10 +510,7 @@ objects, etc.  They will also give you ``sizeof(duk_heap)`` which is a large
 allocation that you should handle explicitly in pool tuning.
 
 Finally, you can look at existing projects and what kind of pool tuning
-they do.  AllJoyn.js has a manually tuned pool allocator which may be a
-useful starting point:
-
-* https://git.allseenalliance.org/cgit/core/alljoyn-js.git/
+they do.
 
 Tuning pool sizes using pool_simulator.py
 =========================================
@@ -552,10 +549,10 @@ Important notes
   will then reflect the memory usage achievable in an emergency garbage
   collect.
 
-* The pool simulator provides pool allocator behavior matching AllJoyn.js's
-  ajs_heap.c allocator.  If your pool allocator has different basic features
-  (for example, splitting and merging of chunks) you'll need to tweak the
-  pool simulator to get useful results.
+* The pool simulator provides quite simple pool allocator behavior.  If your
+  pool allocator has different basic features (for example, splitting and
+  merging of chunks) you'll need to tweak the pool simulator to get useful
+  results.
 
 Basics
 ------
@@ -566,13 +563,13 @@ The Duktape command line tool writes out an allocation log when requested::
   $ make clean duk
   $ ./duk --alloc-logging tests/ecmascript/test-dev-mandel2-func.js
 
-The "ajduk" command line tool is a variant with AllJoyn.js pool allocator,
+The "duk-low" command line tool is a variant with a simple pool allocator,
 and a host of low memory optimizations.  It represents a low memory target
 quite well and it can also be requested to write out an allocation log::
 
-  # Log written to /tmp/ajduk-alloc-log.txt
-  $ make clean ajduk
-  $ ./ajduk --ajsheap-log tests/ecmascript/test-dev-mandel2-func.js
+  # Log written to /tmp/lowmem-alloc-log.txt
+  $ make clean duk-low
+  $ ./duk-low --lowmem-log tests/ecmascript/test-dev-mandel2-func.js
 
 Allocation logs are represented in examples/alloc-logging format::
 
@@ -583,7 +580,7 @@ Allocation logs are represented in examples/alloc-logging format::
   ...
 
 The pool simulator doesn't need to know the "previous size" for a realloc
-entry, so it can be written out as -1 (like ajduk does).
+entry, so it can be written out as -1 (like duk-low does).
 
 Pool configurations are expressed in JSON::
 
@@ -601,10 +598,10 @@ chunks in that pool.  The "count" (entry count) is the number of chunks
 preallocated for that pool.  Above, the second pool has entry size of 12
 bytes and a count of 10, for a total of 120 bytes.
 
-The pool simulator matches AllJoyn.js ajs_heap.c behavior:
+The pool simulator has simplistic behavior:
 
-* Allocations are taken from smallest matching pool.  Borrowing is enabled
-  or disabled for each pool individually.
+* Allocations are taken from smallest matching pool.  Borrowing from a larger
+  pool is allowed if the smallest matching pool is out of chunks.
 
 * Reallocation tries to shrink the allocation to a previous pool size if
   possible.
@@ -778,8 +775,8 @@ Run hello world with alloc logging for Duktape baseline::
   # Using "duk", writes log to /tmp/duk-alloc-log.txt
   $ ./duk --alloc-logging tests/ecmascript/test-dev-hello-world.js
 
-  # Using "ajduk", writes log to /tmp/ajduk-alloc-log.txt
-  $ ./ajduk --ajsheap-log tests/ecmascript/test-dev-hello-world.js
+  # Using "duk-low", writes log to /tmp/lowmem-alloc-log.txt
+  $ ./duk-low --lowmem-log tests/ecmascript/test-dev-hello-world.js
 
 Extract a "tight" pool configuration for the hello world baseline,
 pool entry sizes (but not counts) need to be known in advance::
