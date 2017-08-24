@@ -9,6 +9,7 @@
 #include <string.h>
 #include <time.h>
 #include "duktape.h"
+#include "duk_cmdline.h"
 #include "duk_alloc_pool.h"
 
 #if defined(DUK_USE_ROM_OBJECTS) && defined(DUK_USE_HEAPPTR16)
@@ -24,43 +25,42 @@ extern const void * const duk_rom_compressed_pointers[];
 static const void *duk__romptr_low = NULL;
 static const void *duk__romptr_high = NULL;
 #define DUK__ROMPTR_COMPRESSION
-#define DUK__ROMPTR_FIRST DUK_USE_ROM_PTRCOMP_FIRST
+#define DUK__ROMPTR_FIRST ((duk_uint_t) DUK_USE_ROM_PTRCOMP_FIRST)
 #endif
 
-#define LOWMEM_NUM_POOLS 29
+#define LOWMEM_NUM_POOLS 28
 
 #define LOWMEM_HEAP_SIZE (255 * 1024)
 
 static const duk_pool_config lowmem_config[LOWMEM_NUM_POOLS] = {
-	{ 8,      10 * 8, 0 },
-	{ 12,     600 * 12, 0 },
-	{ 16,     300 * 16, 0 },
-	{ 20,     300 * 20, 0 },
-	{ 24,     300 * 24, 0 },
-	{ 28,     250 * 28, 0 },
-	{ 32,     150 * 32, 0 },
-	{ 40,     150 * 40, 0 },
-	{ 48,     50 * 48, 0 },
-	{ 52,     50 * 52, 0 },
-	{ 56,     50 * 56, 0 },
-	{ 60,     50 * 60, 0 },
-	{ 64,     50 * 64, 0 },
-	{ 96,     50 * 96, 0 },
-	{ 200,    1 * 200, 0 },  /* duk_heap, with heap ptr compression, ROM strings+objects */
-	{ 256,    16 * 256, 0 },
-	{ 288,    1 * 288, 0 },
-	{ 320,    1 * 320, 0 },
-	{ 396,    1 * 396, 0 },  /* duk_hthread, with heap ptr compression, ROM strings+objects */
-	{ 400,    1 * 400, 0 },  /* duk_hthread, with heap ptr compression, RAM strings+objects */
-	{ 536,    1 * 536, 0 },  /* duk_heap, with heap ptr compression, RAM strings+objects */
-	{ 512,    16 * 512, 0 },
-	{ 768,    1 * 768, 0 },  /* initial value stack */
-	{ 1024,   6 * 1024, 0 },
-	{ 2048,   5 * 2048, 0 },
-	{ 4096,   3 * 4096, 0 },
-	{ 8192,   3 * 8192, 0 },
-	{ 16384,  1 * 16384, 0 },
-	{ 32768,  1 * 32768, 0 }
+	{ 8,      10 * 8,     0 },
+	{ 12,     600 * 12,   0 },
+	{ 16,     300 * 16,   0 },
+	{ 20,     300 * 20,   0 },
+	{ 24,     300 * 24,   0 },
+	{ 28,     250 * 28,   0 },
+	{ 32,     150 * 32,   0 },
+	{ 40,     150 * 40,   0 },
+	{ 48,     50 * 48,    0 },
+	{ 52,     50 * 52,    0 },
+	{ 56,     50 * 56,    0 },
+	{ 60,     50 * 60,    0 },
+	{ 64,     50 * 64,    0 },
+	{ 96,     50 * 96,    0 },
+	{ 196,    0,          196 },  /* duk_heap, with heap ptr compression, ROM strings+objects */
+	{ 232,    0,          232 },  /* duk_hthread, with heap ptr compression, ROM strings+objects */
+	{ 256,    16 * 256,   0 },
+	{ 288,    1 * 288,    0 },
+	{ 320,    1 * 320,    0 },
+	{ 400,    0,          400 },  /* duk_hthread, with heap ptr compression, RAM strings+objects */
+	{ 520,    0,          520 },  /* duk_heap, with heap ptr compression, RAM strings+objects */
+	{ 512,    16 * 512,   0 },
+	{ 768,    0,          768 },  /* initial value stack for packed duk_tval */
+	{ 1024,   6 * 1024,   0 },
+	{ 2048,   5 * 2048,   0 },
+	{ 4096,   3 * 4096,   0 },
+	{ 8192,   3 * 8192,   0 },
+	{ 16384,  1 * 16384,  0 },
 };
 
 static duk_pool_state lowmem_state[LOWMEM_NUM_POOLS];
@@ -160,50 +160,46 @@ void lowmem_free(void) {
 	lowmem_pool_ptr = NULL;
 }
 
-duk_ret_t lowmem_dump_binding(duk_context *ctx) {
+static duk_ret_t lowmem__dump_binding(duk_context *ctx) {
 	lowmem_dump();
 	return 0;
 }
 
 void lowmem_dump(void) {
 	int i;
-	int total_used = 0;
-	int total_free = 0;
+	duk_pool_global_stats global_stats;
 
 	for (i = 0; i < LOWMEM_NUM_POOLS; i++) {
-		const duk_pool_config *c = &lowmem_config[i];
 		duk_pool_state *s = &lowmem_state[i];
-		duk_pool_free *p;
-		int free_count = 0;
-		int used_count;
-		int free_bytes;
-		int used_bytes;
+		duk_pool_stats stats;
 
-		for (p = s->first; p; p = p->next) {
-			free_count++;
-		}
-		used_count = (int) (s->count - free_count);
+		duk_alloc_pool_get_pool_stats(s, &stats);
 
-		free_bytes = (int) (free_count * s->size);
-		used_bytes = (int) (used_count * s->size);
-
-		fprintf(stderr, "%ld: size=%ld count=%ld free=%ld (%ld bytes) used=%ld (%ld bytes)\n",
-		        (long) i, (long) s->size, (long) s->count, (long) free_count, (long) free_bytes,
-		        (long) used_count, (long) used_bytes);
-
-		total_used += used_bytes;
-		total_free += free_bytes;
+		fprintf(stderr, "  %2ld: %4ld %5ldB | free %4ld %5ldB | used %4ld %5ldB | waste %5ldB | hwm %4ld (%3ld%%)%s\n",
+		        (long) i, (long) s->count, (long) s->size,
+		        (long) stats.free_count, (long) stats.free_bytes,
+		        (long) stats.used_count, (long) stats.used_bytes,
+		        (long) stats.waste_bytes, (long) stats.hwm_used_count,
+		        (long) ((double) stats.hwm_used_count / (double) s->count * 100.0),
+		        (stats.hwm_used_count == s->count ? " !" : ""));
 	}
 
-	fprintf(stderr, "TOTAL: %ld bytes used, %ld bytes free, %ld bytes total\n",
-	        (long) total_used, (long) total_free, (long) (total_used + total_free));
+	/* This causes another walk over the individual pools which is a bit
+	 * inelegant, but we want the highwater mark stats too.
+	 */
+	duk_alloc_pool_get_global_stats(&lowmem_global, &global_stats);
+
+	fprintf(stderr, "  TOTAL: %ld bytes used, %ld bytes waste, %ld bytes free, %ld bytes total; highwater %ld used, %ld waste\n",
+	        (long) global_stats.used_bytes, (long) global_stats.waste_bytes,
+	        (long) global_stats.free_bytes, (long) (global_stats.used_bytes + global_stats.free_bytes),
+	        (long) global_stats.hwm_used_bytes, (long) global_stats.hwm_waste_bytes);
 	fflush(stderr);
 }
 
 void lowmem_register(duk_context *ctx) {
 	duk_push_global_object(ctx);
 	duk_push_string(ctx, "dumpHeap");
-	duk_push_c_function(ctx, lowmem_dump_binding, 0);
+	duk_push_c_function(ctx, lowmem__dump_binding, 0);
 	duk_def_prop(ctx, -3, DUK_DEFPROP_SET_WRITABLE |
 	                      DUK_DEFPROP_CLEAR_ENUMERABLE |
 	                      DUK_DEFPROP_SET_CONFIGURABLE |
@@ -308,7 +304,7 @@ duk_uint16_t lowmem_enc16(void *ud, void *p) {
 		const void * const * ptrs = duk_rom_compressed_pointers;
 		while (*ptrs) {
 			if (*ptrs == p) {
-				ret = DUK__ROMPTR_FIRST + (ptrs - duk_rom_compressed_pointers);
+				ret = (duk_uint32_t) DUK__ROMPTR_FIRST + (duk_uint32_t) (ptrs - duk_rom_compressed_pointers);
 #if 0
 				fprintf(stderr, "lowmem_enc16: rom pointer: %p -> 0x%04lx\n", (void *) p, (long) ret);
 				fflush(stderr);
@@ -363,7 +359,7 @@ duk_uint16_t lowmem_enc16(void *ud, void *p) {
 		abort();
 	}
 #if defined(DUK__ROMPTR_COMPRESSION)
-	if (ret >= DUK__ROMPTR_FIRST) {
+	if (ret >= (duk_uint32_t) DUK__ROMPTR_FIRST) {
 		fprintf(stderr, "Failed to compress pointer, in 16-bit range but matches romptr range: %p (ret was %ld)\n", (void *) p, (long) ret);
 		fflush(stderr);
 		abort();
@@ -377,12 +373,12 @@ void *lowmem_dec16(void *ud, duk_uint16_t x) {
 	char *base = (char *) lowmem_ram - 4;
 
 #if defined(DUK__ROMPTR_COMPRESSION)
-	if (x >= DUK__ROMPTR_FIRST) {
+	if (x >= (duk_uint16_t) DUK__ROMPTR_FIRST) {
 		/* This is a blind lookup, could check index validity.
 		 * Duktape should never decompress a pointer which would
 		 * be out-of-bounds here.
 		 */
-		ret = (void *) duk__lose_const(duk_rom_compressed_pointers[x - DUK__ROMPTR_FIRST]);
+		ret = (void *) duk__lose_const(duk_rom_compressed_pointers[x - (duk_uint16_t) DUK__ROMPTR_FIRST]);
 #if 0
 		fprintf(stderr, "lowmem_dec16: rom pointer: 0x%04lx -> %p\n", (long) x, ret);
 		fflush(stderr);
