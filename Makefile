@@ -79,10 +79,10 @@ CONFIGOPTS_NONDEBUG=--option-file util/makeduk_base.yaml
 CONFIGOPTS_NONDEBUG_SCANBUILD=--option-file util/makeduk_base.yaml --option-file util/makeduk_scanbuild.yaml
 CONFIGOPTS_NONDEBUG_PERF=--option-file config/examples/performance_sensitive.yaml
 CONFIGOPTS_NONDEBUG_SIZE=--option-file config/examples/low_memory.yaml
-CONFIGOPTS_NONDEBUG_AJDUK=--option-file util/makeduk_ajduk.yaml --fixup-file util/makeduk_ajduk_fixup.h
 CONFIGOPTS_NONDEBUG_ROM=--rom-support --rom-auto-lightfunc --option-file util/makeduk_base.yaml -DDUK_USE_ROM_STRINGS -DDUK_USE_ROM_OBJECTS -DDUK_USE_ROM_GLOBAL_INHERIT -UDUK_USE_HSTRING_ARRIDX
-CONFIGOPTS_NONDEBUG_AJDUK_ROM=--rom-support --rom-auto-lightfunc --option-file util/makeduk_ajduk.yaml --fixup-file util/makeduk_ajduk_fixup.h --builtin-file util/example_user_builtins1.yaml --builtin-file util/example_user_builtins2.yaml -DDUK_USE_ROM_STRINGS -DDUK_USE_ROM_OBJECTS -DDUK_USE_ROM_GLOBAL_INHERIT -UDUK_USE_HSTRING_ARRIDX -UDUK_USE_DEBUG
-CONFIGOPTS_NONDEBUG_AJDUK_NOREFC=--option-file util/makeduk_base.yaml --option-file util/makeduk_ajduk.yaml --fixup-file util/makeduk_ajduk_fixup.h -UDUK_USE_REFERENCE_COUNTING -UDUK_USE_DOUBLE_LINKED_HEAP
+CONFIGOPTS_NONDEBUG_DUKLOW=--option-file config/examples/low_memory.yaml --option-file util/makeduk_duklow.yaml --fixup-file util/makeduk_duklow_fixup.h
+CONFIGOPTS_NONDEBUG_DUKLOW_ROM=--rom-support --rom-auto-lightfunc --option-file config/examples/low_memory.yaml --option-file util/makeduk_duklow.yaml --fixup-file util/makeduk_duklow_fixup.h --builtin-file util/example_user_builtins1.yaml --builtin-file util/example_user_builtins2.yaml -DDUK_USE_ROM_STRINGS -DDUK_USE_ROM_OBJECTS -DDUK_USE_ROM_GLOBAL_INHERIT -UDUK_USE_HSTRING_ARRIDX -UDUK_USE_DEBUG
+CONFIGOPTS_NONDEBUG_DUKLOW_NOREFC=--option-file config/examples/low_memory.yaml --option-file util/makeduk_duklow.yaml --fixup-file util/makeduk_duklow_fixup.h -UDUK_USE_REFERENCE_COUNTING -UDUK_USE_DOUBLE_LINKED_HEAP
 CONFIGOPTS_DEBUG=--option-file util/makeduk_base.yaml --option-file util/makeduk_debug.yaml
 CONFIGOPTS_DEBUG_SCANBUILD=--option-file util/makeduk_base.yaml --option-file util/makeduk_debug.yaml --option-file util/makeduk_scanbuild.yaml
 CONFIGOPTS_DEBUG_ROM=--rom-support --rom-auto-lightfunc --option-file util/makeduk_base.yaml --option-file util/makeduk_debug.yaml -DDUK_USE_ROM_STRINGS -DDUK_USE_ROM_OBJECTS -DDUK_USE_ROM_GLOBAL_INHERIT -UDUK_USE_HSTRING_ARRIDX
@@ -155,12 +155,13 @@ GXXOPTS_NONDEBUG += -I./examples/alloc-logging -I./examples/alloc-torture -I./ex
 GXXOPTS_DEBUG = $(GXXOPTS_SHARED) -O0 -g -ggdb
 GXXOPTS_DEBUG += -I./examples/alloc-logging -I./examples/alloc-torture -I./examples/alloc-hybrid -I./extras/print-alert -I./extras/console -I./extras/logging -I./extras/module-duktape
 
-CCOPTS_AJDUK = -m32
-#CCOPTS_AJDUK += '-fpack-struct=1'
-CCOPTS_AJDUK += -Wno-unused-parameter -Wno-pedantic -Wno-sign-compare -Wno-missing-field-initializers -Wno-unused-result
-CCOPTS_AJDUK += -UDUK_CMDLINE_FANCY -DDUK_CMDLINE_LOWMEM -D_POSIX_C_SOURCE=200809L
-CCOPTS_AJDUK += -UDUK_CMDLINE_LOGGING_SUPPORT  # extras/logger init writes to Duktape.Logger, problem with ROM build
-CCOPTS_AJDUK += -UDUK_CMDLINE_MODULE_SUPPORT  # extras/module-duktape init writes to Duktape.Logger, problem with ROM build
+CCOPTS_DUKLOW = -m32
+CCOPTS_DUKLOW += -flto -fno-asynchronous-unwind-tables -ffunction-sections -Wl,--gc-sections
+#CCOPTS_DUKLOW += '-fpack-struct=1'
+CCOPTS_DUKLOW += -Wno-unused-parameter -Wno-pedantic -Wno-sign-compare -Wno-missing-field-initializers -Wno-unused-result
+CCOPTS_DUKLOW += -UDUK_CMDLINE_FANCY -DDUK_CMDLINE_LOWMEM -D_POSIX_C_SOURCE=200809L
+CCOPTS_DUKLOW += -UDUK_CMDLINE_LOGGING_SUPPORT  # extras/logger init writes to Duktape.Logger, problem with ROM build
+CCOPTS_DUKLOW += -UDUK_CMDLINE_MODULE_SUPPORT  # extras/module-duktape init writes to Duktape.Logger, problem with ROM build
 
 ifdef SYSTEMROOT  # Windows
 CCLIBS  = -lm -lws2_32
@@ -215,7 +216,7 @@ clean:
 	@rm -f duk-rom dukd-rom
 	@rm -f duk-clang duk-perf-clang
 	@rm -f duk-g++ dukd-g++ duk-perf-g++
-	@rm -f ajduk ajduk-rom ajdukd
+	@rm -f duk-low duk-low-norefc duk-low-rom
 	@rm -f emduk emduk.js
 	@rm -f libduktape*.so*
 	@rm -f duktape-*.tar.*
@@ -315,15 +316,15 @@ prep/emduk: prep
 prep/dukweb: prep
 	@rm -rf ./prep/dukweb
 	$(PYTHON) tools/configure.py --output-directory ./prep/dukweb --source-directory src-input --config-metadata config $(CONFIGOPTS_DUKWEB) --line-directives
-prep/ajduk-nondebug: prep
-	@rm -rf ./prep/ajduk-nondebug
-	$(PYTHON) tools/configure.py --output-directory ./prep/ajduk-nondebug --source-directory src-input --config-metadata config $(CONFIGOPTS_NONDEBUG_AJDUK) --line-directives
-prep/ajduk-nondebug-rom: prep
-	@rm -rf ./prep/ajduk-nondebug-rom
-	$(PYTHON) tools/configure.py --output-directory ./prep/ajduk-nondebug-rom --source-directory src-input --config-metadata config $(CONFIGOPTS_NONDEBUG_AJDUK_ROM) --line-directives
-prep/ajduk-nondebug-norefc: prep
-	@rm -rf ./prep/ajduk-nondebug-norefc
-	$(PYTHON) tools/configure.py --output-directory ./prep/ajduk-nondebug-norefc --source-directory src-input --config-metadata config $(CONFIGOPTS_NONDEBUG_AJDUK_NOREFC) --line-directives
+prep/duklow-nondebug: prep
+	@rm -rf ./prep/duklow-nondebug
+	$(PYTHON) tools/configure.py --output-directory ./prep/duklow-nondebug --source-directory src-input --config-metadata config $(CONFIGOPTS_NONDEBUG_DUKLOW) --line-directives
+prep/duklow-nondebug-rom: prep
+	@rm -rf ./prep/duklow-nondebug-rom
+	$(PYTHON) tools/configure.py --output-directory ./prep/duklow-nondebug-rom --source-directory src-input --config-metadata config $(CONFIGOPTS_NONDEBUG_DUKLOW_ROM) --line-directives
+prep/duklow-nondebug-norefc: prep
+	@rm -rf ./prep/duklow-nondebug-norefc
+	$(PYTHON) tools/configure.py --output-directory ./prep/duklow-nondebug-norefc --source-directory src-input --config-metadata config $(CONFIGOPTS_NONDEBUG_DUKLOW_NOREFC) --line-directives
 
 # Library targets.
 libduktape.so.1.0.0: prep/nondebug
@@ -453,36 +454,36 @@ dukscanbuild: prep/nondebug-scanbuild
 .PHONY: dukdscanbuild
 dukdscanbuild: prep/debug-scanbuild
 	scan-build gcc -o/tmp/dukd.scanbuild -Iprep/debug-scanbuild $(CCOPTS_DEBUG) prep/debug-scanbuild/*.c $(DUKTAPE_CMDLINE_SOURCES) $(LINENOISE_SOURCES) $(CCLIBS)
-# Command line with Alljoyn.js pool allocator, for low memory testing.
+# Command line with a simple pool allocator, for low memory testing.
 # The pool sizes only make sense with -m32, so force that.  This forces
 # us to use barebones cmdline too.
-ajduk: linenoise prep/ajduk-nondebug
+duk-low: linenoise prep/duklow-nondebug
 	$(CC) -o $@ \
-		-Iextras/alloc-pool/ -Iprep/ajduk-nondebug \
-		$(CCOPTS_NONDEBUG) $(CCOPTS_AJDUK) \
-		prep/ajduk-nondebug/duktape.c $(DUKTAPE_CMDLINE_SOURCES) \
+		-Iextras/alloc-pool/ -Iprep/duklow-nondebug \
+		$(CCOPTS_NONDEBUG) $(CCOPTS_DUKLOW) \
+		prep/duklow-nondebug/duktape.c $(DUKTAPE_CMDLINE_SOURCES) \
 		examples/cmdline/duk_cmdline_lowmem.c \
 		extras/alloc-pool/duk_alloc_pool.c \
 		-lm -lpthread
 	@echo "*** SUCCESS:"
 	@ls -l $@
 	-@size $@
-ajduk-rom: linenoise prep/ajduk-nondebug-rom
+duk-low-rom: linenoise prep/duklow-nondebug-rom
 	$(CC) -o $@ \
-		-Iextras/alloc-pool/ -Iprep/ajduk-nondebug-rom \
-		$(CCOPTS_NONDEBUG) $(CCOPTS_AJDUK) \
-		prep/ajduk-nondebug-rom/duktape.c $(DUKTAPE_CMDLINE_SOURCES) \
+		-Iextras/alloc-pool/ -Iprep/duklow-nondebug-rom \
+		$(CCOPTS_NONDEBUG) $(CCOPTS_DUKLOW) \
+		prep/duklow-nondebug-rom/duktape.c $(DUKTAPE_CMDLINE_SOURCES) \
 		examples/cmdline/duk_cmdline_lowmem.c \
 		extras/alloc-pool/duk_alloc_pool.c \
 		-lm -lpthread
 	@echo "*** SUCCESS:"
 	@ls -l $@
 	-@size $@
-ajduk-norefc: linenoise prep/ajduk-nondebug-norefc
+duk-low-norefc: linenoise prep/duklow-nondebug-norefc
 	$(CC) -o $@ \
-		-Iextras/alloc-pool/ -Iprep/ajduk-nondebug-norefc \
-		$(CCOPTS_NONDEBUG) $(CCOPTS_AJDUK) \
-		prep/ajduk-nondebug-norefc/duktape.c $(DUKTAPE_CMDLINE_SOURCES) \
+		-Iextras/alloc-pool/ -Iprep/duklow-nondebug-norefc \
+		$(CCOPTS_NONDEBUG) $(CCOPTS_DUKLOW) \
+		prep/duklow-nondebug-norefc/duktape.c $(DUKTAPE_CMDLINE_SOURCES) \
 		examples/cmdline/duk_cmdline_lowmem.c \
 		extras/alloc-pool/duk_alloc_pool.c \
 		-lm -lpthread
