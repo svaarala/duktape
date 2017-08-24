@@ -22,7 +22,7 @@ def main():
         # F ptr/NULL size
         # R ptr/NULL oldsize ptr/NULL/FAIL newsize
 
-        # Note: ajduk doesn't log oldsize (uses -1 instead)
+        # Note: duk-low doesn't log oldsize (uses -1 instead)
 
         if parts[0] == 'A':
             if parts[1] != 'NULL' and parts[1] != 'FAIL':
