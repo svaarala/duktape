@@ -26,7 +26,7 @@ DUK_USE_HEAPPTR16: true
 
 #DUK_USE_FASTINT: true
 
-# Very verbose and slow pointer compression functions.
+# Very verbose and slow pointer compression functions.  Just for illustration.
 #DUK_USE_HEAPPTR_ENC16:
 #  verbatim: "#define DUK_USE_HEAPPTR_ENC16(ud,p) lowmem_enc16((ud),(p))"
 #DUK_USE_HEAPPTR_DEC16:
@@ -40,7 +40,7 @@ DUK_USE_HEAPPTR_ENC16:
 DUK_USE_HEAPPTR_DEC16:
   verbatim: "#define DUK_USE_HEAPPTR_DEC16(ud,x) duk_alloc_pool_dec16((x))"
 
-# External strings.
+# External strings.  Example functions are very slow, just for illustration.
 #DUK_USE_EXTSTR_INTERN_CHECK:
 #  verbatim: "#define DUK_USE_EXTSTR_INTERN_CHECK(ud,ptr,len) lowmem_extstr_check_1((ptr),(len))"
 #DUK_USE_EXTSTR_FREE:
