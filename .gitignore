@@ -7,6 +7,12 @@
 /_*
 /duk.*
 /duk
+/dukd
+/duk-size
+/duk-perf
+/duk-low
+/duk-low-norefc
+/duk-low-rom
 /libduktape.*
 /build/
 /prep/
