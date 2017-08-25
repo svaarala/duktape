@@ -434,41 +434,41 @@ def context_linux_x64_cpp_exceptions():
         print('C++ exceptions don\'t seem to be working')
         return False
 
-def context_linux_x86_ajduk():
+def context_linux_x86_duklow():
     cwd = os.getcwd()
-    execute([ 'make', 'ajduk' ])
+    execute([ 'make', 'duk-low' ])
     res = execute([
-        os.path.join(cwd, 'ajduk'),
+        os.path.join(cwd, 'duk-low'),
         '-e', 'print("hello world!");'
     ])
     return 'hello world!\n' in res['stdout']
 
-def context_linux_x86_ajduk_norefc():
+def context_linux_x86_duklow_norefc():
     cwd = os.getcwd()
-    execute([ 'make', 'ajduk-norefc' ])
+    execute([ 'make', 'duk-low-norefc' ])
     res = execute([
-        os.path.join(cwd, 'ajduk-norefc'),
+        os.path.join(cwd, 'duk-low-norefc'),
         '-e', 'print("hello world!");'
     ])
     return 'hello world!\n' in res['stdout']
 
-def context_linux_x86_ajduk_rombuild():
+def context_linux_x86_duklow_rombuild():
     cwd = os.getcwd()
 
-    execute([ 'make', 'ajduk-rom' ])
+    execute([ 'make', 'duk-low-rom' ])
 
     got_hello = False
     got_startrek = False
 
     res = execute([
-        os.path.join(cwd, 'ajduk-rom'),
+        os.path.join(cwd, 'duk-low-rom'),
         '-e', 'print("hello world!");'
     ])
-    got_hello = ('hello world!\n' in res['stdout'])  # ajduk stdout has pool dumps etc
+    got_hello = ('hello world!\n' in res['stdout'])  # duk-low-rom stdout has pool dumps etc
     print('Got hello: %r' % got_hello)
 
     res = execute([
-        os.path.join(cwd, 'ajduk-rom'),
+        os.path.join(cwd, 'duk-low-rom'),
         '-e', 'print("StarTrek.ent:", StarTrek.ent);'
     ])
     got_startrek = ('StarTrek.ent: true\n' in res['stdout'])
@@ -953,9 +953,9 @@ context_handlers = {
 
     'linux-x64-cpp-exceptions': context_linux_x64_cpp_exceptions,
 
-    'linux-x86-ajduk': context_linux_x86_ajduk,
-    'linux-x86-ajduk-norefc': context_linux_x86_ajduk_norefc,
-    'linux-x86-ajduk-rombuild': context_linux_x86_ajduk_rombuild,
+    'linux-x86-duklow': context_linux_x86_duklow,
+    'linux-x86-duklow-norefc': context_linux_x86_duklow_norefc,
+    'linux-x86-duklow-rombuild': context_linux_x86_duklow_rombuild,
 
     'linux-x64-v8-bench-pass': context_linux_x64_v8_bench_pass,
     'linux-x64-octane': context_linux_x64_octane,
@@ -1035,8 +1035,6 @@ def main():
     execute([ 'git', 'config', 'core.filemode', 'false' ])  # avoid perm issues on Windows
 
     for fn in [
-        'alljoyn-72930212134129ae0464df93c526a6d110cb82f7.tar.gz',
-        'ajtcl-cf47440914f31553a0064f3dabbbf337921ea357.tar.gz',
         'closure-20160317.tar.gz',
         'uglifyjs2-20160317.tar.gz',
         'runtests-node-modules-20160320.tar.gz'
