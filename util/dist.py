@@ -521,7 +521,7 @@ def main():
     copy_files([
         'README.rst',
         'duk_cmdline.c',
-        'duk_cmdline_ajduk.c'
+        'duk_cmdline_lowmem.c'
     ], os.path.join('examples', 'cmdline'), os.path.join(dist, 'examples', 'cmdline'))
 
     copy_files([

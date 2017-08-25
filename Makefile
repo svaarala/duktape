@@ -158,7 +158,7 @@ GXXOPTS_DEBUG += -I./examples/alloc-logging -I./examples/alloc-torture -I./examp
 CCOPTS_AJDUK = -m32
 #CCOPTS_AJDUK += '-fpack-struct=1'
 CCOPTS_AJDUK += -Wno-unused-parameter -Wno-pedantic -Wno-sign-compare -Wno-missing-field-initializers -Wno-unused-result
-CCOPTS_AJDUK += -UDUK_CMDLINE_FANCY -DDUK_CMDLINE_AJSHEAP -D_POSIX_C_SOURCE=200809L
+CCOPTS_AJDUK += -UDUK_CMDLINE_FANCY -DDUK_CMDLINE_LOWMEM -D_POSIX_C_SOURCE=200809L
 CCOPTS_AJDUK += -UDUK_CMDLINE_LOGGING_SUPPORT  # extras/logger init writes to Duktape.Logger, problem with ROM build
 CCOPTS_AJDUK += -UDUK_CMDLINE_MODULE_SUPPORT  # extras/module-duktape init writes to Duktape.Logger, problem with ROM build
 
@@ -277,7 +277,6 @@ cleanall: clean
 	@rm -rf flow
 	@rm -rf 3883a2e9063b0a5f2705bdac3263577a03913c94.zip
 	@rm -rf es5-tests.zip
-	@rm -rf alljoyn-js ajtcl
 	@rm -f v1.3.5.tar.gz
 	@rm -f "references/ECMA-262 5th edition December 2009.pdf"
 	@rm -f "references/ECMA-262 5.1 edition June 2011.pdf"
@@ -457,35 +456,35 @@ dukdscanbuild: prep/debug-scanbuild
 # Command line with Alljoyn.js pool allocator, for low memory testing.
 # The pool sizes only make sense with -m32, so force that.  This forces
 # us to use barebones cmdline too.
-ajduk: alljoyn-js ajtcl linenoise prep/ajduk-nondebug
+ajduk: linenoise prep/ajduk-nondebug
 	$(CC) -o $@ \
-		-Ialljoyn-js/src -Iajtcl/inc/ -Iajtcl/src/target/linux/ -Iprep/ajduk-nondebug \
+		-Iextras/alloc-pool/ -Iprep/ajduk-nondebug \
 		$(CCOPTS_NONDEBUG) $(CCOPTS_AJDUK) \
 		prep/ajduk-nondebug/duktape.c $(DUKTAPE_CMDLINE_SOURCES) \
-		examples/cmdline/duk_cmdline_ajduk.c \
-		alljoyn-js/src/ajs_heap.c ajtcl/src/aj_debug.c ajtcl/src/target/linux/aj_target_util.c \
+		examples/cmdline/duk_cmdline_lowmem.c \
+		extras/alloc-pool/duk_alloc_pool.c \
 		-lm -lpthread
 	@echo "*** SUCCESS:"
 	@ls -l $@
 	-@size $@
-ajduk-rom: alljoyn-js ajtcl linenoise prep/ajduk-nondebug-rom
+ajduk-rom: linenoise prep/ajduk-nondebug-rom
 	$(CC) -o $@ \
-		-Ialljoyn-js/src -Iajtcl/inc/ -Iajtcl/src/target/linux/ -Iprep/ajduk-nondebug-rom \
+		-Iextras/alloc-pool/ -Iprep/ajduk-nondebug-rom \
 		$(CCOPTS_NONDEBUG) $(CCOPTS_AJDUK) \
 		prep/ajduk-nondebug-rom/duktape.c $(DUKTAPE_CMDLINE_SOURCES) \
-		examples/cmdline/duk_cmdline_ajduk.c \
-		alljoyn-js/src/ajs_heap.c ajtcl/src/aj_debug.c ajtcl/src/target/linux/aj_target_util.c \
+		examples/cmdline/duk_cmdline_lowmem.c \
+		extras/alloc-pool/duk_alloc_pool.c \
 		-lm -lpthread
 	@echo "*** SUCCESS:"
 	@ls -l $@
 	-@size $@
-ajduk-norefc: alljoyn-js ajtcl linenoise prep/ajduk-nondebug-norefc
+ajduk-norefc: linenoise prep/ajduk-nondebug-norefc
 	$(CC) -o $@ \
-		-Ialljoyn-js/src -Iajtcl/inc/ -Iajtcl/src/target/linux/ -Iprep/ajduk-nondebug-norefc \
+		-Iextras/alloc-pool/ -Iprep/ajduk-nondebug-norefc \
 		$(CCOPTS_NONDEBUG) $(CCOPTS_AJDUK) \
 		prep/ajduk-nondebug-norefc/duktape.c $(DUKTAPE_CMDLINE_SOURCES) \
-		examples/cmdline/duk_cmdline_ajduk.c \
-		alljoyn-js/src/ajs_heap.c ajtcl/src/aj_debug.c ajtcl/src/target/linux/aj_target_util.c \
+		examples/cmdline/duk_cmdline_lowmem.c \
+		extras/alloc-pool/duk_alloc_pool.c \
 		-lm -lpthread
 	@echo "*** SUCCESS:"
 	@ls -l $@
@@ -886,16 +885,7 @@ dtrace4linux:
 flow:
 	# https://github.com/facebook/flow
 	$(GIT) clone --depth 1 https://github.com/facebook/flow.git
-alljoyn-js:
-	# https://git.allseenalliance.org/cgit/core/alljoyn-js.git/
-	# no --depth 1 ("dumb http transport does not support --depth")
-	$(GIT) clone https://git.allseenalliance.org/gerrit/core/alljoyn-js.git
-ajtcl:
-	# https://git.allseenalliance.org/cgit/core/ajtcl.git/
-	# no --depth 1 ("dumb http transport does not support --depth")
-	$(GIT) clone https://git.allseenalliance.org/gerrit/core/ajtcl.git/
-	ln -s . ajtcl/inc/ajtcl  # workaround for #include <ajtcl/xxx.h>
-	ln -s . ajtcl/src/target/linux/ajtcl
+
 # Duktape binary releases are in a separate repo.
 duktape-releases:
 	$(GIT) clone https://github.com/svaarala/duktape-releases.git

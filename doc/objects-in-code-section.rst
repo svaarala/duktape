@@ -280,4 +280,4 @@ objects using the user-supplied compression macros.  This poses a few issues:
 For now the approach is based on that ROM pointer table; the integration with
 user code is not (yet) very clean, see:
 
-* ``examples/cmdline/duk_cmdline_ajduk.c``
+* ``examples/cmdline/duk_cmdline_lowmem.c``
