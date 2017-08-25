@@ -92,10 +92,10 @@ void *duk_alloc_pool_dec16(duk_uint16_t val);
 #endif
 
 /* Inlined pointer compression functions.  Gcc and clang -Os won't in
- * practice inline these because it's more size efficient (by about
- * 3kB) to use explicit calls instead.  Having these defined inline
- * here allows performance optimized builds to inline pointer compression
- * operations.
+ * practice inline these without an "always inline" attribute because it's
+ * more size efficient (by a few kB) to use explicit calls instead.  Having
+ * these defined inline here allows performance optimized builds to inline
+ * pointer compression operations.
  *
  * Pointer compression assumes there's a single globally registered memory
  * pool which makes pointer compression more efficient.  This would be easy
@@ -103,8 +103,19 @@ void *duk_alloc_pool_dec16(duk_uint16_t val);
  * plumbing the heap userdata from the compression/decompression macros.
  */
 
+/* DUK_ALWAYS_INLINE is not a public API symbol so it may go away in even a
+ * minor update.  But it's pragmatic for this extra because it handles many
+ * compilers via duk_config.h detection.  Check that the macro exists so that
+ * if it's gone, we can still compile.
+ */
+#if defined(DUK_ALWAYS_INLINE)
+#define DUK__ALLOC_POOL_ALWAYS_INLINE DUK_ALWAYS_INLINE
+#else
+#define DUK__ALLOC_POOL_ALWAYS_INLINE /* nop */
+#endif
+
 #if defined(DUK_USE_HEAPPTR16)
-static inline duk_uint16_t duk_alloc_pool_enc16(void *ptr) {
+static DUK__ALLOC_POOL_ALWAYS_INLINE duk_uint16_t duk_alloc_pool_enc16(void *ptr) {
 	if (ptr == NULL) {
 		/* With 'return 0' gcc and clang -Os generate inefficient code.
 		 * For example, gcc -Os generates:
@@ -139,7 +150,7 @@ static inline duk_uint16_t duk_alloc_pool_enc16(void *ptr) {
 	return (duk_uint16_t) (((size_t) ((char *) ptr - (char *) duk_alloc_pool_ptrcomp_base)) >> 2);
 }
 
-static inline void *duk_alloc_pool_dec16(duk_uint16_t val) {
+static DUK__ALLOC_POOL_ALWAYS_INLINE void *duk_alloc_pool_dec16(duk_uint16_t val) {
 	if (val == 0) {
 		/* As with enc16 the gcc and clang -Os output is inefficient,
 		 * e.g. gcc -Os:

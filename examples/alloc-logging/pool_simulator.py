@@ -6,10 +6,7 @@
 #  application profiles.
 #
 #  The pool allocator simulator incorporates quite basic pool features
-#  including "borrowing" from larger pool sizes.  The behavior matches
-#  AllJoyn.js ajs_heap.c allocator:
-#
-#    https://git.allseenalliance.org/cgit/core/alljoyn-js.git/tree/ajs_heap.c
+#  including "borrowing" from larger pool sizes.
 #
 #  If your pool allocator has different behavior (e.g. ability to split and
 #  merge pool entries) you'll need to modify the simulator to properly
@@ -414,7 +411,7 @@ def processAllocLog(ps, f_log, out_dir, throw_on_oom=True, emit_files=True):
                     ps.free(ptr)
                     del ptrmap[parts[1]]
             elif parts[0] == 'R':
-                # oldsize is not needed; don't use because e.g. ajduk
+                # oldsize is not needed; don't use because e.g. duk-low
                 # log stats don't provide it
 
                 if parts[1] == 'NULL':
@@ -546,29 +543,6 @@ def configOneLiner(cfg):
 
     res = ('total %d:' % total_bytes) + res
     return res
-
-# Convert a pool config into an ajs_heap.c AJS_HeapConfig initializer.
-def configToAjsHeader(cfg):
-    ind = '    '
-    cfgName = 'heapConfig'
-
-    res = []
-    res.append('/* optimized using pool_simulator.py */')
-    res.append('static const AJS_HeapConfig %s[] = {' % cfgName)
-    res.append('%s/* %d bytes total */' % (ind, cfg['total_bytes']))
-    for i in xrange(len(cfg['pools'])):
-        p = cfg['pools'][i]
-        if p['count'] == 0:
-            continue
-        borrow = '0'
-        if p.get('borrow', False):
-            borrow = 'AJS_POOL_BORROW'
-        comma = ','   # could remove, need to know which line is last (zero counts affect it)
-        res.append('%s{ %-7d, %-5d, %-16s, %d }%s   /* %7d bytes */' % \
-                   (ind, p['size'], p['count'], borrow, p.get('heap_index', 0), comma,
-                   p['size'] * p['count']))
-    res.append('};')
-    return '\n'.join(res) + '\n'
 
 # Recompute 'total_bytes' of the pool (useful after modifications).
 def recomputePoolTotal(cfg):
@@ -825,7 +799,6 @@ def main():
     parser.add_option('--pool-config', dest='pool_config')
     parser.add_option('--alloc-log', dest='alloc_log')
     parser.add_option('--out-pool-config', dest='out_pool_config')
-    parser.add_option('--out-ajsheap-config', dest='out_ajsheap_config', default=None)
     (opts, args) = parser.parse_args()
 
     if not os.path.isdir(opts.out_dir):
@@ -835,8 +808,6 @@ def main():
 
     def writeOutputs(cfg):
         writeJson(opts.out_pool_config, cfg)
-        if opts.out_ajsheap_config is not None:
-            writeFile(opts.out_ajsheap_config, configToAjsHeader(cfg))
 
     cmd = args[0]
     if cmd == 'simulate':

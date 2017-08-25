@@ -1,9 +1,8 @@
 {
-    "_comment_heap_index": "'heap_index' is AllJoyn.js specific and is carried through as is",
     "_comment_ignored": "unknown fields are passed through in general without modification (e.g. 'custom_ignored' below)",
 
     "pools": [
-        { "size": 8, "count": 10, "borrow": true, "heap_index": 0 },
+        { "size": 8, "count": 10, "borrow": true },
         { "size": 12, "count": 10, "borrow": true, "custom_ignored": "foo" },
         { "size": 16, "count": 200, "borrow": true },
         { "size": 20, "count": 400, "borrow": true },
@@ -24,8 +23,8 @@
         { "size": 2048, "count": 5, "borrow": true },
         { "size": 4096, "count": 3, "borrow": false },
         { "size": 8192, "count": 3, "borrow": false },
-        { "size": 16384, "count": 1, "borrow": false, "heap_index": 1 },
-        { "size": 32768, "count": 1, "borrow": false, "heap_index": 1 },
-        { "size": 262144, "count": 0, "borrow": false, "heap_index": 1 }
+        { "size": 16384, "count": 1, "borrow": false },
+        { "size": 32768, "count": 1, "borrow": false },
+        { "size": 262144, "count": 0, "borrow": false }
     ]
 }

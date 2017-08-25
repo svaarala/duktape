@@ -11,7 +11,7 @@
  *  a fatal error.
  *
  *  This testcase demonstrates the issue.  You need a command line 'duk'
- *  executable which has a limited memory pool, e.g. the 'ajduk' example.
+ *  executable which has a limited memory pool, e.g. the 'duk-low' example.
  *  Expect string is for the desktop version with no memory limitations,
  *  this testcase is intended to be run manually.
  */

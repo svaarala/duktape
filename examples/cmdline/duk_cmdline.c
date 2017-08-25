@@ -1127,7 +1127,7 @@ static duk_context *create_duktape_heap(int alloc_provider, int debugger, int lo
 
 #if defined(DUK_CMDLINE_LOWMEM)
 	if (alloc_provider == ALLOC_LOWMEM) {
-		fprintf(stdout, "Pool dump after heap creation\n");
+		fprintf(stderr, "*** pool dump after heap creation ***\n");
 		lowmem_dump();
 	}
 #endif
@@ -1238,12 +1238,12 @@ static void destroy_duktape_heap(duk_context *ctx, int alloc_provider) {
 
 #if defined(DUK_CMDLINE_LOWMEM)
 	if (alloc_provider == ALLOC_LOWMEM) {
-		fprintf(stdout, "Pool dump before duk_destroy_heap(), before forced gc\n");
+		fprintf(stderr, "*** pool dump before duk_destroy_heap(), before forced gc ***\n");
 		lowmem_dump();
 
 		duk_gc(ctx, 0);
 
-		fprintf(stdout, "Pool dump before duk_destroy_heap(), after forced gc\n");
+		fprintf(stderr, "*** pool dump before duk_destroy_heap(), after forced gc ***\n");
 		lowmem_dump();
 	}
 #endif
@@ -1254,7 +1254,7 @@ static void destroy_duktape_heap(duk_context *ctx, int alloc_provider) {
 
 #if defined(DUK_CMDLINE_LOWMEM)
 	if (alloc_provider == ALLOC_LOWMEM) {
-		fprintf(stdout, "Pool dump after duk_destroy_heap() (should have zero allocs)\n");
+		fprintf(stderr, "*** pool dump after duk_destroy_heap() (should have zero allocs) ***\n");
 		lowmem_dump();
 	}
 	lowmem_free();
@@ -1544,7 +1544,7 @@ int main(int argc, char *argv[]) {
 	                "   --restrict-memory  use lower memory limit (used by test runner)\n"
 	                "   --alloc-default    use Duktape default allocator\n"
 #if defined(DUK_CMDLINE_ALLOC_LOGGING)
-	                "   --alloc-logging    use logging allocator (writes to /tmp)\n"
+	                "   --alloc-logging    use logging allocator, write alloc log to /tmp/duk-alloc-log.txt\n"
 #endif
 #if defined(DUK_CMDLINE_ALLOC_TORTURE)
 	                "   --alloc-torture    use torture allocator\n"
@@ -1553,8 +1553,8 @@ int main(int argc, char *argv[]) {
 	                "   --alloc-hybrid     use hybrid allocator\n"
 #endif
 #if defined(DUK_CMDLINE_LOWMEM)
-	                "   --alloc-lowmem     use pooled allocator (enabled by default for ajduk)\n"
-	                "   --lowmem-log       write alloc log to /tmp/ajduk-alloc-log.txt\n"
+	                "   --alloc-lowmem     use pooled allocator (enabled by default for duk-low)\n"
+	                "   --lowmem-log       write alloc log to /tmp/lowmem-alloc-log.txt\n"
 #endif
 #if defined(DUK_CMDLINE_DEBUGGER_SUPPORT)
 			"   --debugger         start example debugger\n"

@@ -27,60 +27,9 @@ static const void *duk__romptr_high = NULL;
 #define DUK__ROMPTR_FIRST DUK_USE_ROM_PTRCOMP_FIRST
 #endif
 
-/*
- *  Helpers
- */
-
-static void *duk__lose_const(const void *ptr) {
-	/* Somewhat portable way of losing a const without warnings.
-	 * Another approach is to cast through intptr_t, but that
-	 * type is not always available.
-	 */
-	union {
-		const void *p;
-		void *q;
-	} u;
-	u.p = ptr;
-	return u.q;
-}
-
-static void duk__safe_print_chars(const char *p, duk_size_t len, int until_nul) {
-	duk_size_t i;
-
-	fprintf(stderr, "\"");
-	for (i = 0; i < len; i++) {
-		unsigned char x = (unsigned char) p[i];
-		if (until_nul && x == 0U) {
-			break;
-		}
-		if (x < 0x20 || x >= 0x7e || x == '"' || x == '\'' || x == '\\') {
-			fprintf(stderr, "\\x%02x", (int) x);
-		} else {
-			fprintf(stderr, "%c", (char) x);
-		}
-	}
-	fprintf(stderr, "\"");
-}
-
-/*
- *  Heap initialization when using AllJoyn.js pool allocator (without any
- *  other AllJoyn.js integration).  This serves as an example of how to
- *  integrate Duktape with a pool allocator and is useful for low memory
- *  testing.
- *
- *  The pool sizes are not optimized here.  The sizes are chosen so that
- *  you can look at the high water mark (hwm) and use counts (use) and see
- *  how much allocations are needed for each pool size.  To optimize pool
- *  sizes more accurately, you can use --alloc-logging and inspect the memory
- *  allocation log which provides exact byte counts etc.
- *
- *  https://git.allseenalliance.org/cgit/core/alljoyn-js.git
- *  https://git.allseenalliance.org/cgit/core/alljoyn-js.git/tree/ajs.c
- */
-
 #define LOWMEM_NUM_POOLS 29
 
-#define LOWMEM_HEAP_SIZE 256 * 1024
+#define LOWMEM_HEAP_SIZE (255 * 1024)
 
 static const duk_pool_config lowmem_config[LOWMEM_NUM_POOLS] = {
 	{ 8,      10 * 8, 0 },
@@ -121,6 +70,38 @@ static duk_pool_global lowmem_global;
 void *lowmem_pool_ptr = NULL;
 
 uint8_t *lowmem_ram = NULL;
+
+static void *duk__lose_const(const void *ptr) {
+	/* Somewhat portable way of losing a const without warnings.
+	 * Another approach is to cast through intptr_t, but that
+	 * type is not always available.
+	 */
+	union {
+		const void *p;
+		void *q;
+	} u;
+	u.p = ptr;
+	return u.q;
+}
+
+static void duk__safe_print_chars(const char *p, duk_size_t len, int until_nul) {
+	duk_size_t i;
+
+	fprintf(stderr, "\"");
+	for (i = 0; i < len; i++) {
+		unsigned char x = (unsigned char) p[i];
+		if (until_nul && x == 0U) {
+			break;
+		}
+		if (x < 0x20 || x >= 0x7e || x == '"' || x == '\'' || x == '\\') {
+			fprintf(stderr, "\\x%02x", (int) x);
+		} else {
+			fprintf(stderr, "%c", (char) x);
+		}
+	}
+	fprintf(stderr, "\"");
+}
+
 
 void lowmem_init(void) {
 	void *ptr;
@@ -190,7 +171,7 @@ void lowmem_dump(void) {
 	int total_free = 0;
 
 	for (i = 0; i < LOWMEM_NUM_POOLS; i++) {
-		duk_pool_config *c = &lowmem_config[i];
+		const duk_pool_config *c = &lowmem_config[i];
 		duk_pool_state *s = &lowmem_state[i];
 		duk_pool_free *p;
 		int free_count = 0;
@@ -248,7 +229,7 @@ static void lowmem_write_alloc_log(const char *fmt, ...) {
 	va_end(ap);
 
 	if (lowmem_alloc_log == NULL) {
-		lowmem_alloc_log = fopen("/tmp/ajduk-alloc-log.txt", "wb");
+		lowmem_alloc_log = fopen("/tmp/lowmem-alloc-log.txt", "wb");
 		if (lowmem_alloc_log == NULL) {
 			fprintf(stderr, "WARNING: failed to write alloc log, ignoring\n");
 			fflush(stderr);

@@ -3106,8 +3106,7 @@ Transport neutrality
 --------------------
 
 The debug protocol should be transport neutral to support embedding in very
-different environments and communication links (Wi-Fi, Bluetooth, serial,
-embedding into protocols like AllJoyn, etc).
+different environments and communication links (Wi-Fi, Bluetooth, serial, etc).
 
 * Concrete solution is to use assume a reliable (TCP-like) byte stream,
   with user code providing the concrete transport.
