@@ -78,8 +78,8 @@ DUK_INTERNAL DUK_COLD void duk_err_type_invalid_trap_result(duk_hthread *thr, co
  * when non-verbose errors are used.
  */
 
-DUK_NORETURN(DUK_LOCAL_DECL void duk__err_shared(duk_hthread *thr, duk_uint_t code));
-DUK_LOCAL void duk__err_shared(duk_hthread *thr, duk_uint_t code) {
+DUK_NORETURN(DUK_LOCAL_DECL void duk__err_shared(duk_hthread *thr, duk_errcode_t code));
+DUK_LOCAL void duk__err_shared(duk_hthread *thr, duk_errcode_t code) {
 	DUK_ERROR_RAW(thr, NULL, 0, code, NULL);
 }
 DUK_INTERNAL DUK_COLD void duk_err_error(duk_hthread *thr) {

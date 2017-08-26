@@ -146,7 +146,7 @@ DUK_LOCAL DUK__INLINE_PERF void duk__vm_arith_add(duk_hthread *thr, duk_tval *tv
 		du.d = DUK_TVAL_GET_NUMBER(tv_x) + DUK_TVAL_GET_NUMBER(tv_y);
 #if defined(DUK_USE_EXEC_PREFER_SIZE)
 		duk_push_number(thr, du.d);  /* will NaN normalize result */
-		duk_replace(thr, idx_z);
+		duk_replace(thr, (duk_idx_t) idx_z);
 #else  /* DUK_USE_EXEC_PREFER_SIZE */
 		DUK_DBLUNION_NORMALIZE_NAN_CHECK(&du);
 		DUK_ASSERT(DUK_DBLUNION_IS_NORMALIZED(&du));
@@ -465,7 +465,7 @@ DUK_LOCAL DUK__INLINE_PERF void duk__vm_bitwise_binary_op(duk_hthread *thr, duk_
 
 #if defined(DUK_USE_EXEC_PREFER_SIZE)
 	duk_push_number(thr, d3);  /* would NaN normalize result, but unnecessary */
-	duk_replace(thr, idx_z);
+	duk_replace(thr, (duk_idx_t) idx_z);
 #else  /* DUK_USE_EXEC_PREFER_SIZE */
 	tv_z = thr->valstack_bottom + idx_z;
 	DUK_TVAL_SET_NUMBER_UPDREF(thr, tv_z, d3);  /* side effects */
@@ -1390,9 +1390,6 @@ DUK_LOCAL duk_small_uint_t duk__handle_longjmp(duk_hthread *thr, duk_activation 
 		DUK_ASSERT(thr->resumer->callstack_top >= 2);  /* Ecmascript activation + Duktape.Thread.resume() activation */
 		DUK_ASSERT(thr->resumer->callstack_curr != NULL);
 		DUK_ASSERT(thr->resumer->callstack_curr->parent != NULL);
-		DUK_ASSERT(DUK_ACT_GET_FUNC(thr->resumer->callstack_curr) != NULL &&
-		           DUK_HOBJECT_IS_NATFUNC(DUK_ACT_GET_FUNC(thr->resumer->callstack_curr)) &&
-		           ((duk_hnatfunc *) DUK_ACT_GET_FUNC(thr->resumer->callstack_curr))->func == duk_bi_thread_resume);  /* Duktape.Thread.resume() */
 		DUK_ASSERT(DUK_ACT_GET_FUNC(thr->resumer->callstack_curr->parent) != NULL &&
 		           DUK_HOBJECT_IS_COMPFUNC(DUK_ACT_GET_FUNC(thr->resumer->callstack_curr->parent)));  /* an Ecmascript function */
 
@@ -2757,7 +2754,7 @@ DUK_LOCAL duk_bool_t duk__executor_handle_call(duk_hthread *thr, duk_idx_t idx, 
 
 #if defined(DUK_USE_EXEC_PREFER_SIZE)
 #define DUK__LOOKUP_INDIRECT(idx) do { \
-		(idx) = (duk_uint_fast_t) duk_get_uint(thr, (idx)); \
+		(idx) = (duk_uint_fast_t) duk_get_uint(thr, (duk_idx_t) (idx)); \
 	} while (0)
 #elif defined(DUK_USE_FASTINT)
 #define DUK__LOOKUP_INDIRECT(idx) do { \
@@ -3405,7 +3402,7 @@ DUK_LOCAL DUK_NOINLINE DUK_HOT void duk__js_execute_bytecode_inner(duk_hthread *
 			duk_small_uint_t stridx;
 
 			stridx = duk_js_typeof_stridx(DUK__REGP_BC(ins));
-			DUK_ASSERT(stridx >= 0 && stridx < DUK_HEAP_NUM_STRINGS);
+			DUK_ASSERT_STRIDX_VALID(stridx);
 			duk_push_hstring_stridx(thr, stridx);
 			DUK__REPLACE_TOP_A_BREAK();
 		}
@@ -4624,9 +4621,9 @@ DUK_LOCAL DUK_NOINLINE DUK_HOT void duk__js_execute_bytecode_inner(duk_hthread *
 			 */
 
 #if defined(DUK_USE_PREFER_SIZE)
-			duk_dup(thr, a);
-			duk_replace(thr, bc);
-			duk_to_undefined(thr, bc + 1);
+			duk_dup(thr, (duk_idx_t) a);
+			duk_replace(thr, (duk_idx_t) bc);
+			duk_to_undefined(thr, (duk_idx_t) (bc + 1));
 #else
 			duk_tval *tv1;
 			duk_tval *tv2;
