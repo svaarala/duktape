@@ -354,7 +354,7 @@ DUK_LOCAL duk_codepoint_t duk__re_canon_next_discontinuity(duk_codepoint_t start
 	return end;
 }
 #else  /* DUK_USE_REGEXP_CANON_BITMAP */
-DUK_LOCAL duk_bool_t duk__re_canon_next_discontinuity(duk_codepoint_t start, duk_codepoint_t end) {
+DUK_LOCAL duk_codepoint_t duk__re_canon_next_discontinuity(duk_codepoint_t start, duk_codepoint_t end) {
 	DUK_ASSERT(start >= 0);
 	DUK_ASSERT(end >= 0);
 	DUK_ASSERT(end >= start);

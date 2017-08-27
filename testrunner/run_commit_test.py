@@ -520,6 +520,7 @@ DUK_USE_DEBUG_WRITE:
         'gcc', '-oduk',
         '-DDUK_CMDLINE_PRINTALERT_SUPPORT',
         '-I' + os.path.join(cwd, 'prep'),
+        '-I' + os.path.join(cwd, 'examples', 'cmdline'),
         '-I' + os.path.join(cwd, 'extras', 'print-alert'),
         os.path.join(cwd, 'prep', 'duktape.c'),
         os.path.join(cwd, 'examples', 'cmdline', 'duk_cmdline.c'),
@@ -554,6 +555,7 @@ def context_linux_x64_duk_separate_src():
         'gcc', '-oduk',
         '-DDUK_CMDLINE_PRINTALERT_SUPPORT',
         '-I' + os.path.join(cwd, 'dist', 'src-separate'),
+        '-I' + os.path.join(cwd, 'dist', 'examples', 'cmdline'),
         '-I' + os.path.join(cwd, 'dist', 'extras', 'print-alert')
     ] + cfiles + [
         '-lm'
@@ -576,6 +578,7 @@ def context_linux_x86_packed_tval():
         'gcc', '-oduk', '-m32',
         '-DDUK_CMDLINE_PRINTALERT_SUPPORT',
         '-I' + os.path.join(cwd, 'dist', 'src'),
+        '-I' + os.path.join(cwd, 'dist', 'examples', 'cmdline'),
         '-I' + os.path.join(cwd, 'dist', 'extras', 'print-alert'),
         os.path.join(cwd, 'dist', 'src', 'duktape.c'),
         os.path.join(cwd, 'dist', 'examples', 'cmdline', 'duk_cmdline.c'),
@@ -613,6 +616,7 @@ def context_linux_x86_dist_genconfig():
         'gcc', '-oduk',
         '-DDUK_CMDLINE_PRINTALERT_SUPPORT',
         '-I' + os.path.join(cwd, 'dist', 'src'),
+        '-I' + os.path.join(cwd, 'dist', 'examples', 'cmdline'),
         '-I' + os.path.join(cwd, 'dist', 'extras', 'print-alert'),
         os.path.join(cwd, 'dist', 'src', 'duktape.c'),
         os.path.join(cwd, 'dist', 'examples', 'cmdline', 'duk_cmdline.c'),
@@ -659,6 +663,7 @@ def context_linux_x64_error_variants():
             'gcc', '-o' + params['binary_name'],
             '-DDUK_CMDLINE_PRINTALERT_SUPPORT',
             '-I' + os.path.join(cwd, 'dist', 'src'),
+            '-I' + os.path.join(cwd, 'dist', 'examples', 'cmdline'),
             '-I' + os.path.join(cwd, 'dist', 'extras', 'print-alert'),
             os.path.join(cwd, 'dist', 'src', 'duktape.c'),
             os.path.join(cwd, 'dist', 'examples', 'cmdline', 'duk_cmdline.c'),
@@ -802,6 +807,7 @@ def mandel_test(archopt, genconfig_opts):
         '-ffunction-sections', '-Wl,--gc-sections',
         '-DDUK_CMDLINE_PRINTALERT_SUPPORT',
         '-I' + os.path.join('dist', 'src'),
+        '-I' + os.path.join(cwd, 'dist', 'examples', 'cmdline'),
         '-I' + os.path.join(cwd, 'dist', 'extras', 'print-alert'),
         '-I' + os.path.join('dist', 'examples', 'cmdline'),
         os.path.join(cwd, 'dist', 'src', 'duktape.c'),

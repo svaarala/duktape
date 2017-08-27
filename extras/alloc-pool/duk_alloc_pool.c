@@ -13,6 +13,14 @@
 /* Define to enable some debug printfs. */
 /* #define DUK_ALLOC_POOL_DEBUG */
 
+/* Define to enable approximate waste tracking. */
+/* #define DUK_ALLOC_POOL_TRACK_WASTE */
+
+/* Define to track global highwater for used and waste bytes.  VERY SLOW, only
+ * useful for manual testing.
+ */
+/* #define DUK_ALLOC_POOL_TRACK_HIGHWATER */
+
 #if defined(DUK_ALLOC_POOL_ROMPTR_COMPRESSION)
 #if 0  /* This extern declaration is provided by duktape.h, array provided by duktape.c. */
 extern const void * const duk_rom_compressed_pointers[];
@@ -136,8 +144,8 @@ void *duk_alloc_pool_init(char *buffer,
 			states[i].count++;
 			total += states[i].size;
 #if defined(DUK_ALLOC_POOL_DEBUG)
-			duk__alloc_pool_dprintf("duk_alloc_pool_init: sprinkle %ld bytes (%ld left after)\n",
-			                        (long) states[i].size, (long) (size - total));
+			duk__alloc_pool_dprintf("duk_alloc_pool_init: sprinkle %ld bytes (%ld left after) to pool index %ld, new count %ld\n",
+			                        (long) states[i].size, (long) (size - total), (long) i, (long) states[i].count);
 #endif
 		}
 	}
@@ -147,8 +155,20 @@ void *duk_alloc_pool_init(char *buffer,
 	 * and otherwise finalize 'state' for use.
 	 */
 	p = buffer;
-	global->states = states;
 	global->num_pools = num_pools;
+	global->states = states;
+#if defined(DUK_ALLOC_POOL_TRACK_HIGHWATER)
+#if defined(DUK_ALLOC_POOL_DEBUG)
+	duk__alloc_pool_dprintf("duk_alloc_pool_init: global highwater mark tracking enabled, THIS IS VERY SLOW!\n");
+#endif
+	global->hwm_used_bytes = 0U;
+	global->hwm_waste_bytes = 0U;
+#endif
+#if defined(DUK_ALLOC_POOL_TRACK_WASTE)
+#if defined(DUK_ALLOC_POOL_DEBUG)
+	duk__alloc_pool_dprintf("duk_alloc_pool_init: approximate waste tracking enabled\n");
+#endif
+#endif
 
 #if defined(DUK_USE_HEAPPTR16)
 	/* Register global base value for pointer compression, assumes
@@ -171,7 +191,11 @@ void *duk_alloc_pool_init(char *buffer,
 		} else {
 			states[i].first = (duk_pool_free *) NULL;
 		}
-		states[i].alloc_end = p;  /* All members of 'state' now initialized. */
+		states[i].alloc_end = p;
+#if defined(DUK_ALLOC_POOL_TRACK_HIGHWATER)
+		states[i].hwm_used_count = 0;
+#endif
+		/* All members of 'state' now initialized. */
 
 #if defined(DUK_ALLOC_POOL_DEBUG)
 		duk__alloc_pool_dprintf("duk_alloc_pool_init: block size %5ld, count %5ld, %8ld total bytes, "
@@ -194,6 +218,189 @@ void *duk_alloc_pool_init(char *buffer,
 }
 
 /*
+ *  Misc helpers
+ */
+
+#if defined(DUK_ALLOC_POOL_TRACK_WASTE)
+static void duk__alloc_pool_set_waste_marker(void *ptr, size_t used, size_t size) {
+	/* Rely on the base pointer and size being divisible by 4 and thus
+	 * aligned.  Use 32-bit markers: a 4-byte resolution is good enough,
+	 * and comparing 32 bits at a time makes false waste estimates less
+	 * likely than when comparing as bytes.
+	 */
+	duk_uint32_t *p, *p_start, *p_end;
+	size_t used_round;
+
+	used_round = (used + 3U) & ~0x03U;  /* round up to 4 */
+	p_end = (duk_uint32_t *) ((duk_uint8_t *) ptr + size);
+	p_start = (duk_uint32_t *) ((duk_uint8_t *) ptr + used_round);
+	p = (duk_uint32_t *) p_start;
+	while (p != p_end) {
+		*p++ = DUK_ALLOC_POOL_WASTE_MARKER;
+	}
+}
+#else  /* DUK_ALLOC_POOL_TRACK_WASTE */
+static void duk__alloc_pool_set_waste_marker(void *ptr, size_t used, size_t size) {
+	(void) ptr; (void) used; (void) size;
+}
+#endif  /* DUK_ALLOC_POOL_TRACK_WASTE */
+
+#if defined(DUK_ALLOC_POOL_TRACK_WASTE)
+static size_t duk__alloc_pool_get_waste_estimate(void *ptr, size_t size) {
+	duk_uint32_t *p, *p_end, *p_start;
+
+	/* Assumes size is >= 4. */
+	p_start = (duk_uint32_t *) ptr;
+	p_end = (duk_uint32_t *) ((duk_uint8_t *) ptr + size);
+	p = p_end;
+
+	/* This scan may cause harmless valgrind complaints: there may be
+	 * uninitialized bytes within the legitimate allocation or between
+	 * the start of the waste marker and the end of the allocation.
+	 */
+	do {
+		p--;
+		if (*p == DUK_ALLOC_POOL_WASTE_MARKER) {
+			;
+		} else {
+			return (size_t) (p_end - p - 1) * 4U;
+		}
+	} while (p != p_start);
+
+	return size;
+}
+#else  /* DUK_ALLOC_POOL_TRACK_WASTE */
+static size_t duk__alloc_pool_get_waste_estimate(void *ptr, size_t size) {
+	(void) ptr; (void) size;
+	return 0;
+}
+#endif  /* DUK_ALLOC_POOL_TRACK_WASTE */
+
+static int duk__alloc_pool_ptr_in_freelist(duk_pool_state *s, void *ptr) {
+	duk_pool_free *curr;
+
+	for (curr = s->first; curr != NULL; curr = curr->next) {
+		if ((void *) curr == ptr) {
+			return 1;
+		}
+	}
+	return 0;
+}
+
+void duk_alloc_pool_get_pool_stats(duk_pool_state *s, duk_pool_stats *res) {
+	void *curr;
+	size_t free_count;
+	size_t used_count;
+	size_t waste_bytes;
+
+	curr = s->alloc_end - (s->size * s->count);
+	free_count = 0U;
+	waste_bytes = 0U;
+	while (curr != s->alloc_end) {
+		if (duk__alloc_pool_ptr_in_freelist(s, curr)) {
+			free_count++;
+		} else {
+			waste_bytes += duk__alloc_pool_get_waste_estimate(curr, s->size);
+		}
+		curr = curr + s->size;
+	}
+	used_count = (size_t) (s->count - free_count);
+
+	res->used_count = used_count;
+	res->used_bytes = (size_t) (used_count * s->size);
+	res->free_count = free_count;
+	res->free_bytes = (size_t) (free_count * s->size);
+	res->waste_bytes = waste_bytes;
+#if defined(DUK_ALLOC_POOL_TRACK_HIGHWATER)
+	res->hwm_used_count = s->hwm_used_count;
+#else
+	res->hwm_used_count = 0U;
+#endif
+}
+
+void duk_alloc_pool_get_global_stats(duk_pool_global *g, duk_pool_global_stats *res) {
+	int i;
+	size_t total_used = 0U;
+	size_t total_free = 0U;
+	size_t total_waste = 0U;
+
+	for (i = 0; i < g->num_pools; i++) {
+		duk_pool_state *s = &g->states[i];
+		duk_pool_stats stats;
+
+		duk_alloc_pool_get_pool_stats(s, &stats);
+
+		total_used += stats.used_bytes;
+		total_free += stats.free_bytes;
+		total_waste += stats.waste_bytes;
+	}
+
+	res->used_bytes = total_used;
+	res->free_bytes = total_free;
+	res->waste_bytes = total_waste;
+#if defined(DUK_ALLOC_POOL_TRACK_HIGHWATER)
+	res->hwm_used_bytes = g->hwm_used_bytes;
+	res->hwm_waste_bytes = g->hwm_waste_bytes;
+#else
+	res->hwm_used_bytes = 0U;
+	res->hwm_waste_bytes = 0U;
+#endif
+}
+
+#if defined(DUK_ALLOC_POOL_TRACK_HIGHWATER)
+static void duk__alloc_pool_update_highwater(duk_pool_global *g) {
+	int i;
+	size_t total_used = 0U;
+	size_t total_free = 0U;
+	size_t total_waste = 0U;
+
+	/* Per pool highwater used count, useful to checking if a pool is
+	 * too small.
+	 */
+	for (i = 0; i < g->num_pools; i++) {
+		duk_pool_state *s = &g->states[i];
+		duk_pool_stats stats;
+
+		duk_alloc_pool_get_pool_stats(s, &stats);
+		if (stats.used_count > s->hwm_used_count) {
+#if defined(DUK_ALLOC_POOL_DEBUG)
+			duk__alloc_pool_dprintf("duk__alloc_pool_update_highwater: pool %ld (%ld bytes) highwater updated: count %ld -> %ld\n",
+			                        (long) i, (long) s->size,
+			                        (long) s->hwm_used_count, (long) stats.used_count);
+#endif
+			s->hwm_used_count = stats.used_count;
+		}
+
+		total_used += stats.used_bytes;
+		total_free += stats.free_bytes;
+		total_waste += stats.waste_bytes;
+	}
+
+	/* Global highwater mark for used and waste bytes.  Both fields are
+	 * updated from the same snapshot based on highest used count.
+	 * This is VERY, VERY slow and only useful for development.
+	 * (Note that updating HWM states for pools individually and then
+	 * summing them won't create a consistent global snapshot.  There
+	 * are still easy ways to make this much, much faster.)
+	 */
+	if (total_used > g->hwm_used_bytes) {
+#if defined(DUK_ALLOC_POOL_DEBUG)
+		duk__alloc_pool_dprintf("duk__alloc_pool_update_highwater: global highwater updated: used=%ld, bytes=%ld -> "
+		                        "used=%ld, bytes=%ld\n",
+		                        (long) g->hwm_used_bytes, (long) g->hwm_waste_bytes,
+		                        (long) total_used, (long) total_waste);
+#endif
+		g->hwm_used_bytes = total_used;
+		g->hwm_waste_bytes = total_waste;
+	}
+}
+#else  /* DUK_ALLOC_POOL_TRACK_HIGHWATER */
+static void duk__alloc_pool_update_highwater(duk_pool_global *g) {
+	(void) g;
+}
+#endif  /* DUK_ALLOC_POOL_TRACK_HIGHWATER */
+
+/*
  *  Allocation providers
  */
 
@@ -212,10 +419,14 @@ void *duk_alloc_pool(void *udata, duk_size_t size) {
 	for (i = 0, n = g->num_pools; i < n; i++) {
 		duk_pool_state *st = g->states + i;
 
-		if (size <= st->size && st->first != NULL) {
+		if (size <= st->size) {
 			duk_pool_free *res = st->first;
-			st->first = res->next;
-			return (void *) res;
+			if (res != NULL) {
+				st->first = res->next;
+				duk__alloc_pool_set_waste_marker((void *) res, size, st->size);
+				duk__alloc_pool_update_highwater(g);
+				return (void *) res;
+			}
 		}
 
 		/* Allocation doesn't fit or no free entries, try to borrow
@@ -267,21 +478,26 @@ void *duk_realloc_pool(void *udata, void *ptr, duk_size_t size) {
 			for (j = 0; j < i; j++) {
 				duk_pool_state *st2 = g->states + j;
 
-				if (size <= st2->size && st2->first != NULL) {
-#if defined(DUK_ALLOC_POOL_DEBUG)
-					duk__alloc_pool_dprintf("duk_realloc_pool: shrink, block size %ld -> %ld\n",
-					                        (long) st->size, (long) st2->size);
-#endif
+				if (size <= st2->size) {
 					new_ptr = (char *) st2->first;
-					st2->first = ((duk_pool_free *) new_ptr)->next;
-					memcpy((void *) new_ptr, (const void *) ptr, (size_t) size);
-					((duk_pool_free *) ptr)->next = st->first;
-					st->first = (duk_pool_free *) ptr;
-					return (void *) new_ptr;
+					if (new_ptr != NULL) {
+#if defined(DUK_ALLOC_POOL_DEBUG)
+						duk__alloc_pool_dprintf("duk_realloc_pool: shrink, block size %ld -> %ld\n",
+						                        (long) st->size, (long) st2->size);
+#endif
+						st2->first = ((duk_pool_free *) new_ptr)->next;
+						memcpy((void *) new_ptr, (const void *) ptr, (size_t) size);
+						((duk_pool_free *) ptr)->next = st->first;
+						st->first = (duk_pool_free *) ptr;
+						duk__alloc_pool_set_waste_marker((void *) new_ptr, size, st2->size);
+						duk__alloc_pool_update_highwater(g);
+						return (void *) new_ptr;
+					}
 				}
 			}
 
 			/* Failed to shrink; return existing pointer. */
+			duk__alloc_pool_set_waste_marker((void *) ptr, size, st->size);
 			return ptr;
 		}
 
@@ -289,13 +505,17 @@ void *duk_realloc_pool(void *udata, void *ptr, duk_size_t size) {
 		for (j = i + 1; j < n; j++) {
 			duk_pool_state *st2 = g->states + j;
 
-			if (size <= st2->size && st2->first != NULL) {
+			if (size <= st2->size) {
 				new_ptr = (char *) st2->first;
-				st2->first = ((duk_pool_free *) new_ptr)->next;
-				memcpy((void *) new_ptr, (const void *) ptr, (size_t) st->size);
-				((duk_pool_free *) ptr)->next = st->first;
-				st->first = (duk_pool_free *) ptr;
-				return (void *) new_ptr;
+				if (new_ptr != NULL) {
+					st2->first = ((duk_pool_free *) new_ptr)->next;
+					memcpy((void *) new_ptr, (const void *) ptr, (size_t) st->size);
+					((duk_pool_free *) ptr)->next = st->first;
+					st->first = (duk_pool_free *) ptr;
+					duk__alloc_pool_set_waste_marker((void *) new_ptr, size, st2->size);
+					duk__alloc_pool_update_highwater(g);
+					return (void *) new_ptr;
+				}
 			}
 		}
 
@@ -331,6 +551,9 @@ void duk_free_pool(void *udata, void *ptr) {
 
 		((duk_pool_free *) ptr)->next = st->first;
 		st->first = (duk_pool_free *) ptr;
+#if 0  /* never necessary when freeing */
+		duk__alloc_pool_update_highwater(g);
+#endif
 		return;
 	}
 

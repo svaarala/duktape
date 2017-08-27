@@ -66,6 +66,6 @@ install: libduktape.so.$(REAL_VERSION) libduktaped.so.$(REAL_VERSION)
 # Note: assumes /usr/local/include/ and /usr/local/lib/ are in include/link
 # path which may not be the case for all distributions.
 #CCOPTS=-I/usr/local/include -L/usr/local/lib
-CCOPTS=
+CCOPTS=-I./examples/cmdline
 duk:
 	gcc $(CCOPTS) -Wall -Wextra -Os -o $@ ./examples/cmdline/duk_cmdline.c -lduktape -lm

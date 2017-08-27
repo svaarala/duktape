@@ -201,7 +201,7 @@ static void expire_timers(duk_context *ctx) {
 			fflush(stderr);
 #endif
 			if (timer_count >= MAX_TIMERS) {
-				duk_error(ctx, DUK_ERR_RANGE_ERROR, "out of timer slots");
+				(void) duk_error(ctx, DUK_ERR_RANGE_ERROR, "out of timer slots");
 			}
 			memcpy((void *) (timer_list + timer_count), (void *) t, sizeof(ev_timer));
 			timer_count++;
@@ -419,7 +419,7 @@ static int create_timer(duk_context *ctx) {
 	oneshot = duk_require_boolean(ctx, 2);
 
 	if (timer_count >= MAX_TIMERS) {
-		duk_error(ctx, DUK_ERR_RANGE_ERROR, "out of timer slots");
+		(void) duk_error(ctx, DUK_ERR_RANGE_ERROR, "out of timer slots");
 	}
 	idx = timer_count++;
 	timer_id = timer_next_id++;
@@ -574,7 +574,7 @@ static int listen_fd(duk_context *ctx) {
 #endif
 
 	if (poll_count >= MAX_FDS) {
-		duk_error(ctx, DUK_ERR_ERROR, "out of fd slots");
+		(void) duk_error(ctx, DUK_ERR_ERROR, "out of fd slots");
 	}
 
 	pfd = poll_list + poll_count;

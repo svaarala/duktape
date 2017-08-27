@@ -23,7 +23,7 @@ void duk_decode_string_codepage(duk_context *ctx, const char *str, size_t len, u
 	tmplen = 3 * len;  /* max expansion is 1 input byte -> 3 output bytes */
 	if (tmplen / 3 != len) {
 		/* Temporary buffer length wraps. */
-		duk_error(ctx, DUK_ERR_RANGE_ERROR, "input string too long");
+		(void) duk_error(ctx, DUK_ERR_RANGE_ERROR, "input string too long");
 		return;
 	}
 
