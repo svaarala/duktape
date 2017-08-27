@@ -52,7 +52,7 @@ static int poll_poll(duk_context *ctx) {
 	/*rc = ppoll(fds, n, &ts, NULL);*/
 	rc = poll(fds, n, timeout);
 	if (rc < 0) {
-		duk_error(ctx, DUK_ERR_ERROR, "%s (errno=%d)", strerror(errno), errno);
+		(void) duk_error(ctx, DUK_ERR_ERROR, "%s (errno=%d)", strerror(errno), errno);
 	}
 
 	duk_push_array(ctx);
