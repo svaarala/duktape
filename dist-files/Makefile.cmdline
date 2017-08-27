@@ -10,7 +10,7 @@ CMDLINE_SOURCES = \
 
 CC	= gcc
 CCOPTS	= -Os -pedantic -std=c99 -Wall -fstrict-aliasing -fomit-frame-pointer
-CCOPTS += -I./src   # duktape.h and duk_config.h must be in include path
+CCOPTS += -I./examples/cmdline -I./src   # duktape.h and duk_config.h must be in include path
 CCLIBS	= -lm
 
 # Enable print() and alert() for command line using an optional extra module.
