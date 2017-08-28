@@ -1580,7 +1580,7 @@ Resume request (0x13)
 
 Format::
 
-    REQ <int: 0x13> EOM
+    REQ <int: 0x13> [<int: flags>] EOM
     REP EOM
 
 Example::
@@ -1588,13 +1588,58 @@ Example::
     REQ 19 EOM
     REP EOM
 
-If Duktape is already running, a no-op.  If Duktape is paused, it will exit
-the debug message loop associated with the paused state (where control is
-fully in the hands of the debug client), resume execution, and send a Status
-notification indicating it is running.
+Flags describe what pause triggers are enabled (matches internal
+DUK_PAUSE_FLAG_xxx constants):
 
-StepInto request (0x14)
------------------------
+FIXME: these defines should be exposed in duktape.h; they would be useful at least
+for some debug clients (and others might scrape them).
+
++--------+----------------------------------------------------------------------+
+|  Flag  | Description                                                          |
++========+======================================================================+
+| 0x0001 | Pause after a single opcode has been executed; ignored in a native   |
+|        | function.                                                            |
++--------+----------------------------------------------------------------------+
+| 0x0002 | Pause when current line number changes; ignored if current function  |
+|        | has no line information (typically a native function).               |
++--------+----------------------------------------------------------------------+
+| 0x0004 | Pause when entering an inner function.                               |
++--------+----------------------------------------------------------------------+
+| 0x0008 | Pause when exiting current function, and when an error is propagated |
+|        | past the current function.                                           |
++--------+----------------------------------------------------------------------+
+| 0x0010 | Pause when an uncaught error (see below) is about to be thrown.      |
++--------+----------------------------------------------------------------------+
+| 0x0020 | Pause when a caught error (see below) is about to be thrown.         |
++--------+----------------------------------------------------------------------+
+
+In addition to these pause triggers, active breakpoints always trigger a pause.
+
+If flags are not explicitly defined (which is allowed for compatibility), the
+implied flags are:
+
+* If DUK_USE_DEBUGGER_PAUSE_UNCAUGHT is defined: pause on uncaught (0x0010),
+  pause on breakpoints.
+
+* If DUK_USE_DEBUGGER_PAUSE_UNCAUGHT is not defined: pause on breakpoints only.
+
+If Duktape is already running, the pause triggers are updated as if Duktape was
+first paused and then resumed immediately.
+
+If Duktape is paused, it will exit the debug message loop associated with the
+paused state (where control is fully in the hands of the debug client), resume
+execution, and send a Status notification indicating it is running.
+
+An error about to be thrown is considered "uncaught" if:
+
+* There is an Ecmascript try-catch, try-finally, or try-catch-finally in the
+  current callstack, or in any callstack of the active thread resume chain.
+
+* Protected API calls (duk_safe_call(), duk_pcall(), etc) are not considered
+  catchers for purposes of the pause trigger.
+
+StepInto request (DEPRECATED) (0x14)
+------------------------------------
 
 Format::
 
@@ -1612,8 +1657,19 @@ the current function (in which case execution pauses in the error catcher,
 if any).  If the current function doesn't have line information (e.g. it is
 native), pauses on function entry/exit or error throw.
 
-StepOver request (0x15)
------------------------
+DEPRECATED: equivalent to Resume with the following flags:
+
+* Pause on line change
+
+* Pause on function entry
+
+* Pause on function exit
+
+* Pause on uncaught error, if DUK_USE_DEBUGGER_PAUSE_UNCAUGHT config option
+  is defined.
+
+StepOver request (DEPRECATED) (0x15)
+------------------------------------
 
 Format::
 
@@ -1631,8 +1687,17 @@ case execution pauses in the error catcher, if any).  If the current function
 doesn't have line information (e.g. it is native), pauses on function exit or
 error throw.
 
-StepOut request (0x16)
-----------------------
+DEPRECATED: equivalent to Resume with the following flags:
+
+* Pause on line change
+
+* Pause on function exit
+
+* Pause on uncaught error, if DUK_USE_DEBUGGER_PAUSE_UNCAUGHT config option
+  is defined.
+
+StepOut request (DEPRECATED) (0x16)
+-----------------------------------
 
 Format::
 
@@ -1647,6 +1712,13 @@ Example::
 Resume execution and pause when execution exits the current function or an
 error is thrown past the current function (in which case execution pauses
 in the error catcher, if any).
+
+DEPRECATED: equivalent to Resume with the following flags:
+
+* Pause on function exit
+
+* Pause on uncaught error, if DUK_USE_DEBUGGER_PAUSE_UNCAUGHT config option
+  is defined.
 
 ListBreak request (0x17)
 ------------------------
