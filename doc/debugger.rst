@@ -1606,9 +1606,11 @@ Example::
     REQ 20 EOM
     REP EOM
 
-Resume execution and pause when execution exits the current line.  If a
-function call occurs before that, go into the function and pause execution
-there.
+Resume execution and pause when execution exits the current line, enters
+another function, exits the current function, or an error is thrown past
+the current function (in which case execution pauses in the error catcher,
+if any).  If the current function doesn't have line information (e.g. it is
+native), pauses on function entry/exit or error throw.
 
 StepOver request (0x15)
 -----------------------
@@ -1623,8 +1625,11 @@ Example::
     REQ 21 EOM
     REP EOM
 
-Resume execution and pause when execution exits the current line.  Don't pause
-on function calls occuring before that.
+Resume execution and pause when execution exits the current line, exits the
+current function, or an error is thrown past the current function (in which
+case execution pauses in the error catcher, if any).  If the current function
+doesn't have line information (e.g. it is native), pauses on function exit or
+error throw.
 
 StepOut request (0x16)
 ----------------------
@@ -1639,15 +1644,9 @@ Example::
     REQ 22 EOM
     REP EOM
 
-Resume execution and pause when execution exits the current function.  This can
-happen because:
-
-* The current function returns, in which case execution resumes in the calling
-  function.
-
-* The current function, or any function called by it, throws an error which is
-  not caught before it unwinds past the current function.  Execution resumes
-  in the error catcher.
+Resume execution and pause when execution exits the current function or an
+error is thrown past the current function (in which case execution pauses
+in the error catcher, if any).
 
 ListBreak request (0x17)
 ------------------------

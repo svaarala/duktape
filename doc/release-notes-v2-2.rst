@@ -82,6 +82,11 @@ from Duktape v2.1.x.  Note the following:
   so duk_get_now() call sites may now get fractional millisecond timestamps
   even in default configuration.
 
+* Debugger StepInto, StepOver, and StepOut are now accepted also when the
+  current function doesn't have line information (i.e. it is native).  The
+  step commands will still pause on function entry/exit as appropriate; for
+  example, StepInto will pause on function entry or exit (or an error throw).
+
 Other minor differences:
 
 * When an Error instance is being constructed and Duktape.errCreate() is

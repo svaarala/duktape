@@ -220,13 +220,15 @@ DUK_LOCAL void duk__activation_unwind_nofree_norz(duk_hthread *thr) {
 
 #if defined(DUK_USE_DEBUGGER_SUPPORT)
 	heap = thr->heap;
-	if (heap->dbg_step_act == thr->callstack_curr) {
-		if (duk_debug_is_paused(heap)) {
-			DUK_D(DUK_DPRINT("step pause trigger but already paused, ignoring"));
-		} else {
+	if (heap->dbg_pause_act == thr->callstack_curr) {
+		if (heap->dbg_pause_flags & DUK_PAUSE_FLAG_FUNC_EXIT) {
+			DUK_D(DUK_DPRINT("PAUSE TRIGGERED by function exit"));
 			duk_debug_set_paused(heap);
-			DUK_ASSERT(heap->dbg_step_act == NULL);
+		} else {
+			DUK_D(DUK_DPRINT("unwound past dbg_pause_act, set to NULL"));
+			heap->dbg_pause_act = NULL;  /* avoid stale pointers */
 		}
+		DUK_ASSERT(heap->dbg_pause_act == NULL);
 	}
 #endif
 

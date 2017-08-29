@@ -9,8 +9,7 @@
  *  catcher.  Protected calls or finally blocks aren't considered catching.
  */
 
-#if defined(DUK_USE_DEBUGGER_SUPPORT) && \
-    (defined(DUK_USE_DEBUGGER_THROW_NOTIFY) || defined(DUK_USE_DEBUGGER_PAUSE_UNCAUGHT))
+#if defined(DUK_USE_DEBUGGER_SUPPORT)
 DUK_LOCAL duk_bool_t duk__have_active_catcher(duk_hthread *thr) {
 	/* As noted above, a protected API call won't be counted as a
 	 * catcher.  This is usually convenient, e.g. in the case of a top-
@@ -34,7 +33,7 @@ DUK_LOCAL duk_bool_t duk__have_active_catcher(duk_hthread *thr) {
 	}
 	return 0;
 }
-#endif  /* DUK_USE_DEBUGGER_SUPPORT && (DUK_USE_DEBUGGER_THROW_NOTIFY || DUK_USE_DEBUGGER_PAUSE_UNCAUGHT) */
+#endif  /* DUK_USE_DEBUGGER_SUPPORT */
 
 /*
  *  Get prototype object for an integer error code.
@@ -65,9 +64,8 @@ DUK_INTERNAL duk_hobject *duk_error_prototype_from_code(duk_hthread *thr, duk_er
  */
 
 #if defined(DUK_USE_DEBUGGER_SUPPORT)
-#if defined(DUK_USE_DEBUGGER_THROW_NOTIFY) || defined(DUK_USE_DEBUGGER_PAUSE_UNCAUGHT)
 DUK_INTERNAL void duk_err_check_debugger_integration(duk_hthread *thr) {
-	duk_bool_t fatal;
+	duk_bool_t uncaught;
 	duk_tval *tv_obj;
 
 	/* If something is thrown with the debugger attached and nobody will
@@ -105,7 +103,7 @@ DUK_INTERNAL void duk_err_check_debugger_integration(duk_hthread *thr) {
 		return;
 	}
 
-	fatal = !duk__have_active_catcher(thr);
+	uncaught = !duk__have_active_catcher(thr);
 
 	/* Debugger code expects the value at stack top.  This also serves
 	 * as a backup: we need to store/restore the longjmp state because
@@ -125,15 +123,20 @@ DUK_INTERNAL void duk_err_check_debugger_integration(duk_hthread *thr) {
 #if defined(DUK_USE_DEBUGGER_THROW_NOTIFY)
 	/* Report it to the debug client */
 	DUK_D(DUK_DPRINT("throw with debugger attached, report to client"));
-	duk_debug_send_throw(thr, fatal);
+	duk_debug_send_throw(thr, uncaught);
 #endif
 
-#if defined(DUK_USE_DEBUGGER_PAUSE_UNCAUGHT)
-	if (fatal) {
-		DUK_D(DUK_DPRINT("throw will be fatal, halt before longjmp"));
-		duk_debug_halt_execution(thr, 1 /*use_prev_pc*/);
+	if (uncaught) {
+		if (thr->heap->dbg_pause_flags & DUK_PAUSE_FLAG_UNCAUGHT_ERROR) {
+			DUK_D(DUK_DPRINT("PAUSE TRIGGERED by uncaught error"));
+			duk_debug_halt_execution(thr, 1 /*use_prev_pc*/);
+		}
+	} else {
+		if (thr->heap->dbg_pause_flags & DUK_PAUSE_FLAG_CAUGHT_ERROR) {
+			DUK_D(DUK_DPRINT("PAUSE TRIGGERED by caught error"));
+			duk_debug_halt_execution(thr, 1 /*use_prev_pc*/);
+		}
 	}
-#endif
 
 	/* Restore longjmp state. */
 	DUK_ASSERT_LJSTATE_UNSET(thr->heap);
@@ -147,11 +150,6 @@ DUK_INTERNAL void duk_err_check_debugger_integration(duk_hthread *thr) {
 
 	duk_pop(thr);
 }
-#else  /* DUK_USE_DEBUGGER_THROW_NOTIFY || DUK_USE_DEBUGGER_PAUSE_UNCAUGHT */
-DUK_INTERNAL void duk_err_check_debugger_integration(duk_hthread *thr) {
-	DUK_UNREF(thr);
-}
-#endif  /* DUK_USE_DEBUGGER_THROW_NOTIFY || DUK_USE_DEBUGGER_PAUSE_UNCAUGHT */
 #endif  /* DUK_USE_DEBUGGER_SUPPORT */
 
 /*

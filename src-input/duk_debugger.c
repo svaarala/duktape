@@ -86,9 +86,9 @@ DUK_LOCAL void duk__debug_do_detach1(duk_heap *heap, duk_int_t reason) {
 	/* heap->dbg_processing: keep on purpose to avoid debugger re-entry in detaching state */
 	heap->dbg_state_dirty = 0;
 	heap->dbg_force_restart = 0;
-	heap->dbg_step_type = 0;
-	heap->dbg_step_act = NULL;
-	heap->dbg_step_startline = 0;
+	heap->dbg_pause_flags = 0;
+	heap->dbg_pause_act = NULL;
+	heap->dbg_pause_startline = 0;
 	heap->dbg_have_next_byte = 0;
 	duk_debug_clear_paused(heap);  /* XXX: some overlap with field inits above */
 	heap->dbg_state_dirty = 0;     /* XXX: clear_paused sets dirty; rework? */
@@ -157,6 +157,34 @@ DUK_LOCAL void duk__debug_null_most_callbacks(duk_hthread *thr) {
 	heap->dbg_write_flush_cb = NULL;
 	heap->dbg_request_cb = NULL;
 	/* keep heap->dbg_detached_cb */
+}
+
+/*
+ *  Pause handling
+ */
+
+DUK_LOCAL void duk__debug_set_pause_state(duk_hthread *thr, duk_heap *heap, duk_small_uint_t pause_flags) {
+	duk_uint_fast32_t line;
+
+	line = duk_debug_curr_line(thr);
+	if (line == 0) {
+		/* No line info for current function. */
+		duk_small_uint_t updated_flags;
+
+		updated_flags = pause_flags & ~(DUK_PAUSE_FLAG_LINE_CHANGE);
+		DUK_D(DUK_DPRINT("no line info for current activation, disable line-based pause flags: 0x%08lx -> 0x%08lx",
+		                 (long) pause_flags, (long) updated_flags));
+		pause_flags = updated_flags;
+	}
+
+	heap->dbg_pause_flags = pause_flags;
+	heap->dbg_pause_act = thr->callstack_curr;
+	heap->dbg_pause_startline = line;
+	heap->dbg_state_dirty = 1;
+
+	DUK_D(DUK_DPRINT("set state for automatic pause triggers, flags=0x%08lx, act=%p, startline=%ld",
+	                 (long) heap->dbg_pause_flags, (void *) heap->dbg_pause_act,
+	                 (long) heap->dbg_pause_startline));
 }
 
 /*
@@ -1256,49 +1284,61 @@ DUK_LOCAL void duk__debug_handle_trigger_status(duk_hthread *thr, duk_heap *heap
 
 DUK_LOCAL void duk__debug_handle_pause(duk_hthread *thr, duk_heap *heap) {
 	DUK_D(DUK_DPRINT("debug command Pause"));
-
-	if (duk_debug_is_paused(heap)) {
-		DUK_D(DUK_DPRINT("Pause requested when already paused, ignore"));
-	} else {
-		duk_debug_set_paused(heap);
-	}
+	duk_debug_set_paused(heap);
 	duk_debug_write_reply(thr);
 	duk_debug_write_eom(thr);
 }
 
 DUK_LOCAL void duk__debug_handle_resume(duk_hthread *thr, duk_heap *heap) {
+	duk_small_uint_t pause_flags;
+
 	DUK_D(DUK_DPRINT("debug command Resume"));
 
 	duk_debug_clear_paused(heap);
+
+	pause_flags = 0;
+#if 0  /* manual testing */
+	pause_flags |= DUK_PAUSE_FLAG_ONE_OPCODE;
+	pause_flags |= DUK_PAUSE_FLAG_CAUGHT_ERROR;
+	pause_flags |= DUK_PAUSE_FLAG_UNCAUGHT_ERROR;
+#endif
+#if defined(DUK_USE_DEBUGGER_PAUSE_UNCAUGHT)
+	pause_flags |= DUK_PAUSE_FLAG_UNCAUGHT_ERROR;
+#endif
+
+	duk__debug_set_pause_state(thr, heap, pause_flags);
+
 	duk_debug_write_reply(thr);
 	duk_debug_write_eom(thr);
 }
 
 DUK_LOCAL void duk__debug_handle_step(duk_hthread *thr, duk_heap *heap, duk_int32_t cmd) {
-	duk_small_uint_t step_type;
-	duk_uint_fast32_t line;
+	duk_small_uint_t pause_flags;
 
 	DUK_D(DUK_DPRINT("debug command StepInto/StepOver/StepOut: %d", (int) cmd));
 
 	if (cmd == DUK_DBG_CMD_STEPINTO) {
-		step_type = DUK_STEP_TYPE_INTO;
+		pause_flags = DUK_PAUSE_FLAG_LINE_CHANGE |
+		              DUK_PAUSE_FLAG_FUNC_ENTRY |
+		              DUK_PAUSE_FLAG_FUNC_EXIT;
 	} else if (cmd == DUK_DBG_CMD_STEPOVER) {
-		step_type = DUK_STEP_TYPE_OVER;
+		pause_flags = DUK_PAUSE_FLAG_LINE_CHANGE |
+		              DUK_PAUSE_FLAG_FUNC_EXIT;
 	} else {
 		DUK_ASSERT(cmd == DUK_DBG_CMD_STEPOUT);
-		step_type = DUK_STEP_TYPE_OUT;
+		pause_flags = DUK_PAUSE_FLAG_FUNC_EXIT;
 	}
+#if defined(DUK_USE_DEBUGGER_PAUSE_UNCAUGHT)
+	pause_flags |= DUK_PAUSE_FLAG_UNCAUGHT_ERROR;
+#endif
 
-	line = duk_debug_curr_line(thr);
-	if (line > 0) {
-		duk_debug_clear_paused(heap);  /* XXX: overlap with fields below; separate macro/helper? */
-		heap->dbg_step_type = step_type;
-		heap->dbg_step_act = thr->callstack_curr;
-		heap->dbg_step_startline = line;
-		heap->dbg_state_dirty = 1;
-	} else {
-		DUK_D(DUK_DPRINT("cannot determine current line, stepinto/stepover/stepout ignored"));
-	}
+	/* If current activation doesn't have line information, line-based
+	 * pause flags are automatically disabled.  As a result, e.g.
+	 * StepInto will then pause on (native) function entry or exit.
+	 */
+	duk_debug_clear_paused(heap);
+	duk__debug_set_pause_state(thr, heap, pause_flags);
+
 	duk_debug_write_reply(thr);
 	duk_debug_write_eom(thr);
 }
@@ -2825,7 +2865,7 @@ DUK_INTERNAL void duk_debug_set_paused(duk_heap *heap) {
 	} else {
 		DUK_HEAP_SET_DEBUGGER_PAUSED(heap);
 		heap->dbg_state_dirty = 1;
-		duk_debug_clear_step_state(heap);
+		duk_debug_clear_pause_state(heap);
 		DUK_ASSERT(heap->ms_running == 0);  /* debugger can't be triggered within mark-and-sweep */
 		heap->ms_running = 1;  /* prevent mark-and-sweep, prevent refzero queueing */
 		heap->ms_prevent_count++;
@@ -2838,7 +2878,7 @@ DUK_INTERNAL void duk_debug_clear_paused(duk_heap *heap) {
 	if (duk_debug_is_paused(heap)) {
 		DUK_HEAP_CLEAR_DEBUGGER_PAUSED(heap);
 		heap->dbg_state_dirty = 1;
-		duk_debug_clear_step_state(heap);
+		duk_debug_clear_pause_state(heap);
 		DUK_ASSERT(heap->ms_running == 1);
 		DUK_ASSERT(heap->ms_prevent_count > 0);
 		heap->ms_prevent_count--;
@@ -2849,10 +2889,10 @@ DUK_INTERNAL void duk_debug_clear_paused(duk_heap *heap) {
 	}
 }
 
-DUK_INTERNAL void duk_debug_clear_step_state(duk_heap *heap) {
-	heap->dbg_step_type = DUK_STEP_TYPE_NONE;
-	heap->dbg_step_act = NULL;
-	heap->dbg_step_startline = 0;
+DUK_INTERNAL void duk_debug_clear_pause_state(duk_heap *heap) {
+	heap->dbg_pause_flags = 0;
+	heap->dbg_pause_act = NULL;
+	heap->dbg_pause_startline = 0;
 }
 
 #else  /* DUK_USE_DEBUGGER_SUPPORT */

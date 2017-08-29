@@ -86,9 +86,9 @@ DUK_EXTERNAL void duk_debugger_attach(duk_hthread *thr,
 	heap->dbg_processing = 0;
 	heap->dbg_state_dirty = 0;
 	heap->dbg_force_restart = 0;
-	heap->dbg_step_type = DUK_STEP_TYPE_NONE;
-	heap->dbg_step_act = NULL;
-	heap->dbg_step_startline = 0;
+	heap->dbg_pause_flags = 0;
+	heap->dbg_pause_act = NULL;
+	heap->dbg_pause_startline = 0;
 	heap->dbg_exec_counter = 0;
 	heap->dbg_last_counter = 0;
 	heap->dbg_last_time = 0.0;
