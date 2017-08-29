@@ -2939,6 +2939,10 @@ Planned
   error message now includes the key for easier debugging (GH-1627, GH-1630,
   GH-1631, GH-1644, GH-1645)
 
+* Add duk_{get,put,has,del}_prop_heapptr() API calls for faster property
+  manipulation when a borrowed heap pointer (typically string) is available
+  (GH-1703)
+
 * Add duk_seal() and duk_freeze() API calls, equivalent to Object.seal()
   and Object.freeze() (GH-1594)
 
