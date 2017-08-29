@@ -19,7 +19,7 @@ summary: |
   possible.</p>
 
 example: |
-  duk_get_prop_index(ctx, -3, 123);
+  (void) duk_get_prop_index(ctx, -3, 123);
   printf("obj[123] = %s\n", duk_to_string(ctx, -1));
   duk_pop(ctx);
 

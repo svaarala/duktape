@@ -13,7 +13,7 @@ summary: |
   <code>key</code>.</p>
 
 example: |
-  duk_get_prop_string(ctx, -3, "propertyName");
+  (void) duk_get_prop_string(ctx, -3, "propertyName");
   printf("obj.propertyName = %s\n", duk_to_string(ctx, -1));
   duk_pop(ctx);
 

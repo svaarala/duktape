@@ -1,0 +1,30 @@
+name: duk_put_prop_heapptr
+
+proto: |
+  duk_bool_t duk_put_prop_heapptr(duk_context *ctx, duk_idx_t obj_idx, void *ptr);
+
+stack: |
+  [ ... obj! ... val! ] -> [ ... obj! ... ]
+
+summary: |
+  <p>Like <code><a href="#duk_put_prop">duk_put_prop()</a></code>, but the
+  property name is given as a Duktape heap pointer obtained e.g. using
+  <code><a href="#duk_get_heapptr">duk_get_heapptr()</a></code>.  If
+  <code>ptr</code> is NULL, <code>undefined</code> is used as the key.</p>
+
+example: |
+  duk_bool_t rc;
+  void *ptr;
+
+  duk_push_string(ctx, "propertyName");
+  ptr = duk_get_heapptr(ctx, -1);
+  /* String behind 'ptr' must remain reachable! */
+
+  duk_push_string(ctx, "value");
+  rc = duk_put_prop_heapptr(ctx, -3, ptr);
+  printf("rc=%d\n", (int) rc);
+
+tags:
+  - property
+
+introduced: 2.2.0
