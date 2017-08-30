@@ -19,7 +19,6 @@ example: |
 
 tags:
   - property
-  - stack
 
 seealso:
   - duk_has_prop_string

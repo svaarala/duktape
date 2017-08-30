@@ -80,6 +80,8 @@ tags:
 
 seealso:
   - duk_get_prop_string
+  - duk_get_prop_lstring
   - duk_get_prop_index
+  - duk_get_prop_heapptr
 
 introduced: 1.0.0

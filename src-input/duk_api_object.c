@@ -61,6 +61,14 @@ DUK_EXTERNAL duk_bool_t duk_get_prop_index(duk_hthread *thr, duk_idx_t obj_idx, 
 	return duk_get_prop(thr, obj_idx);
 }
 
+DUK_EXTERNAL duk_bool_t duk_get_prop_heapptr(duk_hthread *thr, duk_idx_t obj_idx, void *ptr) {
+	DUK_ASSERT_API_ENTRY(thr);
+
+	obj_idx = duk_require_normalize_index(thr, obj_idx);
+	duk_push_heapptr(thr, ptr);  /* NULL -> 'undefined' */
+	return duk_get_prop(thr, obj_idx);
+}
+
 DUK_INTERNAL duk_bool_t duk_get_prop_stridx(duk_hthread *thr, duk_idx_t obj_idx, duk_small_uint_t stridx) {
 	DUK_ASSERT_API_ENTRY(thr);
 	DUK_ASSERT_STRIDX_VALID(stridx);
@@ -156,6 +164,15 @@ DUK_EXTERNAL duk_bool_t duk_put_prop_index(duk_hthread *thr, duk_idx_t obj_idx, 
 	return duk__put_prop_shared(thr, obj_idx, -1);
 }
 
+DUK_EXTERNAL duk_bool_t duk_put_prop_heapptr(duk_hthread *thr, duk_idx_t obj_idx, void *ptr) {
+	DUK_ASSERT_API_ENTRY(thr);
+
+	obj_idx = duk_require_normalize_index(thr, obj_idx);
+	duk_push_heapptr(thr, ptr);  /* NULL -> 'undefined' */
+	return duk__put_prop_shared(thr, obj_idx, -1);
+}
+
+
 DUK_INTERNAL duk_bool_t duk_put_prop_stridx(duk_hthread *thr, duk_idx_t obj_idx, duk_small_uint_t stridx) {
 	DUK_ASSERT_API_ENTRY(thr);
 	DUK_ASSERT_STRIDX_VALID(stridx);
@@ -219,6 +236,14 @@ DUK_EXTERNAL duk_bool_t duk_del_prop_index(duk_hthread *thr, duk_idx_t obj_idx, 
 	return duk_del_prop(thr, obj_idx);
 }
 
+DUK_EXTERNAL duk_bool_t duk_del_prop_heapptr(duk_hthread *thr, duk_idx_t obj_idx, void *ptr) {
+	DUK_ASSERT_API_ENTRY(thr);
+
+	obj_idx = duk_require_normalize_index(thr, obj_idx);
+	duk_push_heapptr(thr, ptr);  /* NULL -> 'undefined' */
+	return duk_del_prop(thr, obj_idx);
+}
+
 DUK_INTERNAL duk_bool_t duk_del_prop_stridx(duk_hthread *thr, duk_idx_t obj_idx, duk_small_uint_t stridx) {
 	DUK_ASSERT_API_ENTRY(thr);
 	DUK_ASSERT_STRIDX_VALID(stridx);
@@ -279,6 +304,14 @@ DUK_EXTERNAL duk_bool_t duk_has_prop_index(duk_hthread *thr, duk_idx_t obj_idx, 
 
 	obj_idx = duk_require_normalize_index(thr, obj_idx);
 	duk_push_uarridx(thr, arr_idx);
+	return duk_has_prop(thr, obj_idx);
+}
+
+DUK_EXTERNAL duk_bool_t duk_has_prop_heapptr(duk_hthread *thr, duk_idx_t obj_idx, void *ptr) {
+	DUK_ASSERT_API_ENTRY(thr);
+
+	obj_idx = duk_require_normalize_index(thr, obj_idx);
+	duk_push_heapptr(thr, ptr);  /* NULL -> 'undefined' */
 	return duk_has_prop(thr, obj_idx);
 }
 

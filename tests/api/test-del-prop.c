@@ -5,7 +5,7 @@ delete obj.nonexistent -> rc=1
 delete obj[123] -> rc=1
 delete arr.nonexistent -> rc=1
 delete arr[2] -> rc=1
-final object: {"bar":"barval","nul\u0000key":"nulval"}
+final object: {"bar":"barval","nul\u0000key":"nulval","undefined":"undefinedval"}
 final array: ["foo","bar",null]
 final top: 3
 ==> rc=0, result='undefined'
@@ -39,7 +39,7 @@ delete obj.nonexistent -> rc=1
 delete obj['123'] -> rc=1
 delete arr.nonexistent -> rc=1
 delete arr['2'] -> rc=1
-final object: {"bar":"barval","nul\u0000key":"nulval"}
+final object: {"bar":"barval","nul\u0000key":"nulval","undefined":"undefinedval"}
 final array: ["foo","bar",null]
 final top: 3
 ==> rc=0, result='undefined'
@@ -72,7 +72,7 @@ delete obj[31337] -> rc=1
 delete obj[123] -> rc=1
 delete arr[31337] -> rc=1
 delete arr[2] -> rc=1
-final object: {"foo":"fooval","bar":"barval","nul\u0000key":"nulval"}
+final object: {"foo":"fooval","bar":"barval","nul\u0000key":"nulval","undefined":"undefinedval"}
 final array: ["foo","bar",null]
 final top: 3
 ==> rc=0, result='undefined'
@@ -90,21 +90,45 @@ final top: 3
 ==> rc=1, result='RangeError: invalid stack index -2147483648'
 *** test_delproplstring_a_safecall (duk_safe_call)
 delete obj.nul<NUL>key -> rc=1
-{"123":"123val","foo":"fooval","bar":"barval"}
+{"123":"123val","foo":"fooval","bar":"barval","undefined":"undefinedval"}
 final top: 3
 ==> rc=0, result='undefined'
 *** test_delproplstring_a (duk_pcall)
 delete obj.nul<NUL>key -> rc=1
-{"123":"123val","foo":"fooval","bar":"barval"}
+{"123":"123val","foo":"fooval","bar":"barval","undefined":"undefinedval"}
 final top: 3
 ==> rc=0, result='undefined'
+*** test_delpropheapptr_a_safecall (duk_safe_call)
+delete obj.foo -> rc=1
+delete obj.nonexistent -> rc=1
+delete obj.undefined -> rc=1
+final object: {"123":"123val","bar":"barval","nul\u0000key":"nulval"}
+final array: ["foo","bar","quux"]
+final top: 3
+==> rc=0, result='undefined'
+*** test_delpropheapptr_a (duk_pcall)
+delete obj.foo -> rc=1
+delete obj.nonexistent -> rc=1
+delete obj.undefined -> rc=1
+final object: {"123":"123val","bar":"barval","nul\u0000key":"nulval"}
+final array: ["foo","bar","quux"]
+final top: 3
+==> rc=0, result='undefined'
+*** test_delpropheapptr_b_safecall (duk_safe_call)
+==> rc=1, result='RangeError: invalid stack index 234'
+*** test_delpropheapptr_b (duk_pcall)
+==> rc=1, result='RangeError: invalid stack index 234'
+*** test_delpropheapptr_c_safecall (duk_safe_call)
+==> rc=1, result='RangeError: invalid stack index -2147483648'
+*** test_delpropheapptr_c (duk_pcall)
+==> rc=1, result='RangeError: invalid stack index -2147483648'
 ===*/
 
 static void prep(duk_context *ctx) {
 	duk_set_top(ctx, 0);
 
 	/* 0: object with both string and number keys */
-	duk_push_string(ctx, "{\"foo\": \"fooval\", \"bar\": \"barval\", \"123\": \"123val\", \"nul\\u0000key\": \"nulval\"}");
+	duk_push_string(ctx, "{\"foo\": \"fooval\", \"bar\": \"barval\", \"123\": \"123val\", \"nul\\u0000key\": \"nulval\", \"undefined\": \"undefinedval\"}");
 	(void) duk_json_decode(ctx, -1);
 
 	/* 1: array with 3 elements */
@@ -512,6 +536,87 @@ static duk_ret_t test_delproplstring_a_safecall(duk_context *ctx, void *udata) {
 	return test_delproplstring_a(ctx);
 }
 
+/* duk_del_prop_heapptr(), success cases */
+static duk_ret_t test_delpropheapptr_a_safecall(duk_context *ctx, void *udata) {
+	duk_ret_t rc;
+	void *ptr;
+
+	(void) udata;
+
+	prep(ctx);
+
+	duk_push_string(ctx, "foo");
+	ptr = duk_require_heapptr(ctx, -1);
+	rc = duk_del_prop_heapptr(ctx, 0, ptr);
+	printf("delete obj.foo -> rc=%d\n", (int) rc);
+	duk_pop(ctx);
+
+	duk_push_string(ctx, "nonexistent");
+	ptr = duk_require_heapptr(ctx, -1);
+	rc = duk_del_prop_heapptr(ctx, 0, ptr);
+	printf("delete obj.nonexistent -> rc=%d\n", (int) rc);
+	duk_pop(ctx);
+
+	ptr = NULL;
+	rc = duk_del_prop_heapptr(ctx, 0, ptr);
+	printf("delete obj.undefined -> rc=%d\n", (int) rc);
+
+	duk_json_encode(ctx, 0);
+	printf("final object: %s\n", duk_to_string(ctx, 0));
+	duk_json_encode(ctx, 1);
+	printf("final array: %s\n", duk_to_string(ctx, 1));
+
+	printf("final top: %ld\n", (long) duk_get_top(ctx));
+	return 0;
+}
+static duk_ret_t test_delpropheapptr_a(duk_context *ctx) {
+	return test_delpropheapptr_a_safecall(ctx, NULL);
+}
+
+/* duk_del_prop_heapptr(), invalid index */
+static duk_ret_t test_delpropheapptr_b_safecall(duk_context *ctx, void *udata) {
+	duk_ret_t rc;
+	void *ptr;
+
+	(void) udata;
+
+	prep(ctx);
+
+	duk_push_string(ctx, "foo");
+	ptr = duk_require_heapptr(ctx, -1);
+	rc = duk_del_prop_heapptr(ctx, 234, ptr);
+	printf("delete obj.foo -> rc=%d\n", (int) rc);
+	duk_pop(ctx);
+
+	printf("final top: %ld\n", (long) duk_get_top(ctx));
+	return 0;
+}
+static duk_ret_t test_delpropheapptr_b(duk_context *ctx) {
+	return test_delpropheapptr_b_safecall(ctx, NULL);
+}
+
+/* duk_del_prop_heapptr(), DUK_INVALID_INDEX */
+static duk_ret_t test_delpropheapptr_c_safecall(duk_context *ctx, void *udata) {
+	duk_ret_t rc;
+	void *ptr;
+
+	(void) udata;
+
+	prep(ctx);
+
+	duk_push_string(ctx, "foo");
+	ptr = duk_require_heapptr(ctx, -1);
+	rc = duk_del_prop_heapptr(ctx, DUK_INVALID_INDEX, ptr);
+	printf("delete obj.foo -> rc=%d\n", (int) rc);
+	duk_pop(ctx);
+
+	printf("final top: %ld\n", (long) duk_get_top(ctx));
+	return 0;
+}
+static duk_ret_t test_delpropheapptr_c(duk_context *ctx) {
+	return test_delpropheapptr_c_safecall(ctx, NULL);
+}
+
 void test(duk_context *ctx) {
 	TEST_SAFE_CALL(test_delprop_a_safecall);
 	TEST_SAFE_CALL(test_delprop_b_safecall);
@@ -551,4 +656,11 @@ void test(duk_context *ctx) {
 
 	TEST_SAFE_CALL(test_delproplstring_a_safecall);
 	TEST_PCALL(test_delproplstring_a);
+
+	TEST_SAFE_CALL(test_delpropheapptr_a_safecall);
+	TEST_PCALL(test_delpropheapptr_a);
+	TEST_SAFE_CALL(test_delpropheapptr_b_safecall);
+	TEST_PCALL(test_delpropheapptr_b);
+	TEST_SAFE_CALL(test_delpropheapptr_c_safecall);
+	TEST_PCALL(test_delpropheapptr_c);
 }

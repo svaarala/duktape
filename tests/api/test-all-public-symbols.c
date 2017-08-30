@@ -59,6 +59,7 @@ static duk_ret_t test_func(duk_context *ctx, void *udata) {
 	(void) duk_debugger_pause(ctx);
 	(void) duk_decode_string(ctx, 0, NULL, NULL);
 	(void) duk_def_prop(ctx, 0, 0);
+	(void) duk_del_prop_heapptr(ctx, 0, NULL);
 	(void) duk_del_prop_index(ctx, 0, 0);
 	(void) duk_del_prop_lstring(ctx, 0, "dummy", 0);
 	(void) duk_del_prop_string(ctx, 0, "dummy");
@@ -115,6 +116,7 @@ static duk_ret_t test_func(duk_context *ctx, void *udata) {
 	(void) duk_get_pointer(ctx, 0);
 	(void) duk_get_pointer_default(ctx, 0, NULL);
 	(void) duk_get_prop_desc(ctx, 0, 0);
+	(void) duk_get_prop_heapptr(ctx, 0, NULL);
 	(void) duk_get_prop_index(ctx, 0, 0);
 	(void) duk_get_prop_lstring(ctx, 0, "dummy", 0);
 	(void) duk_get_prop_string(ctx, 0, "dummy");
@@ -128,6 +130,7 @@ static duk_ret_t test_func(duk_context *ctx, void *udata) {
 	(void) duk_get_type(ctx, 0);
 	(void) duk_get_uint(ctx, 0);
 	(void) duk_get_uint_default(ctx, 0, 0);
+	(void) duk_has_prop_heapptr(ctx, 0, NULL);
 	(void) duk_has_prop_index(ctx, 0, 0);
 	(void) duk_has_prop_lstring(ctx, 0, "dummy", 0);
 	(void) duk_has_prop_string(ctx, 0, "dummy");
@@ -254,6 +257,7 @@ static duk_ret_t test_func(duk_context *ctx, void *udata) {
 	(void) duk_put_global_lstring(ctx, "dummy", 0);
 	(void) duk_put_global_string(ctx, "dummy");
 	(void) duk_put_number_list(ctx, 0, NULL);
+	(void) duk_put_prop_heapptr(ctx, 0, NULL);
 	(void) duk_put_prop_index(ctx, 0, 0);
 	(void) duk_put_prop_lstring(ctx, 0, "dummy", 0);
 	(void) duk_put_prop_string(ctx, 0, "dummy");

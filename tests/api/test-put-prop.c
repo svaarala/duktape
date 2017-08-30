@@ -108,11 +108,11 @@ eval:
 top after eval: 1
 ==> rc=1, result='TypeError: not extensible'
 *** test_putprop_shorthand_a_safecall (duk_safe_call)
-{"2001":234,"foo":123,"bar":123,"nul\u0000key":345}
+{"2001":234,"foo":123,"bar":123,"nul\u0000key":345,"heapptr":456,"stringCoerced":567,"undefined":678}
 final top: 1
 ==> rc=0, result='undefined'
 *** test_putprop_shorthand_a (duk_pcall)
-{"2001":234,"foo":123,"bar":123,"nul\u0000key":345}
+{"2001":234,"foo":123,"bar":123,"nul\u0000key":345,"heapptr":456,"stringCoerced":567,"undefined":678}
 final top: 1
 ==> rc=0, result='undefined'
 ===*/
@@ -356,6 +356,8 @@ static duk_ret_t test_new_not_extensible_safecall(duk_context *ctx, void *udata)
 }
 
 static duk_ret_t test_putprop_shorthand_a(duk_context *ctx) {
+	void *ptr;
+
 	duk_eval_string(ctx, "({ foo: 123 })");
 
 	duk_push_uint(ctx, 123);
@@ -366,6 +368,23 @@ static duk_ret_t test_putprop_shorthand_a(duk_context *ctx) {
 
 	duk_push_uint(ctx, 345);
 	duk_put_prop_lstring(ctx, -2, "nul" "\x00" "keyx", 7);
+
+	duk_push_string(ctx, "heapptr");
+	ptr = duk_require_heapptr(ctx, -1);
+	duk_push_string(ctx, "DUMMY");  /* just to ensure 'heapptr' is not used based on position */
+	duk_push_uint(ctx, 456);
+	duk_put_prop_heapptr(ctx, -4, ptr);
+	duk_pop_2(ctx);
+
+	duk_eval_string(ctx, "({ toString: function () { return 'stringCoerced'; } })");
+	ptr = duk_require_heapptr(ctx, -1);
+	duk_push_string(ctx, "DUMMY");  /* just to ensure 'heapptr' is not used based on position */
+	duk_push_uint(ctx, 567);
+	duk_put_prop_heapptr(ctx, -4, ptr);
+	duk_pop_2(ctx);
+
+	duk_push_uint(ctx, 678);
+	duk_put_prop_heapptr(ctx, -2, NULL);
 
 	duk_json_encode(ctx, -1);
 	printf("%s\n", duk_to_string(ctx, -1));
