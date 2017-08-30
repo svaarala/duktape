@@ -115,6 +115,26 @@ final top: 1
 {"2001":234,"foo":123,"bar":123,"nul\u0000key":345,"heapptr":456,"stringCoerced":567,"undefined":678}
 final top: 1
 ==> rc=0, result='undefined'
+*** test_putprop_invalid_index1 (duk_safe_call)
+==> rc=1, result='RangeError: invalid stack index 234'
+*** test_putprop_invalid_index2 (duk_safe_call)
+==> rc=1, result='RangeError: invalid stack index -2147483648'
+*** test_putprop_string_invalid_index1 (duk_safe_call)
+==> rc=1, result='RangeError: invalid stack index -2147483648'
+*** test_putprop_string_invalid_index2 (duk_safe_call)
+==> rc=1, result='RangeError: invalid stack index -2147483648'
+*** test_putprop_lstring_invalid_index1 (duk_safe_call)
+==> rc=1, result='RangeError: invalid stack index -2147483648'
+*** test_putprop_lstring_invalid_index2 (duk_safe_call)
+==> rc=1, result='RangeError: invalid stack index -2147483648'
+*** test_putprop_index_invalid_index1 (duk_safe_call)
+==> rc=1, result='RangeError: invalid stack index 345'
+*** test_putprop_index_invalid_index2 (duk_safe_call)
+==> rc=1, result='RangeError: invalid stack index -2147483648'
+*** test_putprop_heapptr_invalid_index1 (duk_safe_call)
+==> rc=1, result='RangeError: invalid stack index 456'
+*** test_putprop_heapptr_invalid_index2 (duk_safe_call)
+==> rc=1, result='RangeError: invalid stack index -2147483648'
 ===*/
 
 /* Test property writing API call.
@@ -397,6 +417,113 @@ static duk_ret_t test_putprop_shorthand_a_safecall(duk_context *ctx, void *udata
 	return test_putprop_shorthand_a(ctx);
 }
 
+static duk_ret_t test_putprop_invalid_index1(duk_context *ctx, void *udata) {
+	(void) udata;
+
+	duk_push_string(ctx, "foo");
+	duk_push_uint(ctx, 123);
+	duk_put_prop(ctx, 234);
+
+	printf("final top: %ld\n", (long) duk_get_top(ctx));
+	return 0;
+}
+
+static duk_ret_t test_putprop_invalid_index2(duk_context *ctx, void *udata) {
+	(void) udata;
+
+	duk_push_string(ctx, "foo");
+	duk_push_uint(ctx, 123);
+	duk_put_prop(ctx, DUK_INVALID_INDEX);
+
+	printf("final top: %ld\n", (long) duk_get_top(ctx));
+	return 0;
+}
+
+static duk_ret_t test_putprop_string_invalid_index1(duk_context *ctx, void *udata) {
+	(void) udata;
+
+	duk_push_uint(ctx, 123);
+	duk_put_prop_string(ctx, -2, "foo");
+
+	printf("final top: %ld\n", (long) duk_get_top(ctx));
+	return 0;
+}
+
+static duk_ret_t test_putprop_string_invalid_index2(duk_context *ctx, void *udata) {
+	(void) udata;
+
+	duk_push_uint(ctx, 123);
+	duk_put_prop_string(ctx, DUK_INVALID_INDEX, "foo");
+
+	printf("final top: %ld\n", (long) duk_get_top(ctx));
+	return 0;
+}
+
+static duk_ret_t test_putprop_lstring_invalid_index1(duk_context *ctx, void *udata) {
+	(void) udata;
+
+	duk_push_uint(ctx, 123);
+	duk_put_prop_lstring(ctx, 123, "foox", 3);
+
+	printf("final top: %ld\n", (long) duk_get_top(ctx));
+	return 0;
+}
+
+static duk_ret_t test_putprop_lstring_invalid_index2(duk_context *ctx, void *udata) {
+	(void) udata;
+
+	duk_push_uint(ctx, 123);
+	duk_put_prop_lstring(ctx, DUK_INVALID_INDEX, "foox", 3);
+
+	printf("final top: %ld\n", (long) duk_get_top(ctx));
+	return 0;
+}
+
+static duk_ret_t test_putprop_index_invalid_index1(duk_context *ctx, void *udata) {
+	(void) udata;
+
+	duk_push_uint(ctx, 123);
+	duk_put_prop_index(ctx, 345, 1001U);
+
+	printf("final top: %ld\n", (long) duk_get_top(ctx));
+	return 0;
+}
+
+static duk_ret_t test_putprop_index_invalid_index2(duk_context *ctx, void *udata) {
+	(void) udata;
+
+	duk_push_uint(ctx, 123);
+	duk_put_prop_index(ctx, DUK_INVALID_INDEX, 1001U);
+
+	printf("final top: %ld\n", (long) duk_get_top(ctx));
+	return 0;
+}
+
+static duk_ret_t test_putprop_heapptr_invalid_index1(duk_context *ctx, void *udata) {
+	void *ptr;
+
+	(void) udata;
+
+	duk_push_string(ctx, "foo");
+	ptr = duk_get_heapptr(ctx, -1);
+
+	duk_push_uint(ctx, 123);
+	duk_put_prop_heapptr(ctx, 456, ptr);
+
+	printf("final top: %ld\n", (long) duk_get_top(ctx));
+	return 0;
+}
+
+static duk_ret_t test_putprop_heapptr_invalid_index2(duk_context *ctx, void *udata) {
+	(void) udata;
+
+	duk_push_uint(ctx, 123);
+	duk_put_prop_heapptr(ctx, DUK_INVALID_INDEX, NULL);
+
+	printf("final top: %ld\n", (long) duk_get_top(ctx));
+	return 0;
+}
+
 #define  TEST(func)  do { \
 		TEST_SAFE_CALL(func ## _safecall); \
 		TEST_PCALL(func); \
@@ -404,7 +531,6 @@ static duk_ret_t test_putprop_shorthand_a_safecall(duk_context *ctx, void *udata
 
 void test(duk_context *ctx) {
 	/* Cases where own property already exists. */
-
 	TEST(test_ex_writable);
 	TEST(test_ex_nonwritable);
 	TEST(test_ex_accessor_wo_setter);
@@ -413,10 +539,21 @@ void test(duk_context *ctx) {
 	/* Cases where no own property, possibly ancestor
 	 * property of same name.
 	 */
-
 	TEST(test_new_extensible);
 	TEST(test_new_not_extensible);
 
 	/* Shorthands. */
 	TEST(test_putprop_shorthand_a);
+
+	/* Invalid index. */
+	TEST_SAFE_CALL(test_putprop_invalid_index1);
+	TEST_SAFE_CALL(test_putprop_invalid_index2);
+	TEST_SAFE_CALL(test_putprop_string_invalid_index1);
+	TEST_SAFE_CALL(test_putprop_string_invalid_index2);
+	TEST_SAFE_CALL(test_putprop_lstring_invalid_index1);
+	TEST_SAFE_CALL(test_putprop_lstring_invalid_index2);
+	TEST_SAFE_CALL(test_putprop_index_invalid_index1);
+	TEST_SAFE_CALL(test_putprop_index_invalid_index2);
+	TEST_SAFE_CALL(test_putprop_heapptr_invalid_index1);
+	TEST_SAFE_CALL(test_putprop_heapptr_invalid_index2);
 }
