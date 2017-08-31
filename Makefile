@@ -141,8 +141,9 @@ CCOPTS_SHARED += -I./extras/print-alert
 CCOPTS_SHARED += -I./extras/console
 CCOPTS_SHARED += -I./extras/logging
 CCOPTS_SHARED += -I./extras/module-duktape
-#CCOPTS_SHARED += -m32                             # force 32-bit compilation on a 64-bit host
-#CCOPTS_SHARED += -mx32                            # force X32 compilation on a 64-bit host
+#CCOPTS_SHARED += -m32   # force 32-bit compilation on a 64-bit host
+#CCOPTS_SHARED += -mx32  # force X32 compilation on a 64-bit host
+#CCOPTS_SHARED += -fstack-usage  # enable manually, then e.g. $ make clean duk; python util/pretty_stack_usage.py duktape.su
 
 CCOPTS_NONDEBUG = $(CCOPTS_SHARED) $(CCOPTS_FEATURES)
 CCOPTS_NONDEBUG += -Os -fomit-frame-pointer -fno-stack-protector
@@ -218,6 +219,7 @@ checksetup:
 .PHONY:	clean
 clean:
 	@rm -f *.gcda
+	@rm -f *.su
 	@rm -rf dist/
 	@rm -rf prep/
 	@rm -rf site/
