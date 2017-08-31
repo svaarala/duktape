@@ -5014,6 +5014,7 @@ static const duk_uint32_t duk__bufobj_flags_lookup[] = {
 DUK_EXTERNAL void duk_push_buffer_object(duk_hthread *thr, duk_idx_t idx_buffer, duk_size_t byte_offset, duk_size_t byte_length, duk_uint_t flags) {
 	duk_hbufobj *h_bufobj;
 	duk_hbuffer *h_val;
+	duk_hobject *h_arraybuf;
 	duk_uint32_t tmp;
 	duk_uint_t classnum;
 	duk_uint_t protobidx;
@@ -5023,8 +5024,7 @@ DUK_EXTERNAL void duk_push_buffer_object(duk_hthread *thr, duk_idx_t idx_buffer,
 	DUK_ASSERT_API_ENTRY(thr);
 
 	/* The underlying types for offset/length in duk_hbufobj is
-	 * duk_uint_t; make sure argument values fit and that
-	 * offset + length does not wrap.
+	 * duk_uint_t; make sure argument values fit.
 	 */
 	uint_offset = (duk_uint_t) byte_offset;
 	uint_length = (duk_uint_t) byte_length;
@@ -5033,11 +5033,6 @@ DUK_EXTERNAL void duk_push_buffer_object(duk_hthread *thr, duk_idx_t idx_buffer,
 			goto range_error;
 		}
 	}
-	uint_added = uint_offset + uint_length;
-	if (DUK_UNLIKELY(uint_added < uint_offset)) {
-		goto range_error;
-	}
-	DUK_ASSERT(uint_added >= uint_offset && uint_added >= uint_length);
 
 	DUK_ASSERT_DISABLE(flags >= 0);  /* flags is unsigned */
 	lookupidx = flags;
@@ -5048,7 +5043,43 @@ DUK_EXTERNAL void duk_push_buffer_object(duk_hthread *thr, duk_idx_t idx_buffer,
 	classnum = tmp >> 24;
 	protobidx = (tmp >> 16) & 0xff;
 
-	h_val = duk_require_hbuffer(thr, idx_buffer);
+	h_arraybuf = duk_get_hobject(thr, idx_buffer);
+	if (h_arraybuf != NULL &&  /* argument is an object */
+	    flags != DUK_BUFOBJ_ARRAYBUFFER &&  /* creating a view */
+	    DUK_HOBJECT_GET_CLASS_NUMBER(h_arraybuf) == DUK_HOBJECT_CLASS_ARRAYBUFFER  /* argument is ArrayBuffer */) {
+		duk_uint_t tmp_offset;
+
+		DUK_ASSERT_HBUFOBJ_VALID((duk_hbufobj *) h_arraybuf);
+		h_val = ((duk_hbufobj *) h_arraybuf)->buf;
+		if (DUK_UNLIKELY(h_val == NULL)) {
+			goto arg_error;
+		}
+
+		tmp_offset = uint_offset + ((duk_hbufobj *) h_arraybuf)->offset;
+		if (DUK_UNLIKELY(tmp_offset < uint_offset)) {
+			goto range_error;
+		}
+		uint_offset = tmp_offset;
+
+		/* Note intentional difference to new TypedArray(): we allow
+		 * caller to create an uncovered typed array (which is memory
+		 * safe); new TypedArray() rejects it.
+		 */
+	} else {
+		/* Handle unexpected object arguments here too, for nice error
+		 * messages.
+		 */
+		h_arraybuf = NULL;
+		h_val = duk_require_hbuffer(thr, idx_buffer);
+	}
+
+	/* Wrap check for offset+length. */
+	uint_added = uint_offset + uint_length;
+	if (DUK_UNLIKELY(uint_added < uint_offset)) {
+		goto range_error;
+	}
+	DUK_ASSERT(uint_added >= uint_offset && uint_added >= uint_length);
+
 	DUK_ASSERT(h_val != NULL);
 
 	h_bufobj = duk_push_bufobj_raw(thr,
@@ -5060,6 +5091,8 @@ DUK_EXTERNAL void duk_push_buffer_object(duk_hthread *thr, duk_idx_t idx_buffer,
 
 	h_bufobj->buf = h_val;
 	DUK_HBUFFER_INCREF(thr, h_val);
+	h_bufobj->buf_prop = h_arraybuf;
+	DUK_HOBJECT_INCREF_ALLOWNULL(thr, h_arraybuf);
 	h_bufobj->offset = uint_offset;
 	h_bufobj->length = uint_length;
 	h_bufobj->shift = (tmp >> 4) & 0x0f;
@@ -5071,7 +5104,7 @@ DUK_EXTERNAL void duk_push_buffer_object(duk_hthread *thr, duk_idx_t idx_buffer,
 	 * provided as .buffer property of the view.  The ArrayBuffer is
 	 * referenced via duk_hbufobj->buf_prop and an inherited .buffer
 	 * accessor returns it.  The ArrayBuffer is created lazily on first
-	 * access so we don't need to do anything more here.
+	 * access if necessary so we don't need to do anything more here.
 	 */
 	return;
 
