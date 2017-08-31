@@ -134,6 +134,176 @@ static duk_ret_t test_basic(duk_context *ctx, void *udata) {
 }
 
 /*===
+*** test_arraybuffer_base_for_u32array (duk_safe_call)
+object [object ArrayBuffer] undefined undefined 14 undefined undefined
+false true false false false false false false false false false false -> ArrayBuffer
+false true false false false false false false false false false false -> ArrayBuffer.prototype
+object [object Uint32Array] 2 20 8 4 object
+false false false false false false false false false true false false -> Uint32Array
+false false false false false false false false false true false false -> Uint32Array.prototype
+buf: 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 bb bb bb bb cc cc cc cc dd dd dd dd bb bb 00 00
+final top: 3
+==> rc=0, result='undefined'
+*** test_arraybuffer_base_for_u32array_ecma (duk_safe_call)
+object [object ArrayBuffer] undefined undefined 14 undefined undefined
+false true false false false false false false false false false false -> ArrayBuffer
+false true false false false false false false false false false false -> ArrayBuffer.prototype
+object [object Uint32Array] 2 20 8 4 object
+false false false false false false false false false true false false -> Uint32Array
+false false false false false false false false false true false false -> Uint32Array.prototype
+buf: 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 bb bb bb bb cc cc cc cc dd dd dd dd bb bb 00 00
+final top: 3
+==> rc=0, result='undefined'
+*** test_arraybuffer_base_for_arraybuffer (duk_safe_call)
+==> rc=1, result='TypeError: buffer required, found [object ArrayBuffer] (stack index -1)'
+===*/
+
+static duk_ret_t test_arraybuffer_base_for_u32array(duk_context *ctx, void *udata) {
+	unsigned char *buf;
+	int i;
+
+	(void) udata;
+
+	/* Underlying buffer. */
+	buf = duk_push_fixed_buffer(ctx, 32);
+
+	/*
+	 *  Plain buffer:              0123456789 0123456789 0123456789 01
+	 *  ArrayBuffer:                                xxxx xxxxxxxxxx
+	 *    internal offset: 16
+	 *    internal length: 14
+	 *    .byteLength: 14
+	 *  Uint32Array:                                     yyyyyyyy
+	 *    internal offset: 16 + 4 = 20
+	 *    internal length: 8
+	 *    .byteOffset: logically 4 (relative to ArrayBuffer), but due to
+	 *                 internal limitations will be 20 (relative to final
+	 *                 plain buffer)
+	 *    .offset: 4
+	 *    .length: 2
+	 *
+	 *  When the argument ArrayBuffer has a non-zero base offset, the
+	 *  view's .byteOffset should conceptually be relative to the
+	 *  ArrayBuffer while the internal offset should be relative to the
+	 *  ultimate backing plain buffer.  This would require two internal
+	 *  fields in duk_hbufobj; since there's only one, the external
+	 *  .byteOffset will currently return the internal offset.
+	 *
+	 *  If Ecmascript code calls new Uint32Array() for an ArrayBuffer
+	 *  with a non-zero offset (which can only be created from C code),
+	 *  the result is the same (see separate test below).
+	 *
+	 *  No such problem exists if the ArrayBuffer doesn't have a non-zero
+	 *  internal offset (which is recommended).
+	 */
+
+	/* Offset range [16,48[ used for ArrayBuffer. */
+	duk_push_buffer_object(ctx, -1, 16, 14, DUK_BUFOBJ_ARRAYBUFFER);
+	duk_eval_string(ctx, "dumpBufferInfo");
+	duk_dup(ctx, -2);
+	duk_call(ctx, 1);
+	duk_pop(ctx);
+
+	/* Modify ArrayBuffer. */
+	duk_eval_string(ctx, "(function (b) { var u8 = new Uint8Array(b); for (var i = 0; i < b.byteLength; i++) { u8[i] = 0xbb; } })");
+	duk_dup(ctx, -2);
+	duk_call(ctx, 1);
+	duk_pop(ctx);
+
+	/* Uint32Array layered on top of ArrayBuffer. */
+	duk_push_buffer_object(ctx, -1, 4, 8, DUK_BUFOBJ_UINT32ARRAY);
+	duk_eval_string(ctx, "dumpBufferInfo");
+	duk_dup(ctx, -2);
+	duk_call(ctx, 1);
+	duk_pop(ctx);
+
+	/* Modify Uint32Array. */
+	duk_eval_string(ctx, "(function (v) { v[0] = 0xcccccccc; v[1] = 0xdddddddd; })");
+	duk_dup(ctx, -2);
+	duk_call(ctx, 1);
+	duk_pop(ctx);
+
+	/* Dump bytes. */
+	printf("buf:");
+	for (i = 0; i < 32; i++) {
+		printf(" %02x", (unsigned int) buf[i]);
+	}
+	printf("\n");
+
+	printf("final top: %ld\n", (long) duk_get_top(ctx));
+	return 0;
+}
+
+static duk_ret_t test_arraybuffer_base_for_u32array_ecma(duk_context *ctx, void *udata) {
+	unsigned char *buf;
+	int i;
+
+	(void) udata;
+
+	/* Same as above, but replace the second duk_push_buffer_object()
+	 * with a new Uint32Array() call from Ecmascript.  As above, the
+	 * view's .byteOffset will still be odd when the base ArrayBuffer
+	 * has a non-zero offset.  This test is just here to demonstrate
+	 * that given the same ArrayBuffer base object, the view constructed
+	 * over it via the C API or Ecmascript API behaves the same.
+	 */
+
+	buf = duk_push_fixed_buffer(ctx, 32);
+
+	duk_push_buffer_object(ctx, -1, 16, 14, DUK_BUFOBJ_ARRAYBUFFER);
+	duk_eval_string(ctx, "dumpBufferInfo");
+	duk_dup(ctx, -2);
+	duk_call(ctx, 1);
+	duk_pop(ctx);
+
+	duk_eval_string(ctx, "(function (b) { var u8 = new Uint8Array(b); for (var i = 0; i < b.byteLength; i++) { u8[i] = 0xbb; } })");
+	duk_dup(ctx, -2);
+	duk_call(ctx, 1);
+	duk_pop(ctx);
+
+	duk_eval_string(ctx, "(function (ab) { return new Uint32Array(ab, 4, 2); })");
+	duk_dup(ctx, -2);
+	duk_call(ctx, 1);
+	duk_eval_string(ctx, "dumpBufferInfo");
+	duk_dup(ctx, -2);
+	duk_call(ctx, 1);
+	duk_pop(ctx);
+
+	duk_eval_string(ctx, "(function (v) { v[0] = 0xcccccccc; v[1] = 0xdddddddd; })");
+	duk_dup(ctx, -2);
+	duk_call(ctx, 1);
+	duk_pop(ctx);
+
+	printf("buf:");
+	for (i = 0; i < 32; i++) {
+		printf(" %02x", (unsigned int) buf[i]);
+	}
+	printf("\n");
+
+	printf("final top: %ld\n", (long) duk_get_top(ctx));
+	return 0;
+}
+
+static duk_ret_t test_arraybuffer_base_for_arraybuffer(duk_context *ctx, void *udata) {
+	(void) udata;
+
+	/* ArrayBuffer is rejected as a base value when creating an
+	 * ArrayBuffer.
+	 */
+
+	duk_eval_string(ctx, "new ArrayBuffer(16)");
+
+	duk_push_buffer_object(ctx, -1, 4, 11, DUK_BUFOBJ_ARRAYBUFFER);
+	duk_eval_string(ctx, "dumpBufferInfo");
+	duk_dup(ctx, -2);
+	duk_call(ctx, 1);
+	duk_pop(ctx);
+
+	printf("final top: %ld\n", (long) duk_get_top(ctx));
+	return 0;
+}
+
+/*===
 *** test_view_buffer_prop (duk_safe_call)
 [object Uint8Array]
 object [object Uint8Array] 22 16 22 1 object
@@ -396,7 +566,7 @@ static duk_ret_t test_invalid_flags1(duk_context *ctx, void *udata) {
 	(void) udata;
 
 	duk_push_fixed_buffer(ctx, 256);
-	duk_push_buffer_object(ctx, -1, 7, 512, 0 /* no type given, but matches DUK_BUFOBJ_DUKTAPEBUFFER */);
+	duk_push_buffer_object(ctx, -1, 7, 512, 0 /* no type given, but matches DUK_BUFOBJ_ARRAYBUFFER */);
 	printf("final top: %ld\n", (long) duk_get_top(ctx));
 	return 0;
 }
@@ -496,6 +666,9 @@ void test(duk_context *ctx) {
 	register_dump_buffer_info(ctx);
 
 	TEST_SAFE_CALL(test_basic);
+	TEST_SAFE_CALL(test_arraybuffer_base_for_u32array);
+	TEST_SAFE_CALL(test_arraybuffer_base_for_u32array_ecma);
+	TEST_SAFE_CALL(test_arraybuffer_base_for_arraybuffer);
 	TEST_SAFE_CALL(test_view_buffer_prop);
 	TEST_SAFE_CALL(test_unaligned);
 	TEST_SAFE_CALL(test_unaligned_uneven);
