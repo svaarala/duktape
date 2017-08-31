@@ -374,7 +374,7 @@ var API_TEST_HEADER =
     "\t\tduk_ret_t _rc; \\\n" +
     "\t\tprintf(\"*** %s (duk_safe_call)\\n\", #func); \\\n" +
     "\t\tfflush(stdout); \\\n" +
-    "\t\t_rc = duk_safe_call(ctx, (func), NULL, 0, 1); \\\n" +
+    "\t\t_rc = duk_safe_call(ctx, (func), NULL, 0 /*nargs*/, 1 /*nrets*/); \\\n" +
     "\t\tprintf(\"==> rc=%d, result='%s'\\n\", (int) _rc, duk_safe_to_string(ctx, -1)); \\\n" +
     "\t\tfflush(stdout); \\\n" +
     "\t\tduk_pop(ctx); \\\n" +
