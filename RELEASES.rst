@@ -2958,6 +2958,10 @@ Planned
   and make DUK_TYPE_xxx, DUK_TYPE_MASK_xxx, and flags constants unsigned
   in the API header (GH-1688)
 
+* Add more convenience flag defines for duk_def_prop(), e.g.
+  DUK_DEFPROP_ATTR_WC sets writable and configurable, and clears
+  enumerable (GH-1208)
+
 * Add support for Proxy 'apply' and 'construct' traps (GH-1601)
 
 * Add minimal new.target support, evaluates to undefined for non-constructor

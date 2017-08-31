@@ -18,14 +18,9 @@ summary: |
   <code>TypeError</code> is thrown.  If the target is not an object (or the
   index is invalid) an error is thrown.</p>
 
-  <p>If the target is a Proxy object which implements the <code>defineProperty</code>
-  trap, the trap should be invoked.  However, Duktape doesn't currently support
-  the <code>defineProperty</code> trap.  When support is added, this API call will
-  start invoking the trap.</p>
-
   <p>The flags field provides "have" flags to indicate what property attributes
-  are changed (this models the partial property descriptors allowed by
-  <code>Object.defineProperty()</code>).  Values for the writable, configurable,
+  are changed, which models the partial property descriptors allowed by
+  <code>Object.defineProperty()</code>.  Values for the writable, configurable,
   and enumerable attributes are given in the flags field, while property value,
   getter, and setter are given as value stack arguments.  When creating a new
   property, missing attribute values cause
@@ -33,6 +28,21 @@ summary: |
   to be used (false for all boolean attributes, undefined for value, getter, setter);
   when modifying an existing property missing attribute values mean that existing
   attribute values are not touched.</p>
+
+  <p>As a concrete example:</p>
+  <pre class="ecmascript-code">
+  // Set value, set writable, clear enumerable, leave configurable untouched.
+  Object.defineProperty(obj, { value: 123, writable: true, enumerable: false });
+  </pre>
+
+  <p>Would map to:</p>
+  <pre class="c-code">
+  duk_push_uint(ctx, 123);  /* value is taken from stack */
+  duk_def_prop(ctx, obj_idx,
+               DUK_DEFPROP_HAVE_VALUE |  /* <=> value: 123 */
+               DUK_DEFPROP_HAVE_WRITABLE | DUK_DEFPROP_WRITABLE |  /* <=> writable: true */
+               DUK_DEFPROP_HAVE_ENUMERABLE);  /* <=> enumerable: false */
+  </pre>
 
   <p>With the <code>DUK_DEFPROP_FORCE</code> flag property changes can be forced
   even when an operation would normally fail due to a non-extensible target object
@@ -44,25 +54,126 @@ summary: |
   or may have limitations (such as array <code>.length</code> property which cannot
   be made configurable or enumerable due to internal limitations).</p>
 
-  <p>Some examples (see further examples below):</p>
-  <ul>
-  <li>To set the writable attribute, set flags to
-      <code>DUK_DEFPROP_HAVE_WRITABLE | DUK_DEFPROP_WRITABLE</code>.</li>
-  <li>To clear the writable attribute, set flags to
-      <code>DUK_DEFPROP_HAVE_WRITABLE</code>.</li>
-  <li>To set value, clear writable, and set enumerable, set flags to
-      <code>DUK_DEFPROP_HAVE_VALUE | DUK_DEFPROP_HAVE_WRITABLE | DUK_DEFPROP_HAVE_ENUMERABLE | DUK_DEFPROP_ENUMERABLE</code>
-      and provide the property value as a stack argument.</li>
-  <li>To forcibly set the value of a non-configurable property, set flags to
-      <code>DUK_DEFPROP_HAVE_VALUE | DUK_DEFPROP_FORCE</code> and provide the
-      new property value as a stack argument.</li>
-  </ul>
+  <p>The following base flags are defined:</p>
+  <table>
+  <tr>
+  <th>Define</th>
+  <th>Description</th>
+  </tr>
+  <tr>
+  <td>DUK_DEFPROP_WRITABLE</td>
+  <td>Set writable attribute, effective only if DUK_DEFPROP_HAVE_WRITABLE is set.</td>
+  </tr>
+  <tr>
+  <td>DUK_DEFPROP_ENUMERABLE</td>
+  <td>Set enumerable attribute, effective only if DUK_DEFPROP_HAVE_ENUMERABLE is set.</td>
+  </tr>
+  <tr>
+  <td>DUK_DEFPROP_CONFIGURABLE</td>
+  <td>Set configurable attribute, effective only if DUK_DEFPROP_HAVE_CONFIGURABLE is set.</td>
+  </tr>
+  <tr>
+  <td>DUK_DEFPROP_HAVE_WRITABLE</td>
+  <td>Set or clear writable attribute (no change if unset).</td>
+  </tr>
+  <tr>
+  <td>DUK_DEFPROP_HAVE_ENUMERABLE</td>
+  <td>Set or clear enumerable attribute (no change if unset).</td>
+  </tr>
+  <tr>
+  <td>DUK_DEFPROP_HAVE_CONFIGURABLE</td>
+  <td>Set or clear configurable attribute (no change if unset).</td>
+  </tr>
+  <tr>
+  <td>DUK_DEFPROP_HAVE_VALUE</td>
+  <td>Set value attribute, value is given on value stack.</td>
+  </tr>
+  <tr>
+  <td>DUK_DEFPROP_HAVE_GETTER</td>
+  <td>Set getter attribute, value is given on value stack.</td>
+  </tr>
+  <tr>
+  <td>DUK_DEFPROP_HAVE_SETTER</td>
+  <td>Set setter attribute, value is given on value stack.</td>
+  </tr>
+  <tr>
+  <td>DUK_DEFPROP_FORCE</td>
+  <td>Force attribute change if possible, even if property is non-configurable.</td>
+  </tr>
+  </table>
 
-  <p>In Duktape 1.4.0 convenience flags for setting/clearing attributes were added:</p>
+  <p>There are a also convenience defines mapping to common flag combinations.
+  For example, DUK_DEFPROP_SET_WRITABLE is equivalent to DUK_DEFPROP_HAVE_WRITABLE
+  and DUK_DEFPROP_WRITABLE.  Currently the following are defined:</p>
+  <table>
+  <tr>
+  <th>Define</th>
+  <th>Description</th>
+  </tr>
+  <tr>
+  <td>DUK_DEFPROP_{SET,CLEAR}_WRITABLE</td>
+  <td>Set or clear the 'writable' attribute.</td>
+  </tr>
+  <tr>
+  <td>DUK_DEFPROP_{SET,CLEAR}_ENUMERABLE</td>
+  <td>Set or clear the 'enumerable' attribute.</td>
+  </tr>
+  <tr>
+  <td>DUK_DEFPROP_{SET,CLEAR}_CONFIGURABLE</td>
+  <td>Set or clear the 'configurable' attribute.</td>
+  </tr>
+  <tr>
+  <td>DUK_DEFPROP_SET_{W,E,C,WE,WC,WEC}</td>
+  <td>Set one or more attributes, don't touch other attributes.</td>
+  </tr>
+  <tr>
+  <td>DUK_DEFPROP_CLEAR_{W,E,C,WE,WC,WEC}</td>
+  <td>Clear one or more attributes, don't touch other attributes.</td>
+  </tr>
+  <tr>
+  <td>DUK_DEFPROP_ATTR_{W,E,C,WE,WC,WEC}</td>
+  <td>Set or clear writable, enumerable, and configurable attributes.
+      For example, DUK_DEFPROP_ATTR_WC sets writable and configurable,
+      and clears enumerable.</td>
+  </tr>
+  <tr>
+  <td>DUK_DEFPROP_HAVE_{W,E,C,WE,WC,WEC}</td>
+  <td>Indicate one or more attributes are set/cleared, e.g.
+      DUK_DEFPROP_HAVE_WC is equivalent to
+      DUK_DEFPROP_HAVE_WRITABLE | DUK_DEFPROP_HAVE_CONFIGURABLE.</td>
+  </tr>
+  <tr>
+  <td>DUK_DEFPROP_{W,E,C,WE,WC,WEC}</td>
+  <td>Provide attribute values (effective if matching "have" flag is
+      set), e.g. DUK_DEFPROP_WE is equivalent to
+      DUK_DEFPROP_WRITABLE | DUK_DEFPROP_ENUMERABLE.</td>
+  </tr>
+  </table>
+
+  <p>Some examples (see more examples below):</p>
   <ul>
-  <li><code>DUK_DEFPROP_SET_WRITABLE</code> / <code>DUK_DEFPROP_CLEAR_WRITABLE</code></li>
-  <li><code>DUK_DEFPROP_SET_ENUMERABLE</code> / <code>DUK_DEFPROP_CLEAR_ENUMERABLE</code></li>
-  <li><code>DUK_DEFPROP_SET_CONFIGURABLE</code> / <code>DUK_DEFPROP_CLEAR_CONFIGURABLE</code></li>
+  <li>To set value, set writable, clear enumerable, and set configurable,
+      push the value onto the value stack and set flags to:
+    <ul>
+    <li>Base flags: <code>DUK_DEFPROP_HAVE_VALUE | DUK_DEFPROP_HAVE_WRITABLE | DUK_DEFPROP_WRITABLE | DUK_DEFPROP_HAVE_ENUMERABLE | DUK_DEFPROP_HAVE_CONFIGURABLE | DUK_DEFPROP_CONFIGURABLE</code>; or</li>
+    <li>Convenience: <code>DUK_DEFPROP_HAVE_VALUE | DUK_DEFPROP_ATTR_WC</code>.</li>
+    </ul>
+  </li>
+  <li>To clear the writable attribute (leaving other attributes untouched), set flags to:
+    <ul>
+    <li>Base flags: <code>DUK_DEFPROP_HAVE_WRITABLE; or</li>
+    <li>Convenience: <code>DUK_DEFPROP_CLEAR_WRITABLE</code>; or</li>
+    <li>Convenience: <code>DUK_DEFPROP_CLEAR_W</code>.</li>
+    </ul>
+  </li>
+  <li>To set value, clear writable, and set enumerable (leaving other attributes untouched), push the value onto
+      the value stack and set flags to:
+    <ul>
+    <li>Base flags: <code>DUK_DEFPROP_HAVE_VALUE | DUK_DEFPROP_HAVE_WRITABLE | DUK_DEFPROP_HAVE_ENUMERABLE | DUK_DEFPROP_ENUMERABLE</code>; or</li>
+    <li>Convenience: <code>DUK_DEFPROP_HAVE_VALUE | DUK_DEFPROP_CLEAR_W | DUK_DEFPROP_SET_E</code>; or</li>
+    <li>Convenience: <code>DUK_DEFPROP_HAVE_VALUE | DUK_DEFPROP_HAVE_WE | DUK_DEFPROP_E</code>.</li>
+    </ul>
+  </li>
   </ul>
 
   <p>This API call is useful for various things:</p>
@@ -76,11 +187,23 @@ summary: |
   <a href="https://github.com/svaarala/duktape/blob/master/tests/api/test-def-prop.c">test-def-prop.c</a>
   for more examples.</p>
 
+  <div class="note">
+  If the target is a Proxy object which implements the <code>defineProperty</code>
+  trap, the trap should be invoked.  However, Duktape doesn't currently support
+  the <code>defineProperty</code> trap, and the defineProperty() operation isn't
+  currently forwarded to the target.  When support is added, this API call will
+  start invoking the trap or forwarding the operation to the target object.
+  </div>
+
 example: |
   duk_idx_t obj_idx = /* ... */;
 
   /* Create an ordinary property which is writable and configurable, but
-   * not enumerable.
+   * not enumerable.  Equivalent to:
+   *
+   *   Object.defineProperty(obj, 'my_prop_1', {
+   *      value: 123, writable: true, enumerable: false, configurable: true
+   *   });
    */
 
   duk_push_string(ctx, "my_prop_1");
@@ -92,21 +215,18 @@ example: |
                DUK_DEFPROP_HAVE_ENUMERABLE | 0 |
                DUK_DEFPROP_HAVE_CONFIGURABLE | DUK_DEFPROP_CONFIGURABLE);
 
-  /* In Duktape 1.4.0 there are convenience defines to make the above
-   * more readable.
-   */
+  /* The same but more readable using convenience flags. */
 
   duk_push_string(ctx, "my_prop_1");
   duk_push_int(ctx, 123);  /* prop value */
-  duk_def_prop(ctx,
-               obj_idx,
-               DUK_DEFPROP_HAVE_VALUE |
-               DUK_DEFPROP_SET_WRITABLE |
-               DUK_DEFPROP_CLEAR_ENUMERABLE |
-               DUK_DEFPROP_SET_CONFIGURABLE);
+  duk_def_prop(ctx, obj_idx, DUK_DEFPROP_HAVE_VALUE | DUK_DEFPROP_ATTR_WC);
 
   /* Change the property value and make it non-writable.  Don't touch other
-   * attributes.
+   * attributes.  Equivalent to:
+   *
+   *   Object.defineProperty(obj, 'my_prop_1', {
+   *      value: 321, writable: false
+   *   });
    */
 
   duk_push_string(ctx, "my_prop_1");
@@ -116,16 +236,39 @@ example: |
                DUK_DEFPROP_HAVE_VALUE |
                DUK_DEFPROP_HAVE_WRITABLE | 0);
 
-  /* Make the property non-configurable, don't touch value or other attributes. */
+  /* The same but more readable using convenience flags. */
+
+  duk_push_string(ctx, "my_prop_1");
+  duk_push_int(ctx, 321);
+  duk_def_prop(ctx,
+               obj_idx,
+               DUK_DEFPROP_HAVE_VALUE | DUK_DEFPROP_CLEAR_WRITABLE);
+
+  /* Make the property non-configurable, don't touch value or other attributes.
+   * Equivalent to:
+   *
+   *   Object.defineProperty(obj, 'my_prop_1', {
+   *      configurable: false
+   *   });
+   */
 
   duk_push_string(ctx, "my_prop_1");
   duk_def_prop(ctx,
                obj_idx,
                DUK_DEFPROP_HAVE_CONFIGURABLE | 0);
 
+  /* The same but more readable using convenience flags. */
+
+  duk_push_string(ctx, "my_prop_1");
+  duk_def_prop(ctx, obj_idx, DUK_DEFPROP_CLEAR_CONFIGURABLE);
+
   /* Create an accessor property which is non-configurable and non-enumerable.
    * Attribute flags are not given so they default to Ecmascript defaults
-   * (false) automatically.
+   * (false) automatically.  Equivalent to:
+   *
+   *   object.defineproperty(obj, 'my_accessor_1', {
+   *      get: my_getter, set: my_setter
+   *   });
    */
 
   duk_push_string(ctx, "my_accessor_1");
@@ -138,7 +281,11 @@ example: |
 
   /* Create an accessor property which is non-configurable but enumerable.
    * Attribute flags are given explicitly which is easier to read without
-   * knowing about Ecmascript attribute default values.
+   * knowing about Ecmascript attribute default values.  Equivalent to:
+   *
+   *   Object.defineProperty(obj, 'my_accessor_2', {
+   *      get: my_getter, set: my_setter, enumerable: true, configurable: false
+   *   });
    */
 
   duk_push_string(ctx, "my_accessor_2");
@@ -151,7 +298,22 @@ example: |
                DUK_DEFPROP_HAVE_CONFIGURABLE |  /* clear */
                DUK_DEFPROP_HAVE_ENUMERABLE | DUK_DEFPROP_ENUMERABLE);  /* set */
 
-  /* Change the value of a non-configurable property by force. */
+  /* The same but more readable with convenience flags. */
+
+  duk_push_string(ctx, "my_accessor_2");
+  duk_push_c_function(ctx, my_getter, 0 /*nargs*/);
+  duk_push_c_function(ctx, my_setter, 1 /*nargs*/);
+  duk_def_prop(ctx,
+               obj_idx,
+               DUK_DEFPROP_HAVE_GETTER |
+               DUK_DEFPROP_HAVE_SETTER |
+               DUK_DEFPROP_HAVE_CLEAR_CONFIGURABLE |
+               DUK_DEFPROP_HAVE_SET_ENUMERABLE);
+
+  /* Change the value of a non-configurable property by force.
+   * No Ecmascript equivalent.
+   */
+
   duk_push_string(ctx, "my_nonconfigurable_prop");
   duk_push_value(ctx, 321);
   duk_def_prop(ctx,
