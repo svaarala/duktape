@@ -4,6 +4,7 @@
 *.strip
 *.pyc
 /*.gcda
+/*.su
 /_*
 /duk.*
 /duk
