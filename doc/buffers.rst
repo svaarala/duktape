@@ -1228,18 +1228,6 @@ Additional arguments to TypedArray constructor
 It would be nice to have offset/length when constructing a TypedArray from
 another TypedArray.
 
-Make the .buffer property virtual
----------------------------------
-
-The ``.buffer`` property required by TypedArray specification is the only
-concrete property on TypedArray instances.  The property points to the
-backing ArrayBuffer object (different from the ``duk_hbuffer *buf`` which
-is used now).
-
-Perhaps change the data structure to support the ``.buffer`` reference
-directly (perhaps instead of ``buf`` or in addition to ``buf``) and make
-it a virtual property.
-
 Node.js .parent property
 ------------------------
 
