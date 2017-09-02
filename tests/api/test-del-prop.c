@@ -122,6 +122,16 @@ final top: 3
 ==> rc=1, result='RangeError: invalid stack index -2147483648'
 *** test_delpropheapptr_c (duk_pcall)
 ==> rc=1, result='RangeError: invalid stack index -2147483648'
+*** test_delpropheapptr_d_safecall (duk_safe_call)
+toString() called
+delete obj.foo -> rc=1
+final top: 3
+==> rc=0, result='undefined'
+*** test_delpropheapptr_d (duk_pcall)
+toString() called
+delete obj.foo -> rc=1
+final top: 3
+==> rc=0, result='undefined'
 ===*/
 
 static void prep(duk_context *ctx) {
@@ -617,6 +627,28 @@ static duk_ret_t test_delpropheapptr_c(duk_context *ctx) {
 	return test_delpropheapptr_c_safecall(ctx, NULL);
 }
 
+/* duk_del_prop_heapptr(), non-string heapptr */
+static duk_ret_t test_delpropheapptr_d_safecall(duk_context *ctx, void *udata) {
+	duk_ret_t rc;
+	void *ptr;
+
+	(void) udata;
+
+	prep(ctx);
+
+	duk_eval_string(ctx, "({ toString: function () { print('toString() called'); return 'foo'; } })");
+	ptr = duk_require_heapptr(ctx, -1);
+	rc = duk_del_prop_heapptr(ctx, 0, ptr);
+	printf("delete obj.foo -> rc=%d\n", (int) rc);
+	duk_pop(ctx);
+
+	printf("final top: %ld\n", (long) duk_get_top(ctx));
+	return 0;
+}
+static duk_ret_t test_delpropheapptr_d(duk_context *ctx) {
+	return test_delpropheapptr_d_safecall(ctx, NULL);
+}
+
 void test(duk_context *ctx) {
 	TEST_SAFE_CALL(test_delprop_a_safecall);
 	TEST_SAFE_CALL(test_delprop_b_safecall);
@@ -663,4 +695,6 @@ void test(duk_context *ctx) {
 	TEST_PCALL(test_delpropheapptr_b);
 	TEST_SAFE_CALL(test_delpropheapptr_c_safecall);
 	TEST_PCALL(test_delpropheapptr_c);
+	TEST_SAFE_CALL(test_delpropheapptr_d_safecall);
+	TEST_PCALL(test_delpropheapptr_d);
 }
