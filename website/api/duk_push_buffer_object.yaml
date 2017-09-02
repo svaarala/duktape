@@ -4,13 +4,15 @@ proto: |
   void duk_push_buffer_object(duk_context *ctx, duk_idx_t idx_buffer, duk_size_t byte_offset, duk_size_t byte_length, duk_uint_t flags);
 
 stack: |
-  [ ... buffer! ... ] -> [ ... buffer! ... bufobj! ]
+  [ ... buffer! ... ] -> [ ... buffer! ... bufobj! ]  (when creating an ArrayBuffer or a view)
+  [ ... ArrayBuffer! ... ] -> [ ... ArrayBuffer! ... bufobj! ]  (when creating a view)
 
 summary: |
   <p>Push a new buffer object or a buffer view object.  An underlying plain
-  buffer is provided at index <code>idx_buffer</code>.  The type of the buffer
-  or view is given in <code>flags</code> (e.g. <code>DUK_BUFOBJ_UINT16ARRAY</code>).
-  The active range or "slice" used from the underlying buffer is indicated by
+  buffer or an ArrayBuffer (accepted when creating a view) is provided at index
+  <code>idx_buffer</code>.  The type of the buffer or view is given in
+  <code>flags</code> (e.g. <code>DUK_BUFOBJ_UINT16ARRAY</code>).  The active
+  range or "slice" used from the underlying buffer is indicated by
   <code>byte_offset</code> and <code>byte_length</code>.</p>
 
   <p>The available buffer types are:</p>
@@ -30,13 +32,22 @@ summary: |
   <tr><td>DUK_BUFOBJ_FLOAT64ARRAY</td><td>Float64Array</td></tr>
   </table>
 
-  <p>When anything other than an <code>ArrayBuffer</code> is pushed, an
+  <p>When anything other than an <code>ArrayBuffer</code> is created and
+  the backing buffer given as an argument is a plain buffer, an
   <code>ArrayBuffer</code> backing the view is automatically created.
   It is accessible through the <code>buffer</code> property of the view
   object.  The ArrayBuffer's internal byteOffset will be zero so that
   the ArrayBuffer's index byteOffset matches the view's index 0.  The
   ArrayBuffer's byteLength will be <code>byte_offset + byte_length</code>
   so that the view range is valid for the ArrayBuffer.</p>
+
+  <p>When creating an ArrayBuffer, it's strongly recommended that the
+  <code>byte_offset</code> argument be zero.  Otherwise the external
+  <code>.byteOffset</code> property of any views constructed over the
+  ArrayBuffer will be misleading: the value will be relative to the
+  plain buffer underlying the ArrayBuffer, rather than relative to the
+  ArrayBuffer.  For a zero <code>byte_offset</code> there is no difference
+  between the two offsets.</p>
 
   <p>The underlying plain buffer should normally cover the range indicated by
   the <code>byte_offset</code> and <code>byte_length</code> arguments, but
@@ -54,6 +65,12 @@ example: |
    *   - byteLength: 50         (length in bytes)
    *   - byteOffset: 100        (byte offset to start of slice)
    *   - BYTES_PER_ELEMENT: 2   (Uint16)
+   *
+   * The Uint16Array's .buffer property will be an ArrayBuffer with the
+   * following properties:
+   *
+   *   - byteLength: 200
+   *   - internal byteOffset: 0
    */
 
   duk_push_buffer_object(ctx, idx_plain_buf, 100, 50, DUK_BUFOBJ_UINT16ARRAY);

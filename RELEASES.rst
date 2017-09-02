@@ -2951,6 +2951,9 @@ Planned
 * Add duk_push_proxy() API call which allows a Proxy to be created from C
   code (GH-1500, GH-837, GH-1680)
 
+* Accept an ArrayBuffer as an argument to duk_push_buffer_object() when
+  creating a view (anything other than an ArrayBuffer) (GH-1236, GH-1710)
+
 * Add DUK_HIDDEN_SYMBOL(), DUK_GLOBAL_SYMBOL(), DUK_LOCAL_SYMBOL(), and
   DUK_WELLKNOWN_SYMBOL() macros for creating symbol literals (GH-1673)
 
