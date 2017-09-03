@@ -148,11 +148,12 @@ def format_size_diff(newsz, oldsz):
         newsz['total'] - oldsz['total']
     )
 
-output_result_json = None
-
+output_result_json = {}
 def set_output_result(doc):
-    global output_result_json
-    output_result_json = doc
+    for k in doc.keys():
+        output_result_json[k] = doc[k]
+def set_output_field(key, value):
+    output_result_json[key] = value
 
 def prep(options=None, options_yaml=None):
     cwd = os.getcwd()
@@ -1088,15 +1089,14 @@ def main():
     print('*** Running test for context: ' + context)
     print('')
 
+    test_start_time = time.time()
     success = fn()
+    test_end_time = time.time()
+    set_output_field('test_time', test_end_time - test_start_time)
 
     print('')
     print('*** Finished test for context: ' + context + ', success: ' + repr(success))
     print('')
-
-    if output_result_json is not None:
-        print('TESTRUNNER_DESCRIPTION: ' + output_result_json.get('description', ''))
-        print('TESTRUNNER_RESULT_JSON: ' + json.dumps(output_result_json))
 
     if success == True:
         # Testcase successful
@@ -1110,27 +1110,33 @@ def main():
         raise Exception('context handler returned a non-boolean: %r' % success)
 
 if __name__ == '__main__':
-    start_time = time.time()
+    total_start_time = time.time()
 
     try:
         try:
             main()
+            raise Exception('internal error, should never be here')
         except SystemExit:
+            # Test script success.
             raise
         except:
-            # Test script failed, automatic retry is useful
+            # Test script failed, automatic retry is useful.
             print('')
             print('*** Test script failed')
             print('')
             traceback.print_exc()
-            print('TESTRUNNER_DESCRIPTION: Test script error')
-            print('TESTRUNNER_RESULT_JSON: ' + json.dumps({
+            set_output_result({
                 'description': 'Test script error',
                 'error': True,
                 'traceback': traceback.format_exc()
-            }))
+            })
             sys.exit(2)
     finally:
-        end_time = time.time()
+        total_end_time = time.time()
+        set_output_field('total_time', total_end_time - total_start_time)
         print('')
-        print('Test took %.2f minutes' % ((end_time - start_time) / 60.0))
+        print('Test took %.2f minutes' % ((total_end_time - total_start_time) / 60.0))
+
+        if output_result_json is not None:
+            print('TESTRUNNER_DESCRIPTION: ' + output_result_json.get('description', ''))
+            print('TESTRUNNER_RESULT_JSON: ' + json.dumps(output_result_json))
