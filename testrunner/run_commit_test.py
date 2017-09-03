@@ -24,6 +24,7 @@
 import os
 import sys
 import re
+import json
 import optparse
 import subprocess
 import time
@@ -147,10 +148,11 @@ def format_size_diff(newsz, oldsz):
         newsz['total'] - oldsz['total']
     )
 
-output_description = None
-def set_output_description(desc):
-    global output_description
-    output_description = desc
+output_result_json = None
+
+def set_output_result(doc):
+    global output_result_json
+    output_result_json = doc
 
 def prep(options=None, options_yaml=None):
     cwd = os.getcwd()
@@ -285,7 +287,13 @@ def context_linux_x64_octane():
         if m is not None:
             scores.append(float(m.group(1)))
         print('scores so far: min=%f, max=%f, avg=%f: %r' % (min(scores), max(scores), sum(scores) / float(len(scores)), scores))
-    print('TESTRUNNER_DESCRIPTION: %.1f (%d-%d)' % (float(sum(scores) / float(len(scores))), int(min(scores)), int(max(scores))))
+    set_output_result({
+        'description': '%.1f (%d-%d)' % (float(sum(scores) / float(len(scores))), int(min(scores)), int(max(scores))),
+        'score_avg': float(sum(scores) / float(len(scores))),
+        'score_min': int(min(scores)),
+        'score_max': int(max(scores))
+    })
+
     return True
 
 def context_linux_x64_duk_clang():
@@ -320,7 +328,11 @@ def context_helper_get_binary_size_diff(compfn):
     execute([ 'make', 'clean' ])
     compfn()
     oldsz = get_binary_size(os.path.join(cwd, 'duk'))
-    set_output_description(format_size_diff(newsz, oldsz))
+    set_output_result({
+        'description': format_size_diff(newsz, oldsz),
+        'oldsz': oldsz,
+        'newsz': newsz
+    })
     return True
 
 def context_linux_x64_gcc_defsize_makeduk():
@@ -776,7 +788,12 @@ def context_helper_hello_ram(archopt):
         '-UDUK_USE_HSTRING_ARRIDX'
     ])
 
-    set_output_description('%s %s %s (kB)' % (kb_default, kb_nobufobj, kb_rom))
+    set_output_result({
+        'description': '%s %s %s (kB)' % (kb_default, kb_nobufobj, kb_rom),
+        'kb_default': kb_default,
+        'kb_nobufobj': kb_nobufobj,
+        'kb_rom': kb_rom
+    })
 
     return True
 
@@ -1077,8 +1094,9 @@ def main():
     print('*** Finished test for context: ' + context + ', success: ' + repr(success))
     print('')
 
-    if output_description is not None:
-        print('TESTRUNNER_DESCRIPTION: ' + output_description)
+    if output_result_json is not None:
+        print('TESTRUNNER_DESCRIPTION: ' + output_result_json.get('description', ''))
+        print('TESTRUNNER_RESULT_JSON: ' + json.dumps(output_result_json))
 
     if success == True:
         # Testcase successful
@@ -1106,6 +1124,11 @@ if __name__ == '__main__':
             print('')
             traceback.print_exc()
             print('TESTRUNNER_DESCRIPTION: Test script error')
+            print('TESTRUNNER_RESULT_JSON: ' + json.dumps({
+                'description': 'Test script error',
+                'error': True,
+                'traceback': traceback.format_exc()
+            }))
             sys.exit(2)
     finally:
         end_time = time.time()
