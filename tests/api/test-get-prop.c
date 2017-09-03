@@ -70,6 +70,11 @@ final top: 3
 ==> rc=1, result='RangeError: invalid stack index 234'
 *** test_getpropheapptr_c (duk_safe_call)
 ==> rc=1, result='RangeError: invalid stack index -2147483648'
+*** test_getpropheapptr_d (duk_safe_call)
+toString() called
+obj.foo -> rc=1, result='fooval'
+final top: 3
+==> rc=0, result='undefined'
 ===*/
 
 static void prep(duk_context *ctx) {
@@ -505,6 +510,26 @@ static duk_ret_t test_getpropheapptr_c(duk_context *ctx, void *udata) {
 	return 0;
 }
 
+/* duk_get_prop_heapptr(), non-string heapptr */
+static duk_ret_t test_getpropheapptr_d(duk_context *ctx, void *udata) {
+	duk_ret_t rc;
+	void *ptr;
+
+	(void) udata;
+
+	prep(ctx);
+
+	duk_eval_string(ctx, "({ toString: function () { print('toString() called'); return 'foo'; } })");
+	ptr = duk_require_heapptr(ctx, -1);
+	rc = duk_get_prop_heapptr(ctx, 0, ptr);
+	printf("obj.foo -> rc=%d, result='%s'\n", (int) rc, duk_to_string(ctx, -1));
+	duk_pop(ctx);
+	duk_pop(ctx);
+
+	printf("final top: %ld\n", (long) duk_get_top(ctx));
+	return 0;
+}
+
 void test(duk_context *ctx) {
 	TEST_SAFE_CALL(test_getprop_a);
 	TEST_SAFE_CALL(test_getprop_b);
@@ -527,4 +552,5 @@ void test(duk_context *ctx) {
 	TEST_SAFE_CALL(test_getpropheapptr_a);
 	TEST_SAFE_CALL(test_getpropheapptr_b);
 	TEST_SAFE_CALL(test_getpropheapptr_c);
+	TEST_SAFE_CALL(test_getpropheapptr_d);
 }
