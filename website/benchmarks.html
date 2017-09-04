@@ -1,0 +1,266 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="UTF-8">
+<title>Duktape benchmarks</title>
+<script src="https://cdn.plot.ly/plotly-latest.min.js"></script>
+<style type="text/css">
+html, body {
+	background: #ffffff;
+	color: #000000;
+	margin: 0;
+	padding: 0;
+	border: none;
+}
+h1 {
+	text-align: center;
+	margin: 0 0 10px 0;
+	padding: 20px 0px 20px 0px;
+	background: #444444;
+	color: #ffffff;
+
+	font-family: 'Droid Sans Mono', sans-serif;
+	font-size: 24pt;
+	font-weight: 400;
+	text-shadow: 3px 3px 3px #000000;
+	filter: dropshadow(color=#000000, offx=3, offy=3);
+}
+#main {
+	margin: 10px;
+}
+.duk-graph {
+	width: 95%;
+	height: 400px;
+	margin: 10px auto;
+}
+</style>
+<body>
+
+<!--
+
+    DATA SETS, injected by build scripts based on @XXX@ markup.
+
+-->
+
+<script>
+<!-- Injected by build script. -->
+<!-- @DATA@ -->
+</script>
+
+<!--
+
+    JAVASCRIPT HELPERS
+
+-->
+
+<script>
+function getDataTrace(context, name, callback) {
+    var ydata = rawGraphData.commit_simples.map(function (commit_simple) {
+        var i, n;
+        if (!commit_simple.runs) { return null; }
+        for (i = 0, n = commit_simple.runs.length; i < n; i++) {
+            var run = commit_simple.runs[i];
+            if (run.context === context && run.result) {
+                try {
+                    return callback(run.result);
+                } catch (e) {
+                    console.log('callback error, ignored:', e);
+                }
+                return null;
+            }
+        }
+        return null;
+    });
+
+    var xdata = ydata.map(function (v,i) { return i; });
+
+    var countNull = 0;
+    ydata.forEach(function (v) { if (v === null) { countNull++; } });
+
+    console.log('data for ' + context + ': ' + ydata.length + ' data points, ' + countNull + ' null');
+
+    // remove nulls
+    //ydata = ydata.map(function (v) { if (v === null) { return 0; } else { return v; } });
+
+    // trace object
+    return {
+        x: xdata,
+        y: ydata,
+        type: 'scatter',
+        name: name
+    };
+/*
+    return {
+        x: ydata,
+        type: 'histogram'
+    };
+*/
+}
+
+function detectRange(data) {
+    var min, max;
+    var i;
+
+    for (i = 0; i < data.length; i++) {
+        if (typeof data[i] !== 'number') {
+            continue;
+        }
+        if (min === void 0) {
+            min = max = data[i];
+        } else {
+            min = Math.min(min, data[i]);
+            max = Math.max(max, data[i]);
+        }
+    }
+    return [ min, max ];
+}
+
+function drawGraph(options, dataCallback) {
+    var data = options.dataCallbacks.map(function (cbspec) {
+        return getDataTrace(options.context, cbspec.traceName, cbspec.callback);
+    });
+    var annotations = [];
+    var mergeCountInitial = 200;
+    var xRange = [ data[0].x.length - mergeCountInitial, data[0].x.length ];  // initial focus on last 100 merges
+    var yRange = detectRange(data[0].y);  // initial y range from first trace
+    console.log('automatic ranges for ' + options.context + ':', xRange, yRange);
+    var layout = {
+        title: options.graphTitle,
+        xaxis: {
+            title: options.xTitle,
+            //autorange: true,
+            range: xRange,
+            tickformat: 'd'
+        },
+        yaxis: {
+            title: options.yTitle,
+            //autorange: true,
+            range: yRange,
+            //rangemode: 'tozero',
+            tickformat: 'd'
+        },
+        annotations: annotations
+    };
+    rawGraphData.annotations.forEach(function (anno) {
+        annotations.push({
+            text: anno.tag,
+            x: anno.x,
+            xref: 'x',
+            y: 0,
+            yref: 'paper'
+        })
+    });
+    console.log('data for ' + options.context + ':', data)
+    Plotly.newPlot(options.domId, data, layout);
+}
+</script>
+
+<!--
+
+    MAIN PAGE
+
+-->
+
+<h1>((o) Duktape benchmarks</h1>
+
+<div id="main">
+
+<p>Graphs are over merges to master, not individual commits.  Master HEAD is on
+the right.  Graphs implemented using
+<a href="https://plot.ly/javascript/open-source-announcement/">plotly.js</a>.</p>
+
+<div class="duk-graph" id="linux-x64-octane"></div>
+<div class="duk-graph" id="linux-x64-graph-hello-size"></div>
+<div class="duk-graph" id="linux-x86-graph-hello-size"></div>
+<div class="duk-graph" id="linux-x32-graph-hello-size"></div>
+<div class="duk-graph" id="linux-x64-gcc-minsize-fltoetc"></div>
+<div class="duk-graph" id="linux-x86-gcc-minsize-fltoetc"></div>
+<div class="duk-graph" id="linux-x32-gcc-minsize-fltoetc"></div>
+<div class="duk-graph" id="linux-x64-gcc-stripsize-fltoetc"></div>
+<div class="duk-graph" id="linux-x86-gcc-stripsize-fltoetc"></div>
+<div class="duk-graph" id="linux-x32-gcc-stripsize-fltoetc"></div>
+<div class="duk-graph" id="linux-x64-gcc-defsize-makeduk"></div>
+<div class="duk-graph" id="linux-x64-gcc-defsize-fltoetc"></div>
+
+<script>
+[
+    'linux-x64-graph-hello-size',
+    'linux-x86-graph-hello-size',
+    'linux-x32-graph-hello-size',
+    'linux-x64-gcc-minsize-fltoetc',
+    'linux-x86-gcc-minsize-fltoetc',
+    'linux-x32-gcc-minsize-fltoetc',
+    'linux-x64-gcc-stripsize-fltoetc',
+    'linux-x86-gcc-stripsize-fltoetc',
+    'linux-x32-gcc-stripsize-fltoetc',
+    'linux-x64-gcc-defsize-makeduk',
+    'linux-x64-gcc-defsize-fltoetc'
+].forEach(function (context) {
+    drawGraph({
+        context: context,
+        domId: context,
+        graphTitle: context,
+        xTitle: 'Merge to master',
+        yTitle: 'Total bytes',
+        dataCallbacks: [
+            {
+                traceName: 'total',
+                callback: function (result) { return result.newsz.total; }
+            },
+            {
+                traceName: 'text',
+                callback: function (result) { return result.newsz.text; }
+            },
+            {
+                traceName: 'data',
+                callback: function (result) { return result.newsz.data; }
+            },
+            {
+                traceName: 'bss',
+                callback: function (result) { return result.newsz.bss; }
+            }
+        ]
+    });
+});
+
+drawGraph({
+    context: 'linux-x64-octane',
+    domId: 'linux-x64-octane',
+    graphTitle: 'linux-x64-octane',
+    xTitle: 'Merge to master',
+    yTitle: 'Score',
+    dataCallbacks: [
+        {
+            traceName: 'avg',
+            callback: function (result) { return result.score_avg; }
+        },
+        {
+            traceName: 'min',
+            callback: function (result) { return result.score_min; }
+        },
+        {
+            traceName: 'max',
+            callback: function (result) { return result.score_max; }
+        }
+    ]
+});
+</script>
+
+<!--
+
+    FUTURE WORK
+
+-->
+
+<!--
+joint footprint graph for archs
+hover data - hashes, git describe, commit message
+hello ram usage
+rom build ram usage: startup, mandel, etc
+table: largest functions
+table: 10 largest stack frames
+-->
+
+</div>  <!-- main -->
+</body>
+</html>
