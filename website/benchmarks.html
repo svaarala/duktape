@@ -1,0 +1,41 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="UTF-8">
+<title>Duktape benchmarks</title>
+<script src="https://cdn.plot.ly/plotly-latest.min.js"></script>
+<style type="text/css">
+</style>
+<body>
+
+<script>
+// Dataset replaced by nightly build, based on testrunner job outputs
+// and N latest commits in master.
+
+var testData = {
+    commits: [
+    ]
+};
+
+// @DATA@
+</script>
+
+<h1>Duktape benchmarks</h1>
+
+<p>Graphs are over merges (not individual commits), master HEAD is on the
+right.  GCC -Os with symbol pruning is used to compile a "hello world"
+example and an amalgamated duktape.c.  X axis is pull count, Y axis is
+executable size measured using the "size" command.</p>
+
+<h2>Low-memory size</h2>
+
+<div id="chart-lowmem-size"></div>
+
+<script>
+var data = [];
+Plotly.newPlot('chart-lowmem-size', data);
+</script>
+
+</body>
+</head>
+</html>
