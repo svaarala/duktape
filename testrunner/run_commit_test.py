@@ -934,6 +934,40 @@ def context_linux_x64_dukluv():
 
     return True
 
+def context_linux_graph_hello_size_helper(archopt):
+    cwd = os.getcwd()
+    cmd = [
+        'python2', os.path.join(cwd, 'tools', 'configure.py'),
+        '--source-directory', os.path.join(cwd, 'src-input'),
+        '--output-directory', os.path.join(cwd, 'prep'),
+        '--config-metadata', os.path.join(cwd, 'config'),
+        '--option-file', os.path.join(cwd, 'config', 'examples', 'low_memory.yaml')
+    ]
+    execute(cmd)
+    execute([
+        'gcc', '-ohello', archopt,
+        '-std=c99', '-Wall',
+        '-Os', '-fomit-frame-pointer',
+        '-flto', '-fno-asynchronous-unwind-tables',
+        '-ffunction-sections', '-Wl,--gc-sections',
+        '-fno-stack-protector',
+        '-I' + os.path.join('prep'),
+        os.path.join(cwd, 'prep', 'duktape.c'),
+        os.path.join(cwd, 'examples', 'hello', 'hello.c'),
+        '-lm'
+    ])
+    set_output_result({
+        'newsz': get_binary_size(os.path.join(cwd, 'hello'))
+    })
+    return True
+
+def context_linux_x64_graph_hello_size():
+    return context_linux_graph_hello_size_helper('-m64')
+def context_linux_x86_graph_hello_size():
+    return context_linux_graph_hello_size_helper('-m32')
+def context_linux_x32_graph_hello_size():
+    return context_linux_graph_hello_size_helper('-mx32')
+
 context_handlers = {
     # Linux
 
@@ -974,6 +1008,11 @@ context_handlers = {
     'linux-x64-gcc-stripsize-fltoetc': context_linux_x64_gcc_stripsize_fltoetc,
     'linux-x86-gcc-stripsize-fltoetc': context_linux_x86_gcc_stripsize_fltoetc,
     'linux-x32-gcc-stripsize-fltoetc': context_linux_x32_gcc_stripsize_fltoetc,
+
+    # Jobs matching previous graphs.html data points.
+    'linux-x64-graph-hello-size': context_linux_x64_graph_hello_size,
+    'linux-x86-graph-hello-size': context_linux_x86_graph_hello_size,
+    'linux-x32-graph-hello-size': context_linux_x32_graph_hello_size,
 
     'linux-x64-cpp-exceptions': context_linux_x64_cpp_exceptions,
 
