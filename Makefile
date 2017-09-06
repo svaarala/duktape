@@ -291,6 +291,7 @@ cleanall: clean
 	@rm -rf FlameGraph
 	@rm -rf dtrace4linux
 	@rm -rf flow
+	@rm -rf lz-string
 	@rm -rf 3883a2e9063b0a5f2705bdac3263577a03913c94.zip
 	@rm -rf es5-tests.zip
 	@rm -f v1.3.5.tar.gz
@@ -943,6 +944,9 @@ dtrace4linux:
 flow:
 	# https://github.com/facebook/flow
 	$(GIT) clone --depth 1 https://github.com/facebook/flow.git
+lz-string:
+	# https://github.com/pieroxy/lz-string.git
+	$(GIT) clone --depth 1 https://github.com/pieroxy/lz-string.git
 
 # Duktape binary releases are in a separate repo.
 duktape-releases:
@@ -991,7 +995,7 @@ dist-iso:	dist-src
 .PHONY: tidy-site
 tidy-site:
 	for i in website/*/*.html; do echo "*** Checking $$i"; tidy -q -e -xml $$i; done
-site: duktape-releases dukweb.js jquery-1.11.0.js
+site: duktape-releases dukweb.js jquery-1.11.0.js lz-string
 	rm -rf site
 	mkdir site
 	-cd duktape-releases/; git pull --rebase  # get binaries up-to-date, but allow errors for offline use
