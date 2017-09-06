@@ -45,6 +45,7 @@ and agreed to irrevocably license their contributions under the Duktape
 * Michael Drake <michael.drake@codethink.co.uk>
 * Steven Don (https://github.com/shdon)
 * Simon Stone (https://github.com/sstone1)
+* \J. McC. (https://github.com/jmhmccr)
 
 Other contributions
 ===================
