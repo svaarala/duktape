@@ -4,6 +4,7 @@
 <meta charset="UTF-8">
 <title>Duktape benchmarks</title>
 <script src="https://cdn.plot.ly/plotly-latest.min.js"></script>
+<script src="lz-string.js"></script>
 <style type="text/css">
 html, body {
 	background: #ffffff;
@@ -45,6 +46,8 @@ h1 {
 <script>
 <!-- Injected by build script. -->
 <!-- @DATA@ -->
+
+var rawGraphData = JSON.parse(LZString.decompressFromBase64(rawGraphDataCompressed));
 </script>
 
 <!--
