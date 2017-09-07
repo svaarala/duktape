@@ -3,8 +3,9 @@
 #
 #  String data is always quoted for clarity.  Codepoints U+0000...U+00FF
 #  are identified with bytes 1:1 to allow even invalid UTF-8 strings to
-#  be represented.  Internal strings are marked with a leading \u00ff
-#  which maps to the byte 0xFF.
+#  be represented.  Internal strings are represented as Symbols with a
+#  structured markup to avoid exposing the specific internal format (which
+#  begins with a 0x82 byte since Duktape 2.2).
 #
 #  Built-in strings can be mostly scanned automatically based on what
 #  strings built-in objects need, but there are also dependencies on

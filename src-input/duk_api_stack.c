@@ -93,7 +93,11 @@ DUK_LOCAL duk_small_uint_t duk__get_symbol_type(duk_hstring *h) {
 	len = DUK_HSTRING_GET_BYTELEN(h);
 	DUK_ASSERT(len >= 1);
 
+	/* XXX: differentiate between 0x82 and 0xff (hidden vs. internal?)? */
+
 	if (data[0] == 0xffU) {
+		return DUK_SYMBOL_TYPE_HIDDEN;
+	} else if (data[0] == 0x82U) {
 		return DUK_SYMBOL_TYPE_HIDDEN;
 	} else if (data[0] == 0x80U) {
 		return DUK_SYMBOL_TYPE_GLOBAL;

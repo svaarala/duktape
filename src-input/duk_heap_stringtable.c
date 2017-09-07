@@ -221,11 +221,10 @@ DUK_LOCAL duk_hstring *duk__strtable_alloc_hstring(duk_heap *heap,
 		 * checks will be false.
 		 */
 		if (DUK_UNLIKELY(data[0] >= 0x80U)) {
-			if (data[0] == 0xffU) {
+			if (data[0] <= 0x81) {
 				DUK_HSTRING_SET_SYMBOL(res);
+			} else if (data[0] == 0x82U || data[0] == 0xffU) {
 				DUK_HSTRING_SET_HIDDEN(res);
-			} else if (data[0] <= 0xbf) {
-				/* Check equivalent to: (data[0] & 0xc0U) == 0x80U. */
 				DUK_HSTRING_SET_SYMBOL(res);
 			}
 		}

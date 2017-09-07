@@ -465,7 +465,7 @@ DUK_INTERNAL duk_ret_t duk_bi_textdecoder_constructor(duk_hthread *thr) {
 	dec_ctx->ignore_bom = (duk_uint8_t) ignore_bom;
 	duk__utf8_decode_init(dec_ctx);  /* Initializes remaining fields. */
 
-	duk_put_prop_string(thr, -2, "\xff" "Context");
+	duk_put_prop_string(thr, -2, DUK_INTERNAL_SYMBOL("Context"));
 	return 0;
 }
 
@@ -473,7 +473,7 @@ DUK_INTERNAL duk_ret_t duk_bi_textdecoder_constructor(duk_hthread *thr) {
 DUK_LOCAL duk__decode_context *duk__get_textdecoder_context(duk_hthread *thr) {
 	duk__decode_context *dec_ctx;
 	duk_push_this(thr);
-	duk_get_prop_string(thr, -1, "\xff" "Context");
+	duk_get_prop_string(thr, -1, DUK_INTERNAL_SYMBOL("Context"));
 	dec_ctx = (duk__decode_context *) duk_require_buffer(thr, -1, NULL);
 	DUK_ASSERT(dec_ctx != NULL);
 	return dec_ctx;
