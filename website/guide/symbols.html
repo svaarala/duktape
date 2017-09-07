@@ -5,23 +5,27 @@
 <b>hidden Symbol</b> variant similar to internal strings in Duktape 1.x.
 Hidden Symbols differ from ES2015 Symbols in that they're hidden from
 ordinary Ecmascript code: they can't be created from Ecmascript code,
-won't be enumerated or JSON-serialized, and won't be returned even from
-<code>Object.getOwnPropertyNames()</code>.  Properties with hidden Symbol
+won't be enumerated or JSON-serialized, and won't be returned from
+<code>Object.getOwnPropertyNames()</code> or even
+<code>Object.getOwnPropertySymbols()</code>.  Properties with hidden Symbol
 keys can only be accessed by a direct property read/write when holding a
-reference to a hidden Symbol.</p>
+reference to the hidden Symbol.</p>
 
-<p>Duktape uses hidden Symbols for various implementation specific purposes,
-such as storing an object's finalizer reference.  User code can also use hidden
-Symbols for its own purposes, e.g. to store hidden state in objects.  User code
-should never try to access Duktape's hidden Symbol keyed properties: the set of
-such properties can change arbitrarily between versions.</p>
-
-<p>Symbols of all kinds are represented internally using byte sequences which
-are invalid UTF-8; see
+<p>Symbols of all kinds are represented internally using invalid UTF-8 byte
+sequences, see
 <a href="https://github.com/svaarala/duktape/blob/master/doc/symbols.rst">symbols.rst</a>
-for the current formats in use.  When C code pushes a string using e.g.
-<code>duk_push_string()</code> and the byte sequence matches an internal
-Symbol format, the string value is automatically interpreted as a Symbol.</p>
+for the current formats in use.  Application hidden Symbols begin with a 0xFF
+byte prefix and are followed by an arbitrary, application selected string.  When
+C code pushes a string using e.g. <code>duk_push_string()</code> and the byte
+sequence matches an internal Symbol format, the string value is automatically
+interpreted as a Symbol.</p>
+
+<p>Duktape also uses hidden Symbols for various implementation specific purposes,
+such as storing an object's finalizer reference.  As of Duktape 2.2 a different
+byte prefix is used for Duktape's hidden Symbols, so the 0xFF prefix is now
+reserved entirely for application use.  Application code should never try to
+access Duktape's hidden Symbol keyed properties: the set of such properties can
+change arbitrarily between versions.</p>
 
 <div class="note">
 Note that the internal UTF-8 byte sequences cannot be created from Ecmascript
@@ -45,13 +49,11 @@ literal macros were not available and the internal representation would be
 used directly:</p>
 <pre class="c-code">
 /* Terminating a string literal after a hex escape is safest to avoid some
- * ambiguous cases like "\xffab".
+ * ambiguous cases like "\xffab".  For more discussion, see:
+ * https://github.com/svaarala/duktape/blob/master/misc/c_hex_esc.c
  */
 duk_push_string(ctx, "\xff" "mySymbol");
 </pre>
-
-<p>For more discussion on C string hex escaping, see
-<a href="https://github.com/svaarala/duktape/blob/master/misc/c_hex_esc.c">c_hex_esc.c</a>.</p>
 
 <p>Hidden Symbols cannot be created from Ecmascript code using the default
 built-ins alone.  Standard ES2015 Symbols can be created using the
