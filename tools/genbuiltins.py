@@ -320,8 +320,10 @@ def format_symbol(sym):
         # Well known symbols use an empty suffix which never occurs for
         # runtime local symbols.
         return '\x81' + sym['string'] + '\xff'
-    elif variant == 'hidden':
+    elif variant == 'userhidden':
         return '\xff' + sym['string']
+    elif variant == 'hidden':  # hidden == Duktape hidden Symbol
+        return '\x82' + sym['string']
     raise Exception('invalid symbol variant %r' % variant)
 
 def metadata_normalize_symbol_strings(meta):
@@ -869,7 +871,7 @@ def metadata_add_string_define_names(strlist, special_defs):
             s['define'] = 'DUK_STRIDX_' + special_defs[v]
             continue
 
-        if len(v) >= 1 and v[0] == '\xff':
+        if len(v) >= 1 and v[0] == '\x82':
             pfx = 'DUK_STRIDX_INT_'
             v = v[1:]
         else:
@@ -1456,7 +1458,7 @@ def bitpack_string(be, s, stats=None):
     SWITCH = 29
     UNUSED1 = 30
     EIGHTBIT = 31
-    LOOKUP = '0123456789_ \xff\x80"{'  # special characters
+    LOOKUP = '0123456789_ \x82\x80"{'  # special characters
     assert(len(LOOKUP) == 16)
 
     # support up to 256 byte strings now, cases above ~30 bytes are very
@@ -2333,9 +2335,9 @@ def rom_emit_strings_source(genc, meta):
                 flags.append('DUK_HSTRING_FLAG_ASCII')
             if is_arridx:
                 flags.append('DUK_HSTRING_FLAG_ARRIDX')
-            if len(v) >= 1 and v[0] in [ '\x80', '\x81', '\xff' ]:
+            if len(v) >= 1 and v[0] in [ '\x80', '\x81', '\x82', '\xff' ]:
                 flags.append('DUK_HSTRING_FLAG_SYMBOL')
-            if len(v) >= 1 and v[0] in [ '\xff' ]:
+            if len(v) >= 1 and v[0] in [ '\x82', '\xff' ]:
                 flags.append('DUK_HSTRING_FLAG_HIDDEN')
             if v in [ 'eval', 'arguments' ]:
                 flags.append('DUK_HSTRING_FLAG_EVAL_OR_ARGUMENTS')
