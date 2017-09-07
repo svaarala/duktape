@@ -2077,8 +2077,10 @@ The flags field is an unsigned integer bitmask with the following bits:
 +---------+-----------------------------------------------------------------+
 | 0x10    | Property is virtual, matches DUK_PROPDESC_FLAG_VIRTUAL.         |
 +---------+-----------------------------------------------------------------+
-| 0x100   | Property is internal, and not visible to ordinary Ecmascript    |
-|         | code.  Currently set when initial key byte is 0xFF.             |
+| 0x100   | Property key is a Symbol.                                       |
++---------+-----------------------------------------------------------------+
+| 0x200   | Property is a hidden Symbol which is not visible to ordinary    |
+|         | Ecmascript code.                                                |
 +---------+-----------------------------------------------------------------+
 
 For artificial properties (returned by GetHeapObjInfo) the property attributes

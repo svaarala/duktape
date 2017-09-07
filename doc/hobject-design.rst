@@ -1512,8 +1512,8 @@ properties is simple: since all standard keys encode into valid UTF-8
 sequences (valid CESU-8 sequences to be exact) in memory, internal properties
 are prefixed with an invalid UTF-8 sequence which standard Ecmascript code
 cannot generate and thus cannot access.  The current prefix is a single
-``0xff`` byte.  The prefix is denoted with an underscore in this document;
-e.g. ``_Map`` would be represented as the byte sequence: ``0xff`` ``'M'``
+``0x82`` byte.  The prefix is denoted with an underscore in this document;
+e.g. ``_Map`` would be represented as the byte sequence: ``0x82`` ``'M'``
 ``'a'`` ``'p'`` in memory.  User C code can also use internal properties for
 its own purposes, as long as the property names don't conflict with Duktape's
 internal properties.

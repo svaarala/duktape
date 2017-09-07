@@ -53,25 +53,18 @@ See:
 Internal key formats
 ====================
 
-Duktape custom hidden Symbols have an initial 0xFF byte prefix, which matches
-the existing convention for Duktape 1.x internal keys.  While all bytes in the
-range [0xC0,0xFE] are valid initial bytes for Duktape's extended UTF-8 flavor,
-the continuation bytes [0x80,0xBF] are never a valid first byte so they are used
-for ES2015 symbols (and reserved for other future uses) in Duktape 2.x.
+Initial bytes in the ranges [0x00,0x7F] and [0xC0,0xFE] are valid for Duktape's
+extended UTF-8 flavor.  The byte 0xFF and the range [0x80,0xBF] are free to be
+used as symbol markers.
 
 +-----------------------------------------------+-----------------------------------------------------------------+
 | Internal string format                        | Description                                                     |
 +-----------------------------------------------+-----------------------------------------------------------------+
-| <ff> SomeUpperCaseValue                       | Hidden symbol (Duktape specific) used by Duktape internals.     |
-|                                               | Previously called internal properties.  First byte is 0xFF,     |
-|                                               | second is from [A-Z].                                           |
-+-----------------------------------------------+-----------------------------------------------------------------+
-| <ff> anyOtherValue                            | Hidden symbol (Duktape specific) used by application code.      |
-|                                               | First byte is 0xFF, second is ASCII (0x00-0x7f) but not         |
-|                                               | from [A-Z].                                                     |
-+-----------------------------------------------+-----------------------------------------------------------------+
-| <ff> <ff> anyOtherValue                       | Hidden symbol (Duktape specific) used by application code.      |
-|                                               | First and second bytes are 0xFF, remaining bytes arbitrary.     |
+| <ff> anyValue                                 | Hidden symbol (Duktape specific) used by application code.      |
+|                                               | Prior to Duktape 2.2 Duktape internal hidden symbols also used  |
+|                                               | the 0xFF prefix followed by a capital letter (A-Z).  Starting   |
+|                                               | from Duktape 2.2 all 0xFF prefixed strings are reserved for     |
+|                                               | application code.                                               |
 +-----------------------------------------------+-----------------------------------------------------------------+
 | <80> symbolDescription                        | Global symbol with description 'symbolDescription' created      |
 |                                               | using Symbol.for().                                             |
@@ -95,7 +88,13 @@ for ES2015 symbols (and reserved for other future uses) in Duktape 2.x.
 |                                               | colliding with runtime generated unique local symbols works,    |
 |                                               | currently an empty suffix is used.                              |
 +-----------------------------------------------+-----------------------------------------------------------------+
-| <82 to bf>                                    | Initial bytes 0x82 to 0xBF are reserved for future use.         |
+| <82> anyValue                                 | Hidden symbol (Duktape specific) used by Duktape internals.     |
+|                                               | User code should never use this byte prefix or rely on any      |
+|                                               | Duktape internal hidden Symbols.                                |
++-----------------------------------------------+-----------------------------------------------------------------+
+| <83 to bf>                                    | Reserved for future use, behavior is undefined (Duktape 2.1     |
+|                                               | interprets as Symbols, Duktape 2.2 does not, don't rely on      |
+|                                               | either behavior.                                                |
 +-----------------------------------------------+-----------------------------------------------------------------+
 | <00 to 7f>                                    | Valid ASCII initial byte.                                       |
 +-----------------------------------------------+-----------------------------------------------------------------+
@@ -103,15 +102,6 @@ for ES2015 symbols (and reserved for other future uses) in Duktape 2.x.
 +-----------------------------------------------+-----------------------------------------------------------------+
 | <f8 to fe>                                    | Valid extended UTF-8 initial byte.                              |
 +-----------------------------------------------+-----------------------------------------------------------------+
-
-Useful comparisons (``p`` is pointer to string data) for internal use only:
-
-* ``p[0] == 0xff || (p[0] & 0xc0) == 0x80``: some kind of Symbol, either Duktape
-  hidden Symbol or an ES2015 Symbol.
-
-* ``p[0] == 0xff``: hidden symbol, user or Duktape
-
-* ``(p[0] & 0xc0) == 0x80``: ES2015 Symbol, visible to Ecmascript code
 
 There are public API macros (DUK_HIDDEN_SYMBOL() etc) to create symbol literals
 from C code.
@@ -160,9 +150,9 @@ Unifying with Duktape internal keys
 
 Necessary changes to add symbol behavior:
 
-* Strings with initial byte 0x80, 0x81, or 0xFF are flagged as symbols
-  (``DUK_HSTRING_FLAG_SYMBOL``).  If the initial byte is 0xFF, also the
-  hidden symbol flag (``DUK_HSTRING_FLAG_HIDDEN``) is set.
+* Strings with initial byte 0x80, 0x81, 0x82 or 0xFF are flagged as symbols
+  (``DUK_HSTRING_FLAG_SYMBOL``).  If the initial byte is 0xFF or 0x82, also
+  the hidden symbol flag (``DUK_HSTRING_FLAG_HIDDEN``) is set.
 
 * ``typeof(sym)`` should return "symbol" rather than string.  This is done
   for Duktape hidden symbols too.
