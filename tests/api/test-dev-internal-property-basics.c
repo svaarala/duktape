@@ -20,13 +20,15 @@ static duk_ret_t test_1(duk_context *ctx, void *udata) {
 	duk_push_int(ctx, 1);
 	duk_put_prop_string(ctx, -2, "foo");  /* obj.foo = 1 */
 
-	/* Internal property \xFF\xFFabc, technically enumerable (based on
+	/* Internal property \xFFabc, technically enumerable (based on
 	 * property attributes) but because of internal property special
-	 * behavior, does not enumerate.
+	 * behavior, does not enumerate.  Same for 0x82abc.
 	 */
 
 	duk_push_int(ctx, 2);
-	duk_put_prop_string(ctx, -2, "\xff\xff" "abc");  /* obj[\xff\xffabc] = 2, internal property */
+	duk_put_prop_string(ctx, -2, "\xff" "abc");
+	duk_push_int(ctx, 2);
+	duk_put_prop_string(ctx, -2, "\x82" "abc");
 
 	/* Another property with invalid UTF-8 data but doesn't begin with
 	 * \xFF => gets enumerated and JX prints out an approximate key.

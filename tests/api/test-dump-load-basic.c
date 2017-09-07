@@ -245,9 +245,9 @@ static duk_ret_t test_properties(duk_context *ctx, void *udata) {
 		"    print('descriptor of .prototype.constructor: ' + JSON.stringify(Object.getOwnPropertyDescriptor(v.prototype, 'constructor')));\n"
 		"})");
 	duk_dup(ctx, -2),
-	duk_push_string(ctx, "\xFF" "Formals");
-	duk_push_string(ctx, "\xFF" "Varmap");
-	duk_push_string(ctx, "\xFF" "Pc2line");
+	duk_push_string(ctx, "\x82" "Formals");
+	duk_push_string(ctx, "\x82" "Varmap");
+	duk_push_string(ctx, "\x82" "Pc2line");
 	duk_call(ctx, 4);
 	duk_pop(ctx);
 

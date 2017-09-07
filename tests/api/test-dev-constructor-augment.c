@@ -26,7 +26,7 @@ static duk_ret_t test_1(duk_context *ctx, void *udata) {
 	printf("err.augmented: %s\n", duk_to_string(ctx, -1));
 	duk_pop(ctx);
 
-	duk_get_prop_string(ctx, -1, "\xff" "Tracedata");
+	duk_get_prop_string(ctx, -1, "\x82" "Tracedata");
 	printf("err._Tracedata exists: %ld\n", (long) duk_is_object(ctx, -1));
 	duk_pop(ctx);
 

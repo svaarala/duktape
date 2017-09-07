@@ -9,7 +9,7 @@ static duk_ret_t test_1(duk_context *ctx, void *udata) {
 	/* Inherit _Value from Object.prototype. */
 	duk_eval_string(ctx, "Object.prototype");
 	duk_push_true(ctx);
-	duk_put_prop_string(ctx, -2, "\xff" "Value");
+	duk_put_prop_string(ctx, -2, "\x82" "Value");
 	duk_pop(ctx);
 
 	/* Create an Error without _Value and try to call it.  Call handling
