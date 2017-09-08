@@ -3003,6 +3003,9 @@ Planned
 * Make error message summary strings longer (32 -> 96 character) to better
   capture error messages for e.g. uncaught errors (GH-1653)
 
+* Improve error message for instanceof and duk_instanceof() when rval has
+  no .prototype property, which is common for Duktape/C functions (GH-1725)
+
 * Add an explicit buffer size wrap check for Buffer.concat() (GH-1688)
 
 * Reject an attempt to unpack an array with >= 2G elements cleanly with a
