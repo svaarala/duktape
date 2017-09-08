@@ -1064,7 +1064,7 @@ DUK_INTERNAL duk_bool_t duk_js_instanceof(duk_hthread *thr, duk_tval *tv_x, duk_
 			 *
 			 *  XXX: add a separate flag, DUK_HOBJECT_FLAG_ALLOW_INSTANCEOF?
 			 */
-			DUK_ERROR_TYPE(thr, "invalid instanceof rval");
+			goto error_invalid_rval;
 		}
 
 		if (!DUK_HOBJECT_HAS_BOUNDFUNC(func)) {
@@ -1119,13 +1119,22 @@ DUK_INTERNAL duk_bool_t duk_js_instanceof(duk_hthread *thr, duk_tval *tv_x, duk_
 		DUK_ASSERT(val != NULL);
 		break;
 	default:
-		goto pop_and_false;
+		goto pop2_and_false;
 	}
 	DUK_ASSERT(val != NULL);  /* Loop doesn't actually rely on this. */
 
+	/* Look up .prototype of rval.  Leave it on the value stack in case it
+	 * has been virtualized (e.g. getter, Proxy trap).
+	 */
 	duk_get_prop_stridx_short(ctx, -1, DUK_STRIDX_PROTOTYPE);  /* -> [ ... lval rval rval.prototype ] */
+#if defined(DUK_USE_VERBOSE_ERRORS)
+	proto = duk_get_hobject(ctx, -1);
+	if (proto == NULL) {
+		goto error_invalid_rval_noproto;
+	}
+#else
 	proto = duk_require_hobject(ctx, -1);
-	duk_pop(ctx);  /* -> [ ... lval rval ] */
+#endif
 
 	sanity = DUK_HOBJECT_PROTOTYPE_CHAIN_SANITY;
 	do {
@@ -1148,7 +1157,7 @@ DUK_INTERNAL duk_bool_t duk_js_instanceof(duk_hthread *thr, duk_tval *tv_x, duk_
 		 */
 
 		if (!val) {
-			goto pop_and_false;
+			goto pop3_and_false;
 		}
 
 		DUK_ASSERT(val != NULL);
@@ -1159,7 +1168,7 @@ DUK_INTERNAL duk_bool_t duk_js_instanceof(duk_hthread *thr, duk_tval *tv_x, duk_
 		if (skip_first) {
 			skip_first = 0;
 		} else if (val == proto) {
-			goto pop_and_true;
+			goto pop3_and_true;
 		}
 
 		DUK_ASSERT(val != NULL);
@@ -1171,13 +1180,27 @@ DUK_INTERNAL duk_bool_t duk_js_instanceof(duk_hthread *thr, duk_tval *tv_x, duk_
 	}
 	DUK_UNREACHABLE();
 
- pop_and_false:
+ pop2_and_false:
 	duk_pop_2(ctx);
 	return 0;
 
- pop_and_true:
-	duk_pop_2(ctx);
+ pop3_and_false:
+	duk_pop_3(ctx);
+	return 0;
+
+ pop3_and_true:
+	duk_pop_3(ctx);
 	return 1;
+
+ error_invalid_rval:
+	DUK_ERROR_TYPE(thr, DUK_STR_INVALID_INSTANCEOF_RVAL);
+	return 0;
+
+#if defined(DUK_USE_VERBOSE_ERRORS)
+ error_invalid_rval_noproto:
+	DUK_ERROR_TYPE(thr, DUK_STR_INVALID_INSTANCEOF_RVAL_NOPROTO);
+	return 0;
+#endif
 }
 
 /*
