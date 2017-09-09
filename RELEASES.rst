@@ -3063,6 +3063,9 @@ Planned
 * Fix potential segfault in debugger GetHeapObjInfo command, caused by
   key/mask list being out of sync (GH-1540)
 
+* Fix dangling pointer in instanceof/duk_instanceof() when rval .prototype is
+  a virtualized property coming from a getter or a Proxy trap (GH-1725)
+
 * Fix Reflect.construct() handling for four or more arguments (GH-1517,
   GH-1518)
 
