@@ -285,8 +285,16 @@ typedef struct duk_number_list_entry duk_number_list_entry;
 <td>Enumerate non-numerable properties in addition to enumerable</td>
 </tr>
 <tr>
-<td><code>DUK_ENUM_INCLUDE_INTERNAL</code></td>
-<td>Enumerate internal properties</td>
+<td><code>DUK_ENUM_INCLUDE_HIDDEN</code></td>
+<td>Enumerate hidden Symbols too (in Duktape 1.x called internal properties)</td>
+</tr>
+<tr>
+<td><code>DUK_ENUM_INCLUDE_SYMBOLS</code></td>
+<td>Enumerate Symbol keys (default is not to enumerate them)</td>
+</tr>
+<tr>
+<td><code>DUK_ENUM_EXCLUDE_STRINGS</code></td>
+<td>Do not enumerate string keys (default is to enumerate them)</td>
 </tr>
 <tr>
 <td><code>DUK_ENUM_OWN_PROPERTIES_ONLY</code></td>
