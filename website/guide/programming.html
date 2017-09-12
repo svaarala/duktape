@@ -173,7 +173,7 @@ currently used element.  The following diagram illustrates this:</p>
 |  8 |      | 5 |   API index 0 is bottom (at value stack index 3).
 |  7 |      | 4 |
 |  6 |      | 3 |   API index 5 is highest used (at value stack index 8).
-|  5 |      | 2 |   
+|  5 |      | 2 |
 |  4 |      | 1 |   Stack top is 6 (relative to stack bottom).
 |  3 | &lt;--- | 0 |
 |  2 |      `---'
@@ -491,6 +491,27 @@ methods, which has both advantages and disadvantages.</p>
 <pre class="c-code">
 duk_push_this(ctx);
 duk_get_prop_string(ctx, -1, "my_state_variable");
+</pre>
+
+<h3 id="hidden-symbol-properties">Hidden Symbol properties</h3>
+
+<p>If data needs to be associated with an object, but hidden from Ecmascript
+code, hidden <a href="#symbols">Symbols</a> can be used as a property key. The
+key is only accessible via the C API, unless passed to Ecmascript code from the
+C API. A common use case is to associated backing pointers/data to C memory.
+Symbols are created as a string, but are differentiated with macros that mark
+them as Symbols.</p>
+
+<p>For example, setting and getting a hidden symbol on <code>this</code>:</p>
+<pre class="c-code">
+my_context_data_t *my_context_data = malloc(sizeof(my_context_data_t));
+duk_push_this(ctx);
+duk_push_pointer(ctx, my_context_data);
+duk_put_prop_string(ctx, -2, DUK_HIDDEN_SYMBOL("my_context_data"));
+/* ... */
+duk_push_this(ctx);
+duk_get_prop_string(ctx, -1, DUK_HIDDEN_SYMBOL("my_context_data"));
+my_context_data_t *my_context_data = duk_get_pointer(ctx, -1);
 </pre>
 
 <h3>Magic value of function</h3>
