@@ -1806,6 +1806,18 @@ DUK_INTERNAL const char *duk_require_string_notsymbol(duk_hthread *thr, duk_idx_
 	return (const char *) DUK_HSTRING_GET_DATA(h);
 }
 
+DUK_EXTERNAL void duk_require_object(duk_hthread *thr, duk_idx_t idx) {
+	duk_tval *tv;
+
+	DUK_ASSERT_API_ENTRY(thr);
+
+	tv = duk_get_tval_or_unused(thr, idx);
+	DUK_ASSERT(tv != NULL);
+	if (DUK_UNLIKELY(!DUK_TVAL_IS_OBJECT(tv))) {
+		DUK_ERROR_REQUIRE_TYPE_INDEX(thr, idx, "object", DUK_STR_NOT_OBJECT);
+	}
+}
+
 DUK_LOCAL void *duk__get_pointer_raw(duk_hthread *thr, duk_idx_t idx, void *def_value) {
 	duk_tval *tv;
 	void *p;
