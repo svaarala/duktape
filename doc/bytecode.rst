@@ -344,7 +344,7 @@ The exact format is ultimately defined by the source code, see:
 
 As a simplified summary of the bytecode format:
 
-* A single 0xFF marker byte which never occurs in a valid extended UTF-8
+* A single 0xBF marker byte which never occurs in a valid extended UTF-8
   string.  (A version byte used to follow the marker; it was removed in
   Duktape 2.2 because it hadn't been bumped and because it really provided
   no version guarantees.)
@@ -429,7 +429,7 @@ quite easily accommodated with relatively little run-time cost.
 Bytecode header
 ---------------
 
-The initial 0xFF byte is used because it can never appear in valid UTF-8
+The initial 0xBF byte is used because it can never appear in valid UTF-8
 (even extended UTF-8) so that using a random string accidentally as bytecode
 input will fail.
 
@@ -469,7 +469,7 @@ it's not very useful to have a partial solution in place.
 Even so there is a very simple header signature for bytecode which ensures
 that obviously incorrect values are rejected early.  The signature ensures
 that no ordinary string data can accidentally be loaded as byte code
-(the initial byte 0xFF is invalid extended UTF-8).  Any bytes beyond the
+(the initial byte 0xBF is invalid extended UTF-8).  Any bytes beyond the
 marker are unvalidated.
 
 Future work
