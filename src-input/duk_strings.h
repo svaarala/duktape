@@ -67,6 +67,8 @@
 #define DUK_STR_NO_SOURCECODE                    "no sourcecode"
 #define DUK_STR_RESULT_TOO_LONG                  "result too long"
 #define DUK_STR_INVALID_CFUNC_RC                 "invalid C function rc"
+#define DUK_STR_INVALID_INSTANCEOF_RVAL          "invalid instanceof rval"
+#define DUK_STR_INVALID_INSTANCEOF_RVAL_NOPROTO  "instanceof rval has no .prototype"
 
 /* JSON */
 #define DUK_STR_FMT_PTR                          "%p"
