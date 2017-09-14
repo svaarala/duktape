@@ -24,6 +24,12 @@ Upgrading from Duktape 2.1
 No action (other than recompiling) should be needed for most users to upgrade
 from Duktape v2.1.x.  Note the following:
 
+* Bytecode dump format has been changed slightly: initial byte is now 0xBF
+  (previously 0xFF) to avoid potential confusion with Symbol strings, and
+  serialization version byte (in practice unused) was removed from the format.
+  If any application code checks for bytecode files using a 0xFF initial byte
+  check, it will need to be updated to check for 0xBF.
+
 * The typedef for duk_bool_t was changed from duk_small_int_t (typically
   'int') to duk_small_uint_t (typically 'unsigned int').  API constants for
   DUK_TYPE_xxx, DUK_TYPE_MASK_xxx, flags, etc were changed to unsigned
