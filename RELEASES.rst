@@ -2948,6 +2948,8 @@ Planned
 
 * Add duk_is_constructable() API call (GH-1523)
 
+* Add duk_require_object() API call for consistency (GH-1731, GH-1732)
+
 * Add duk_push_proxy() API call which allows a Proxy to be created from C
   code (GH-1500, GH-837, GH-1680)
 
