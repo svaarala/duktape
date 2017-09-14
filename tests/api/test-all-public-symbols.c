@@ -283,6 +283,7 @@ static duk_ret_t test_func(duk_context *ctx, void *udata) {
 	(void) duk_require_normalize_index(ctx, 0);
 	(void) duk_require_null(ctx, 0);
 	(void) duk_require_number(ctx, 0);
+	(void) duk_require_object(ctx, 0);
 	(void) duk_require_object_coercible(ctx, 0);
 	(void) duk_require_pointer(ctx, 0);
 	(void) duk_require_stack_top(ctx, 0);
