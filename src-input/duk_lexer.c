@@ -758,6 +758,7 @@ DUK_LOCAL duk_codepoint_t duk__lexer_parse_legacy_octal(duk_lexer_ctx *lex_ctx, 
 	DUK_ASSERT(DUK__LOOKUP(lex_ctx, 1) >= DUK_ASC_0 && DUK__LOOKUP(lex_ctx, 1) <= DUK_ASC_9);
 
 	cp = 0;
+	tmp = 0;
 	for (lookup_idx = 1; lookup_idx <= 3; lookup_idx++) {
 		DUK_DDD(DUK_DDDPRINT("lookup_idx=%ld, cp=%ld", (long) lookup_idx, (long) cp));
 		tmp = DUK__LOOKUP(lex_ctx, lookup_idx);
