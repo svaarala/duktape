@@ -2963,6 +2963,10 @@ Planned
   freeing the 0xFF prefix entirely to application use; there are no longer
   restrictions on what follows the 0xFF prefix (GH-1721)
 
+* Change initial bytecode format byte from 0xFF to 0xBF to avoid potential
+  to confuse a user hidden Symbol with bytecode, and remove unnecessary
+  bytecode serialization version byte (GH-1733)
+
 * Change duk_bool_t type to unsigned integer (previously signed integer)
   and make DUK_TYPE_xxx, DUK_TYPE_MASK_xxx, and flags constants unsigned
   in the API header (GH-1688)

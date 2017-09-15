@@ -14,8 +14,7 @@
 
 #if defined(DUK_USE_BYTECODE_DUMP_SUPPORT)
 
-#define DUK__SER_MARKER  0xff
-#define DUK__SER_VERSION 0x00
+#define DUK__SER_MARKER  0xbf
 #define DUK__SER_STRING  0x00
 #define DUK__SER_NUMBER  0x01
 #define DUK__BYTECODE_INITIAL_ALLOC 256
@@ -705,7 +704,6 @@ DUK_EXTERNAL void duk_dump_function(duk_hthread *thr) {
 	DUK_BW_INIT_PUSHBUF(thr, bw_ctx, DUK__BYTECODE_INITIAL_ALLOC);
 	p = DUK_BW_GET_PTR(thr, bw_ctx);
 	*p++ = DUK__SER_MARKER;
-	*p++ = DUK__SER_VERSION;
 	p = duk__dump_func(thr, func, bw_ctx, p);
 	DUK_BW_SET_PTR(thr, bw_ctx, p);
 	DUK_BW_COMPACT(thr, bw_ctx);
@@ -730,15 +728,15 @@ DUK_EXTERNAL void duk_load_function(duk_hthread *thr) {
 	 * (instruction validation would be quite complex to implement).
 	 *
 	 * This signature check is the only sanity check for detecting
-	 * accidental invalid inputs.  The initial 0xFF byte ensures no
-	 * ordinary string will be accepted by accident.
+	 * accidental invalid inputs.  The initial byte ensures no ordinary
+	 * string or Symbol will be accepted by accident.
 	 */
 	p = p_buf;
 	p_end = p_buf + sz;
-	if (sz < 2 || p[0] != DUK__SER_MARKER || p[1] != DUK__SER_VERSION) {
+	if (sz < 1 || p[0] != DUK__SER_MARKER) {
 		goto format_error;
 	}
-	p += 2;
+	p++;
 
 	p = duk__load_func(thr, p, p_end);
 	if (p == NULL) {

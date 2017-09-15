@@ -92,9 +92,11 @@ used as symbol markers.
 |                                               | User code should never use this byte prefix or rely on any      |
 |                                               | Duktape internal hidden Symbols.                                |
 +-----------------------------------------------+-----------------------------------------------------------------+
-| <83 to bf>                                    | Reserved for future use, behavior is undefined (Duktape 2.1     |
+| <83 to be>                                    | Reserved for future use, behavior is undefined (Duktape 2.1     |
 |                                               | interprets as Symbols, Duktape 2.2 does not, don't rely on      |
 |                                               | either behavior.                                                |
++-----------------------------------------------+-----------------------------------------------------------------+
+| <bf>                                          | Initial byte marker for bytecode dump format since Duktape 2.2. |
 +-----------------------------------------------+-----------------------------------------------------------------+
 | <00 to 7f>                                    | Valid ASCII initial byte.                                       |
 +-----------------------------------------------+-----------------------------------------------------------------+

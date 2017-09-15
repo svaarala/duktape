@@ -227,7 +227,7 @@ static duk_ret_t wrapped_compile_execute(duk_context *ctx, void *udata) {
 	src_data = (const char *) duk_require_pointer(ctx, -3);
 	src_len = (duk_size_t) duk_require_uint(ctx, -2);
 
-	if (src_data != NULL && src_len >= 2 && src_data[0] == (char) 0xff) {
+	if (src_data != NULL && src_len >= 1 && src_data[0] == (char) 0xbf) {
 		/* Bytecode. */
 		void *buf;
 		buf = duk_push_fixed_buffer(ctx, src_len);

@@ -22,7 +22,7 @@ static duk_ret_t test_1(duk_context *ctx, void *udata) {
 
 	/* Internal property \xFFabc, technically enumerable (based on
 	 * property attributes) but because of internal property special
-	 * behavior, does not enumerate.  Same for 0x82abc.
+	 * behavior, does not enumerate.  Same for \x82abc.
 	 */
 
 	duk_push_int(ctx, 2);

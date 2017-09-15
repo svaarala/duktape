@@ -32,54 +32,55 @@ def decode_sanitize_string(buf, off):
 def dump_function(buf, off, ind):
     count_inst, count_const, count_funcs = struct.unpack('>LLL', buf[off:off+12])
     off += 12
-    print '%sInstructions: %d' % (ind, count_inst)
-    print '%sConstants: %d' % (ind, count_const)
-    print '%sInner functions: %d' % (ind, count_funcs)
+    print('%sInstructions: %d' % (ind, count_inst))
+    print('%sConstants: %d' % (ind, count_const))
+    print('%sInner functions: %d' % (ind, count_funcs))
 
+    # Line numbers present, assuming debugger support; otherwise 0.
     nregs, nargs, start_line, end_line = struct.unpack('>HHLL', buf[off:off+12])
     off += 12
-    print '%sNregs: %d' % (ind, nregs)
-    print '%sNargs: %d' % (ind, nargs)
-    print '%sStart line number: %d' % (ind, start_line)
-    print '%sEnd line number: %d' % (ind, end_line)
+    print('%sNregs: %d' % (ind, nregs))
+    print('%sNargs: %d' % (ind, nargs))
+    print('%sStart line number: %d' % (ind, start_line))
+    print('%sEnd line number: %d' % (ind, end_line))
 
     compfunc_flags, = struct.unpack('>L', buf[off:off+4])
     off += 4
-    print '%sduk_hcompiledfunction flags: 0x%08x' % (ind, compfunc_flags)
+    print('%sduk_hcompiledfunction flags: 0x%08x' % (ind, compfunc_flags))
 
     for i in xrange(count_inst):
         ins, = struct.unpack('>L', buf[off:off+4])
         off += 4
-        print '%s  %06d: %08lx' % (ind, i, ins)
+        print('%s  %06d: %08lx' % (ind, i, ins))
 
-    print '%sConstants:' % ind
+    print('%sConstants:' % ind)
     for i in xrange(count_const):
         const_type, = struct.unpack('B', buf[off:off+1])
         off += 1
 
         if const_type == 0x00:
             off, strdata = decode_sanitize_string(buf, off)
-            print '%s  %06d: %s' % (ind, i, strdata)
+            print('%s  %06d: %s' % (ind, i, strdata))
         elif const_type == 0x01:
             num, = struct.unpack('>d', buf[off:off+8])
             off += 8
-            print '%s  %06d: %f' % (ind, i, num)
+            print('%s  %06d: %f' % (ind, i, num))
         else:
             raise Exception('invalid constant type: %d' % const_type)
 
     for i in xrange(count_funcs):
-        print '%sInner function %d:' % (ind, i)
+        print('%sInner function %d:' % (ind, i))
         off = dump_function(buf, off, ind + '  ')
 
     val, = struct.unpack('>L', buf[off:off+4])
     off += 4
-    print '%s.length: %d' % (ind, val)
+    print('%s.length: %d' % (ind, val))
     off, val = decode_sanitize_string(buf, off)
-    print '%s.name: %s' % (ind, val)
+    print('%s.name: %s' % (ind, val))
     off, val = decode_sanitize_string(buf, off)
-    print '%s.fileName: %s' % (ind, val)
+    print('%s.fileName: %s' % (ind, val))
     off, val = decode_string(buf, off)  # actually a buffer
-    print '%s._Pc2line: %s' % (ind, val.encode('hex'))
+    print('%s._Pc2line: %s' % (ind, val.encode('hex')))
 
     while True:
         off, name = decode_string(buf, off)
@@ -88,27 +89,29 @@ def dump_function(buf, off, ind):
         name = sanitize_string(name)
         val, = struct.unpack('>L', buf[off:off+4])
         off += 4
-        print '%s_Varmap[%s] = %d' % (ind, name, val)
+        print('%s_Varmap[%s] = %d' % (ind, name, val))
 
-    idx = 0
-    while True:
-        off, name = decode_string(buf, off)
-        if name == '':
-            break
-        name = sanitize_string(name)
-        print '%s_Formals[%d] = %s' % (ind, idx, name)
-        idx += 1
+    num_formals, = struct.unpack('>L', buf[off:off+4])
+    off += 4
+    if num_formals != 0xffffffff:
+        print('%s_Formals: %d formal arguments' % (ind, num_formals))
+        for idx in xrange(num_formals):
+            off, name = decode_string(buf, off)
+            name = sanitize_string(name)
+            print('%s_Formals[%d] = %s' % (ind, idx, name))
+    else:
+        print('%s_Formals: absent' % ind)
 
     return off
 
 def dump_bytecode(buf, off, ind):
-    sig, ver = struct.unpack('BB', buf[off:off+2])
-    off += 2
-    if sig != 0xff:
+    sig, = struct.unpack('B', buf[off:off+1])
+    print('%sSignature byte: 0x%02x' % (ind, sig))
+    off += 1
+    if sig == 0xff:
+        raise Exception('pre-Duktape 2.2 0xFF signature byte (signature byte is 0xBF since Duktape 2.2)')
+    if sig != 0xbf:
         raise Exception('invalid signature byte: %d' % sig)
-    if ver != 0x00:
-        raise Exception('unsupported bytecode version: %d' % ver)
-    print '%sBytecode version: 0x%02x' % (ind, ver)
 
     off = dump_function(buf, off, ind + '  ')
 
