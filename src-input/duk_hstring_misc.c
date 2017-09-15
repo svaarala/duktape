@@ -20,7 +20,7 @@ DUK_INTERNAL duk_ucodepoint_t duk_hstring_char_code_at_raw(duk_hthread *thr, duk
 	DUK_ASSERT_DISABLE(pos >= 0);  /* unsigned */
 	DUK_ASSERT(pos < (duk_uint_t) DUK_HSTRING_GET_CHARLEN(h));
 
-	boff = duk_heap_strcache_offset_char2byte(thr, h, (duk_uint32_t) pos);
+	boff = (duk_uint32_t) duk_heap_strcache_offset_char2byte(thr, h, (duk_uint32_t) pos);
 	DUK_DDD(DUK_DDDPRINT("charCodeAt: pos=%ld -> boff=%ld, str=%!O",
 	                     (long) pos, (long) boff, (duk_heaphdr *) h));
 	DUK_ASSERT_DISABLE(boff >= 0);
@@ -45,7 +45,7 @@ DUK_INTERNAL duk_ucodepoint_t duk_hstring_char_code_at_raw(duk_hthread *thr, duk
 			cp2 = 0;  /* If call fails, this is left untouched and won't match cp2 check. */
 			(void) duk_unicode_decode_xutf8(thr, &p, p_start, p_end, &cp2);
 			if (cp2 >= 0xdc00UL && cp2 <= 0xdfffUL) {
-				cp1 = ((cp1 - 0xd800UL) << 10) + (cp2 - 0xdc00UL) + 0x10000UL;
+				cp1 = (duk_ucodepoint_t) (((cp1 - 0xd800UL) << 10) + (cp2 - 0xdc00UL) + 0x10000UL);
 			}
 		}
 	} else {

@@ -687,7 +687,7 @@ DUK_INTERNAL duk_ret_t duk_bi_string_prototype_replace(duk_hthread *thr) {
 		 * stack[4] = regexp match OR match string
 		 */
 
-		match_start_boff = duk_heap_strcache_offset_char2byte(thr, h_input, match_start_coff);
+		match_start_boff = (duk_uint32_t) duk_heap_strcache_offset_char2byte(thr, h_input, match_start_coff);
 
 		tmp_sz = (duk_size_t) (match_start_boff - prev_match_end_boff);
 		DUK_BW_WRITE_ENSURE_BYTES(thr, bw, DUK_HSTRING_GET_DATA(h_input) + prev_match_end_boff, tmp_sz);
@@ -776,9 +776,9 @@ DUK_INTERNAL duk_ret_t duk_bi_string_prototype_replace(duk_hthread *thr) {
 					 * match codepoint encodings would have different lengths.
 					 */
 					/* XXX: charlen computed here, and also in char2byte helper. */
-					match_end_boff = duk_heap_strcache_offset_char2byte(thr,
-					                                                    h_input,
-					                                                    match_start_coff + (duk_uint_fast32_t) DUK_HSTRING_GET_CHARLEN(h_match));
+					match_end_boff = (duk_uint32_t) duk_heap_strcache_offset_char2byte(thr,
+					                                                                   h_input,
+					                                                                   match_start_coff + (duk_uint_fast32_t) DUK_HSTRING_GET_CHARLEN(h_match));
 
 					tmp_sz = (duk_size_t) (DUK_HSTRING_GET_BYTELEN(h_input) - match_end_boff);
 					DUK_BW_WRITE_ENSURE_BYTES(thr, bw, DUK_HSTRING_GET_DATA(h_input) + match_end_boff, tmp_sz);
@@ -971,7 +971,7 @@ DUK_INTERNAL duk_ret_t duk_bi_string_prototype_split(duk_hthread *thr) {
 			duk_get_prop_stridx_short(thr, -1, DUK_STRIDX_INDEX);
 			DUK_ASSERT(duk_is_number(thr, -1));
 			match_start_coff = duk_get_uint(thr, -1);
-			match_start_boff = duk_heap_strcache_offset_char2byte(thr, h_input, match_start_coff);
+			match_start_boff = (duk_uint32_t) duk_heap_strcache_offset_char2byte(thr, h_input, match_start_coff);
 			duk_pop(thr);
 
 			if (match_start_coff == DUK_HSTRING_GET_CHARLEN(h_input)) {
@@ -983,7 +983,7 @@ DUK_INTERNAL duk_ret_t duk_bi_string_prototype_split(duk_hthread *thr) {
 			duk_get_prop_stridx_short(thr, 0, DUK_STRIDX_LAST_INDEX);
 			DUK_ASSERT(duk_is_number(thr, -1));
 			match_end_coff = duk_get_uint(thr, -1);
-			match_end_boff = duk_heap_strcache_offset_char2byte(thr, h_input, match_end_coff);
+			match_end_boff = (duk_uint32_t) duk_heap_strcache_offset_char2byte(thr, h_input, match_end_coff);
 			duk_pop(thr);
 
 			/* empty match -> bump and continue */

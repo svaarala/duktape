@@ -179,7 +179,7 @@ DUK_LOCAL void duk__debug_set_pause_state(duk_hthread *thr, duk_heap *heap, duk_
 
 	heap->dbg_pause_flags = pause_flags;
 	heap->dbg_pause_act = thr->callstack_curr;
-	heap->dbg_pause_startline = line;
+	heap->dbg_pause_startline = (duk_uint32_t) line;
 	heap->dbg_state_dirty = 1;
 
 	DUK_D(DUK_DPRINT("set state for automatic pause triggers, flags=0x%08lx, act=%p, startline=%ld",
@@ -1117,7 +1117,7 @@ DUK_INTERNAL void duk_debug_send_throw(duk_hthread *thr, duk_bool_t fatal) {
 			duk_push_tval(thr, &act->tv_func);
 			duk_get_prop_string(thr, -1, "fileName");
 			duk__debug_write_hstring_safe_top(thr);
-			pc = duk_hthread_get_act_prev_pc(thr, act);
+			pc = (duk_uint32_t) duk_hthread_get_act_prev_pc(thr, act);
 			duk_debug_write_uint(thr, (duk_uint32_t) duk_hobject_pc2line_query(thr, -2, pc));
 			duk_pop_2(thr);
 		} else {

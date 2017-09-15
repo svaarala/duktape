@@ -1772,7 +1772,7 @@ DUK_LOCAL void duk__interrupt_handle_debugger(duk_hthread *thr, duk_bool_t *out_
 			;
 		}
 
-		act->prev_line = line;
+		act->prev_line = (duk_uint32_t) line;
 	}
 
 	/*
@@ -2137,7 +2137,7 @@ DUK_LOCAL void duk__executor_recheck_debugger(duk_hthread *thr, duk_activation *
  *  rare; NOINLINE to reduce amount of code in main bytecode dispatcher.
  */
 
-DUK_LOCAL DUK__NOINLINE_PERF void duk__handle_op_initset_initget(duk_hthread *thr, duk_instr_t ins) {
+DUK_LOCAL DUK__NOINLINE_PERF void duk__handle_op_initset_initget(duk_hthread *thr, duk_uint_fast32_t ins) {
 	duk_bool_t is_set = (DUK_DEC_OP(ins) == DUK_OP_INITSET);
 	duk_uint_fast_t idx;
 	duk_uint_t defprop_flags;
@@ -2170,7 +2170,7 @@ DUK_LOCAL DUK__NOINLINE_PERF void duk__handle_op_initset_initget(duk_hthread *th
 	duk_def_prop(thr, (duk_idx_t) DUK_DEC_A(ins), defprop_flags);
 }
 
-DUK_LOCAL DUK__NOINLINE_PERF void duk__handle_op_trycatch(duk_hthread *thr, duk_instr_t ins, duk_instr_t *curr_pc) {
+DUK_LOCAL DUK__NOINLINE_PERF void duk__handle_op_trycatch(duk_hthread *thr, duk_uint_fast32_t ins, duk_instr_t *curr_pc) {
 	duk_activation *act;
 	duk_catcher *cat;
 	duk_tval *tv1;
@@ -2335,7 +2335,7 @@ DUK_LOCAL DUK__NOINLINE_PERF void duk__handle_op_trycatch(duk_hthread *thr, duk_
 	duk_pop_unsafe(thr);
 }
 
-DUK_LOCAL DUK__NOINLINE_PERF duk_instr_t *duk__handle_op_endtry(duk_hthread *thr, duk_instr_t ins) {
+DUK_LOCAL DUK__NOINLINE_PERF duk_instr_t *duk__handle_op_endtry(duk_hthread *thr, duk_uint_fast32_t ins) {
 	duk_activation *act;
 	duk_catcher *cat;
 	duk_tval *tv1;
@@ -2379,7 +2379,7 @@ DUK_LOCAL DUK__NOINLINE_PERF duk_instr_t *duk__handle_op_endtry(duk_hthread *thr
 	return pc_base + 1;  /* new curr_pc value */
 }
 
-DUK_LOCAL DUK__NOINLINE_PERF duk_instr_t *duk__handle_op_endcatch(duk_hthread *thr, duk_instr_t ins) {
+DUK_LOCAL DUK__NOINLINE_PERF duk_instr_t *duk__handle_op_endcatch(duk_hthread *thr, duk_uint_fast32_t ins) {
 	duk_activation *act;
 	duk_catcher *cat;
 	duk_tval *tv1;
@@ -2440,7 +2440,7 @@ DUK_LOCAL DUK__NOINLINE_PERF duk_instr_t *duk__handle_op_endcatch(duk_hthread *t
 	return pc_base + 1;  /* new curr_pc value */
 }
 
-DUK_LOCAL DUK__NOINLINE_PERF duk_small_uint_t duk__handle_op_endfin(duk_hthread *thr, duk_instr_t ins, duk_activation *entry_act) {
+DUK_LOCAL DUK__NOINLINE_PERF duk_small_uint_t duk__handle_op_endfin(duk_hthread *thr, duk_uint_fast32_t ins, duk_activation *entry_act) {
 	duk_activation *act;
 	duk_tval *tv1;
 	duk_uint_t reg_catch;
@@ -2541,7 +2541,7 @@ DUK_LOCAL DUK__NOINLINE_PERF duk_small_uint_t duk__handle_op_endfin(duk_hthread 
 	return 0;
 }
 
-DUK_LOCAL DUK__NOINLINE_PERF void duk__handle_op_initenum(duk_hthread *thr, duk_instr_t ins) {
+DUK_LOCAL DUK__NOINLINE_PERF void duk__handle_op_initenum(duk_hthread *thr, duk_uint_fast32_t ins) {
 	duk_small_uint_t b;
 	duk_small_uint_t c;
 
@@ -2569,7 +2569,7 @@ DUK_LOCAL DUK__NOINLINE_PERF void duk__handle_op_initenum(duk_hthread *thr, duk_
 	}
 }
 
-DUK_LOCAL DUK__NOINLINE_PERF duk_small_uint_t duk__handle_op_nextenum(duk_hthread *thr, duk_instr_t ins) {
+DUK_LOCAL DUK__NOINLINE_PERF duk_small_uint_t duk__handle_op_nextenum(duk_hthread *thr, duk_uint_fast32_t ins) {
 	duk_small_uint_t b;
 	duk_small_uint_t c;
 	duk_small_uint_t pc_skip = 0;
@@ -4504,7 +4504,7 @@ DUK_LOCAL DUK_NOINLINE DUK_HOT void duk__js_execute_bytecode_inner(duk_hthread *
 			cat = duk_hthread_catcher_alloc(thr);
 			DUK_ASSERT(cat != NULL);
 
-			cat->flags = DUK_CAT_TYPE_LABEL | (bc << DUK_CAT_LABEL_SHIFT);
+			cat->flags = (duk_uint32_t) (DUK_CAT_TYPE_LABEL | (bc << DUK_CAT_LABEL_SHIFT));
 			cat->pc_base = (duk_instr_t *) curr_pc;  /* pre-incremented, points to first jump slot */
 			cat->idx_base = 0;  /* unused for label */
 			cat->h_varname = NULL;

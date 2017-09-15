@@ -959,7 +959,7 @@ DUK_LOCAL void duk__regexp_match_helper(duk_hthread *thr, duk_small_int_t force_
 			}
 
 			/* [ ... re_obj input bc saved_buf res_obj val ] */
-			duk_put_prop_index(thr, -2, i / 2);
+			duk_put_prop_index(thr, -2, (duk_uarridx_t) (i / 2));
 		}
 
 		/* [ ... re_obj input bc saved_buf res_obj ] */
