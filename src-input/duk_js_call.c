@@ -1501,6 +1501,18 @@ DUK_LOCAL duk_small_uint_t duk__call_setup_act_attempt_tailcall(duk_hthread *thr
 	 *  current activation must be closed, otherwise something like
 	 *  test-bug-reduce-judofyr.js results.  Also catchers need to be unwound
 	 *  because there may be non-error-catching label entries in valid tail calls.
+	 *
+	 *  Special attention is needed for debugger and pause behavior when
+	 *  reusing an activation.
+	 *    - Disable StepOut processing for the activation unwind because
+	 *      we reuse the activation, see:
+	 *      https://github.com/svaarala/duktape/issues/1684.
+	 *    - Disable line change pause flag permanently (if set) because
+	 *      it would no longer be relevant, see:
+	 *      https://github.com/svaarala/duktape/issues/1726.
+	 *    - Check for function entry (e.g. StepInto) pause flag here, because
+	 *      the executor pause check won't trigger due to shared activation, see:
+	 *      https://github.com/svaarala/duktape/issues/1726.
 	 */
 
 	DUK_DDD(DUK_DDDPRINT("is tail call, reusing activation at callstack top, at index %ld",
@@ -1514,14 +1526,17 @@ DUK_LOCAL duk_small_uint_t duk__call_setup_act_attempt_tailcall(duk_hthread *thr
 
 	/* Unwind the topmost callstack entry before reusing it.  This
 	 * also unwinds the catchers related to the topmost entry.
-	 * Disable StepOut processing because we reuse the activation,
-	 * see https://github.com/svaarala/duktape/issues/1684.
 	 */
 	DUK_ASSERT(thr->callstack_top > 0);
 	DUK_ASSERT(thr->callstack_curr != NULL);
 #if defined(DUK_USE_DEBUGGER_SUPPORT)
 	prev_pause_act = thr->heap->dbg_pause_act;
 	thr->heap->dbg_pause_act = NULL;
+	thr->heap->dbg_pause_flags &= ~DUK_PAUSE_FLAG_LINE_CHANGE;
+	if (thr->heap->dbg_pause_flags & DUK_PAUSE_FLAG_FUNC_ENTRY) {
+		DUK_D(DUK_DPRINT("PAUSE TRIGGERED by function entry (tailcall)"));
+		duk_debug_set_paused(thr->heap);
+	}
 #endif
 	duk_hthread_activation_unwind_reuse_norz(thr);
 #if defined(DUK_USE_DEBUGGER_SUPPORT)
