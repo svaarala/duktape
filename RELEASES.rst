@@ -3096,9 +3096,8 @@ Planned
   below the current call, leading potentially to a smaller reserve than
   requested (GH-1536)
 
-* Fix incorrect pausing by debugger StepOut command when current function has
-  a tail return; previously execution would pause on exit to tailcall target
-  (GH-1684, GH-1685)
+* Fix incorrect pausing by debugger StepOut, StepOver, and StepInto commands
+  when stepping over a tail call (GH-1684, GH-1685, GH-1726, GH-1734)
 
 * Fix duk_hbufobj assert in shared slice() handling (GH-1506)
 
