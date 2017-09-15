@@ -34,8 +34,8 @@
 # Property format:
 #
 #    - key: verbatim string key, codepoints U+0000...U+00FF map to bytes,
-#           so that \u00ff is 0xFF prefix.  Key can also be a symbol, with
-#           the same format as for symbol values
+#           so that \u0082 is 0x82 prefix, \u00FF is 0xFF prefix, etc.  Key
+#           can also be a symbol, with the same format as for symbol values.
 #    - value: see below
 #    - attributes: string of format /w?e?c?a?/, e.g. "wc" is writable and
 #                  configurable
@@ -65,7 +65,7 @@
 #      - treated as plain string, string data as with keys
 #    - Plain symbol:
 #      - type: symbol
-#      - variant: global, hidden, wellknown
+#      - variant: global, wellknown, hidden, userhidden
 #      - string: symbol string without any prefix
 #      - NOTE: ES2015 well-known symbols are local symbols with 'string' as
 #        their description, and a fixed suffix never overlapping with
@@ -1182,7 +1182,10 @@ objects:
       # which prevents a String instance's internal value also from being
       # written with standard methods.  The internal code creating String
       # instances has no such issues.
-      - key: "\u00ffValue"
+      - key:
+          type: symbol
+          variant: hidden
+          string: "Value"
         value: ""
         attributes: ""
         duktape: true
@@ -1423,7 +1426,10 @@ objects:
       # which prevents a Boolean instance's internal value also from being
       # written with standard methods.  The internal code creating Boolean
       # instances has no such issues.
-      - key: "\u00ffValue"
+      - key:
+          type: symbol
+          variant: hidden
+          string: "Value"
         value: false
         attributes: ""
         duktape: true
@@ -1509,7 +1515,10 @@ objects:
     # which prevents a Number instance's internal value also from being
     # written with standard methods.  The internal code creating Number
     # instances has no such issues.
-      - key: "\u00ffValue"
+      - key:
+          type: symbol
+          variant: hidden
+          string: "Value"
         value: 0.0
         attributes: ""
         duktape: true
@@ -1628,7 +1637,10 @@ objects:
       #  > Date.prototype.toString()
       #  "Fri Jan 01 2010 00:00:00 GMT+0200 (EET)"
 
-      - key: "\u00ffValue"
+      - key:
+          type: symbol
+          variant: hidden
+          string: "Value"
         value:
           type: double
           bytes: "7ff8000000000000"  # DBL_NAN

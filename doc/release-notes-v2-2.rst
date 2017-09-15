@@ -13,6 +13,11 @@ Main changes in this release (see RELEASES.rst for full details):
   improved by ~50x using a small lookup table (256 bytes, total footprint
   impact is ~300-400 bytes).
 
+* The 0xFF string prefix byte is now reserved to application hidden Symbols,
+  so there are no longer restrictions in what follows the prefix.  The new
+  DUK_HIDDEN_SYMBOL("myValue") macro is recommended and uses a single 0xFF
+  prefix byte.
+
 Upgrading from Duktape 2.1
 ==========================
 

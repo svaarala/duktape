@@ -237,8 +237,8 @@ solution is:
   into the output value.
 
 * The current UTF-8/CESU-8 decoding is not strict, so this is mainly
-  triggered for invalid initial bytes (0xFF) or when a codepoint has been
-  truncated (end of buffer).
+  triggered for invalid initial bytes (e.g. 0xFF) or when a codepoint has
+  been truncated (end of buffer).
 
 This is by no means an optimal solution and produces quite interesting
 results at times.

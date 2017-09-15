@@ -2959,6 +2959,10 @@ Planned
 * Add DUK_HIDDEN_SYMBOL(), DUK_GLOBAL_SYMBOL(), DUK_LOCAL_SYMBOL(), and
   DUK_WELLKNOWN_SYMBOL() macros for creating symbol literals (GH-1673)
 
+* Change Duktape internal hidden Symbols to use the 0x82 byte prefix,
+  freeing the 0xFF prefix entirely to application use; there are no longer
+  restrictions on what follows the 0xFF prefix (GH-1721)
+
 * Change duk_bool_t type to unsigned integer (previously signed integer)
   and make DUK_TYPE_xxx, DUK_TYPE_MASK_xxx, and flags constants unsigned
   in the API header (GH-1688)

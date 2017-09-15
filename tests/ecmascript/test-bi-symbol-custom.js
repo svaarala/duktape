@@ -42,7 +42,7 @@ function test() {
     print(JSON.stringify(obj));
     print(Duktape.enc('jx', obj));
 
-    // Date instances have a hidden _Value (\xFFValue) property.
+    // Date instances have a hidden _Value (\x82Value) property.
     // It is not returned by Object.getOwnPropertySymbols() directly
     // or via a Proxy.
 

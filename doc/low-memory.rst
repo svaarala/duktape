@@ -937,7 +937,7 @@ Ecmascript function footprint
   allocation size is not double that of final bytecode, as that is awkward
   for pool allocators.
 
-* Improve property format, e.g. ``_formals`` is now a regular array which
+* Improve property format, e.g. ``_Formals`` is now a regular array which
   is quite wasteful; it could be converted to a ``\xFF`` separated string
   for instance.
 

@@ -39,7 +39,7 @@ somewhat complicated.  The related issues and current behavior are described in:
     assignment was done.  This behavior was changed in Duktape 1.4.0 to better
     match other engines.</li>
 <li>The raw traceback data needed by the accessor properties is stored in an internal
-    property (<code>\xFFTracedata</code>) which is not normally accessible from
+    property (<code>\x82Tracedata</code>) which is not normally accessible from
     Ecmascript code.</li>
 </ul>
 
@@ -76,7 +76,7 @@ Traceback data is automatically collected and added to an object:</p>
 </ul>
 
 <p>The data used to create the traceback is stored in an internal property
-(<code>\xFFTracedata</code>), in an internal and version-dependent format
+(<code>\x82Tracedata</code>), in an internal and version-dependent format
 described
 <a href="https://github.com/svaarala/duktape/blob/master/doc/error-objects.rst">error-objects.rst</a>.
 You shouldn't access the traceback data directly.</p>
