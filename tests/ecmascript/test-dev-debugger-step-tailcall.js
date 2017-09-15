@@ -1,7 +1,13 @@
 /*
- *  Test illustrating GH-1684.
+ *  Test illustrating GH-1684 and GH-1726.
  *
- *  Run with debugger attached, and StepOut from test1 and test2.
+ *  Run with debugger attached, and:
+ *
+ *  - StepOut from test1 and test2.
+ *
+ *  - StepOver the 'return' statement in test1 and test2.
+ *
+ *  - StepInto anotherFunction in test1 and test2.
  */
 
 /*===
