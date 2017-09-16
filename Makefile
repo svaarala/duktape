@@ -153,6 +153,9 @@ CCOPTS_DEBUG = $(CCOPTS_SHARED) $(CCOPTS_FEATURES)
 CCOPTS_DEBUG += -O0
 CCOPTS_DEBUG += -g -ggdb
 
+CLANG_CCOPTS_NONDEBUG = $(CCOPTS_NONDEBUG)
+CLANG_CCOPTS_NONDEBUG += -Wshorten-64-to-32
+
 GXXOPTS_SHARED = -pedantic -ansi -std=c++11 -fstrict-aliasing -Wall -Wextra -Wunused-result -Wunused-function
 GXXOPTS_SHARED += -DDUK_CMDLINE_PRINTALERT_SUPPORT
 GXXOPTS_NONDEBUG = $(GXXOPTS_SHARED) -Os -fomit-frame-pointer
@@ -454,11 +457,11 @@ duk-clang: linenoise prep/nondebug
 	# Use -Wcast-align to trigger issues like: https://github.com/svaarala/duktape/issues/270
 	# Use -Wshift-sign-overflow to trigger issues like: https://github.com/svaarala/duktape/issues/812
 	# -Weverything
-	clang -o $@ -Wcast-align -Wshift-sign-overflow -Iprep/nondebug $(CCOPTS_NONDEBUG) prep/nondebug/duktape.c $(DUKTAPE_CMDLINE_SOURCES) $(LINENOISE_SOURCES) $(CCLIBS)
+	clang -o $@ -Wcast-align -Wshift-sign-overflow -Iprep/nondebug $(CLANG_CCOPTS_NONDEBUG) prep/nondebug/duktape.c $(DUKTAPE_CMDLINE_SOURCES) $(LINENOISE_SOURCES) $(CCLIBS)
 	@ls -l $@
 	-@size $@
 duk-perf-clang: linenoise prep/nondebug-perf
-	clang -o $@ -Wcast-align -Wshift-sign-overflow -Iprep/nondebug-perf $(CCOPTS_NONDEBUG) prep/nondebug-perf/duktape.c $(DUKTAPE_CMDLINE_SOURCES) $(LINENOISE_SOURCES) $(CCLIBS)
+	clang -o $@ -Wcast-align -Wshift-sign-overflow -Iprep/nondebug-perf $(CLANG_CCOPTS_NONDEBUG) prep/nondebug-perf/duktape.c $(DUKTAPE_CMDLINE_SOURCES) $(LINENOISE_SOURCES) $(CCLIBS)
 	@ls -l $@
 	-@size $@
 duk-g++: linenoise prep/nondebug

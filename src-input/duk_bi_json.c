@@ -2445,7 +2445,7 @@ DUK_LOCAL duk_bool_t duk__json_stringify_fast_value(duk_json_enc_ctx *js_ctx, du
 			c_object = c_all & ~(c_array | c_unbox | c_func | c_bufobj | c_undef | c_abort);
 		}
 
-		c_bit = DUK_HOBJECT_GET_CLASS_MASK(obj);
+		c_bit = (duk_uint32_t) DUK_HOBJECT_GET_CLASS_MASK(obj);
 		if (c_bit & c_object) {
 			/* All other object types. */
 			DUK__EMIT_1(js_ctx, DUK_ASC_LCURLY);

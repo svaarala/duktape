@@ -169,7 +169,7 @@ DUK_LOCAL void duk__transform_callback_encode_uri(duk__transform_context *tfm_ct
 			goto uri_error;
 		}
 		cp1 = cp;
-		cp = ((cp1 - 0xd800L) << 10) + (cp2 - 0xdc00L) + 0x10000L;
+		cp = (duk_codepoint_t) (((cp1 - 0xd800L) << 10) + (cp2 - 0xdc00L) + 0x10000L);
 	} else if (cp > 0x10ffffL) {
 		/* Although we can allow non-BMP characters (they'll decode
 		 * back into surrogate pairs), we don't allow extended UTF-8

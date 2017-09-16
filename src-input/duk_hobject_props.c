@@ -300,8 +300,8 @@ DUK_LOCAL void duk__compute_a_stats(duk_hthread *thr, duk_hobject *obj, duk_uint
 	 * for out_min_size as intended.
 	 */
 
-	*out_used = used;
-	*out_min_size = highest_idx + 1;  /* 0 if no used entries */
+	*out_used = (duk_uint32_t) used;
+	*out_min_size = (duk_uint32_t) (highest_idx + 1);  /* 0 if no used entries */
 }
 
 /* Check array density and indicate whether or not the array part should be abandoned. */
@@ -732,7 +732,7 @@ DUK_INTERNAL void duk_hobject_realloc_props(duk_hthread *thr,
 				goto abandon_error;
 			}
 			DUK_ASSERT_VALSTACK_SPACE(thr, 1);
-			key = duk_heap_strtable_intern_u32(thr->heap, i);
+			key = duk_heap_strtable_intern_u32(thr->heap, (duk_uint32_t) i);
 			if (key == NULL) {
 				goto abandon_error;
 			}
@@ -859,7 +859,7 @@ DUK_INTERNAL void duk_hobject_realloc_props(duk_hthread *thr,
 				DUK_ASSERT(new_h[j] != DUK__HASH_DELETED);  /* should never happen */
 				if (new_h[j] == DUK__HASH_UNUSED) {
 					DUK_DDD(DUK_DDDPRINT("rebuild hit %ld -> %ld", (long) j, (long) i));
-					new_h[j] = i;
+					new_h[j] = (duk_uint32_t) i;
 					break;
 				}
 				DUK_DDD(DUK_DDDPRINT("rebuild miss %ld, step %ld", (long) j, (long) step));

@@ -177,7 +177,7 @@ DUK_LOCAL void duk__utf8_encode_char(void *udata, duk_codepoint_t codepoint) {
 		} else {
 			/* low surrogate */
 			if (enc_ctx->lead != 0x0000L) {
-				codepoint = 0x010000L + ((enc_ctx->lead - 0xd800L) << 10) + (codepoint - 0xdc00L);
+				codepoint = (duk_codepoint_t) (0x010000L + ((enc_ctx->lead - 0xd800L) << 10) + (codepoint - 0xdc00L));
 				enc_ctx->lead = 0x0000L;
 			} else {
 				/* unpaired low surrogate */

@@ -3116,6 +3116,9 @@ Planned
 
 * Fix -Wsign-conversion warnings for GCC / Clang (GH-1688)
 
+* Fix Clang -Wshorten-64-to-32 warnings and an incorrect uninitialized
+  variable warning (GH-1735)
+
 * Fix pointer size detection for MSVC2015 ARM32/ARM64 (GH-1577, GH-1675)
 
 * Improve support for old MSVC versions without __pragma(), long long, and

@@ -276,7 +276,7 @@ DUK_INTERNAL void duk_hobject_enumerator_create(duk_hthread *thr, duk_small_uint
 	DUK_ASSERT(duk_is_array(thr, -1));
 	len = (duk_uint_fast32_t) duk_get_length(thr, -1);
 	for (i = 0; i < len; i++) {
-		(void) duk_get_prop_index(thr, -1, i);
+		(void) duk_get_prop_index(thr, -1, (duk_uarridx_t) i);
 		DUK_ASSERT(duk_is_string(thr, -1));  /* postprocess cleaned up */
 		/* [ ... enum_target res trap_result keys_array val ] */
 		duk_push_true(thr);
@@ -378,7 +378,7 @@ DUK_INTERNAL void duk_hobject_enumerator_create(duk_hthread *thr, duk_small_uint
 				/* This is a bit fragile: the string is not
 				 * reachable until it is pushed by the helper.
 				 */
-				k = duk_heap_strtable_intern_u32_checked(thr, i);
+				k = duk_heap_strtable_intern_u32_checked(thr, (duk_uint32_t) i);
 				DUK_ASSERT(k);
 
 				duk__add_enum_key(thr, k);
@@ -408,7 +408,7 @@ DUK_INTERNAL void duk_hobject_enumerator_create(duk_hthread *thr, duk_small_uint
 			if (DUK_TVAL_IS_UNUSED(tv)) {
 				continue;
 			}
-			k = duk_heap_strtable_intern_u32_checked(thr, i);  /* Fragile reachability. */
+			k = duk_heap_strtable_intern_u32_checked(thr, (duk_uint32_t) i);  /* Fragile reachability. */
 			DUK_ASSERT(k);
 
 			duk__add_enum_key(thr, k);
@@ -671,7 +671,7 @@ DUK_INTERNAL duk_ret_t duk_hobject_get_enumerated_keys(duk_hthread *thr, duk_sma
 	count = (duk_uint32_t) (DUK_HOBJECT_GET_ENEXT(e) - DUK__ENUM_START_INDEX);
 
 	/* XXX: uninit would be OK */
-	tv = duk_push_harray_with_size_outptr(thr, count);
+	tv = duk_push_harray_with_size_outptr(thr, (duk_uint32_t) count);
 	DUK_ASSERT(count == 0 || tv != NULL);
 
 	/* Fill result array, no side effects. */

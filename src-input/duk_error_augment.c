@@ -258,7 +258,7 @@ DUK_LOCAL void duk__add_traceback(duk_hthread *thr, duk_hthread *thr_callstack, 
 		 * PC points to next instruction, find offending PC.  Note that
 		 * PC == 0 for native code.
 		 */
-		pc = duk_hthread_get_act_prev_pc(thr_callstack, act);
+		pc = (duk_uint32_t) duk_hthread_get_act_prev_pc(thr_callstack, act);
 		DUK_ASSERT_DISABLE(pc >= 0);  /* unsigned */
 		DUK_ASSERT((duk_double_t) pc < DUK_DOUBLE_2TO32);  /* assume PC is at most 32 bits and non-negative */
 		d = ((duk_double_t) act->flags) * DUK_DOUBLE_2TO32 + (duk_double_t) pc;
