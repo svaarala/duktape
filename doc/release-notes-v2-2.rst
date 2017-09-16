@@ -7,22 +7,41 @@ Release overview
 
 Main changes in this release (see RELEASES.rst for full details):
 
-* TBD.
+* Internal reworking of call handling for better performance and code sharing.
+  Coroutine yield and tail call restrictions removed when using new Foo(),
+  .call(), .apply(), Reflect.apply(), and Reflect.construct().  Maximum call
+  argument count increased to ~64k.
+
+* C API additions: duk_seal(), duk_freeze(), duk_is_constructable(),
+  duk_require_object(), duk_push_proxy(), macros for creating symbol
+  literals in C code (DUK_HIDDEN_SYMBOL("myValue") etc), and more
+  duk_def_prop() convenience flags.  The 0xFF byte prefix is now reserved
+  entirely for user hidden Symbols, so there are no longer restrictions in
+  what follows the prefix.
+
+* More ES2015 features: Math.clz32(), Math.imul(), Math.sign(),
+  Object.prototype.{__defineGetter__,__defineSetter__},
+  Object.prototype.{__lookupGetter__,_lookupSetter__}, Proxy 'apply' and
+  'construct' traps, minimal new.target, and fixed string/symbol key sorting.
+
+* Performance.now() binding and a monotonic time provider.
 
 * Case insensitive RegExp character class canonicalization performance has
   improved by ~50x using a small lookup table (256 bytes, total footprint
   impact is ~300-400 bytes).
 
-* The 0xFF string prefix byte is now reserved to application hidden Symbols,
-  so there are no longer restrictions in what follows the prefix.  The new
-  DUK_HIDDEN_SYMBOL("myValue") macro is recommended and uses a single 0xFF
-  prefix byte.
+* Performance, footprint, and portability improvements.  Also improvements
+  to error messages, value summaries, and assertion coverage.
 
 Upgrading from Duktape 2.1
 ==========================
 
 No action (other than recompiling) should be needed for most users to upgrade
 from Duktape v2.1.x.  Note the following:
+
+* There are public API macros to create different Symbol types as C literals.
+  For example, DUK_HIDDEN_SYMBOL("myPointer") can now be used instead of
+  manually creating the internal representation ("\xFF" "myPointer").
 
 * Bytecode dump format has been changed slightly: initial byte is now 0xBF
   (previously 0xFF) to avoid potential confusion with Symbol strings, and
@@ -35,16 +54,6 @@ from Duktape v2.1.x.  Note the following:
   DUK_TYPE_xxx, DUK_TYPE_MASK_xxx, flags, etc were changed to unsigned
   (e.g. '(1U << 3)) to match their C type.  These changes may cause some
   sign conversion warnings in application call sites.
-
-* There are public API macros to create different Symbol types as C literals.
-  For example, DUK_HIDDEN_SYMBOL("myPointer") can now be used instead of
-  manually creating the internal representation ("\xFF" "myPointer").
-
-* Case insensitive RegExps are still much slower than case sensitive ones.
-  The small canonicalization lookup (256 bytes) is enabled by default.  The
-  small lookup is still slower than DUK_USE_REGEXP_CANON_WORKAROUND but the
-  difference is now much smaller.  You may be able to turn off the workaround
-  option whose main downside is a relatively large footprint impact (128kB).
 
 * duk_safe_call() no longer automatically extends the value stack to ensure
   there's space for 'nrets' return values.  This was not guaranteed by the
@@ -59,17 +68,12 @@ from Duktape v2.1.x.  Note the following:
   very low memory targets.  If you're using a pool allocator, you may need to
   measure and adjust pool sizes/counts.
 
-* Function.prototype.call(), Function.prototype.apply(), and Reflect.apply()
-  are now handled inline in call handling.  As a result, when functions are
-  called via .call()/.apply() the .call()/.apply() is not part of the call
-  stack and is absent in e.g. tracebacks.  .call()/.apply() no longer prevents
-  a yield, doesn't consume native stack for Ecmascript-to-Ecmascript calls,
-  and can now be used in tailcall positions, e.g. in
-  'return func.call(null, 1, 2);'.
-
-* Constructor calls, i.e. 'new Xyz()' or duk_new(), no longer prevent a yield,
-  don't consume native stack for Ecmascript-to-Ecmascript calls, and can now
-  be used in tailcalls.
+* Function.prototype.call(), Function.prototype.apply(), Reflect.apply(),
+  new Xyz(), duk_new(), and Reflect.construct() are now handled inline in call
+  handling.  As a result, they are not part of the call stack, are absent in
+  tracebacks, don't consume native stack for Ecmascript-to-Ecmascript calls,
+  no longer prevent a coroutine yield, and can be used in tail call positions
+  (e.g. 'return func.call(null, 1, 2);').
 
 * Functions pushed using duk_push_c_function() and duk_push_c_lightfunc() now
   inherit from an intermediate prototype (func -> %NativeFunctionPrototype%
@@ -86,6 +90,10 @@ from Duktape v2.1.x.  Note the following:
   properties; the bound argument values are not visible in the debugger
   protocol for now.
 
+* The Proxy target and handler references are no longer internal properties
+  (but duk_hproxy struct members), and are not visible in the debugger
+  protocol for now.
+
 * DUK_USE_DATE_GET_NOW() is now allowed to return fractions.  The fractions
   won't be available through the Date built-in (this is forbidden by the
   Ecmascript specification) but are available through the duk_get_now() C
@@ -98,7 +106,11 @@ from Duktape v2.1.x.  Note the following:
   step commands will still pause on function entry/exit as appropriate; for
   example, StepInto will pause on function entry or exit (or an error throw).
 
-Other minor differences:
+* Case insensitive RegExps are still much slower than case sensitive ones.
+  The small canonicalization lookup (256 bytes) is enabled by default.  The
+  small lookup is still slower than DUK_USE_REGEXP_CANON_WORKAROUND but the
+  difference is now much smaller.  You may be able to turn off the workaround
+  option whose main downside is a relatively large footprint impact (128kB).
 
 * When an Error instance is being constructed and Duktape.errCreate() is
   called for the constructor return value, the call stack seen by errCreate()
