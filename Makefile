@@ -976,7 +976,7 @@ doc/%.html: doc/%.txt
 # Source distributable for end users.
 dist:
 	@make codepolicycheck
-	$(PYTHON) util/dist.py --create-spdx
+	$(PYTHON) util/dist.py
 .PHONY:	dist-src
 dist-src:	dist
 	rm -rf duktape-$(DUK_VERSION_FORMATTED)

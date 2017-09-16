@@ -3060,6 +3060,8 @@ Planned
 * Add assertion coverage for catching calls into Duktape API from debug
   transport calls (read, peek, etc) (GH-1681)
 
+* Remove license.spdx from the distributable (GH-1741)
+
 * Fix incorrect handling of register bound unary operation target for
   unary minus, unary plus, and bitwise NOT (GH-1623, GH-1624)
 
