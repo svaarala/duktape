@@ -2893,18 +2893,10 @@ Miscellaneous:
 * Fix incorrect handling of register bound unary operation target for
   unary minus, unary plus, and bitwise NOT (GH-1623, GH-1624)
 
-Planned
-=======
-
-2.0.3 (XXXX-XX-XX)
+2.2.0 (2017-09-23)
 ------------------
 
-* TBD
-
-2.2.0 (XXXX-XX-XX)
-------------------
-
-* Change Duktape/C function inheritance for user functions pushed using
+* Change inheritance for Duktape/C user functions pushed using
   duk_push_c_function() and duk_push_c_lightfunc(), they now inherit from an
   intermediate prototype object (function -> %NativeFunctionPrototype% ->
   Function.prototype) which provides .name and .length getters; the virtual
@@ -2977,10 +2969,10 @@ Planned
 
 * Add support for Proxy 'apply' and 'construct' traps (GH-1601)
 
-* Add minimal new.target support, evaluates to undefined for non-constructor
-  calls and final non-bound constructor function in constructor calls;
-  explicit newTarget not yet supported and handling of new.target in eval()
-  code is not yet fully correct (GH-1544, GH-1572)
+* Add minimal new.target support; new.target evaluates to undefined for
+  non-constructor calls and to the final non-bound constructor function in
+  constructor calls; explicit newTarget not yet supported and handling of
+  new.target in eval() code is not yet fully correct (GH-1544, GH-1572)
 
 * Add proper string vs. symbol sorting to Reflect.ownKeys() and other
   enumeration call sites (GH-1460, GH-1607)
@@ -2998,7 +2990,7 @@ Planned
 * Add a wrap check to duk_{check,require}_stack{_top}() (GH-1537)
 
 * Improve case insensitive RegExp character class compilation performance
-  using a small (256 byte, footprint impact is about 300-400 bytes)
+  using a small (256 byte, total footprint impact is about 300-400 bytes)
   canonicalization lookup bitmap (GH-1616)
 
 * Improve error messages for source code, base-64, hex, UTF-8, and bytecode
@@ -3102,7 +3094,7 @@ Planned
   requested (GH-1536)
 
 * Fix incorrect pausing by debugger StepOut, StepOver, and StepInto commands
-  when stepping over a tail call (GH-1684, GH-1685, GH-1726, GH-1734)
+  when stepping out/over/into a tail call (GH-1684, GH-1685, GH-1726, GH-1734)
 
 * Fix duk_hbufobj assert in shared slice() handling (GH-1506)
 
@@ -3161,8 +3153,8 @@ Planned
   attached to a duk_hthread instead of being a separate, monolithic
   thr->callstack (GH-1487)
 
-* Internal change: duk_catcher structs are now in a single linked list attached
-  to a duk_activation instead of being a separate, monolithic
+* Internal change: duk_catcher structs are now in a single linked list
+  attached to a duk_activation instead of being a separate, monolithic
   thr->catchstack (GH-1449)
 
 * Internal change: simple freelists for duk_activation and duk_catcher
@@ -3191,6 +3183,14 @@ Planned
   optimizations to duk_is_callable() and duk_is_constructable() (GH-1631);
   check entry part before array part in property lookup (GH-1634); optimize
   duk_propdesc filling in property lookups (GH-1635)
+
+Planned
+=======
+
+2.3.0 (XXXX-XX-XX)
+------------------
+
+* TBD
 
 3.0.0 (XXXX-XX-XX)
 ------------------
