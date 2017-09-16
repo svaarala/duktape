@@ -747,7 +747,7 @@ DUK_EXTERNAL void duk_load_function(duk_hthread *thr) {
 	return;
 
  format_error:
-	DUK_ERROR_TYPE(thr, DUK_STR_DECODE_FAILED);
+	DUK_ERROR_TYPE(thr, DUK_STR_INVALID_BYTECODE);
 }
 
 #else  /* DUK_USE_BYTECODE_DUMP_SUPPORT */
