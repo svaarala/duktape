@@ -3001,6 +3001,9 @@ Planned
   using a small (256 byte, footprint impact is about 300-400 bytes)
   canonicalization lookup bitmap (GH-1616)
 
+* Improve error messages for source code, base-64, hex, UTF-8, and bytecode
+  encoding/decoding (GH-1738)
+
 * Add better symbol summary for e.g. error messages, "[Symbol global '?foo']"
   instead of just "'?foo'" (GH-1643)
 

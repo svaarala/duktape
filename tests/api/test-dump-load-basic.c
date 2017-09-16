@@ -798,6 +798,69 @@ static duk_ret_t test_constructor_call(duk_context *ctx, void *udata) {
 	return 0;
 }
 
+/*===
+*** test_load_invalid_format1 (duk_safe_call)
+==> rc=1, result='TypeError: invalid bytecode'
+*** test_load_invalid_format2 (duk_safe_call)
+==> rc=1, result='TypeError: invalid bytecode'
+*** test_load_invalid_format3 (duk_safe_call)
+==> rc=1, result='TypeError: invalid bytecode'
+*** test_load_invalid_format4 (duk_safe_call)
+==> rc=1, result='TypeError: invalid bytecode'
+===*/
+
+/* There's no bytecode validation, but test loading bytecode with an invalid
+ * initial byte.
+ */
+static duk_ret_t test_load_invalid_format1(duk_context *ctx, void *udata) {
+	unsigned char *data;
+
+	data = (unsigned char *) duk_push_fixed_buffer(ctx, 5);
+	data[0] = 0xff;
+	data[1] = 0x30;
+	data[2] = 0x31;
+	data[3] = 0x32;
+	data[4] = 0x33;
+	duk_load_function(ctx);
+
+	printf("final top: %ld\n", (long) duk_get_top(ctx));
+	return 0;
+}
+static duk_ret_t test_load_invalid_format2(duk_context *ctx, void *udata) {
+	unsigned char *data;
+
+	data = (unsigned char *) duk_push_fixed_buffer(ctx, 5);
+	data[0] = 0x41;
+	data[1] = 0x30;
+	data[2] = 0x31;
+	data[3] = 0x32;
+	data[4] = 0x33;
+	duk_load_function(ctx);
+
+	printf("final top: %ld\n", (long) duk_get_top(ctx));
+	return 0;
+}
+static duk_ret_t test_load_invalid_format3(duk_context *ctx, void *udata) {
+	unsigned char *data;
+
+	data = (unsigned char *) duk_push_fixed_buffer(ctx, 1);
+	data[0] = 0x41;
+	duk_load_function(ctx);
+
+	printf("final top: %ld\n", (long) duk_get_top(ctx));
+	return 0;
+}
+static duk_ret_t test_load_invalid_format4(duk_context *ctx, void *udata) {
+	unsigned char *data;
+
+	data = (unsigned char *) duk_push_fixed_buffer(ctx, 0);
+	(void) data;
+	duk_load_function(ctx);
+
+	printf("final top: %ld\n", (long) duk_get_top(ctx));
+	return 0;
+}
+
 void test(duk_context *ctx) {
 	TEST_SAFE_CALL(test_basic);
 	TEST_SAFE_CALL(test_mandel);
@@ -817,4 +880,9 @@ void test(duk_context *ctx) {
 	TEST_SAFE_CALL(test_internal_prototype_lost);
 
 	TEST_SAFE_CALL(test_constructor_call);
+
+	TEST_SAFE_CALL(test_load_invalid_format1);
+	TEST_SAFE_CALL(test_load_invalid_format2);
+	TEST_SAFE_CALL(test_load_invalid_format3);
+	TEST_SAFE_CALL(test_load_invalid_format4);
 }

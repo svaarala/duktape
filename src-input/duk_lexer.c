@@ -312,7 +312,7 @@ DUK_LOCAL void duk__fill_lexer_buffer(duk_lexer_ctx *lex_ctx, duk_small_uint_t s
 	lex_ctx->input_offset = (duk_size_t) (p - lex_ctx->input);
 	lex_ctx->input_line = input_line;
 
-	DUK_ERROR_SYNTAX(lex_ctx->thr, DUK_STR_DECODE_FAILED);
+	DUK_ERROR_SYNTAX(lex_ctx->thr, DUK_STR_SOURCE_DECODE_FAILED);
 }
 
 DUK_LOCAL void duk__advance_bytes(duk_lexer_ctx *lex_ctx, duk_small_uint_t count_bytes) {
@@ -472,7 +472,7 @@ DUK_LOCAL duk_codepoint_t duk__read_char(duk_lexer_ctx *lex_ctx) {
 
  error_clipped:   /* clipped codepoint */
  error_encoding:  /* invalid codepoint encoding or codepoint */
-	DUK_ERROR_SYNTAX(lex_ctx->thr, DUK_STR_DECODE_FAILED);
+	DUK_ERROR_SYNTAX(lex_ctx->thr, DUK_STR_SOURCE_DECODE_FAILED);
 	return 0;
 }
 

@@ -330,7 +330,7 @@ DUK_LOCAL duk_ret_t duk__decode_helper(duk_hthread *thr, duk__decode_context *de
 	return 1;
 
  fail_type:
-	DUK_ERROR_TYPE(thr, DUK_STR_DECODE_FAILED);
+	DUK_ERROR_TYPE(thr, DUK_STR_UTF8_DECODE_FAILED);
 	DUK_UNREACHABLE();
 }
 
