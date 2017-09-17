@@ -10,6 +10,12 @@ import time
 import optparse
 import subprocess
 
+class Alarm(Exception):
+    pass
+
+def alarm_handler(signum, frame):
+    raise Alarm
+
 def main():
     parser = optparse.OptionParser()
     parser.add_option('--count', type='int', dest='count', default=3, help='Number of test runs')
@@ -17,6 +23,8 @@ def main():
     parser.add_option('--sleep', type='float', dest='sleep', default=0.0, help='Fixed sleep value between runs')
     parser.add_option('--sleep-factor', type='float', dest='sleep_factor', default=0.0, help='Relative sleep value between runs, e.g. 2.0 means sleep twice as long as previous test run')
     parser.add_option('--rerun-limit', type='int', dest='rerun_limit', default=30, help='Run test only once if test run time exceeds this time limit')
+    parser.add_option('--kill-timeout', type='int', dest='kill_timeout', default=None, help='Timeout for SIGKILLing the test')
+    parser.add_option('--kill-wait', type='int', dest='kill_wait', default=3, help='Time to wait after SIGKILLing subprocess')
     parser.add_option('--verbose', action='store_true', dest='verbose', default=False, help='Verbose output')
     parser.add_option('--output', default=None, help='Output JSON file')
 
@@ -57,22 +65,52 @@ def main():
         ]
         cmd = cmd + args
         #print(repr(cmd))
-        p = subprocess.Popen(cmd, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
-        stdout, stderr = p.communicate()
-        retval = p.wait()
-        #print(i, retval, stdout, stderr)
+
+        if opts.kill_timeout is not None:
+            # https://stackoverflow.com/questions/1191374/using-module-subprocess-with-timeout
+            import signal
+            signal.signal(signal.SIGALRM, alarm_handler)
+            signal.alarm(opts.kill_timeout)
+
+        killed = False
+        retval = -1
+        try:
+            p = subprocess.Popen(cmd, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
+            stdout, stderr = p.communicate()
+            if opts.kill_timeout is not None:
+                import signal
+                signal.alarm(0)
+            retval = p.wait()
+        except Alarm:
+            # XXX: Kill children? Not needed for duk executable.
+            killed = True
+            os.kill(p.pid, signal.SIGKILL)
+            retval = p.wait()
+            time.sleep(opts.kill_wait)
 
         run = {
             'cmd': cmd,
-            'retval': retval
+            'retval': retval,
+            'failed': False,
+            'killed': False,
+            'sigsegv': False,
         }
         doc['runs'].append(run)
 
-        if retval == 139:
+        if killed:
+            run['failed'] = True
+            run['killed'] = True
+            doc['failed'] = True
+            doc['killed'] = True
+            break
+        elif retval == 139:
+            run['failed'] = True
+            run['sigsegv'] = True
             doc['failed'] = True
             doc['sigsegv'] = True
             break
         elif retval != 0:
+            run['failed'] = True
             doc['failed'] = True
             break
 
@@ -114,7 +152,9 @@ def main():
         sys.stderr.flush()
 
     # /usr/bin/time has only two digits of resolution
-    if doc.get('sigsegv', False):
+    if doc.get('killed', False):
+        print('kill')
+    elif doc.get('sigsegv', False):
         print('segv')
     elif doc.get('failed', False):
         print('n/a')
