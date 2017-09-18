@@ -56,6 +56,14 @@ def main():
     with open('/tmp/tmp-result.json', 'rb') as f:
         data = json.loads(f.read())
 
+        for commit in data:
+            for run in commit.get('runs', []):
+                # Censor some fields which take a lot of space
+                if run.has_key('output_uri'):
+                    del run['output_uri']
+                if run.has_key('result') and run['result'].has_key('traceback'):
+                    del run['result']['traceback']
+
     doc = {
         'commit_simples': data,
         'annotations': annotations
