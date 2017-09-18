@@ -553,6 +553,7 @@ DUK_EXTERNAL_DECL const char *duk_push_sprintf(duk_context *ctx, const char *fmt
 DUK_EXTERNAL_DECL const char *duk_push_vsprintf(duk_context *ctx, const char *fmt, va_list ap);
 
 DUK_EXTERNAL_DECL void duk_push_this(duk_context *ctx);
+DUK_EXTERNAL_DECL void duk_push_new_target(duk_context *ctx);
 DUK_EXTERNAL_DECL void duk_push_current_function(duk_context *ctx);
 DUK_EXTERNAL_DECL void duk_push_current_thread(duk_context *ctx);
 DUK_EXTERNAL_DECL void duk_push_global_object(duk_context *ctx);

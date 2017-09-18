@@ -4452,6 +4452,23 @@ DUK_INTERNAL duk_tval *duk_get_borrowed_this_tval(duk_hthread *thr) {
 	return thr->valstack_bottom - 1;
 }
 
+DUK_EXTERNAL void duk_push_new_target(duk_hthread *thr) {
+	duk_activation *act;
+
+	DUK_ASSERT_API_ENTRY(thr);
+
+	act = thr->callstack_curr;
+	if (act != NULL && (act->flags & DUK_ACT_FLAG_CONSTRUCT) != 0) {
+		/* Because C functions don't have a lexical scope, new.target
+		 * at present, without class support, is just the current
+		 * function if it was called as a constructor.
+		 */
+		duk_push_tval(thr, &act->tv_func);
+	} else {
+		duk_push_undefined(thr);
+	}
+}
+
 DUK_EXTERNAL void duk_push_current_function(duk_hthread *thr) {
 	duk_activation *act;
 
