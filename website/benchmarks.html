@@ -184,6 +184,7 @@ the right.  Graphs implemented using
 <div class="duk-graph" id="linux-x32-gcc-stripsize-fltoetc"></div>
 <div class="duk-graph" id="linux-x64-gcc-defsize-makeduk"></div>
 <div class="duk-graph" id="linux-x64-gcc-defsize-fltoetc"></div>
+<div class="duk-graph" id="codemetrics"></div>
 
 <script>
 [
@@ -244,6 +245,40 @@ drawGraph({
         {
             traceName: 'max',
             callback: function (result) { return result.score_max; }
+        }
+    ]
+});
+
+drawGraph({
+    context: 'codemetrics',
+    domId: 'codemetrics',
+    graphTitle: 'codemetrics',
+    xTitle: 'Merge to master',
+    yTitle: 'Files/lines',
+    dataCallbacks: [
+        {
+            traceName: 'source_lines',
+            callback: function (result) { return result.source_lines; }
+        },
+        {
+            traceName: 'source_files',
+            callback: function (result) { return result.source_files; }
+        },
+        {
+            traceName: 'ecma_test_lines',
+            callback: function (result) { return result.ecma_test_lines; }
+        },
+        {
+            traceName: 'ecma_test_files',
+            callback: function (result) { return result.ecma_test_files; }
+        },
+        {
+            traceName: 'api_test_lines',
+            callback: function (result) { return result.api_test_lines; }
+        },
+        {
+            traceName: 'api_test_files',
+            callback: function (result) { return result.api_test_files; }
         }
     ]
 });
