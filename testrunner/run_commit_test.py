@@ -968,6 +968,38 @@ def context_linux_x86_graph_hello_size():
 def context_linux_x32_graph_hello_size():
     return context_linux_graph_hello_size_helper('-mx32')
 
+def context_codemetrics():
+    def scandir(path):
+        count = 0
+        lines = 0
+        for fn in os.listdir(path):
+            count += 1
+            with open(os.path.join(path, fn), 'rb') as f:
+                data = f.read()
+                lines += data.count('\n')  # assume trailing newline on last line
+        return count, lines
+
+    if os.path.exists(os.path.join('.', 'src')):
+        source_files, source_lines = scandir(os.path.join('.', 'src'))
+    else:
+        source_files, source_lines = scandir(os.path.join('.', 'src-input'))
+    ecma_test_files, ecma_test_lines = scandir(os.path.join('.', 'tests/ecmascript'))
+    api_test_files, api_test_lines = scandir(os.path.join('.', 'tests/api'))
+
+    set_output_result({
+        'source_files': source_files,
+        'source_lines': source_lines,
+        'ecma_test_files': ecma_test_files,
+        'ecma_test_lines': ecma_test_lines,
+        'api_test_files': api_test_files,
+        'api_test_lines': api_test_lines
+    })
+
+    # Counts for markers like XXX
+    # Repo clone size
+
+    return True
+
 context_handlers = {
     # Linux
 
@@ -1039,6 +1071,8 @@ context_handlers = {
 
     'linux-x64-minisphere': context_linux_x64_minisphere,
     'linux-x64-dukluv': context_linux_x64_dukluv,
+
+    'codemetrics': context_codemetrics,
 
     # OS X: can currently share Linux handlers
 
