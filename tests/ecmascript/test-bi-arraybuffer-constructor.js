@@ -6,7 +6,8 @@
 
 /*---
 {
-    "custom": true
+    "custom": true,
+    "slow": true
 }
 ---*/
 
