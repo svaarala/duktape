@@ -105,11 +105,13 @@ def run_one(testfile):
     return doc
 
 def format_one(doc):
-    res = '%-36s:' % os.path.basename(doc['test'])
+    res = '%-40s:' % os.path.basename(doc['test'])
     for eng in engines:
         engname = eng['name']
         t = doc['engines'][engname]
-        if t.get('sigsegv', False):
+        if t.get('killed', False):
+            res += ' %s %5s' % (engname, 'kill')
+        elif t.get('sigsegv', False):
             res += ' %s %5s' % (engname, 'segv')
         elif t.get('failed', False):
             res += ' %s %5s' % (engname, 'n/a')
