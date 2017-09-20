@@ -1929,6 +1929,10 @@ DUK_LOCAL duk_int_t duk__handle_call_raw(duk_hthread *thr,
 	duk_small_uint_t use_tailcall;
 
 	DUK_ASSERT(thr != NULL);
+	DUK_ASSERT(thr->heap != NULL);
+	/* Asserts for heap->curr_thread omitted: it may be NULL, 'thr', or
+	 * any other thread (e.g. when heap thread is used to run finalizers).
+	 */
 	DUK_ASSERT_CTX_VALID(thr);
 	DUK_ASSERT(duk_is_valid_index(thr, idx_func));
 	DUK_ASSERT(idx_func >= 0);
@@ -2492,10 +2496,8 @@ DUK_LOCAL void duk__handle_safe_call_error(duk_hthread *thr,
 	DUK_HEAP_SWITCH_THREAD(thr->heap, entry_curr_thread);  /* may be NULL */
 	thr->state = (duk_uint8_t) entry_thread_state;
 
-	DUK_ASSERT((thr->state == DUK_HTHREAD_STATE_INACTIVE && thr->heap->curr_thread == NULL) ||  /* first call */
-	           (thr->state == DUK_HTHREAD_STATE_INACTIVE && thr->heap->curr_thread != NULL) ||  /* other call */
-	           (thr->state == DUK_HTHREAD_STATE_RESUMED && thr->heap->curr_thread != NULL) ||   /* freshly resumed thread (happens with gc torture) */
-	           (thr->state == DUK_HTHREAD_STATE_RUNNING && thr->heap->curr_thread == thr));     /* current thread */
+	DUK_ASSERT(thr->heap->curr_thread == entry_curr_thread);
+	DUK_ASSERT(thr->state == entry_thread_state);
 
 	/* Restore valstack bottom. */
 	thr->valstack_bottom = (duk_tval *) (void *) ((duk_uint8_t *) thr->valstack + entry_valstack_bottom_byteoff);

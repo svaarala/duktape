@@ -300,6 +300,18 @@ DUK_EXTERNAL duk_int_t duk_safe_call(duk_hthread *thr, duk_safe_call_function fu
 	if (DUK_UNLIKELY((nargs | nrets) < 0 ||  /* nargs < 0 || nrets < 0; OR sign bits */
 	                 thr->valstack_top < thr->valstack_bottom + nargs ||        /* nargs too large compared to top */
 	                 thr->valstack_end + nargs < thr->valstack_top + nrets)) {  /* nrets too large compared to reserve */
+		DUK_D(DUK_DPRINT("not enough stack reserve for safe call or invalid arguments: "
+		                 "nargs=%ld < 0 (?), nrets=%ld < 0 (?), top=%ld < bottom=%ld + nargs=%ld (?), "
+		                 "end=%ld + nargs=%ld < top=%ld + nrets=%ld (?)",
+		                  (long) nargs,
+		                  (long) nrets,
+		                  (long) (thr->valstack_top - thr->valstack),
+		                  (long) (thr->valstack_bottom - thr->valstack),
+		                  (long) nargs,
+		                  (long) (thr->valstack_end - thr->valstack),
+		                  (long) nargs,
+		                  (long) (thr->valstack_top - thr->valstack),
+		                  (long) nrets));
 		DUK_ERROR_TYPE_INVALID_ARGS(thr);
 		return DUK_EXEC_ERROR;  /* unreachable */
 	}

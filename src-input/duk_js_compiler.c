@@ -7937,7 +7937,7 @@ DUK_INTERNAL void duk_js_compile(duk_hthread *thr, const duk_uint8_t *src_buffer
 
 	prev_ctx = thr->compile_ctx;
 	thr->compile_ctx = &comp_stk.comp_ctx_alloc;  /* for duk_error_augment.c */
-	safe_rc = duk_safe_call(thr, duk__js_compile_raw, (void *) &comp_stk /*udata*/, 1 /*nargs*/, 1 /*nret*/);
+	safe_rc = duk_safe_call(thr, duk__js_compile_raw, (void *) &comp_stk /*udata*/, 1 /*nargs*/, 1 /*nrets*/);
 	thr->compile_ctx = prev_ctx;  /* must restore reliably before returning */
 
 	if (safe_rc != DUK_EXEC_SUCCESS) {
