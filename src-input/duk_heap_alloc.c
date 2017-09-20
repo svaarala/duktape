@@ -65,7 +65,12 @@ DUK_INTERNAL void duk_free_hobject(duk_heap *heap, duk_hobject *h) {
 		 * to be unwound to update the 'caller' properties of
 		 * functions in the callstack.
 		 */
+	} else if (DUK_HOBJECT_IS_BOUNDFUNC(h)) {
+		duk_hboundfunc *f = (duk_hboundfunc *) h;
+
+		DUK_FREE(heap, f->args);
 	}
+
 	DUK_FREE(heap, (void *) h);
 }
 

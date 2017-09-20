@@ -33,7 +33,7 @@ struct duk_hboundfunc {
 	duk_tval this_binding;
 
 	/* Arguments to prepend. */
-	duk_tval *args;
+	duk_tval *args;  /* Separate allocation. */
 	duk_idx_t nargs;
 };
 
