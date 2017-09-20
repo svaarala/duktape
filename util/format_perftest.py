@@ -20,8 +20,8 @@ def main():
     results = []
     baseline = []
 
-    # Column index (positive or negative) for baseline engine.
-    baseline_column = 1  # Second engine is baseline by default, e.g. duk.O2 vs duk.O2.master
+    # Column index (positive or negative) for baseline engine (after filtering).
+    baseline_column = 4
 
     with open(sys.argv[1], 'rb') as f_in, open(sys.argv[2], 'wb') as f_out:
         for line in f_in:
@@ -45,8 +45,19 @@ def main():
                     result.append(float(parts[idx]))
                 except ValueError:
                     result.append(None)
-            baseline.append(result[baseline_column])
             results.append(result)
+
+        filter_columns = [ 3, 4, 5, 6, 7, 8, 9, 10 ]
+        def do_filter(val):
+            res = []
+            for i in filter_columns:
+                res.append(val[i])
+            return res
+
+        #headings = do_filter(headings)
+        #results = [ do_filter(x) for x in results ]
+
+        baseline = [ x[baseline_column] for x in results ]
 
         #print(repr(headings))
         #print(repr(results))
@@ -110,6 +121,8 @@ tr:nth-child(odd) { background: #eeeeee; }
 
                 if column == baseline_column:
                     style = 'background-color: #eeeeee'
+                #if column not in [ 3, 4 ]:
+                #    style = 'background-color: #eeeeee'
 
                 if t is None:
                     text = '-'
