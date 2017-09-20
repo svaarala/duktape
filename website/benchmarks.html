@@ -4,6 +4,7 @@
 <meta charset="UTF-8">
 <title>Duktape benchmarks</title>
 <script src="https://cdn.plot.ly/plotly-latest.min.js"></script>
+<script src="https://code.jquery.com/jquery-1.12.4.min.js"></script>
 <script src="lz-string.js"></script>
 <style type="text/css">
 html, body {
@@ -176,14 +177,24 @@ the right.  Graphs implemented using
 <div class="duk-graph" id="linux-x64-graph-hello-size"></div>
 <div class="duk-graph" id="linux-x86-graph-hello-size"></div>
 <div class="duk-graph" id="linux-x32-graph-hello-size"></div>
+<div class="duk-graph" id="linux-arm-graph-hello-size"></div>
+<div class="duk-graph" id="linux-thumb-graph-hello-size"></div>
 <div class="duk-graph" id="linux-x64-gcc-minsize-fltoetc"></div>
 <div class="duk-graph" id="linux-x86-gcc-minsize-fltoetc"></div>
 <div class="duk-graph" id="linux-x32-gcc-minsize-fltoetc"></div>
+<div class="duk-graph" id="linux-arm-gcc-minsize-fltoetc"></div>
+<div class="duk-graph" id="linux-thumb-gcc-minsize-fltoetc"></div>
 <div class="duk-graph" id="linux-x64-gcc-stripsize-fltoetc"></div>
 <div class="duk-graph" id="linux-x86-gcc-stripsize-fltoetc"></div>
 <div class="duk-graph" id="linux-x32-gcc-stripsize-fltoetc"></div>
-<div class="duk-graph" id="linux-x64-gcc-defsize-makeduk"></div>
+<div class="duk-graph" id="linux-arm-gcc-stripsize-fltoetc"></div>
+<div class="duk-graph" id="linux-thumb-gcc-stripsize-fltoetc"></div>
 <div class="duk-graph" id="linux-x64-gcc-defsize-fltoetc"></div>
+<div class="duk-graph" id="linux-x86-gcc-defsize-fltoetc"></div>
+<div class="duk-graph" id="linux-x32-gcc-defsize-fltoetc"></div>
+<div class="duk-graph" id="linux-arm-gcc-defsize-fltoetc"></div>
+<div class="duk-graph" id="linux-thumb-gcc-defsize-fltoetc"></div>
+<div class="duk-graph" id="linux-x64-gcc-defsize-makeduk"></div>
 <div class="duk-graph" id="codemetrics"></div>
 
 <script>
@@ -191,14 +202,24 @@ the right.  Graphs implemented using
     'linux-x64-graph-hello-size',
     'linux-x86-graph-hello-size',
     'linux-x32-graph-hello-size',
+    'linux-arm-graph-hello-size',
+    'linux-thumb-graph-hello-size',
     'linux-x64-gcc-minsize-fltoetc',
     'linux-x86-gcc-minsize-fltoetc',
     'linux-x32-gcc-minsize-fltoetc',
+    'linux-arm-gcc-minsize-fltoetc',
+    'linux-thumb-gcc-minsize-fltoetc',
     'linux-x64-gcc-stripsize-fltoetc',
     'linux-x86-gcc-stripsize-fltoetc',
     'linux-x32-gcc-stripsize-fltoetc',
-    'linux-x64-gcc-defsize-makeduk',
-    'linux-x64-gcc-defsize-fltoetc'
+    'linux-arm-gcc-stripsize-fltoetc',
+    'linux-thumb-gcc-stripsize-fltoetc',
+    'linux-x64-gcc-defsize-fltoetc',
+    'linux-x86-gcc-defsize-fltoetc',
+    'linux-x32-gcc-defsize-fltoetc',
+    'linux-arm-gcc-defsize-fltoetc',
+    'linux-thumb-gcc-defsize-fltoetc',
+    'linux-x64-gcc-defsize-makeduk'
 ].forEach(function (context) {
     drawGraph({
         context: context,
@@ -281,6 +302,17 @@ drawGraph({
             callback: function (result) { return result.api_test_files; }
         }
     ]
+});
+</script>
+
+<script>
+// https://www.itsupportguides.com/knowledge-base/tech-tips-tricks/jquery-how-to-automatically-create-heading-anchors-for-links/
+$(document).ready(function() {
+    $("h1, h2, h3, h4, h5, h6").each(function(i) {
+        var heading = $(this);
+        var id = heading.text().toLowerCase().trim().replace(/[\.,-\/#!?$%\^&\*;:{}=\-_`~()]/g,"");
+        heading.attr('id', id);
+    });
 });
 </script>
 
