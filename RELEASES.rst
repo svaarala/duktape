@@ -2990,7 +2990,7 @@ Planned
 
 * Add an internal type for representing bound functions (duk_hboundfunc) and
   "collapse" bound function chains so that the target of a duk_hboundfunc is
-  always a non-bound function (GH-1503, GH-1507)
+  always a non-bound function (GH-1503, GH-1507, GH-1748)
 
 * Make call stack and value stack limits configurable via config options
   (DUK_USE_CALLSTACK_LIMIT, DUK_USE_VALSTACK_LIMIT) (GH-1526)
