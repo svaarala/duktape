@@ -1167,7 +1167,7 @@ def main():
 
     print 'Copying dukweb.js files'
     for i in [ '../dukweb.js',
-               '../jquery-1.11.0.js',
+               '../jquery-1.11.2.js',
                '../dukweb/dukweb.css',
                '../dukweb/dukweb.html' ]:
         shutil.copyfile(os.path.join('./', i), os.path.join(outdir, os.path.basename(i)))

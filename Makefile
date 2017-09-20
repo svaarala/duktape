@@ -285,7 +285,7 @@ cleanall: clean
 	@rm -f lua-5.2.3.tar.gz
 	@rm -f luajs.zip
 	@rm -f bluebird.js
-	@rm -f jquery-1.11.0.js
+	@rm -f jquery-1.11.*.js
 	@rm -rf coffee-script
 	@rm -rf LiveScript
 	@rm -rf coco
@@ -645,11 +645,11 @@ apitest: apiprep
 
 # Dukweb.js test.
 .PHONY: dukwebtest
-dukwebtest: dukweb.js jquery-1.11.0.js
+dukwebtest: dukweb.js jquery-1.11.2.js
 	@echo "### dukwebtest"
 	@rm -rf /tmp/dukweb-test/
 	mkdir /tmp/dukweb-test/
-	cp dukweb.js jquery-1.11.0.js dukweb/dukweb.html dukweb/dukweb.css /tmp/dukweb-test/
+	cp dukweb.js jquery-1.11.2.js dukweb/dukweb.html dukweb/dukweb.css /tmp/dukweb-test/
 	@echo "Now point your browser to: file:///tmp/dukweb-test/dukweb.html"
 
 # Third party tests.
@@ -854,8 +854,8 @@ emscripten:
 	# http://kripken.github.io/emscripten-site/docs/building_from_source/building_fastcomp_manually_from_source.html
 	$(GIT) clone --depth 1 https://github.com/kripken/emscripten.git
 	cd emscripten; ./emconfigure
-jquery-1.11.0.js:
-	$(WGET) http://code.jquery.com/jquery-1.11.0.js -O $@
+jquery-1.11.2.js:
+	$(WGET) http://code.jquery.com/jquery-1.11.2.js -O $@
 lua-5.2.3.tar.gz:
 	$(WGET) http://www.lua.org/ftp/lua-5.2.3.tar.gz -O $@
 lua-5.2.3: lua-5.2.3.tar.gz
@@ -998,7 +998,7 @@ dist-iso:	dist-src
 .PHONY: tidy-site
 tidy-site:
 	for i in website/*/*.html; do echo "*** Checking $$i"; tidy -q -e -xml $$i; done
-site: duktape-releases dukweb.js jquery-1.11.0.js lz-string
+site: duktape-releases dukweb.js jquery-1.11.2.js lz-string
 	rm -rf site
 	mkdir site
 	-cd duktape-releases/; git pull --rebase  # get binaries up-to-date, but allow errors for offline use
