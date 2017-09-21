@@ -759,6 +759,17 @@ strings:
   - str: "pointer"
     duktape: true
 
+  # GETPROPC delayed error, can use any shared hidden Symbol that can never
+  # occur in used visible values (which may be thrown and thus trigger special
+  # handling).  At present, use _Target which is only used by enumerator
+  # objects and nothing user visible.
+  - str:
+      type: symbol
+      variant: hidden
+      string: "Target"
+    duktape: true
+    internal: true
+
   # internal property for primitive value (Boolean, Number, String)
   - str:
       type: symbol

@@ -1318,7 +1318,7 @@ DUK_LOCAL duk_hobject *duk__resolve_target_func_and_this_binding(duk_hthread *th
 	 * (which would be dangerous).
 	 */
 	if (DUK_TVAL_IS_OBJECT(tv_func)) {
-		if (duk_hobject_find_existing_entry_tval_ptr(thr->heap, DUK_TVAL_GET_OBJECT(tv_func), DUK_HTHREAD_STRING_INT_VALUE(thr)) != NULL) {
+		if (duk_hobject_find_existing_entry_tval_ptr(thr->heap, DUK_TVAL_GET_OBJECT(tv_func), DUK_HTHREAD_STRING_INT_TARGET(thr)) != NULL) {
 			duk_push_tval(thr, tv_func);
 			(void) duk_throw(thr);
 		}
@@ -2829,8 +2829,10 @@ DUK_INTERNAL DUK_NOINLINE DUK_COLD void duk_call_setup_propcall_error(duk_hthrea
 	 * - Call argument evaluation
 	 * - Callability check and error thrown.
 	 *
-	 * A hidden symbol on the error object pushed here is used by
+	 * A hidden Symbol on the error object pushed here is used by
 	 * call handling to figure out the error is to be thrown as is.
+	 * It is CRITICAL that the hidden Symbol can never occur on a
+	 * user visible object that may get thrown.
 	 */
 
 #if defined(DUK_USE_PARANOID_ERRORS)
@@ -2846,7 +2848,7 @@ DUK_INTERNAL DUK_NOINLINE DUK_COLD void duk_call_setup_propcall_error(duk_hthrea
 #endif
 
 	duk_push_true(thr);
-	duk_put_prop_stridx(thr, -2, DUK_STRIDX_INT_VALUE);  /* Marker property, reuse _Value. */
+	duk_put_prop_stridx(thr, -2, DUK_STRIDX_INT_TARGET);  /* Marker property, reuse _Target. */
 
 	/* [ <nregs> propValue <variable> error ] */
 	duk_replace(thr, entry_top - 1);
