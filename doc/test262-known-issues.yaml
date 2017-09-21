@@ -58,9 +58,6 @@
   knownissue: "possible test case bug, compiles invalid RegExp '/\\undefined/'"
   regexp_leniency: true
 -
-  test: "ch15/15.10/15.10.2/15.10.2.13/S15.10.2.13_A1_T16"
-  knownissue: "uses invalid DecimalEscape inside a character class, '/[\\12-\\14]/'"
--
   test: "ch15/15.10/15.10.2/15.10.2.9/S15.10.2.9_A1_T4"
   knownissue: "invalid backreference '\\2', RegExp only has one capture; in E5.1 this is a SyntaxError"
   regexp_leniency: true
