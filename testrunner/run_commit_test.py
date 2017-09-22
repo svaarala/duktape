@@ -148,6 +148,9 @@ def format_size_diff(newsz, oldsz):
         newsz['total'] - oldsz['total']
     )
 
+def format_size(sz):
+    return '%d %d %d' % (sz['text'], sz['data'], sz['bss'])
+
 output_result_json = {}
 def set_output_result(doc):
     for k in doc.keys():
@@ -969,8 +972,10 @@ def context_linux_graph_hello_size_helper(archopt):
         os.path.join(cwd, 'examples', 'hello', 'hello.c'),
         '-lm'
     ])
+    sz = get_binary_size(os.path.join(cwd, 'hello'))
     set_output_result({
-        'newsz': get_binary_size(os.path.join(cwd, 'hello'))
+        'description': format_size(sz),
+        'newsz': sz
     })
     return True
 
