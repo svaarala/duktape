@@ -1011,6 +1011,6 @@ duk_bool_t lowmem_exec_timeout_check(void *udata) {
 
 #else  /* DUK_CMDLINE_LOWMEM */
 
-int ajs_dummy = 0;  /* to avoid empty source file */
+int duk_lowmem_dummy = 0;  /* to avoid empty source file */
 
 #endif  /* DUK_CMDLINE_LOWMEM */
