@@ -3190,6 +3190,9 @@ Planned
 2.3.0 (XXXX-XX-XX)
 ------------------
 
+* ES2015 Number built-in bindings: Number.parseInt(), Number.parseFloat()
+  (GH-1756)
+
 * Fix trailing single line comment handling for Function constructor;
   new Function('return "foo" //') previously failed with SyntaxError
   (GH-1757)
