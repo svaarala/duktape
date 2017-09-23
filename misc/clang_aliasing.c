@@ -1,10 +1,17 @@
 /*
- *  Problem with clang 3.3 on FreeBSD:
+ *  Problem with clang 3.3 (and 4.0) on FreeBSD; seems to be fixed in
+ *  Clang 5.0 at least:
  *
  *    $ clang -v
  *    FreeBSD clang version 3.3 (tags/RELEASE_33/final 183502) 20130610
  *    Target: x86_64-unknown-freebsd10.0
  *    Thread model: posix
+ *
+ *  Possible root cause:
+ *
+ *    https://bugs.llvm.org/show_bug.cgi?id=32056
+ *    https://reviews.llvm.org/D33328
+ *    More discussion: https://github.com/svaarala/duktape/issues/1752
  *
  *  The problem manifests itself as follows (x86_64):
  *
