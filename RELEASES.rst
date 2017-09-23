@@ -3190,7 +3190,9 @@ Planned
 2.3.0 (XXXX-XX-XX)
 ------------------
 
-* TBD
+* Fix trailing single line comment handling for Function constructor;
+  new Function('return "foo" //') previously failed with SyntaxError
+  (GH-1757)
 
 3.0.0 (XXXX-XX-XX)
 ------------------
