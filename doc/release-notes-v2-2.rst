@@ -106,11 +106,12 @@ from Duktape v2.1.x.  Note the following:
   step commands will still pause on function entry/exit as appropriate; for
   example, StepInto will pause on function entry or exit (or an error throw).
 
-* Case insensitive RegExps are still much slower than case sensitive ones.
-  The small canonicalization lookup (256 bytes) is enabled by default.  The
-  small lookup is still slower than DUK_USE_REGEXP_CANON_WORKAROUND but the
-  difference is now much smaller.  You may be able to turn off the workaround
-  option whose main downside is a relatively large footprint impact (128kB).
+* Case insensitive RegExps now perform better by default, with the small
+  canonicalization lookup (~300-400 bytes, DUK_USE_REGEXP_CANON_BITMAP)
+  enabled by default.  The small lookup still performs slower than
+  DUK_USE_REGEXP_CANON_WORKAROUND but the difference is smaller, and you
+  may be able to turn off the workaround option whose main downside is a
+  relatively large footprint impact (128kB).
 
 * When an Error instance is being constructed and Duktape.errCreate() is
   called for the constructor return value, the call stack seen by errCreate()

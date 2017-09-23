@@ -1,5 +1,5 @@
 /*
- *  Very simple example program, pointer compression and ROM builti-ins enabled
+ *  Very simple example program, pointer compression and ROM built-ins enabled
  */
 
 #include "duktape.h"
