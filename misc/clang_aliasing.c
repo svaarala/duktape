@@ -15,7 +15,7 @@
  *    11 22 33 44 00 00 f9 ff   <==
  *    11 22 33 44 00 00 f1 ff 
  *
- *  The value is corrupted even in the base care where 'a' is initialized
+ *  The value is corrupted even in the base case where 'a' is initialized
  *  as bytes and then copied with a structural assignment; the double part
  *  of the union is not accessed at all.  The corruption is always that the
  *  7th byte gets OR'd with 0x08.  This bit is the highest bit of the IEEE

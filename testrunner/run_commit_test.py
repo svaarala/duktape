@@ -148,6 +148,9 @@ def format_size_diff(newsz, oldsz):
         newsz['total'] - oldsz['total']
     )
 
+def format_size(sz):
+    return '%d %d %d' % (sz['text'], sz['data'], sz['bss'])
+
 output_result_json = {}
 def set_output_result(doc):
     for k in doc.keys():
@@ -342,12 +345,12 @@ def context_linux_x64_gcc_defsize_makeduk():
         execute([ 'make', 'duk' ])
     return context_helper_get_binary_size_diff(comp)
 
-def context_linux_x64_gcc_defsize_fltoetc():
+def context_helper_defsize_fltoetc(archopt):
     cwd = os.getcwd()
     def comp():
         execute([ 'make', 'dist' ])
         execute([
-            'gcc', '-oduk',
+            'gcc', '-oduk', archopt,
             '-Os', '-fomit-frame-pointer',
             '-fno-stack-protector',
             '-flto', '-fno-asynchronous-unwind-tables',
@@ -359,6 +362,17 @@ def context_linux_x64_gcc_defsize_fltoetc():
             '-lm'
         ])
     return context_helper_get_binary_size_diff(comp)
+
+def context_linux_x64_gcc_defsize_fltoetc():
+    return context_helper_defsize_fltoetc('-m64')
+def context_linux_x86_gcc_defsize_fltoetc():
+    return context_helper_defsize_fltoetc('-m32')
+def context_linux_x32_gcc_defsize_fltoetc():
+    return context_helper_defsize_fltoetc('-mx32')
+def context_linux_arm_gcc_defsize_fltoetc():
+    return context_helper_defsize_fltoetc('-marm')
+def context_linux_thumb_gcc_defsize_fltoetc():
+    return context_helper_defsize_fltoetc('-mthumb')
 
 def context_helper_minsize_fltoetc(archopt, strip):
     cwd = os.getcwd()
@@ -400,21 +414,25 @@ def context_helper_minsize_fltoetc(archopt, strip):
 
 def context_linux_x64_gcc_minsize_fltoetc():
     return context_helper_minsize_fltoetc('-m64', False)
-
 def context_linux_x86_gcc_minsize_fltoetc():
     return context_helper_minsize_fltoetc('-m32', False)
-
 def context_linux_x32_gcc_minsize_fltoetc():
     return context_helper_minsize_fltoetc('-mx32', False)
+def context_linux_arm_gcc_minsize_fltoetc():
+    return context_helper_minsize_fltoetc('-marm', False)
+def context_linux_thumb_gcc_minsize_fltoetc():
+    return context_helper_minsize_fltoetc('-mthumb', False)
 
 def context_linux_x64_gcc_stripsize_fltoetc():
     return context_helper_minsize_fltoetc('-m64', True)
-
 def context_linux_x86_gcc_stripsize_fltoetc():
     return context_helper_minsize_fltoetc('-m32', True)
-
 def context_linux_x32_gcc_stripsize_fltoetc():
     return context_helper_minsize_fltoetc('-mx32', True)
+def context_linux_arm_gcc_stripsize_fltoetc():
+    return context_helper_minsize_fltoetc('-marm', True)
+def context_linux_thumb_gcc_stripsize_fltoetc():
+    return context_helper_minsize_fltoetc('-mthumb', True)
 
 def context_linux_x64_cpp_exceptions():
     # For now rather simple: compile, run, and grep for my_class
@@ -800,10 +818,8 @@ def context_helper_hello_ram(archopt):
 
 def context_linux_x64_hello_ram():
     return context_helper_hello_ram('-m64')
-
 def context_linux_x86_hello_ram():
     return context_helper_hello_ram('-m32')
-
 def context_linux_x32_hello_ram():
     return context_helper_hello_ram('-mx32')
 
@@ -956,8 +972,10 @@ def context_linux_graph_hello_size_helper(archopt):
         os.path.join(cwd, 'examples', 'hello', 'hello.c'),
         '-lm'
     ])
+    sz = get_binary_size(os.path.join(cwd, 'hello'))
     set_output_result({
-        'newsz': get_binary_size(os.path.join(cwd, 'hello'))
+        'description': format_size(sz),
+        'newsz': sz
     })
     return True
 
@@ -967,6 +985,10 @@ def context_linux_x86_graph_hello_size():
     return context_linux_graph_hello_size_helper('-m32')
 def context_linux_x32_graph_hello_size():
     return context_linux_graph_hello_size_helper('-mx32')
+def context_linux_arm_graph_hello_size():
+    return context_linux_graph_hello_size_helper('-marm')
+def context_linux_thumb_graph_hello_size():
+    return context_linux_graph_hello_size_helper('-mthumb')
 
 def context_codemetrics():
     def scandir(path):
@@ -1033,18 +1055,29 @@ context_handlers = {
     'linux-x64-duk-gxx': context_linux_x64_duk_gxx,
 
     'linux-x64-gcc-defsize-makeduk': context_linux_x64_gcc_defsize_makeduk,
+
     'linux-x64-gcc-defsize-fltoetc': context_linux_x64_gcc_defsize_fltoetc,
+    'linux-x86-gcc-defsize-fltoetc': context_linux_x86_gcc_defsize_fltoetc,
+    'linux-x32-gcc-defsize-fltoetc': context_linux_x32_gcc_defsize_fltoetc,
+    'linux-arm-gcc-defsize-fltoetc': context_linux_arm_gcc_defsize_fltoetc,
+    'linux-thumb-gcc-defsize-fltoetc': context_linux_thumb_gcc_defsize_fltoetc,
     'linux-x64-gcc-minsize-fltoetc': context_linux_x64_gcc_minsize_fltoetc,
     'linux-x86-gcc-minsize-fltoetc': context_linux_x86_gcc_minsize_fltoetc,
     'linux-x32-gcc-minsize-fltoetc': context_linux_x32_gcc_minsize_fltoetc,
+    'linux-arm-gcc-minsize-fltoetc': context_linux_arm_gcc_minsize_fltoetc,
+    'linux-thumb-gcc-minsize-fltoetc': context_linux_thumb_gcc_minsize_fltoetc,
     'linux-x64-gcc-stripsize-fltoetc': context_linux_x64_gcc_stripsize_fltoetc,
     'linux-x86-gcc-stripsize-fltoetc': context_linux_x86_gcc_stripsize_fltoetc,
     'linux-x32-gcc-stripsize-fltoetc': context_linux_x32_gcc_stripsize_fltoetc,
+    'linux-arm-gcc-stripsize-fltoetc': context_linux_arm_gcc_stripsize_fltoetc,
+    'linux-thumb-gcc-stripsize-fltoetc': context_linux_thumb_gcc_stripsize_fltoetc,
 
     # Jobs matching previous graphs.html data points.
     'linux-x64-graph-hello-size': context_linux_x64_graph_hello_size,
     'linux-x86-graph-hello-size': context_linux_x86_graph_hello_size,
     'linux-x32-graph-hello-size': context_linux_x32_graph_hello_size,
+    'linux-arm-graph-hello-size': context_linux_arm_graph_hello_size,
+    'linux-thumb-graph-hello-size': context_linux_thumb_graph_hello_size,
 
     'linux-x64-cpp-exceptions': context_linux_x64_cpp_exceptions,
 

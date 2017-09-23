@@ -37,7 +37,7 @@ Duktape API to call Ecmascript functions from C code and vice versa.</p>
 <h1>Main features</h1>
 <ul>
 <li>Embeddable, portable, compact:
-    can run on platforms with 192kB flash and 64kB system RAM</li>
+    can run on platforms with 160kB flash and 64kB system RAM</li>
 <li><a href="http://www.ecma-international.org/ecma-262/5.1/">Ecmascript E5/E5.1</a>,
     with some semantics updated from ES2015+</li>
 <li>Partial support for
@@ -49,6 +49,7 @@ Duktape API to call Ecmascript functions from C code and vice versa.</p>
 <li>ES2015 <a href="https://www.khronos.org/registry/typedarray/specs/latest/">TypedArray</a>
     and <a href="https://nodejs.org/docs/v6.9.1/api/buffer.html">Node.js Buffer</a> bindings</li>
 <li><a href="https://encoding.spec.whatwg.org/#api">Encoding API</a> bindings based on the WHATWG Encoding Living Standard</li>
+<li><a href="https://www.w3.org/TR/hr-time/#dom-performance-now">performance.now()</a></li>
 <li>Built-in debugger</li>
 <li>Built-in regular expression engine</li>
 <li>Built-in Unicode support</li>
@@ -64,10 +65,16 @@ Duktape API to call Ecmascript functions from C code and vice versa.</p>
 </ul>
 
 <h1>Code and RAM footprint</h1>
+
+<p>For a "Hello world" <a href="https://github.com/svaarala/duktape/blob/master/util/index_page_sizes.sh">example</a>:</p>
 <table>
-<tr><td>&nbsp;</td><td>x86 default</td><td>x86 lowmem</td><td>x86 full lowmem</td></tr>
-<tr><td>Code</td><td>170kB</td><td>150kB</td><td>200kB</td></tr>
-<tr><td>Startup RAM</td><td>68kB</td><td>35kB</td><td>2.3kB</td></tr>
+<tr><th>Config</th><th>Code footprint (kB)</th><th>Startup RAM (kB)</th></tr>
+<tr><td>thumb default</td><td>146</td><td>73</td></tr>
+<tr><td>thumb lowmem</td><td>96</td><td>26</td></tr>
+<tr><td>thumb full lowmem</td><td>120</td><td>1.5</td></tr>
+<tr><td>x86 default</td><td>176</td><td>74</td></tr>
+<tr><td>x86 lowmem</td><td>121</td><td>27</td></tr>
+<tr><td>x86 full lowmem</td><td>146</td><td>1.5</td></tr>
 </table>
 
 <p>See <a href="http://duktape.org/benchmarks.html">Benchmarks</a>.</p>

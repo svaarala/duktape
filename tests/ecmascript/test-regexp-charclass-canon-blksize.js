@@ -10,7 +10,8 @@
 
 /*---
 {
-    "skip": true
+    "skip": true,
+    "slow": true
 }
 ---*/
 

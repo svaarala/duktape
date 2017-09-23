@@ -3413,6 +3413,7 @@ objects:
       # https://developer.mozilla.org/en-US/docs/Mozilla/JavaScript_code_modules/Promise.jsm/Deferred.
       # 'accept' is obsolete and not implemented:
       #https://bugs.chromium.org/p/v8/issues/detail?id=3238
+      # 'try': https://github.com/tc39/proposal-promise-try
 
   - id: bi_promise_prototype
     class: Object
@@ -3447,6 +3448,8 @@ objects:
       # @@toStringTag
       # 'chain' is an obsolete variant of .then and not implemented:
       # https://stackoverflow.com/questions/34713965/the-feature-of-method-promise-prototype-chain-in-chrome
+
+      # 'finally': https://github.com/tc39/proposal-promise-finally
 
   #
   #  TypedArray

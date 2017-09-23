@@ -40,8 +40,6 @@ Checklist for ordinary releases
 
   - Check year range
 
-  - Also check ``util/create_spdx_license.py``
-
 * Ensure RELEASES.rst is up-to-date
 
   - New release is in place
@@ -96,9 +94,9 @@ Checklist for ordinary releases
 
   - Check ``make duk-clang``, covers ``-Wcast-align``
 
-* Test genconfig manually using metadata from the distributable
+* Test configure.py manually using metadata from the distributable
 
-  - Ensure that Duktape compiles with e.g. ``-DDUK_USE_FASTINT`` genconfig
+  - Ensure that Duktape compiles with e.g. ``-DDUK_USE_FASTINT`` configure
     argument
 
 * Ecmascript testcases
@@ -141,11 +139,6 @@ Checklist for ordinary releases
 
     - test-dev-refcount-leak-basic.js
 
-* Performance testing
-
-  - Check for unexpected performance regressions by compiling previous release
-    and candidate release with ``-O2`` and running "make perftest" for them.
-
 * API testcases
 
   - On x86-64:
@@ -154,12 +147,6 @@ Checklist for ordinary releases
 
     - -Werror is no longer enabled so check apitest output for any test
       case warnings (or enable -Werror manually in runtests.js)
-
-* Regfuzz
-
-  - On x86-64, with DUK_USE_ASSERTIONS
-
-    - make regfuzztest
 
 * test262
 
@@ -171,7 +158,7 @@ Checklist for ordinary releases
 
 * Assorted release tests driven by Makefile
 
-  - on x86-65
+  - on x86-64
 
     - make clean releasetest
 
@@ -185,6 +172,20 @@ Checklist for ordinary releases
     are included (easy to forget e.g. YAML metadata files)
 
   - Test JSON proxy
+
+* Performance testing and Wiki performance results page
+
+  - Update and run ``util/bench_microbenchmarks.py`` to get raw microbenchmark
+    results.  Then use ``util/format_perftest.py`` to format into HTML; the
+    different parts of the Wiki performance page need manual tweaking of the
+    format_perftest.py script.
+
+  - Run Octane results manually for now.
+
+* Website index page footprint/RAM figures
+
+  - Run ``util/index_page_sizes.sh`` manually and update index page results
+    accordingly.
 
 * Prepare an update pull for compat-table
 
@@ -329,17 +330,13 @@ Checklist for maintenance releases
 
 * Bump DUK_VERSION in maintenance branch.
 
-* Check dist-files/Makefile.sharedlibrary; currently duplicates version
-  number and needs to be fixed manually.
-
 * Review diff between previous release and new patch release.
 
 * Tag release, description "maintenance release" should be good enough for
   most patch releases.
 
 * Build release.  Compare release to previous release package by diffing the
-  unpacked directories.  The SPDX license can be diffed by sorting the files
-  first and then using diff -u.
+  unpacked directories.
 
 * Build website from master.  Deploy only ``download.html``.
 

@@ -285,7 +285,7 @@ cleanall: clean
 	@rm -f lua-5.2.3.tar.gz
 	@rm -f luajs.zip
 	@rm -f bluebird.js
-	@rm -f jquery-1.11.0.js
+	@rm -f jquery-1.11.*.js
 	@rm -rf coffee-script
 	@rm -rf LiveScript
 	@rm -rf coco
@@ -645,11 +645,11 @@ apitest: apiprep
 
 # Dukweb.js test.
 .PHONY: dukwebtest
-dukwebtest: dukweb.js jquery-1.11.0.js
+dukwebtest: dukweb.js jquery-1.11.2.js
 	@echo "### dukwebtest"
 	@rm -rf /tmp/dukweb-test/
 	mkdir /tmp/dukweb-test/
-	cp dukweb.js jquery-1.11.0.js dukweb/dukweb.html dukweb/dukweb.css /tmp/dukweb-test/
+	cp dukweb.js jquery-1.11.2.js dukweb/dukweb.html dukweb/dukweb.css /tmp/dukweb-test/
 	@echo "Now point your browser to: file:///tmp/dukweb-test/dukweb.html"
 
 # Third party tests.
@@ -854,8 +854,8 @@ emscripten:
 	# http://kripken.github.io/emscripten-site/docs/building_from_source/building_fastcomp_manually_from_source.html
 	$(GIT) clone --depth 1 https://github.com/kripken/emscripten.git
 	cd emscripten; ./emconfigure
-jquery-1.11.0.js:
-	$(WGET) http://code.jquery.com/jquery-1.11.0.js -O $@
+jquery-1.11.2.js:
+	$(WGET) http://code.jquery.com/jquery-1.11.2.js -O $@
 lua-5.2.3.tar.gz:
 	$(WGET) http://www.lua.org/ftp/lua-5.2.3.tar.gz -O $@
 lua-5.2.3: lua-5.2.3.tar.gz
@@ -998,7 +998,7 @@ dist-iso:	dist-src
 .PHONY: tidy-site
 tidy-site:
 	for i in website/*/*.html; do echo "*** Checking $$i"; tidy -q -e -xml $$i; done
-site: duktape-releases dukweb.js jquery-1.11.0.js lz-string
+site: duktape-releases dukweb.js jquery-1.11.2.js lz-string
 	rm -rf site
 	mkdir site
 	-cd duktape-releases/; git pull --rebase  # get binaries up-to-date, but allow errors for offline use
@@ -1151,58 +1151,3 @@ massif-%: tests/ecmascript/%.js duk
 massif-helloworld: massif-test-dev-hello-world
 massif-deepmerge: massif-test-dev-deepmerge
 massif-arcfour: massif-test-dev-arcfour
-
-# Simple performance test, minimum time for N runs
-# - Duktape is interpreted and uses reference counting
-# - Python and Perl are interpreted and also use reference counting
-# - Ruby and Lua are interpreted but don't use reference counting
-# - Mujs is interpreted but doesn't use reference counting
-# - Rhino compiles to Java bytecode and is ultimately JITed
-# - Node.js (V8) is JITed
-# - Luajit is JITed
-
-#TIME=$(PYTHON) util/time_multi.py --count 1 --sleep 0 --sleep-factor 2.0 --mode min # Take minimum time of N
-#TIME=$(PYTHON) util/time_multi.py --count 3 --sleep 0 --sleep-factor 2.0 --mode min # Take minimum time of N
-TIME=$(PYTHON) util/time_multi.py --count 5 --sleep 0 --sleep-factor 2.0 --mode min # Take minimum time of N
-
-# Blocks: optimization variants, previous versions, other interpreting engines,
-# other JIT engines.
-perftest: duk duk.O2 duk.O3 duk.O4
-	for i in tests/perf/*.js; do \
-		printf '%-36s:' "`basename $$i`"; \
-		printf ' duk.Os %5s' "`$(TIME) ./duk $$i`"; \
-		printf ' duk.O2 %5s' "`$(TIME) ./duk.O2 $$i`"; \
-		printf ' duk.O3 %5s' "`$(TIME) ./duk.O3 $$i`"; \
-		printf ' duk.O4 %5s' "`$(TIME) ./duk.O4 $$i`"; \
-		printf ' |'; \
-		printf ' duk.O2.150 %5s' "`$(TIME) ./duk.O2.150 $$i`"; \
-		printf ' duk.O2.140 %5s' "`$(TIME) ./duk.O2.140 $$i`"; \
-		printf ' duk.O2.130 %5s' "`$(TIME) ./duk.O2.130 $$i`"; \
-		printf ' duk.O2.124 %5s' "`$(TIME) ./duk.O2.124 $$i`"; \
-		printf ' duk.O2.113 %5s' "`$(TIME) ./duk.O2.113 $$i`"; \
-		printf ' duk.O2.102 %5s' "`$(TIME) ./duk.O2.102 $$i`"; \
-		printf ' |'; \
-		printf ' mujs %5s' "`$(TIME) mujs $$i`"; \
-		printf ' jerry %5s' "`$(TIME) jerry $$i`"; \
-		printf ' lua %5s' "`$(TIME) lua $${i%%.js}.lua`"; \
-		printf ' python %5s' "`$(TIME) $(PYTHON) $${i%%.js}.py`"; \
-		printf ' perl %5s' "`$(TIME) perl $${i%%.js}.pl`"; \
-		printf ' ruby %5s' "`$(TIME) ruby $${i%%.js}.rb`"; \
-		printf ' |'; \
-		printf ' rhino %5s' "`$(TIME) rhino $$i`"; \
-		printf ' node %5s' "`$(TIME) node $$i`"; \
-		printf ' luajit %5s' "`$(TIME) luajit $${i%%.js}.lua`"; \
-		printf '\n'; \
-	done
-perftestduk: duk.O2 duk-perf.O2
-	for i in tests/perf/*.js; do \
-		printf '%-36s:' "`basename $$i`"; \
-		printf ' duk-perf.O2 %5s' "`$(TIME) ./duk-perf.O2 $$i`"; \
-		printf ' duk.O2 %5s' "`$(TIME) ./duk.O2 $$i`"; \
-		printf ' |'; \
-		printf ' mujs %5s' "`$(TIME) mujs $$i`"; \
-		printf ' jerry %5s' "`$(TIME) jerry $$i`"; \
-		printf ' duk.O2.master %5s' "`$(TIME) ./duk.O2.master $$i`"; \
-		printf ' duk.O2.150 %5s' "`$(TIME) ./duk.O2.150 $$i`"; \
-		printf '\n'; \
-	done

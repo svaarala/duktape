@@ -5,6 +5,12 @@
 
 /*@include util-regexp.js@*/
 
+/*---
+{
+    "slow": true
+}
+---*/
+
 /*===
 1023 [\u03ff-\u03ff] F893 T1 F129 T1 F64512
 1024 [\u03ff-\u0400] F893 T1 F129 T2 F79 T1 F64431

@@ -5,6 +5,12 @@
 
 /*@include util-regexp.js@*/
 
+/*---
+{
+    "slow": true
+}
+---*/
+
 // Verified against Firefox.
 /*===
 [\u325e-\uceff] F604 T1 F4 T1 F3 T2 F3 T1 F1 T1 F26 T1 F21 T2 F4353 T80 F2200 T1 F240 T1 F5348 T40098 F12544

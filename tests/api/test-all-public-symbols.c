@@ -83,6 +83,7 @@ static duk_ret_t test_func(duk_context *ctx, void *udata) {
 	(void) duk_fatal(ctx, "dummy");
 	(void) duk_free_raw(ctx, NULL);
 	(void) duk_free(ctx, NULL);
+	(void) duk_freeze(ctx, 0);
 	(void) duk_gc(ctx, 0);
 	duk_generic_error(ctx, "dummy");
 	duk_generic_error_va(ctx, "dummy", NULL);
@@ -300,6 +301,7 @@ static duk_ret_t test_func(duk_context *ctx, void *udata) {
 	(void) duk_safe_to_lstring(ctx, 0, NULL);
 	(void) duk_safe_to_string(ctx, 0);
 	(void) duk_samevalue(ctx, 0, 0);
+	(void) duk_seal(ctx, 0);
 	(void) duk_set_finalizer(ctx, 0);
 	(void) duk_set_global_object(ctx);
 	(void) duk_set_length(ctx, 0, 0);
