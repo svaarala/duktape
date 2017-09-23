@@ -237,4 +237,40 @@ DUK_INTERNAL duk_ret_t duk_bi_number_prototype_to_precision(duk_hthread *thr) {
 	return 1;
 }
 
+/*
+ *  ES2015 isFinite() etc
+ */
+
+#if defined(DUK_USE_ES6)
+DUK_INTERNAL duk_ret_t duk_bi_number_check_shared(duk_hthread *thr) {
+	duk_int_t magic;
+	duk_bool_t ret = 0;
+
+	if (duk_is_number(thr, 0)) {
+		duk_double_t d;
+
+		magic = duk_get_current_magic(thr);
+		d = duk_get_number(thr, 0);
+
+		switch (magic) {
+		case 0:  /* isFinite() */
+			ret = duk_double_is_finite(d);
+			break;
+		case 1:  /* isInteger() */
+			ret = duk_double_is_integer(d);
+			break;
+		case 2:  /* isNaN() */
+			ret = duk_double_is_nan(d);
+			break;
+		default:  /* isSafeInteger() */
+			DUK_ASSERT(magic == 3);
+			ret = duk_double_is_safe_integer(d);
+		}
+	}
+
+	duk_push_boolean(thr, ret);
+	return 1;
+}
+#endif  /* DUK_USE_ES6 */
+
 #endif  /* DUK_USE_NUMBER_BUILTIN */

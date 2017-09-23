@@ -560,5 +560,8 @@ DUK_INTERNAL_DECL duk_double_t duk_double_trunc_towards_zero(duk_double_t x);
 DUK_INTERNAL_DECL duk_bool_t duk_double_same_sign(duk_double_t x, duk_double_t y);
 DUK_INTERNAL_DECL duk_double_t duk_double_fmin(duk_double_t x, duk_double_t y);
 DUK_INTERNAL_DECL duk_double_t duk_double_fmax(duk_double_t x, duk_double_t y);
+DUK_INTERNAL_DECL duk_bool_t duk_double_is_finite(duk_double_t x);
+DUK_INTERNAL_DECL duk_bool_t duk_double_is_integer(duk_double_t x);
+DUK_INTERNAL_DECL duk_bool_t duk_double_is_safe_integer(duk_double_t x);
 
 #endif  /* DUK_UTIL_H_INCLUDED */
