@@ -81,7 +81,7 @@ var compressed = LZString.compressToBase64(input);
 writeFile('/tmp/tmp-graphdata-compressed.txt', compressed);
 ''')
     os.system('%s %s /tmp/tmp-script.js' % (duk, lzstring))
-    with open('/tmp/tmp-graphdata-compressed.txt') as f:
+    with open('/tmp/tmp-graphdata-compressed.txt', 'rb') as f:
         graphdata = f.read()
 
     # Embed the compressed data into the benchmarks.html template.
@@ -96,6 +96,7 @@ writeFile('/tmp/tmp-graphdata-compressed.txt', compressed);
         f.write(page)
 
     # Done!
+    print('done')
 
 if __name__ == '__main__':
     main()
