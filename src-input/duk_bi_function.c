@@ -52,7 +52,7 @@ DUK_INTERNAL duk_ret_t duk_bi_function_constructor(duk_hthread *thr) {
 	duk_dup_1(thr);
 	duk_push_string(thr, "){");
 	duk_dup_0(thr);
-	duk_push_string(thr, "}");
+	duk_push_string(thr, "\n}");  /* Newline is important to handle trailing // comment. */
 	duk_concat(thr, 5);
 
 	/* [ body formals source ] */
