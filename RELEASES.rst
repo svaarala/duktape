@@ -3190,8 +3190,9 @@ Planned
 2.3.0 (XXXX-XX-XX)
 ------------------
 
-* ES2015 Number built-in bindings: Number.parseInt(), Number.parseFloat()
-  (GH-1756)
+* ES2015 Number constructor properties: EPSILON, MIN_SAFE_INTEGER,
+  MAX_SAFE_INTEGER, isFinite(), isInteger(), isNaN(), isSafeInteger(),
+  parseInt(), parseFloat() (GH-1756, GH-1761)
 
 * Fix trailing single line comment handling for Function constructor;
   new Function('return "foo" //') previously failed with SyntaxError
