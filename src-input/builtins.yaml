@@ -417,15 +417,13 @@ objects:
         present_if: DUK_USE_GLOBAL_BUILTIN
       - key: "parseInt"
         value:
-          type: function
-          native: duk_bi_global_object_parse_int
-          length: 2
+          type: object
+          id: bi_parse_int
         present_if: DUK_USE_GLOBAL_BUILTIN
       - key: "parseFloat"
         value:
-          type: function
-          native: duk_bi_global_object_parse_float
-          length: 1
+          type: object
+          id: bi_parse_float
         present_if: DUK_USE_GLOBAL_BUILTIN
       - key: "isNaN"
         value:
@@ -513,6 +511,34 @@ objects:
         attributes: "wec"
         performance_api: true
         present_if: DUK_USE_PERFORMANCE_BUILTIN
+
+  - id: bi_parse_int
+    class: Function
+    internal_prototype: bi_function_prototype
+    native: duk_bi_global_object_parse_int
+    callable: true
+    constructable: false
+    bidx: false
+    present_if: DUK_USE_OBJECT_BUILTIN
+
+    properties:
+      - key: "length"
+        value: 2
+        attributes: "c"
+
+  - id: bi_parse_float
+    class: Function
+    internal_prototype: bi_function_prototype
+    native: duk_bi_global_object_parse_float
+    callable: true
+    constructable: false
+    bidx: false
+    present_if: DUK_USE_OBJECT_BUILTIN
+
+    properties:
+      - key: "length"
+        value: 1
+        attributes: "c"
 
   - id: bi_global_env
     class: ObjEnv
@@ -1496,6 +1522,19 @@ objects:
           type: double
           bytes: "fff0000000000000"  # DBL_NEGATIVE_INFINITY
         attributes: ""
+
+      - key: "parseInt"  # Must map to the exactly same object as global parseInt()
+        value:
+          type: object
+          id: bi_parse_int
+        es6: true
+        present_if: DUK_USE_ES6
+      - key: "parseFloat"  # Must map to the exactly same object as global parseFloat()
+        value:
+          type: object
+          id: bi_parse_float
+        es6: true
+        present_if: DUK_USE_ES6
 
   - id: bi_number_prototype
     class: Number
