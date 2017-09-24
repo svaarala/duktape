@@ -3197,6 +3197,12 @@ Planned
   new Function('return "foo" //') previously failed with SyntaxError
   (GH-1757)
 
+* Add automatic workaround for union aliasing issues with FreeBSD + -m32 +
+  Clang prior to 5.0; the aliasing issues cause packed duk_tval to work
+  incorrectly (see
+  https://github.com/svaarala/duktape/blob/master/misc/clang_aliasing.c),
+  and the workaround is to use unpacked duk_tval prior to Clang 5.0 (GH-1764)
+
 3.0.0 (XXXX-XX-XX)
 ------------------
 
