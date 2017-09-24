@@ -35,6 +35,6 @@
 #if defined(DUK_F_PACKED_TVAL_POSSIBLE)
 #define DUK_USE_PACKED_TVAL
 #endif
-
 #undef DUK_F_PACKED_TVAL_POSSIBLE
+
 #endif  /* DUK_F_PACKED_TVAL_PROVIDED */
