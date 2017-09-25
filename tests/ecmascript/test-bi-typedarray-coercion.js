@@ -6,6 +6,7 @@
  * expect string.
  */
 
+/*@include util-base.js@*/
 /*@include util-buffer.js@*/
 /*@include util-string.js@*/
 
@@ -1974,7 +1975,7 @@ function coercionTest() {
         }
         vals.forEach(function (v, j) {
             b[0] = v;
-            print(j, v, '->', numberToString(b[0]));
+            print(j, v, '->', Test.valueToString(b[0]));
         });
     });
 }
