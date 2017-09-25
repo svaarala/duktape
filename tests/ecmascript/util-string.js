@@ -15,12 +15,6 @@ function checksumString(x) {
     return res;
 }
 
-// Number to string, preserve negative zero sign.
-function numberToString(v) {
-    if (v !== 0) { return String(v); }
-    return (1 / v > 0) ? '0' : '-0';
-}
-
 // Escape a string with codepoint escaping.
 function safeEscapeString(s) {
     var tmp = [];
