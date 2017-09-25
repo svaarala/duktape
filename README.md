@@ -151,7 +151,10 @@ Branch policy
 Versioning
 ----------
 
-Duktape uses [Semantic Versioning](http://semver.org/).
+Duktape uses [Semantic Versioning](http://semver.org/) for official
+releases.  Builds from Duktape repo are not official releases and don't
+follow strict semver, mainly because `DUK_VERSION` needs to have some
+compromise value that won't be strictly semver conforming.
 Because Duktape tracks the latest Ecmascript specification versions,
 compliance fixes are made in minor versions even when they are technically
 not backwards compatible.  See
