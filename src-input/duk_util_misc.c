@@ -403,3 +403,22 @@ DUK_INTERNAL duk_double_t duk_double_fmax(duk_double_t x, duk_double_t y) {
 	 */
 	return (x > y ? x : y);
 }
+
+DUK_INTERNAL duk_bool_t duk_double_is_finite(duk_double_t x) {
+	return !duk_double_is_nan_or_inf(x);
+}
+
+DUK_INTERNAL duk_bool_t duk_double_is_integer(duk_double_t x) {
+	if (duk_double_is_nan_or_inf(x)) {
+		return 0;
+	} else {
+		return duk_js_tointeger_number(x) == x;
+	}
+}
+
+DUK_INTERNAL duk_bool_t duk_double_is_safe_integer(duk_double_t x) {
+	/* >>> 2**53-1
+	 * 9007199254740991
+	 */
+	return duk_double_is_integer(x) && DUK_FABS(x) <= 9007199254740991.0;
+}

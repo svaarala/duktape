@@ -1,5 +1,7 @@
 if (typeof RegExpUtil !== 'object') {
-    RegExpUtil = {};
+    Object.defineProperty(new Function('return this')(), 'RegExpUtil', {
+        value: {}, writable: false, enumerable: false, configurable: false
+    });
 }
 
 // Get a list of character repeats in an input string.  For example, for

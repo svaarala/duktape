@@ -1,29 +1,25 @@
 /*===
-MAX_VALUE -> number 1.7976931348623157e+308
-writable=false, enumerable=false, configurable=false
-MIN_VALUE -> number 5e-324
-writable=false, enumerable=false, configurable=false
-NaN -> number NaN
-writable=false, enumerable=false, configurable=false
-POSITIVE_INFINITY -> number Infinity
-writable=false, enumerable=false, configurable=false
-NEGATIVE_INFINITY -> number -Infinity
-writable=false, enumerable=false, configurable=false
+propdesc MAX_VALUE: value=1.7976931348623157e+308, writable=false, enumerable=false, configurable=false
+propdesc MIN_VALUE: value=5e-324, writable=false, enumerable=false, configurable=false
+propdesc NaN: value=NaN, writable=false, enumerable=false, configurable=false
+propdesc POSITIVE_INFINITY: value=Infinity, writable=false, enumerable=false, configurable=false
+propdesc NEGATIVE_INFINITY: value=-Infinity, writable=false, enumerable=false, configurable=false
+propdesc EPSILON: value=2.220446049250313e-16, writable=false, enumerable=false, configurable=false
+propdesc MAX_SAFE_INTEGER: value=9007199254740991, writable=false, enumerable=false, configurable=false
+propdesc MIN_SAFE_INTEGER: value=-9007199254740991, writable=false, enumerable=false, configurable=false
 ===*/
 
+/*@include util-base.js@*/
+
 function valueTest() {
-   var names = [ 'MAX_VALUE', 'MIN_VALUE', 'NaN', 'POSITIVE_INFINITY', 'NEGATIVE_INFINITY' ];
+   var names = [
+       'MAX_VALUE', 'MIN_VALUE', 'NaN', 'POSITIVE_INFINITY', 'NEGATIVE_INFINITY',
+       'EPSILON', 'MAX_SAFE_INTEGER', 'MIN_SAFE_INTEGER'
+   ];
    var i;
-   var pd, v;
 
    for (i = 0; i < names.length; i++) {
-       pd = Object.getOwnPropertyDescriptor(Number, names[i]);
-       if (!pd) { print('does not exist'); continue; }
-       v = pd.value;
-       print(names[i], '->', typeof v, v);
-       print('writable=' + pd.writable +
-             ', enumerable=' + pd.enumerable +
-             ', configurable=' + pd.configurable);
+       print(Test.getPropDescString(Number, names[i]));
    }
 }
 

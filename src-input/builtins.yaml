@@ -1522,7 +1522,68 @@ objects:
           type: double
           bytes: "fff0000000000000"  # DBL_NEGATIVE_INFINITY
         attributes: ""
+      - key: "EPSILON"
+        value:
+          type: double
+          bytes: "3cb0000000000000"   # 3ff0000000000001 - 3ff0000000000000 = 3cb0000000000000
+        attributes: ""
+        es6: true
+        present_if: DUK_USE_ES6
+      - key: "MAX_SAFE_INTEGER"
+        value:
+          # >>> struct.pack('>d', 9007199254740991.0).encode('hex')
+          # '433fffffffffffff'
+          type: double
+          bytes: "433fffffffffffff"
+        attributes: ""
+        es6: true
+        present_if: DUK_USE_ES6
+      - key: "MIN_SAFE_INTEGER"
+        value:
+          # >>> struct.pack('>d', -9007199254740991.0).encode('hex')
+          # 'c33fffffffffffff'
+          type: double
+          bytes: "c33fffffffffffff"
+        attributes: ""
+        es6: true
+        present_if: DUK_USE_ES6
 
+      - key: "isFinite"
+        value:
+          type: function
+          native: duk_bi_number_check_shared
+          length: 1
+          magic: 0
+        attributes: "wc"
+        es6: true
+        present_if: DUK_USE_ES6
+      - key: "isInteger"
+        value:
+          type: function
+          native: duk_bi_number_check_shared
+          length: 1
+          magic: 1
+        attributes: "wc"
+        es6: true
+        present_if: DUK_USE_ES6
+      - key: "isNaN"
+        value:
+          type: function
+          native: duk_bi_number_check_shared
+          length: 1
+          magic: 2
+        attributes: "wc"
+        es6: true
+        present_if: DUK_USE_ES6
+      - key: "isSafeInteger"
+        value:
+          type: function
+          native: duk_bi_number_check_shared
+          length: 1
+          magic: 3
+        attributes: "wc"
+        es6: true
+        present_if: DUK_USE_ES6
       - key: "parseInt"  # Must map to the exactly same object as global parseInt()
         value:
           type: object
