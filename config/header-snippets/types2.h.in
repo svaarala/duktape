@@ -55,8 +55,8 @@ typedef duk_uint_fast16_t duk_small_uint_fast_t;
 
 /* Boolean values are represented with the platform 'unsigned int'. */
 typedef duk_small_uint_t duk_bool_t;
-#define DUK_BOOL_MIN              DUK_SMALL_INT_MIN
-#define DUK_BOOL_MAX              DUK_SMALL_INT_MAX
+#define DUK_BOOL_MIN              DUK_SMALL_UINT_MIN
+#define DUK_BOOL_MAX              DUK_SMALL_UINT_MAX
 
 /* Index values must have at least 32-bit signed range. */
 typedef duk_int_t duk_idx_t;
