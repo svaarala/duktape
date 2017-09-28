@@ -23,10 +23,12 @@ DUK_LOCAL void duk__convert_systime_to_ularge(const SYSTEMTIME *st, ULARGE_INTEG
 	}
 }
 
+#if defined(DUK_USE_DATE_NOW_WINDOWS_SUBMS)
 DUK_LOCAL void duk__convert_filetime_to_ularge(const FILETIME *ft, ULARGE_INTEGER *res) {
 	res->LowPart = ft->dwLowDateTime;
 	res->HighPart = ft->dwHighDateTime;
 }
+#endif  /* DUK_USE_DATE_NOW_WINDOWS_SUBMS */
 
 DUK_LOCAL void duk__set_systime_jan1970(SYSTEMTIME *st) {
 	DUK_MEMZERO((void *) st, sizeof(*st));
