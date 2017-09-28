@@ -3200,6 +3200,8 @@ Planned
 
 * Fix DUK_BOOL_{MIN,MAX} defines for unsigned duk_bool_t (GH-1769)
 
+* Fix 'defined but not used' warning for Windows (GH-1775)
+
 * Add automatic workaround for union aliasing issues with FreeBSD + -m32 +
   Clang prior to 5.0; the aliasing issues cause packed duk_tval to work
   incorrectly (see
