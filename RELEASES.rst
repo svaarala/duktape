@@ -3202,6 +3202,8 @@ Planned
 
 * Fix 'defined but not used' warning for Windows (GH-1775)
 
+* Fix some Clang warnings (GH-1777)
+
 * Add automatic workaround for union aliasing issues with FreeBSD + -m32 +
   Clang prior to 5.0; the aliasing issues cause packed duk_tval to work
   incorrectly (see
