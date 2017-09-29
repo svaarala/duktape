@@ -46,6 +46,7 @@ and agreed to irrevocably license their contributions under the Duktape
 * Steven Don (https://github.com/shdon)
 * Simon Stone (https://github.com/sstone1)
 * \J. McC. (https://github.com/jmhmccr)
+* Jakub Nowakowski (https://github.com/jimvonmoon)
 
 Other contributions
 ===================
