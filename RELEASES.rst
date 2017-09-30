@@ -3204,6 +3204,9 @@ Planned
 
 * Fix some Clang warnings (GH-1777)
 
+* Fix a few casts in duk_trans_socket_windows.c to avoid errors in a C++
+  build (GH-1773)
+
 * Add automatic workaround for union aliasing issues with FreeBSD + -m32 +
   Clang prior to 5.0; the aliasing issues cause packed duk_tval to work
   incorrectly (see
