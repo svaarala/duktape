@@ -251,7 +251,7 @@ duk_size_t duk_trans_socket_read_cb(void *udata, char *buffer, duk_size_t length
 	 * timeout here to recover from "black hole" disconnects.
 	 */
 
-	ret = recv(client_sock, (void *) buffer, (int) length, 0);
+	ret = recv(client_sock, buffer, (int) length, 0);
 	if (ret < 0) {
 		fprintf(stderr, "%s: debug read failed, error %d, closing connection\n",
 		        __FILE__, ret);
@@ -315,7 +315,7 @@ duk_size_t duk_trans_socket_write_cb(void *udata, const char *buffer, duk_size_t
 	 * timeout here to recover from "black hole" disconnects.
 	 */
 
-	ret = send(client_sock, (const void *) buffer, (int) length, 0);
+	ret = send(client_sock, buffer, (int) length, 0);
 	if (ret <= 0 || ret > (int) length) {
 		fprintf(stderr, "%s: debug write failed, ret %d, closing connection\n",
 		        __FILE__, ret);
