@@ -310,7 +310,7 @@ static duk_uint8_t *duk__dump_func(duk_hthread *thr, duk_hcompfunc *func, duk_bu
 			h_str = DUK_TVAL_GET_STRING(tv);
 			DUK_ASSERT(h_str != NULL);
 			DUK_ASSERT(DUK_HSTRING_MAX_BYTELEN <= 0x7fffffffUL);  /* ensures no overflow */
-			p = DUK_BW_ENSURE_RAW(thr, bw_ctx, 1U + 4U + DUK_HSTRING_GET_BYTELEN(h_str), p),
+			p = DUK_BW_ENSURE_RAW(thr, bw_ctx, 1U + 4U + DUK_HSTRING_GET_BYTELEN(h_str), p);
 			*p++ = DUK__SER_STRING;
 			p = duk__dump_hstring_raw(p, h_str);
 		} else {

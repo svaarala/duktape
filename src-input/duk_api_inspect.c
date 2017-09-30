@@ -132,7 +132,7 @@ DUK_EXTERNAL void duk_inspect_value(duk_hthread *thr, duk_idx_t idx) {
 		}
 
 		vals[DUK__IDX_CLASS] = (duk_int_t) DUK_HOBJECT_GET_CLASS_NUMBER(h_obj);
-		vals[DUK__IDX_PBYTES] = (duk_int_t) DUK_HOBJECT_P_ALLOC_SIZE(h_obj),
+		vals[DUK__IDX_PBYTES] = (duk_int_t) DUK_HOBJECT_P_ALLOC_SIZE(h_obj);
 		vals[DUK__IDX_ESIZE] = (duk_int_t) DUK_HOBJECT_GET_ESIZE(h_obj);
 		vals[DUK__IDX_ENEXT] = (duk_int_t) DUK_HOBJECT_GET_ENEXT(h_obj);
 		vals[DUK__IDX_ASIZE] = (duk_int_t) DUK_HOBJECT_GET_ASIZE(h_obj);
