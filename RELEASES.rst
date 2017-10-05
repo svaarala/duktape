@@ -3198,6 +3198,9 @@ Planned
   new Function('return "foo" //') previously failed with SyntaxError
   (GH-1757)
 
+* Fix some lexer bugs related to parsing in RegExp mode (interpret leading
+  '/' as part of a RegExp) or not (interpret '/' as division) (GH-1779)
+
 * Fix DUK_BOOL_{MIN,MAX} defines for unsigned duk_bool_t (GH-1769)
 
 * Fix 'defined but not used' warning for Windows (GH-1775)
