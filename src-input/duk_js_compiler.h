@@ -187,6 +187,7 @@ struct duk_compiler_func {
 	duk_uint8_t is_arguments_shadowed;   /* argument/function declaration shadows 'arguments' */
 	duk_uint8_t needs_shuffle;           /* function needs shuffle registers */
 	duk_uint8_t reject_regexp_in_adv;    /* reject RegExp literal on next advance() call; needed for handling IdentifierName productions */
+	duk_uint8_t allow_regexp_in_adv;     /* allow RegExp literal on next advance() call */
 };
 
 struct duk_compiler_ctx {
