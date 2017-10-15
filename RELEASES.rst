@@ -3199,6 +3199,8 @@ Planned
   an issue even on x86); applications working with a low memory target may
   want to force DUK_USE_ALIGN_BY in configuration (GH-1783, GH-1784)
 
+* Add C++ name mangling wrappers (extern "C") for extras (GH-1780, GH-1782)
+
 * Fix trailing single line comment handling for Function constructor;
   new Function('return "foo" //') previously failed with SyntaxError
   (GH-1757)
