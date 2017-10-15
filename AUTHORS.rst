@@ -47,6 +47,7 @@ and agreed to irrevocably license their contributions under the Duktape
 * Simon Stone (https://github.com/sstone1)
 * \J. McC. (https://github.com/jmhmccr)
 * Jakub Nowakowski (https://github.com/jimvonmoon)
+* Tommy Nguyen (https://github.com/tn0502)
 
 Other contributions
 ===================
