@@ -156,6 +156,7 @@ CCOPTS_DEBUG += -g -ggdb
 CLANG_CCOPTS_NONDEBUG = $(CCOPTS_NONDEBUG)
 CLANG_CCOPTS_NONDEBUG += -Wshorten-64-to-32
 CLANG_CCOPTS_NONDEBUG += -Wcomma
+#CLANG_CCOPTS_NONDEBUG += -fsanitize=undefined
 
 GXXOPTS_SHARED = -pedantic -ansi -std=c++11 -fstrict-aliasing -Wall -Wextra -Wunused-result -Wunused-function
 GXXOPTS_SHARED += -DDUK_CMDLINE_PRINTALERT_SUPPORT
