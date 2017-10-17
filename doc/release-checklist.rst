@@ -101,9 +101,14 @@ Checklist for ordinary releases
   - Ensure that Duktape compiles with e.g. ``-DDUK_USE_FASTINT`` configure
     argument
 
-* Ecmascript testcases
+* duk-sanitize-clang:
 
-  - **FIXME: semiautomate test running for various configurations**
+  - Run::
+
+        $ make duk-sanitize-clang
+        $ for i in tests/ecmascript/test-*.js; do python util/runtest.py --duk ./duk-sanitize-clang --timeout 30 $i; done
+
+* Ecmascript testcases
 
   - On x86-64 (exercise 16-byte duk_tval):
 
