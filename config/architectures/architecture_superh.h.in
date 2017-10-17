@@ -1,9 +1,3 @@
 #define DUK_USE_ARCH_STRING "sh"
 /* Byte order varies, rely on autodetection. */
-/* Based on 'make checkalign' there are no alignment requirements on
- * Linux SH4, but align by 4 is probably a good basic default.
- */
-#if !defined(DUK_USE_ALIGN_BY)
-#define DUK_USE_ALIGN_BY 4
-#endif
 #define DUK_USE_PACKED_TVAL
