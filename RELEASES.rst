@@ -3194,6 +3194,11 @@ Planned
   MAX_SAFE_INTEGER, isFinite(), isInteger(), isNaN(), isSafeInteger(),
   parseInt(), parseFloat() (GH-1756, GH-1761)
 
+* Assume only natural alignment (DUK_USE_ALIGN_BY=8) on all platforms to
+  minimize compiler assumptions regarding unaligned accesses (which can be
+  an issue even on x86); applications working with a low memory target may
+  want to force DUK_USE_ALIGN_BY in configuration (GH-1783, GH-1784)
+
 * Fix trailing single line comment handling for Function constructor;
   new Function('return "foo" //') previously failed with SyntaxError
   (GH-1757)
