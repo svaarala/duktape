@@ -174,6 +174,10 @@ NOTE: This list is not exhaustive, see ``config/examples/low_memory.yaml``.
   increases heap header size, it also reduces memory usage fluctuation
   which is often more important than absolute footprint.
 
+* By default Duktape uses natural alignment, which in practice translates
+  to ``DUK_USE_ALIGN_BY=8``.  If the target can use lower alignment,
+  consider forcing alignment to 4 or 1.
+
 * If the target has a shallow C stack, you may want to limit C stack
   recursion, see:
 

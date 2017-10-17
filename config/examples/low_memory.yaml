@@ -11,6 +11,10 @@
 #   - Does not enable ROM string/object support by default, enable manually
 #
 
+# Consider switching alignment to align-by-1 or align-by-4 for more compact
+# memory layout if the architecture supports it.
+#DUK_USE_ALIGN_BY: 1
+
 DUK_USE_PREFER_SIZE: true
 DUK_USE_EXEC_PREFER_SIZE: true
 DUK_USE_FAST_REFCOUNT_DEFAULT: false

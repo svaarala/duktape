@@ -2,7 +2,4 @@
 #if !defined(DUK_USE_BYTEORDER)
 #define DUK_USE_BYTEORDER 1
 #endif
-#if !defined(DUK_USE_ALIGN_BY)
-#define DUK_USE_ALIGN_BY 8
-#endif
 #undef DUK_USE_PACKED_TVAL
