@@ -16,6 +16,14 @@ if [ "x$RET" != "x0" ]; then
 	sleep 1
 fi
 
+python -c 'import yaml' 2>/dev/null
+if [ $? != 0 ]; then
+	echo "*** Missing Python yaml:"
+	echo "  $ sudo apt-get install python-yaml"
+	echo ""
+	ERRORS=1
+fi
+
 NODEJS_VERSION=`nodejs -v 2>/dev/null`
 if [ $? != 0 ]; then
 	echo "*** Missing NodeJS:"
