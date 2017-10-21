@@ -6,12 +6,14 @@
 #include "duk_internal.h"
 
 #if defined(DUK_USE_PREFER_SIZE)
+DUK_NORETURN(DUK_LOCAL_DECL void duk__uncaught_minimal(duk_hthread *thr));
 DUK_LOCAL void duk__uncaught_minimal(duk_hthread *thr) {
 	(void) duk_fatal(thr, "uncaught error");
 }
 #endif
 
 #if 0
+DUK_NORETURN(DUK_LOCAL_DECL void duk__uncaught_readable(duk_hthread *thr));
 DUK_LOCAL void duk__uncaught_readable(duk_hthread *thr) {
 	const char *summary;
 	char buf[DUK_USE_FATAL_MAXLEN];
@@ -24,6 +26,7 @@ DUK_LOCAL void duk__uncaught_readable(duk_hthread *thr) {
 #endif
 
 #if !defined(DUK_USE_PREFER_SIZE)
+DUK_NORETURN(DUK_LOCAL_DECL void duk__uncaught_error_aware(duk_hthread *thr));
 DUK_LOCAL void duk__uncaught_error_aware(duk_hthread *thr) {
 	const char *summary;
 	char buf[DUK_USE_FATAL_MAXLEN];
