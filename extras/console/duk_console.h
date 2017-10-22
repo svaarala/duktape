@@ -3,6 +3,10 @@
 
 #include "duktape.h"
 
+#if defined(__cplusplus)
+extern "C" {
+#endif
+
 /* Use a proxy wrapper to make undefined methods (console.foo()) no-ops. */
 #define DUK_CONSOLE_PROXY_WRAPPER  (1 << 0)
 
@@ -10,5 +14,9 @@
 #define DUK_CONSOLE_FLUSH          (1 << 1)
 
 extern void duk_console_init(duk_context *ctx, duk_uint_t flags);
+
+#if defined(__cplusplus)
+}
+#endif  /* end 'extern "C"' wrapper */
 
 #endif  /* DUK_CONSOLE_H_INCLUDED */
