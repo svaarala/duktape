@@ -2165,6 +2165,7 @@ duk_regconst_t duk__ispec_toregconst_raw(duk_compiler_ctx *comp_ctx,
 			}
 		}
 		}  /* end switch */
+		goto fail_internal;  /* never here */
 	}
 	case DUK_ISPEC_REGCONST: {
 		if (forced_reg >= 0) {
@@ -2197,10 +2198,11 @@ duk_regconst_t duk__ispec_toregconst_raw(duk_compiler_ctx *comp_ctx,
 		return x->regconst;
 	}
 	default: {
-		break;
+		break;  /* never here */
 	}
 	}
 
+ fail_internal:
 	DUK_ERROR_INTERNAL(thr);
 	return 0;
 }
