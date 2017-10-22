@@ -314,7 +314,10 @@ DUK_LOCAL DUK__INLINE_PERF void duk__vm_arith_binary_op(duk_hthread *thr, duk_tv
 		break;
 	}
 	case DUK_OP_DIV >> 2: {
-		du.d = d1 / d2;
+		/* Division-by-zero is undefined behavior, so
+		 * rely on a helper.
+		 */
+		du.d = duk_double_div(d1, d2);
 		break;
 	}
 	case DUK_OP_MOD >> 2: {
@@ -3321,7 +3324,7 @@ DUK_LOCAL DUK_NOINLINE DUK_HOT void duk__js_execute_bytecode_inner(duk_hthread *
 			/* XXX: fast double-to-int conversion, we know number is integer in [-0x80000000,0xffffffff]. */
 			val = (duk_int32_t) DUK_TVAL_GET_NUMBER(tv1);
 #endif
-			val = (val << DUK_BC_LDINTX_SHIFT) + (duk_int32_t) DUK_DEC_BC(ins);  /* no bias */
+			val = (duk_int32_t) ((duk_uint32_t) val << DUK_BC_LDINTX_SHIFT) + (duk_int32_t) DUK_DEC_BC(ins);  /* no bias */
 			DUK_TVAL_SET_I32_UPDREF(thr, tv1, val);  /* side effects */
 			break;
 		}

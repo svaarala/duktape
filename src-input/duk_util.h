@@ -422,7 +422,7 @@ struct duk_bufwriter_ctx {
 		duk__valptr = (const void *) (valptr); \
 		duk__valsz = (duk_size_t) (valsz); \
 		DUK_BW_ENSURE((thr), (bw_ctx), duk__valsz); \
-		DUK_MEMCPY((void *) ((bw_ctx)->p), duk__valptr, duk__valsz); \
+		duk_memcpy((void *) ((bw_ctx)->p), duk__valptr, duk__valsz); \
 		(bw_ctx)->p += duk__valsz; \
 	} while (0)
 #define DUK_BW_WRITE_ENSURE_CSTRING(thr,bw_ctx,val) do { \
@@ -542,6 +542,9 @@ DUK_INTERNAL_DECL void duk_raw_write_double_be(duk_uint8_t **p, duk_double_t val
 DUK_INTERNAL_DECL void duk_byteswap_bytes(duk_uint8_t *p, duk_small_uint_t len);
 #endif
 
+DUK_INTERNAL_DECL void duk_memcpy(void *dst, const void *src, duk_size_t len);
+DUK_INTERNAL_DECL duk_small_int_t duk_memcmp(const void *s1, const void *s2, duk_size_t len);
+
 DUK_INTERNAL_DECL duk_bool_t duk_is_whole_get_int32_nonegzero(duk_double_t x, duk_int32_t *ival);
 DUK_INTERNAL_DECL duk_bool_t duk_is_whole_get_int32(duk_double_t x, duk_int32_t *ival);
 DUK_INTERNAL_DECL duk_bool_t duk_double_is_anyinf(duk_double_t x);
@@ -559,5 +562,12 @@ DUK_INTERNAL_DECL duk_double_t duk_double_fmax(duk_double_t x, duk_double_t y);
 DUK_INTERNAL_DECL duk_bool_t duk_double_is_finite(duk_double_t x);
 DUK_INTERNAL_DECL duk_bool_t duk_double_is_integer(duk_double_t x);
 DUK_INTERNAL_DECL duk_bool_t duk_double_is_safe_integer(duk_double_t x);
+
+DUK_INTERNAL_DECL duk_double_t duk_double_div(duk_double_t x, duk_double_t y);
+DUK_INTERNAL_DECL duk_int_t duk_double_to_int_t(duk_double_t x);
+DUK_INTERNAL_DECL duk_uint_t duk_double_to_uint_t(duk_double_t x);
+DUK_INTERNAL_DECL duk_int32_t duk_double_to_int32_t(duk_double_t x);
+DUK_INTERNAL_DECL duk_uint32_t duk_double_to_uint32_t(duk_double_t x);
+DUK_INTERNAL_DECL duk_float_t duk_double_to_float_t(duk_double_t x);
 
 #endif  /* DUK_UTIL_H_INCLUDED */

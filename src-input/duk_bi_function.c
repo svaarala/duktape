@@ -316,7 +316,7 @@ DUK_INTERNAL duk_ret_t duk_bi_function_prototype_bind(duk_hthread *thr) {
 		DUK_DCERROR_RANGE_INVALID_COUNT(thr);
 	}
 	tv_res = (duk_tval *) DUK_ALLOC_CHECKED(thr, ((duk_size_t) bound_nargs) * sizeof(duk_tval));
-	DUK_ASSERT(tv_res != NULL);
+	DUK_ASSERT(tv_res != NULL || bound_nargs == 0);
 	DUK_ASSERT(h_bound->args == NULL);
 	DUK_ASSERT(h_bound->nargs == 0);
 	h_bound->args = tv_res;

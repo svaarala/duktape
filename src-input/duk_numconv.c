@@ -1594,7 +1594,7 @@ DUK_INTERNAL void duk_numconv_stringify(duk_hthread *thr, duk_small_int_t radix,
 	 *  sprintf "%lu" for the fast path and for exponent formatting.
 	 */
 
-	uval = (unsigned int) x;
+	uval = duk_double_to_uint32_t(x);
 	if (((double) uval) == x &&  /* integer number in range */
 	    flags == 0) {            /* no special formatting */
 		/* use bigint area as a temp */
@@ -1746,8 +1746,8 @@ DUK_INTERNAL void duk_numconv_parse(duk_hthread *thr, duk_small_int_t radix, duk
 	duk__numconv_stringify_ctx *nc_ctx = &nc_ctx_alloc;
 	duk_double_t res;
 	duk_hstring *h_str;
-	duk_small_int_t expt;
-	duk_small_int_t expt_neg;
+	duk_int_t expt;
+	duk_bool_t expt_neg;
 	duk_small_int_t expt_adj;
 	duk_small_int_t neg;
 	duk_small_int_t dig;
@@ -2054,9 +2054,10 @@ DUK_INTERNAL void duk_numconv_parse(duk_hthread *thr, duk_small_int_t radix, duk
 		} else {
 			/* exponent digit */
 
+			DUK_ASSERT(radix == 10);
 			expt = expt * radix + dig;
 			if (expt > DUK_S2N_MAX_EXPONENT) {
-				/* impose a reasonable exponent limit, so that exp
+				/* Impose a reasonable exponent limit, so that exp
 				 * doesn't need to get tracked using a bigint.
 				 */
 				DUK_DDD(DUK_DDDPRINT("parse failed: exponent too large"));

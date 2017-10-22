@@ -2287,7 +2287,10 @@ DUK_LOCAL void duk__ivalue_toplain_raw(duk_compiler_ctx *comp_ctx, duk_ivalue *x
 					break;
 				}
 				case DUK_OP_DIV: {
-					d3 = d1 / d2;
+					/* Division-by-zero is undefined
+					 * behavior, so rely on a helper.
+					 */
+					d3 = duk_double_div(d1, d2);
 					break;
 				}
 				case DUK_OP_EXP: {

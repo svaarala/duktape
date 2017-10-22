@@ -511,7 +511,11 @@ DUK_INTERNAL void duk_hbufobj_validated_write(duk_hthread *thr, duk_hbufobj *h_b
 		du.ui[0] = (duk_uint32_t) duk_to_int32(thr, -1);
 		break;
 	case DUK_HBUFOBJ_ELEM_FLOAT32:
-		du.f[0] = (duk_float_t) duk_to_number_m1(thr);
+		/* A double-to-float cast is undefined behavior in C99 if
+		 * the cast is out-of-range, so use a helper.  Example:
+		 * runtime error: value -1e+100 is outside the range of representable values of type 'float'
+		 */
+		du.f[0] = duk_double_to_float_t(duk_to_number_m1(thr));
 		break;
 	case DUK_HBUFOBJ_ELEM_FLOAT64:
 		du.d = (duk_double_t) duk_to_number_m1(thr);
@@ -2461,9 +2465,12 @@ DUK_INTERNAL duk_ret_t duk_bi_buffer_readfield(duk_hthread *thr) {
 		} while (i != i_end);
 
 		if (magic_signed) {
-			/* Shift to sign extend. */
+			/* Shift to sign extend.  Left shift must be unsigned
+			 * to avoid undefined behavior; right shift must be
+			 * signed to sign extend properly.
+			 */
 			shift_tmp = (duk_small_uint_t) (64U - (duk_small_uint_t) field_bytelen * 8U);
-			tmp = (tmp << shift_tmp) >> shift_tmp;
+			tmp = (duk_int64_t) ((duk_uint64_t) tmp << shift_tmp) >> shift_tmp;
 		}
 
 		duk_push_i64(thr, tmp);
