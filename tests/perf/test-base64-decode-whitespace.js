@@ -30,11 +30,15 @@ function test() {
     print(tmp2.length);
 
     print('run');
-    for (i = 0; i < 2000; i++) {
+    var t1 = Date.now();
+    var loopCount = 2000;
+    for (i = 0; i < loopCount; i++) {
         // Assigning to 'res' avoids garbage collection of result; this is
         // intentional to avoid mixing string intern performance to the test.
         var res = Duktape.dec('base64', tmp2);
     }
+    var t2 = Date.now();
+    print(((tmp2.length * loopCount) / (1024 * 1024)) / (t2 - t1) + ' megabytes/millisecond');
 }
 
 try {
