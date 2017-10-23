@@ -3201,6 +3201,9 @@ Planned
 
 * Add C++ name mangling wrappers (extern "C") for extras (GH-1780, GH-1782)
 
+* Fix debugger StepOver behavior when a tailcall happens in a nested
+  function (not the function where stepping started from) (GH-1786, GH-1787)
+
 * Fix trailing single line comment handling for Function constructor;
   new Function('return "foo" //') previously failed with SyntaxError
   (GH-1757)
