@@ -7,7 +7,7 @@ def test():
 
     print('build')
     for i in xrange(1024):
-        tmp1.append('%x' % math.floor(random.random() * 16))
+        tmp1.append(chr(random.randint(0, 127)))
     tmp1 = ''.join(tmp1)
     for i in xrange(1024):
         tmp2.append(tmp1)

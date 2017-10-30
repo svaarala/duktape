@@ -130,6 +130,8 @@ DUK_USE_ES6: false
 DUK_USE_ES7: false
 DUK_USE_ES8: false
 DUK_USE_ES9: false
+DUK_USE_BASE64_SUPPORT: false
+DUK_USE_HEX_SUPPORT: false
 DUK_USE_COROUTINE_SUPPORT: false
 DUK_USE_SOURCE_NONBMP: false  # <300 bytes footprint
 DUK_USE_ES6_PROXY: false  # roughly 2kB footprint

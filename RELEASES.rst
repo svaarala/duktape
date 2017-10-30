@@ -3199,6 +3199,20 @@ Planned
   an issue even on x86); applications working with a low memory target may
   want to force DUK_USE_ALIGN_BY in configuration (GH-1783, GH-1784)
 
+* Base64 decoder is now more lenient for padding: accepts missing padding
+  ('Zm'), partial padding ('Zm='), standard padding ('Zm=='), and extra
+  padding ('Zm===' etc), also for concatenated documents ('Zm===Zm' decodes
+  to 'ff' for example) (GH-1789)
+
+* Base64 encoder and decoder performance improvements for both fast path and
+  slow path variants (GH-1789)
+
+* Make base64 support optional and drop it from lowmem base configuration;
+  define DUK_USE_BASE64_SUPPORT to enable it (GH-1789)
+
+* Make hex support optional and drop it from lowmem base configuration;
+  define DUK_USE_BASE64_SUPPORT to enable it (GH-1789)
+
 * Add C++ name mangling wrappers (extern "C") for extras (GH-1780, GH-1782)
 
 * Fix debugger StepOver behavior when a tailcall happens in a nested
