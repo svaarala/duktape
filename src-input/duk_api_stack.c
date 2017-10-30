@@ -1527,6 +1527,7 @@ DUK_EXTERNAL duk_bool_t duk_require_boolean(duk_hthread *thr, duk_idx_t idx) {
 		return ret;
 	} else {
 		DUK_ERROR_REQUIRE_TYPE_INDEX(thr, idx, "boolean", DUK_STR_NOT_BOOLEAN);
+		DUK_WO_NORETURN(return 0;);
 	}
 }
 
@@ -3237,12 +3238,14 @@ DUK_EXTERNAL const char *duk_to_string(duk_hthread *thr, duk_idx_t idx) {
 		DUK_ASSERT(h != NULL);
 		if (DUK_UNLIKELY(DUK_HSTRING_HAS_SYMBOL(h))) {
 			DUK_ERROR_TYPE(thr, DUK_STR_CANNOT_STRING_COERCE_SYMBOL);
+			DUK_WO_NORETURN(goto skip_replace;);
 		} else {
 			goto skip_replace;
 		}
 #else
 		goto skip_replace;
 #endif
+		break;
 	}
 	case DUK_TAG_BUFFER: /* Go through Uint8Array.prototype.toString() for coercion. */
 	case DUK_TAG_OBJECT: {
@@ -5366,6 +5369,7 @@ DUK_EXTERNAL duk_idx_t duk_push_proxy(duk_hthread *thr, duk_uint_t proxy_flags) 
 
  fail_args:
 	DUK_ERROR_TYPE_INVALID_ARGS(thr);
+	DUK_WO_NORETURN(return 0;);
 }
 #else  /* DUK_USE_ES6_PROXY */
 DUK_EXTERNAL duk_idx_t duk_push_proxy(duk_hthread *thr, duk_uint_t proxy_flags) {

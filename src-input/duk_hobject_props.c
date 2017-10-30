@@ -2879,6 +2879,7 @@ DUK_INTERNAL duk_bool_t duk_hobject_hasprop(duk_hthread *thr, duk_tval *tv_obj, 
 		/* Note: unconditional throw */
 		DUK_DDD(DUK_DDDPRINT("base object is not an object -> reject"));
 		DUK_ERROR_TYPE(thr, DUK_STR_INVALID_BASE);
+		DUK_WO_NORETURN(return 0;);
 	}
 
 	/* XXX: fast path for arrays? */

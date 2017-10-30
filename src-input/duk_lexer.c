@@ -740,6 +740,7 @@ DUK_LOCAL duk_codepoint_t duk__lexer_parse_escape(duk_lexer_ctx *lex_ctx, duk_bo
 
  fail_escape:
 	DUK_ERROR_SYNTAX(lex_ctx->thr, DUK_STR_INVALID_ESCAPE);
+	DUK_WO_NORETURN(return 0;);
 }
 
 /* Parse legacy octal escape of the form \N{1,3}, e.g. \0, \5, \0377.  Maximum
