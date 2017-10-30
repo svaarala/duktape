@@ -34,6 +34,7 @@
  */
 #define DUK_CAUSE_SEGFAULT()  do { *((volatile duk_uint32_t *) NULL) = (duk_uint32_t) 0xdeadbeefUL; } while (0)
 #endif
+
 #if !defined(DUK_UNREF)
 /* Macro for suppressing warnings for potentially unreferenced variables.
  * The variables can be actually unreferenced or unreferenced in some
@@ -43,9 +44,24 @@
  */
 #define DUK_UNREF(x)  do { (void) (x); } while (0)
 #endif
-#if !defined(DUK_NORETURN)
+
+/* Fillin for DUK_NORETURN; DUK_WO_NORETURN() is used to insert dummy
+ * dummy statements after noreturn calls to silence harmless compiler
+ * warnings, e.g.:
+ *
+ *   DUK_ERROR_TYPE(thr, "aiee");
+ *   DUK_WO_NORETURN(return 0;);
+ *
+ * Statements inside DUK_WO_NORETURN() must NEVER be actually reachable,
+ * and they're only included to satisfy the compiler.
+ */
+#if defined(DUK_NORETURN)
+#define DUK_WO_NORETURN(stmt) do { } while (0)
+#else
 #define DUK_NORETURN(decl)  decl
+#define DUK_WO_NORETURN(stmt) do { stmt } while (0)
 #endif
+
 #if !defined(DUK_UNREACHABLE)
 /* Don't know how to declare unreachable point, so don't do it; this
  * may cause some spurious compilation warnings (e.g. "variable used
@@ -53,6 +69,7 @@
  */
 #define DUK_UNREACHABLE()  do { } while (0)
 #endif
+
 #if !defined(DUK_LOSE_CONST)
 /* Convert any input pointer into a "void *", losing a const qualifier.
  * This is not fully portable because casting through duk_uintptr_t may
