@@ -25,3 +25,7 @@ from Duktape v2.2.x.  Note the following:
   usage matters, you may want to force DUK_USE_ALIGN_BY to a lower value
   (4 or 1) to reduce memory overhead.  For most targets the memory overhead
   is not important.
+
+* Base-64 and hex encoding/decoding support is now configurable and disabled
+  by default in the example low_memory.yaml configuration.  Enable them
+  manually if necessary using DUK_USE_BASE64_SUPPORT and DUK_USE_HEX_SUPPORT.
