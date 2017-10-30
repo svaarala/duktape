@@ -801,6 +801,7 @@ DUK_INTERNAL duk_hstring *duk_heap_strtable_intern_checked(duk_hthread *thr, con
 	res = duk_heap_strtable_intern(thr->heap, str, blen);
 	if (DUK_UNLIKELY(res == NULL)) {
 		DUK_ERROR_ALLOC_FAILED(thr);
+		DUK_WO_NORETURN(return NULL;);
 	}
 	return res;
 }
@@ -814,6 +815,7 @@ DUK_INTERNAL duk_hstring *duk_heap_strtable_intern_u32_checked(duk_hthread *thr,
 	res = duk_heap_strtable_intern_u32(thr->heap, val);
 	if (DUK_UNLIKELY(res == NULL)) {
 		DUK_ERROR_ALLOC_FAILED(thr);
+		DUK_WO_NORETURN(return NULL;);
 	}
 	return res;
 }

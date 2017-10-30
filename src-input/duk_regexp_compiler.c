@@ -524,6 +524,7 @@ DUK_LOCAL void duk__parse_disjunction(duk_re_compiler_ctx *re_ctx, duk_bool_t ex
 
 	if (re_ctx->recursion_depth >= re_ctx->recursion_limit) {
 		DUK_ERROR_RANGE(re_ctx->thr, DUK_STR_REGEXP_COMPILER_RECURSION_LIMIT);
+		DUK_WO_NORETURN(return;);
 	}
 	re_ctx->recursion_depth++;
 
@@ -597,9 +598,11 @@ DUK_LOCAL void duk__parse_disjunction(duk_re_compiler_ctx *re_ctx, duk_bool_t ex
 		case DUK_RETOK_QUANTIFIER: {
 			if (atom_start_offset < 0) {
 				DUK_ERROR_SYNTAX(re_ctx->thr, DUK_STR_INVALID_QUANTIFIER_NO_ATOM);
+				DUK_WO_NORETURN(return;);
 			}
 			if (re_ctx->curr_token.qmin > re_ctx->curr_token.qmax) {
 				DUK_ERROR_SYNTAX(re_ctx->thr, DUK_STR_INVALID_QUANTIFIER_VALUES);
+				DUK_WO_NORETURN(return;);
 			}
 			if (atom_char_length >= 0) {
 				/*
@@ -668,6 +671,7 @@ DUK_LOCAL void duk__parse_disjunction(duk_re_compiler_ctx *re_ctx, duk_bool_t ex
 				              re_ctx->curr_token.qmin : re_ctx->curr_token.qmax;
 				if (atom_copies > DUK_RE_MAX_ATOM_COPIES) {
 					DUK_ERROR_RANGE(re_ctx->thr, DUK_STR_QUANTIFIER_TOO_MANY_COPIES);
+					DUK_WO_NORETURN(return;);
 				}
 
 				/* wipe the capture range made by the atom (if any) */
@@ -931,17 +935,20 @@ DUK_LOCAL void duk__parse_disjunction(duk_re_compiler_ctx *re_ctx, duk_bool_t ex
 		case DUK_RETOK_ATOM_END_GROUP: {
 			if (expect_eof) {
 				DUK_ERROR_SYNTAX(re_ctx->thr, DUK_STR_UNEXPECTED_CLOSING_PAREN);
+				DUK_WO_NORETURN(return;);
 			}
 			goto done;
 		}
 		case DUK_RETOK_EOF: {
 			if (!expect_eof) {
 				DUK_ERROR_SYNTAX(re_ctx->thr, DUK_STR_UNEXPECTED_END_OF_PATTERN);
+				DUK_WO_NORETURN(return;);
 			}
 			goto done;
 		}
 		default: {
 			DUK_ERROR_SYNTAX(re_ctx->thr, DUK_STR_UNEXPECTED_REGEXP_TOKEN);
+			DUK_WO_NORETURN(return;);
 		}
 		}
 
@@ -1036,7 +1043,7 @@ DUK_LOCAL duk_uint32_t duk__parse_regexp_flags(duk_hthread *thr, duk_hstring *h)
 
  flags_error:
 	DUK_ERROR_SYNTAX(thr, DUK_STR_INVALID_REGEXP_FLAGS);
-	return 0;  /* never here */
+	DUK_WO_NORETURN(return 0U;);
 }
 
 /*
@@ -1200,6 +1207,7 @@ DUK_INTERNAL void duk_regexp_compile(duk_hthread *thr) {
 
 	if (re_ctx.highest_backref > re_ctx.captures) {
 		DUK_ERROR_SYNTAX(thr, DUK_STR_INVALID_BACKREFS);
+		DUK_WO_NORETURN(return;);
 	}
 
 	/*

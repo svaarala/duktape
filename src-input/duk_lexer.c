@@ -313,6 +313,7 @@ DUK_LOCAL void duk__fill_lexer_buffer(duk_lexer_ctx *lex_ctx, duk_small_uint_t s
 	lex_ctx->input_line = input_line;
 
 	DUK_ERROR_SYNTAX(lex_ctx->thr, DUK_STR_SOURCE_DECODE_FAILED);
+	DUK_WO_NORETURN(return;);
 }
 
 DUK_LOCAL void duk__advance_bytes(duk_lexer_ctx *lex_ctx, duk_small_uint_t count_bytes) {
@@ -473,7 +474,7 @@ DUK_LOCAL duk_codepoint_t duk__read_char(duk_lexer_ctx *lex_ctx) {
  error_clipped:   /* clipped codepoint */
  error_encoding:  /* invalid codepoint encoding or codepoint */
 	DUK_ERROR_SYNTAX(lex_ctx->thr, DUK_STR_SOURCE_DECODE_FAILED);
-	return 0;
+	DUK_WO_NORETURN(return 0;);
 }
 
 DUK_LOCAL void duk__advance_bytes(duk_lexer_ctx *lex_ctx, duk_small_uint_t count_bytes) {
@@ -937,11 +938,11 @@ DUK_LOCAL void duk__lexer_parse_string_literal(duk_lexer_ctx *lex_ctx, duk_token
 
  fail_escape:
 	DUK_ERROR_SYNTAX(lex_ctx->thr, DUK_STR_INVALID_ESCAPE);
-	return;
+	DUK_WO_NORETURN(return;);
 
  fail_unterminated:
 	DUK_ERROR_SYNTAX(lex_ctx->thr, DUK_STR_UNTERMINATED_STRING);
-	return;
+	DUK_WO_NORETURN(return;);
 }
 
 /* Skip to end-of-line (or end-of-file), used for single line comments. */
@@ -1785,32 +1786,32 @@ void duk_lexer_parse_js_input_element(duk_lexer_ctx *lex_ctx,
 
  fail_token_limit:
 	DUK_ERROR_RANGE(lex_ctx->thr, DUK_STR_TOKEN_LIMIT);
-	return;
+	DUK_WO_NORETURN(return;);
 
  fail_token:
 	DUK_ERROR_SYNTAX(lex_ctx->thr, DUK_STR_INVALID_TOKEN);
-	return;
+	DUK_WO_NORETURN(return;);
 
  fail_number_literal:
 	DUK_ERROR_SYNTAX(lex_ctx->thr, DUK_STR_INVALID_NUMBER_LITERAL);
-	return;
+	DUK_WO_NORETURN(return;);
 
  fail_escape:
 	DUK_ERROR_SYNTAX(lex_ctx->thr, DUK_STR_INVALID_ESCAPE);
-	return;
+	DUK_WO_NORETURN(return;);
 
  fail_unterm_regexp:
 	DUK_ERROR_SYNTAX(lex_ctx->thr, DUK_STR_UNTERMINATED_REGEXP);
-	return;
+	DUK_WO_NORETURN(return;);
 
  fail_unterm_comment:
 	DUK_ERROR_SYNTAX(lex_ctx->thr, DUK_STR_UNTERMINATED_COMMENT);
-	return;
+	DUK_WO_NORETURN(return;);
 
 #if !defined(DUK_USE_REGEXP_SUPPORT)
  fail_regexp_support:
 	DUK_ERROR_SYNTAX(lex_ctx->thr, DUK_STR_REGEXP_SUPPORT_DISABLED);
-	return;
+	DUK_WO_NORETURN(return;);
 #endif
 }
 
@@ -2158,24 +2159,24 @@ DUK_INTERNAL void duk_lexer_parse_re_token(duk_lexer_ctx *lex_ctx, duk_re_token 
 
  fail_token_limit:
 	DUK_ERROR_RANGE(lex_ctx->thr, DUK_STR_TOKEN_LIMIT);
-	return;
+	DUK_WO_NORETURN(return;);
 
  fail_escape:
 	DUK_ERROR_SYNTAX(lex_ctx->thr, DUK_STR_INVALID_REGEXP_ESCAPE);
-	return;
+	DUK_WO_NORETURN(return;);
 
  fail_group:
 	DUK_ERROR_SYNTAX(lex_ctx->thr, DUK_STR_INVALID_REGEXP_GROUP);
-	return;
+	DUK_WO_NORETURN(return;);
 
 #if !defined(DUK_USE_ES6_REGEXP_SYNTAX)
  fail_invalid_char:
 	DUK_ERROR_SYNTAX(lex_ctx->thr, DUK_STR_INVALID_REGEXP_CHARACTER);
-	return;
+	DUK_WO_NORETURN(return;);
 
  fail_quantifier:
 	DUK_ERROR_SYNTAX(lex_ctx->thr, DUK_STR_INVALID_QUANTIFIER);
-	return;
+	DUK_WO_NORETURN(return;);
 #endif
 }
 
@@ -2424,15 +2425,15 @@ DUK_INTERNAL void duk_lexer_parse_re_ranges(duk_lexer_ctx *lex_ctx, duk_re_range
 
  fail_escape:
 	DUK_ERROR_SYNTAX(lex_ctx->thr, DUK_STR_INVALID_REGEXP_ESCAPE);
-	return;
+	DUK_WO_NORETURN(return;);
 
  fail_range:
 	DUK_ERROR_SYNTAX(lex_ctx->thr, DUK_STR_INVALID_RANGE);
-	return;
+	DUK_WO_NORETURN(return;);
 
  fail_unterm_charclass:
 	DUK_ERROR_SYNTAX(lex_ctx->thr, DUK_STR_UNTERMINATED_CHARCLASS);
-	return;
+	DUK_WO_NORETURN(return;);
 }
 
 #endif  /* DUK_USE_REGEXP_SUPPORT */

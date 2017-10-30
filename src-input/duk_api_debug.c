@@ -42,6 +42,7 @@ DUK_EXTERNAL void duk_push_context_dump(duk_hthread *thr) {
 DUK_EXTERNAL void duk_push_context_dump(duk_hthread *thr) {
 	DUK_ASSERT_API_ENTRY(thr);
 	DUK_ERROR_UNSUPPORTED(thr);
+	DUK_WO_NORETURN(return;);
 }
 #endif  /* DUK_USE_JSON_SUPPORT */
 
@@ -153,7 +154,7 @@ DUK_EXTERNAL duk_bool_t duk_debugger_notify(duk_hthread *thr, duk_idx_t nvalues)
 	top = duk_get_top(thr);
 	if (top < nvalues) {
 		DUK_ERROR_RANGE(thr, "not enough stack values for notify");
-		return ret;  /* unreachable */
+		DUK_WO_NORETURN(return 0;);
 	}
 	if (duk_debug_is_attached(thr->heap)) {
 		duk_debug_write_notify(thr, DUK_DBG_CMD_APPNOTIFY);
@@ -220,11 +221,13 @@ DUK_EXTERNAL void duk_debugger_attach(duk_hthread *thr,
 	DUK_UNREF(detached_cb);
 	DUK_UNREF(udata);
 	DUK_ERROR_TYPE(thr, "no debugger support");
+	DUK_WO_NORETURN(return;);
 }
 
 DUK_EXTERNAL void duk_debugger_detach(duk_hthread *thr) {
 	DUK_ASSERT_API_ENTRY(thr);
 	DUK_ERROR_TYPE(thr, "no debugger support");
+	DUK_WO_NORETURN(return;);
 }
 
 DUK_EXTERNAL void duk_debugger_cooperate(duk_hthread *thr) {
@@ -241,7 +244,7 @@ DUK_EXTERNAL duk_bool_t duk_debugger_notify(duk_hthread *thr, duk_idx_t nvalues)
 	top = duk_get_top(thr);
 	if (top < nvalues) {
 		DUK_ERROR_RANGE_INVALID_COUNT(thr);
-		return 0;  /* unreachable */
+		DUK_WO_NORETURN(return 0;);
 	}
 
 	/* No debugger support, just pop values. */

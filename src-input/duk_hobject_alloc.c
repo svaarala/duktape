@@ -214,6 +214,7 @@ DUK_INTERNAL duk_hthread *duk_hthread_alloc(duk_hthread *thr, duk_uint_t hobject
 	res = duk_hthread_alloc_unchecked(thr->heap, hobject_flags);
 	if (res == NULL) {
 		DUK_ERROR_ALLOC_FAILED(thr);
+		DUK_WO_NORETURN(return NULL;);
 	}
 	return res;
 }

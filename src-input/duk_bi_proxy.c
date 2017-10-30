@@ -28,6 +28,7 @@ DUK_INTERNAL void duk_proxy_ownkeys_postprocess(duk_hthread *thr, duk_hobject *h
 		h = duk_get_hstring(thr, -1);
 		if (h == NULL) {
 			DUK_ERROR_TYPE_INVALID_TRAP_RESULT(thr);
+			DUK_WO_NORETURN(return;);
 		}
 
 		if (!(flags & DUK_ENUM_INCLUDE_NONENUMERABLE)) {

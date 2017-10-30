@@ -511,11 +511,11 @@ DUK_EXTERNAL void duk_def_prop(duk_hthread *thr, duk_idx_t obj_idx, duk_uint_t f
 
  fail_invalid_desc:
 	DUK_ERROR_TYPE(thr, DUK_STR_INVALID_DESCRIPTOR);
-	return;
+	DUK_WO_NORETURN(return;);
 
  fail_not_callable:
 	DUK_ERROR_TYPE(thr, DUK_STR_NOT_CALLABLE);
-	return;
+	DUK_WO_NORETURN(return;);
 }
 
 /*
@@ -613,6 +613,7 @@ DUK_INTERNAL void duk_seal_freeze_raw(duk_hthread *thr, duk_idx_t obj_idx, duk_b
 
  fail_cannot_freeze:
 	DUK_ERROR_TYPE_INVALID_ARGS(thr);  /* XXX: proper error message */
+	DUK_WO_NORETURN(return;);
 }
 
 DUK_EXTERNAL void duk_seal(duk_hthread *thr, duk_idx_t obj_idx) {
@@ -764,7 +765,7 @@ DUK_EXTERNAL void duk_set_prototype(duk_hthread *thr, duk_idx_t idx) {
 #if defined(DUK_USE_ROM_OBJECTS)
 	if (DUK_HEAPHDR_HAS_READONLY((duk_heaphdr *) obj)) {
 		DUK_ERROR_TYPE(thr, DUK_STR_NOT_CONFIGURABLE);  /* XXX: "read only object"? */
-		return;
+		DUK_WO_NORETURN(return;);
 	}
 #endif
 
@@ -821,11 +822,13 @@ DUK_EXTERNAL void duk_get_finalizer(duk_hthread *thr, duk_idx_t idx) {
 	DUK_ASSERT_API_ENTRY(thr);
 	DUK_UNREF(idx);
 	DUK_ERROR_UNSUPPORTED(thr);
+	DUK_WO_NORETURN(return;);
 }
 
 DUK_EXTERNAL void duk_set_finalizer(duk_hthread *thr, duk_idx_t idx) {
 	DUK_ASSERT_API_ENTRY(thr);
 	DUK_UNREF(idx);
 	DUK_ERROR_UNSUPPORTED(thr);
+	DUK_WO_NORETURN(return;);
 }
 #endif  /* DUK_USE_FINALIZER_SUPPORT */

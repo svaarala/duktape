@@ -40,6 +40,7 @@ DUK_INTERNAL duk_ret_t duk_bi_reflect_object_get(duk_hthread *thr) {
 	if (nargs >= 3 && !duk_strict_equals(thr, 0, 2)) {
 		/* XXX: [[Get]] receiver currently unsupported */
 		DUK_ERROR_UNSUPPORTED(thr);
+		DUK_WO_NORETURN(return 0;);
 	}
 
 	/* [ target key receiver? ...? ] */
@@ -83,6 +84,7 @@ DUK_INTERNAL duk_ret_t duk_bi_reflect_object_set(duk_hthread *thr) {
 	if (nargs >= 4 && !duk_strict_equals(thr, 0, 3)) {
 		/* XXX: [[Set]] receiver currently unsupported */
 		DUK_ERROR_UNSUPPORTED(thr);
+		DUK_WO_NORETURN(return 0;);
 	}
 
 	/* [ target key value receiver? ...? ] */

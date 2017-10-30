@@ -748,6 +748,7 @@ DUK_EXTERNAL void duk_load_function(duk_hthread *thr) {
 
  format_error:
 	DUK_ERROR_TYPE(thr, DUK_STR_INVALID_BYTECODE);
+	DUK_WO_NORETURN(return;);
 }
 
 #else  /* DUK_USE_BYTECODE_DUMP_SUPPORT */
@@ -755,11 +756,13 @@ DUK_EXTERNAL void duk_load_function(duk_hthread *thr) {
 DUK_EXTERNAL void duk_dump_function(duk_hthread *thr) {
 	DUK_ASSERT_API_ENTRY(thr);
 	DUK_ERROR_UNSUPPORTED(thr);
+	DUK_WO_NORETURN(return;);
 }
 
 DUK_EXTERNAL void duk_load_function(duk_hthread *thr) {
 	DUK_ASSERT_API_ENTRY(thr);
 	DUK_ERROR_UNSUPPORTED(thr);
+	DUK_WO_NORETURN(return;);
 }
 
 #endif  /* DUK_USE_BYTECODE_DUMP_SUPPORT */

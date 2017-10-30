@@ -14,9 +14,10 @@ DUK_EXTERNAL void *duk_resize_buffer(duk_hthread *thr, duk_idx_t idx, duk_size_t
 
 	if (!(DUK_HBUFFER_HAS_DYNAMIC(h) && !DUK_HBUFFER_HAS_EXTERNAL(h))) {
 		DUK_ERROR_TYPE(thr, DUK_STR_WRONG_BUFFER_TYPE);
+		DUK_WO_NORETURN(return NULL;);
 	}
 
-	/* maximum size check is handled by callee */
+	/* Maximum size check is handled by callee. */
 	duk_hbuffer_resize(thr, h, new_size);
 
 	return DUK_HBUFFER_DYNAMIC_GET_DATA_PTR(thr->heap, h);
@@ -34,6 +35,7 @@ DUK_EXTERNAL void *duk_steal_buffer(duk_hthread *thr, duk_idx_t idx, duk_size_t 
 
 	if (!(DUK_HBUFFER_HAS_DYNAMIC(h) && !DUK_HBUFFER_HAS_EXTERNAL(h))) {
 		DUK_ERROR_TYPE(thr, DUK_STR_WRONG_BUFFER_TYPE);
+		DUK_WO_NORETURN(return NULL;);
 	}
 
 	/* Forget the previous allocation, setting size to 0 and alloc to
@@ -62,6 +64,7 @@ DUK_EXTERNAL void duk_config_buffer(duk_hthread *thr, duk_idx_t idx, void *ptr, 
 
 	if (!DUK_HBUFFER_HAS_EXTERNAL(h)) {
 		DUK_ERROR_TYPE(thr, DUK_STR_WRONG_BUFFER_TYPE);
+		DUK_WO_NORETURN(return;);
 	}
 	DUK_ASSERT(DUK_HBUFFER_HAS_DYNAMIC(h));
 

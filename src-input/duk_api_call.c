@@ -53,7 +53,7 @@ DUK_LOCAL duk_idx_t duk__call_get_idx_func(duk_hthread *thr, duk_idx_t nargs, du
 	idx_func = duk_get_top(thr) - nargs - other;
 	if (DUK_UNLIKELY((idx_func | nargs) < 0)) {  /* idx_func < 0 || nargs < 0; OR sign bits */
 		DUK_ERROR_TYPE_INVALID_ARGS(thr);
-		/* unreachable */
+		DUK_WO_NORETURN(return 0;);
 	}
 	DUK_ASSERT(duk_is_valid_index(thr, idx_func));
 	return idx_func;
@@ -165,6 +165,7 @@ DUK_EXTERNAL void duk_call_prop(duk_hthread *thr, duk_idx_t obj_idx, duk_idx_t n
 	obj_idx = duk_require_normalize_index(thr, obj_idx);  /* make absolute */
 	if (DUK_UNLIKELY(nargs < 0)) {
 		DUK_ERROR_TYPE_INVALID_ARGS(thr);
+		DUK_WO_NORETURN(return;);
 	}
 
 	duk__call_prop_prep_stack(thr, obj_idx, nargs);
@@ -201,7 +202,7 @@ DUK_EXTERNAL duk_int_t duk_pcall(duk_hthread *thr, duk_idx_t nargs) {
 	args.nargs = nargs;
 	if (DUK_UNLIKELY(nargs < 0)) {
 		DUK_ERROR_TYPE_INVALID_ARGS(thr);
-		return DUK_EXEC_ERROR;  /* unreachable */
+		DUK_WO_NORETURN(return DUK_EXEC_ERROR;);
 	}
 	args.call_flags = 0;
 
@@ -236,7 +237,7 @@ DUK_INTERNAL duk_int_t duk_pcall_method_flags(duk_hthread *thr, duk_idx_t nargs,
 	args.nargs = nargs;
 	if (DUK_UNLIKELY(nargs < 0)) {
 		DUK_ERROR_TYPE_INVALID_ARGS(thr);
-		return DUK_EXEC_ERROR;  /* unreachable */
+		DUK_WO_NORETURN(return DUK_EXEC_ERROR;);
 	}
 	args.call_flags = call_flags;
 
@@ -277,7 +278,7 @@ DUK_EXTERNAL duk_int_t duk_pcall_prop(duk_hthread *thr, duk_idx_t obj_idx, duk_i
 	args.nargs = nargs;
 	if (DUK_UNLIKELY(nargs < 0)) {
 		DUK_ERROR_TYPE_INVALID_ARGS(thr);
-		return DUK_EXEC_ERROR;  /* unreachable */
+		DUK_WO_NORETURN(return DUK_EXEC_ERROR;);
 	}
 	args.call_flags = 0;
 
@@ -313,7 +314,7 @@ DUK_EXTERNAL duk_int_t duk_safe_call(duk_hthread *thr, duk_safe_call_function fu
 		                  (long) (thr->valstack_top - thr->valstack),
 		                  (long) nrets));
 		DUK_ERROR_TYPE_INVALID_ARGS(thr);
-		return DUK_EXEC_ERROR;  /* unreachable */
+		DUK_WO_NORETURN(return DUK_EXEC_ERROR;);
 	}
 
 	rc = duk_handle_safe_call(thr,           /* thread */
@@ -361,7 +362,7 @@ DUK_EXTERNAL duk_int_t duk_pnew(duk_hthread *thr, duk_idx_t nargs) {
 
 	if (DUK_UNLIKELY(nargs < 0)) {
 		DUK_ERROR_TYPE_INVALID_ARGS(thr);
-		return DUK_EXEC_ERROR;  /* unreachable */
+		DUK_WO_NORETURN(return DUK_EXEC_ERROR;);
 	}
 
 	rc = duk_safe_call(thr, duk__pnew_helper, (void *) &nargs /*udata*/, nargs + 1 /*nargs*/, 1 /*nrets*/);
@@ -388,6 +389,7 @@ DUK_INTERNAL void duk_require_constructor_call(duk_hthread *thr) {
 
 	if (!duk_is_constructor_call(thr)) {
 		DUK_ERROR_TYPE(thr, DUK_STR_CONSTRUCT_ONLY);
+		DUK_WO_NORETURN(return;);
 	}
 }
 
@@ -465,7 +467,7 @@ DUK_EXTERNAL duk_int_t duk_get_magic(duk_hthread *thr, duk_idx_t idx) {
 	/* fall through */
  type_error:
 	DUK_ERROR_TYPE(thr, DUK_STR_UNEXPECTED_TYPE);
-	return 0;
+	DUK_WO_NORETURN(return 0;);
 }
 
 DUK_EXTERNAL void duk_set_magic(duk_hthread *thr, duk_idx_t idx, duk_int_t magic) {

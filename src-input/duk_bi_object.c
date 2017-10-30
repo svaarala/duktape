@@ -795,6 +795,7 @@ DUK_INTERNAL duk_ret_t duk_bi_object_prototype_lookupaccessor(duk_hthread *thr) 
 
 		if (DUK_UNLIKELY(sanity-- == 0)) {
 			DUK_ERROR_RANGE(thr, DUK_STR_PROTOTYPE_CHAIN_LIMIT);
+			DUK_WO_NORETURN(return 0;);
 		}
 
 		duk_get_prototype(thr, -1);

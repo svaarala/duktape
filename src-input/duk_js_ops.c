@@ -217,6 +217,7 @@ DUK_INTERNAL duk_double_t duk_js_tonumber(duk_hthread *thr, duk_tval *tv) {
 		duk_hstring *h = DUK_TVAL_GET_STRING(tv);
 		if (DUK_UNLIKELY(DUK_HSTRING_HAS_SYMBOL(h))) {
 			DUK_ERROR_TYPE(thr, DUK_STR_CANNOT_NUMBER_COERCE_SYMBOL);
+			DUK_WO_NORETURN(return 0.0;);
 		}
 		duk_push_hstring(thr, h);
 		return duk__tonumber_string_raw(thr);
@@ -1161,6 +1162,7 @@ DUK_INTERNAL duk_bool_t duk_js_instanceof(duk_hthread *thr, duk_tval *tv_x, duk_
 
 	if (DUK_UNLIKELY(sanity == 0)) {
 		DUK_ERROR_RANGE(thr, DUK_STR_PROTOTYPE_CHAIN_LIMIT);
+		DUK_WO_NORETURN(return 0;);
 	}
 	DUK_UNREACHABLE();
 
@@ -1178,12 +1180,12 @@ DUK_INTERNAL duk_bool_t duk_js_instanceof(duk_hthread *thr, duk_tval *tv_x, duk_
 
  error_invalid_rval:
 	DUK_ERROR_TYPE(thr, DUK_STR_INVALID_INSTANCEOF_RVAL);
-	return 0;
+	DUK_WO_NORETURN(return 0;);
 
 #if defined(DUK_USE_VERBOSE_ERRORS)
  error_invalid_rval_noproto:
 	DUK_ERROR_TYPE(thr, DUK_STR_INVALID_INSTANCEOF_RVAL_NOPROTO);
-	return 0;
+	DUK_WO_NORETURN(return 0;);
 #endif
 }
 

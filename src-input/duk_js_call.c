@@ -57,6 +57,7 @@ DUK_LOCAL DUK_NOINLINE void duk__call_c_recursion_limit_check_slowpath(duk_hthre
 
 	DUK_D(DUK_DPRINT("call prevented because C recursion limit reached"));
 	DUK_ERROR_RANGE(thr, DUK_STR_C_CALLSTACK_LIMIT);
+	DUK_WO_NORETURN(return;);
 }
 
 DUK_LOCAL DUK_ALWAYS_INLINE void duk__call_c_recursion_limit_check(duk_hthread *thr) {
@@ -92,6 +93,7 @@ DUK_LOCAL DUK_NOINLINE void duk__call_callstack_limit_check_slowpath(duk_hthread
 	 */
 	DUK_D(DUK_DPRINT("call prevented because call stack limit reached"));
 	DUK_ERROR_RANGE(thr, DUK_STR_CALLSTACK_LIMIT);
+	DUK_WO_NORETURN(return;);
 }
 
 DUK_LOCAL DUK_ALWAYS_INLINE void duk__call_callstack_limit_check(duk_hthread *thr) {
@@ -505,6 +507,7 @@ DUK_INTERNAL void duk_call_construct_postprocess(duk_hthread *thr, duk_small_uin
 		if (DUK_UNLIKELY(proxy_invariant != 0U)) {
 			/* Proxy 'construct' return value invariant violated. */
 			DUK_ERROR_TYPE_INVALID_TRAP_RESULT(thr);
+			DUK_WO_NORETURN(return;);
 		}
 		/* XXX: direct value stack access */
 		duk_pop(thr);
@@ -605,6 +608,7 @@ DUK_LOCAL void duk__handle_bound_chain_for_call(duk_hthread *thr,
 	} else {
 		/* Shouldn't happen, so ugly error is enough. */
 		DUK_ERROR_INTERNAL(thr);
+		DUK_WO_NORETURN(return;);
 	}
 
 	DUK_ASSERT(duk_get_top(thr) >= idx_func + 2);
@@ -780,11 +784,13 @@ DUK_LOCAL duk_bool_t duk__handle_specialfuncs_for_call(duk_hthread *thr, duk_idx
 		if (top < idx_func + 3) {
 			/* argArray is a mandatory argument for Reflect.construct(). */
 			DUK_ERROR_TYPE_INVALID_ARGS(thr);
+			DUK_WO_NORETURN(return 0;);
 		}
 		if (top > idx_func + 3) {
 			if (!duk_strict_equals(thr, idx_func, idx_func + 3)) {
 				/* XXX: [[Construct]] newTarget currently unsupported */
 				DUK_ERROR_UNSUPPORTED(thr);
+				DUK_WO_NORETURN(return 0;);
 			}
 			duk_set_top_unsafe(thr, idx_func + 3);  /* remove any args beyond argArray */
 		}
@@ -1321,6 +1327,7 @@ DUK_LOCAL duk_hobject *duk__resolve_target_func_and_this_binding(duk_hthread *th
 		if (duk_hobject_find_existing_entry_tval_ptr(thr->heap, DUK_TVAL_GET_OBJECT(tv_func), DUK_HTHREAD_STRING_INT_TARGET(thr)) != NULL) {
 			duk_push_tval(thr, tv_func);
 			(void) duk_throw(thr);
+			DUK_WO_NORETURN(return NULL;);
 		}
 	}
 #endif
@@ -1334,8 +1341,7 @@ DUK_LOCAL duk_hobject *duk__resolve_target_func_and_this_binding(duk_hthread *th
 #else
 	DUK_ERROR_TYPE(thr, DUK_STR_NOT_CALLABLE);
 #endif
-	DUK_UNREACHABLE();
-	return NULL;  /* never executed */
+	DUK_WO_NORETURN(return NULL;);
 
  not_constructable:
 	/* For now GETPROPC delayed error not needed for constructor calls. */
@@ -1348,8 +1354,7 @@ DUK_LOCAL duk_hobject *duk__resolve_target_func_and_this_binding(duk_hthread *th
 #else
 	DUK_ERROR_TYPE(thr, DUK_STR_NOT_CONSTRUCTABLE);
 #endif
-	DUK_UNREACHABLE();
-	return NULL;  /* never executed */
+	DUK_WO_NORETURN(return NULL;);
 }
 
 /*
@@ -1373,6 +1378,7 @@ DUK_LOCAL void duk__safe_call_adjust_valstack(duk_hthread *thr, duk_idx_t idx_re
 	idx_rcbase = duk_get_top(thr) - num_actual_rets;  /* base of known return values */
 	if (DUK_UNLIKELY(idx_rcbase < 0)) {
 		DUK_ERROR_TYPE(thr, DUK_STR_INVALID_CFUNC_RC);
+		DUK_WO_NORETURN(return;);
 	}
 
 	DUK_DDD(DUK_DDDPRINT("adjust valstack after func call: "
@@ -1886,7 +1892,7 @@ DUK_LOCAL void duk__call_thread_state_update(duk_hthread *thr) {
 
  thread_state_error:
 	DUK_ERROR_FMT1(thr, DUK_ERR_TYPE_ERROR, "invalid thread state (%ld)", (long) thr->state);
-	DUK_UNREACHABLE();
+	DUK_WO_NORETURN(return;);
 }
 
 /*
@@ -2237,9 +2243,10 @@ DUK_LOCAL duk_int_t duk__handle_call_raw(duk_hthread *thr,
 			;
 		} else if (rc < 0) {
 			duk_error_throw_from_negative_rc(thr, rc);
-			DUK_UNREACHABLE();
+			DUK_WO_NORETURN(return 0;);
 		} else {
 			DUK_ERROR_TYPE(thr, DUK_STR_INVALID_CFUNC_RC);
+			DUK_WO_NORETURN(return 0;);
 		}
 	}
 	DUK_ASSERT(thr->ptr_curr_pc == NULL);
@@ -2439,6 +2446,7 @@ DUK_LOCAL void duk__handle_safe_call_inner(duk_hthread *thr,
 
 	if (DUK_UNLIKELY(rc < 0)) {
 		duk_error_throw_from_negative_rc(thr, rc);
+		DUK_WO_NORETURN(return;);
 	}
 	DUK_ASSERT(rc >= 0);
 
@@ -2726,6 +2734,7 @@ DUK_INTERNAL duk_int_t duk_handle_safe_call(duk_hthread *thr,
 		DUK_D(DUK_DPRINT("unexpected c++ std::exception (perhaps thrown by user code)"));
 		try {
 			DUK_ERROR_FMT1(thr, DUK_ERR_TYPE_ERROR, "caught invalid c++ std::exception '%s' (perhaps thrown by user code)", what);
+			DUK_WO_NORETURN(return 0;);
 		} catch (duk_internal_exception exc) {
 			DUK_D(DUK_DPRINT("caught api error thrown from unexpected c++ std::exception"));
 			DUK_UNREF(exc);
@@ -2748,6 +2757,7 @@ DUK_INTERNAL duk_int_t duk_handle_safe_call(duk_hthread *thr,
 		DUK_STATS_INC(thr->heap, stats_safecall_throw);
 		try {
 			DUK_ERROR_TYPE(thr, "caught invalid c++ exception (perhaps thrown by user code)");
+			DUK_WO_NORETURN(return 0;);
 		} catch (duk_internal_exception exc) {
 			DUK_D(DUK_DPRINT("caught api error thrown from unexpected c++ exception"));
 			DUK_UNREF(exc);

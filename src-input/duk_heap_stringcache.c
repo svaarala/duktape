@@ -305,5 +305,5 @@ DUK_INTERNAL duk_uint_fast32_t duk_heap_strcache_offset_char2byte(duk_hthread *t
 
  scan_error:
 	DUK_ERROR_INTERNAL(thr);
-	return 0;
+	DUK_WO_NORETURN(return 0;);
 }
