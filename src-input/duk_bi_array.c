@@ -77,6 +77,7 @@ DUK_LOCAL duk_uint32_t duk__push_this_obj_len_u32_limited(duk_hthread *thr) {
 	duk_uint32_t ret = duk__push_this_obj_len_u32(thr);
 	if (DUK_UNLIKELY(ret >= 0x80000000UL)) {
 		DUK_ERROR_RANGE_INVALID_LENGTH(thr);
+		DUK_WO_NORETURN(return 0U;);
 	}
 	return ret;
 }

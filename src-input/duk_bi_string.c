@@ -28,6 +28,7 @@ DUK_LOCAL duk_hstring *duk__str_tostring_notregexp(duk_hthread *thr, duk_idx_t i
 
 	if (duk_get_class_number(thr, idx) == DUK_HOBJECT_CLASS_REGEXP) {
 		DUK_ERROR_TYPE_INVALID_ARGS(thr);
+		DUK_WO_NORETURN(return NULL;);
 	}
 	h = duk_to_hstring(thr, idx);
 	DUK_ASSERT(h != NULL);

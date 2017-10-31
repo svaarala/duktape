@@ -62,7 +62,7 @@ DUK_INTERNAL duk_uint8_t *duk_bw_resize(duk_hthread *thr, duk_bufwriter_ctx *bw_
 	if (DUK_UNLIKELY(new_sz < curr_off)) {
 		/* overflow */
 		DUK_ERROR_RANGE(thr, DUK_STR_BUFFER_TOO_LONG);
-		return NULL;  /* not reachable */
+		DUK_WO_NORETURN(return NULL;);
 	}
 #if 0  /* for manual torture testing: tight allocation, useful with valgrind */
 	new_sz = curr_off + sz;

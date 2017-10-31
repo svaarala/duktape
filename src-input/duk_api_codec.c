@@ -631,7 +631,7 @@ DUK_EXTERNAL const char *duk_base64_encode(duk_hthread *thr, duk_idx_t idx) {
 
  type_error:
 	DUK_ERROR_TYPE(thr, DUK_STR_BASE64_ENCODE_FAILED);
-	return NULL;  /* never here */
+	DUK_WO_NORETURN(return NULL;);
 }
 
 DUK_EXTERNAL void duk_base64_decode(duk_hthread *thr, duk_idx_t idx) {
@@ -668,16 +668,19 @@ DUK_EXTERNAL void duk_base64_decode(duk_hthread *thr, duk_idx_t idx) {
 
  type_error:
 	DUK_ERROR_TYPE(thr, DUK_STR_BASE64_DECODE_FAILED);
+	DUK_WO_NORETURN(return;);
 }
 #else  /* DUK_USE_BASE64_SUPPORT */
 DUK_EXTERNAL const char *duk_base64_encode(duk_hthread *thr, duk_idx_t idx) {
 	DUK_UNREF(idx);
 	DUK_ERROR_UNSUPPORTED(thr);
+	DUK_WO_NORETURN(return;);
 }
 
 DUK_EXTERNAL void duk_base64_decode(duk_hthread *thr, duk_idx_t idx) {
 	DUK_UNREF(idx);
 	DUK_ERROR_UNSUPPORTED(thr);
+	DUK_WO_NORETURN(return;);
 }
 #endif  /* DUK_USE_BASE64_SUPPORT */
 
@@ -823,15 +826,18 @@ DUK_EXTERNAL void duk_hex_decode(duk_hthread *thr, duk_idx_t idx) {
 
  type_error:
 	DUK_ERROR_TYPE(thr, DUK_STR_HEX_DECODE_FAILED);
+	DUK_WO_NORETURN(return;);
 }
 #else  /* DUK_USE_HEX_SUPPORT */
 DUK_EXTERNAL const char *duk_hex_encode(duk_hthread *thr, duk_idx_t idx) {
 	DUK_UNREF(idx);
 	DUK_ERROR_UNSUPPORTED(thr);
+	DUK_WO_NORETURN(return;);
 }
 DUK_EXTERNAL void duk_hex_decode(duk_hthread *thr, duk_idx_t idx) {
 	DUK_UNREF(idx);
 	DUK_ERROR_UNSUPPORTED(thr);
+	DUK_WO_NORETURN(return;);
 }
 #endif  /* DUK_USE_HEX_SUPPORT */
 
@@ -890,11 +896,13 @@ DUK_EXTERNAL const char *duk_json_encode(duk_hthread *thr, duk_idx_t idx) {
 	DUK_ASSERT_API_ENTRY(thr);
 	DUK_UNREF(idx);
 	DUK_ERROR_UNSUPPORTED(thr);
+	DUK_WO_NORETURN(return NULL;);
 }
 
 DUK_EXTERNAL void duk_json_decode(duk_hthread *thr, duk_idx_t idx) {
 	DUK_ASSERT_API_ENTRY(thr);
 	DUK_UNREF(idx);
 	DUK_ERROR_UNSUPPORTED(thr);
+	DUK_WO_NORETURN(return;);
 }
 #endif  /* DUK_USE_JSON_SUPPORT */

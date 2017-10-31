@@ -24,6 +24,7 @@ DUK_INTERNAL void duk_hbuffer_resize(duk_hthread *thr, duk_hbuffer_dynamic *buf,
 
 	if (new_size > DUK_HBUFFER_MAX_BYTELEN) {
 		DUK_ERROR_RANGE(thr, "buffer too long");
+		DUK_WO_NORETURN(return;);
 	}
 
 	/*
@@ -61,6 +62,7 @@ DUK_INTERNAL void duk_hbuffer_resize(duk_hthread *thr, duk_hbuffer_dynamic *buf,
 		DUK_HBUFFER_DYNAMIC_SET_DATA_PTR(thr->heap, buf, res);
 	} else {
 		DUK_ERROR_ALLOC_FAILED(thr);
+		DUK_WO_NORETURN(return;);
 	}
 
 	DUK_ASSERT(res != NULL || new_size == 0);

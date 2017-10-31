@@ -200,6 +200,7 @@ DUK_LOCAL void duk__transform_callback_encode_uri(duk__transform_context *tfm_ct
 
  uri_error:
 	DUK_ERROR_URI(tfm_ctx->thr, DUK_STR_INVALID_INPUT);
+	DUK_WO_NORETURN(return;);
 }
 
 DUK_LOCAL void duk__transform_callback_decode_uri(duk__transform_context *tfm_ctx, const void *udata, duk_codepoint_t cp) {
@@ -338,6 +339,7 @@ DUK_LOCAL void duk__transform_callback_decode_uri(duk__transform_context *tfm_ct
 
  uri_error:
 	DUK_ERROR_URI(tfm_ctx->thr, DUK_STR_INVALID_INPUT);
+	DUK_WO_NORETURN(return;);
 }
 
 #if defined(DUK_USE_SECTION_B)
@@ -378,6 +380,7 @@ DUK_LOCAL void duk__transform_callback_escape(duk__transform_context *tfm_ctx, c
 
  esc_error:
 	DUK_ERROR_TYPE(tfm_ctx->thr, DUK_STR_INVALID_INPUT);
+	DUK_WO_NORETURN(return;);
 }
 
 DUK_LOCAL void duk__transform_callback_unescape(duk__transform_context *tfm_ctx, const void *udata, duk_codepoint_t cp) {

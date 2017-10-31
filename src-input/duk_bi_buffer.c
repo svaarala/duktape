@@ -175,6 +175,7 @@ DUK_LOCAL duk_heaphdr *duk__getrequire_bufobj_this(duk_hthread *thr, duk_small_u
 
 	if (flags & DUK__BUFOBJ_FLAG_THROW) {
 		DUK_ERROR_TYPE(thr, DUK_STR_NOT_BUFFER);
+		DUK_WO_NORETURN(return NULL;);
 	}
 	return NULL;
 }
@@ -216,7 +217,7 @@ DUK_LOCAL duk_hbufobj *duk__require_bufobj_value(duk_hthread *thr, duk_idx_t idx
 	}
 
 	DUK_ERROR_TYPE(thr, DUK_STR_NOT_BUFFER);
-	return NULL;  /* not reachable */
+	DUK_WO_NORETURN(return NULL;);
 }
 
 DUK_LOCAL void duk__set_bufobj_buffer(duk_hthread *thr, duk_hbufobj *h_bufobj, duk_hbuffer *h_val) {
@@ -291,6 +292,7 @@ DUK_LOCAL void duk__resolve_offset_opt_length(duk_hthread *thr,
 
  fail_range:
 	DUK_ERROR_RANGE(thr, DUK_STR_INVALID_ARGS);
+	DUK_WO_NORETURN(return;);
 }
 
 /* Shared lenient buffer length clamping helper.  No negative indices, no
@@ -554,12 +556,14 @@ DUK_LOCAL duk_hbuffer *duk__hbufobj_fixed_from_argvalue(duk_hthread *thr) {
 			h_bufobj = (duk_hbufobj *) h;
 			if (DUK_UNLIKELY(h_bufobj->buf == NULL)) {
 				DUK_ERROR_TYPE_INVALID_ARGS(thr);
+				DUK_WO_NORETURN(return NULL;);
 			}
 			if (DUK_UNLIKELY(h_bufobj->offset != 0 || h_bufobj->length != DUK_HBUFFER_GET_SIZE(h_bufobj->buf))) {
 				/* No support for ArrayBuffers with slice
 				 * offset/length.
 				 */
 				DUK_ERROR_TYPE_INVALID_ARGS(thr);
+				DUK_WO_NORETURN(return NULL;);
 			}
 			duk_push_hbuffer(thr, h_bufobj->buf);
 			return h_bufobj->buf;
@@ -575,6 +579,7 @@ DUK_LOCAL duk_hbuffer *duk__hbufobj_fixed_from_argvalue(duk_hthread *thr) {
 	}
 	default:
 		DUK_ERROR_TYPE_INVALID_ARGS(thr);
+		DUK_WO_NORETURN(return NULL;);
 	}
 
  done:

@@ -94,6 +94,8 @@ Checklist for ordinary releases
 
   - Check ``make duk-clang``, covers ``-Wcast-align``
 
+  - Check compile warnings when DUK_NORETURN() is not defined
+
 * Test configure.py manually using metadata from the distributable
 
   - Ensure that Duktape compiles with e.g. ``-DDUK_USE_FASTINT`` configure

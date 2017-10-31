@@ -3231,6 +3231,11 @@ Planned
 
 * Fix some Clang warnings (GH-1777)
 
+* Fix some compilation warnings triggered when DUK_NORETURN is not defined;
+  the internal DUK_WO_NORETURN() is used to include unreachable dummy
+  statements when the noreturn attribute is not available, e.g.
+  DUK_WO_NORETURN(return 0;); (GH-1790)
+
 * Fix a few casts in duk_trans_socket_windows.c to avoid errors in a C++
   build (GH-1773)
 

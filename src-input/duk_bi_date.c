@@ -897,6 +897,7 @@ DUK_LOCAL duk_double_t duk__push_this_get_timeval_tzoffset(duk_hthread *thr, duk
 	h = duk_get_hobject(thr, -1);  /* XXX: getter with class check, useful in built-ins */
 	if (h == NULL || DUK_HOBJECT_GET_CLASS_NUMBER(h) != DUK_HOBJECT_CLASS_DATE) {
 		DUK_ERROR_TYPE(thr, "expected Date");
+		DUK_WO_NORETURN(return 0.0;);
 	}
 
 	duk_get_prop_stridx_short(thr, -1, DUK_STRIDX_INT_VALUE);
@@ -909,6 +910,7 @@ DUK_LOCAL duk_double_t duk__push_this_get_timeval_tzoffset(duk_hthread *thr, duk
 		}
 		if (flags & DUK_DATE_FLAG_NAN_TO_RANGE_ERROR) {
 			DUK_ERROR_RANGE(thr, "Invalid Date");
+			DUK_WO_NORETURN(return 0.0;);
 		}
 	}
 	/* if no NaN handling flag, may still be NaN here, but not Inf */

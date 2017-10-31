@@ -280,8 +280,7 @@ DUK_INTERNAL duk_ucodepoint_t duk_unicode_decode_xutf8_checked(duk_hthread *thr,
 		return cp;
 	}
 	DUK_ERROR_INTERNAL(thr);
-	DUK_UNREACHABLE();
-	return 0;
+	DUK_WO_NORETURN(return 0;);
 }
 
 /* Compute (extended) utf-8 length without codepoint encoding validation,

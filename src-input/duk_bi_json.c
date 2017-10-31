@@ -214,6 +214,7 @@ DUK_LOCAL void duk__dec_syntax_error(duk_json_dec_ctx *js_ctx) {
 	 */
 	DUK_ERROR_FMT1(js_ctx->thr, DUK_ERR_SYNTAX_ERROR, DUK_STR_FMT_INVALID_JSON,
 	               (long) (js_ctx->p - js_ctx->p_start));
+	DUK_WO_NORETURN(return;);
 }
 
 DUK_LOCAL void duk__dec_eat_white(duk_json_dec_ctx *js_ctx) {
@@ -720,6 +721,7 @@ DUK_LOCAL void duk__dec_objarr_entry(duk_json_dec_ctx *js_ctx) {
 	DUK_ASSERT(js_ctx->recursion_depth <= js_ctx->recursion_limit);
 	if (js_ctx->recursion_depth >= js_ctx->recursion_limit) {
 		DUK_ERROR_RANGE(thr, DUK_STR_JSONDEC_RECLIMIT);
+		DUK_WO_NORETURN(return;);
 	}
 	js_ctx->recursion_depth++;
 }
@@ -1753,6 +1755,7 @@ DUK_LOCAL void duk__enc_objarr_entry(duk_json_enc_ctx *js_ctx, duk_idx_t *entry_
 		if (DUK_UNLIKELY(js_ctx->visiting[i] == h_target)) {
 			DUK_DD(DUK_DDPRINT("slow path loop detect"));
 			DUK_ERROR_TYPE(thr, DUK_STR_CYCLIC_INPUT);
+			DUK_WO_NORETURN(return;);
 		}
 	}
 	if (js_ctx->recursion_depth < DUK_JSON_ENC_LOOPARRAY) {
@@ -1762,6 +1765,7 @@ DUK_LOCAL void duk__enc_objarr_entry(duk_json_enc_ctx *js_ctx, duk_idx_t *entry_
 		duk_dup_top(thr);  /* -> [ ... voidp voidp ] */
 		if (duk_has_prop(thr, js_ctx->idx_loop)) {
 			DUK_ERROR_TYPE(thr, DUK_STR_CYCLIC_INPUT);
+			DUK_WO_NORETURN(return;);
 		}
 		duk_push_true(thr);  /* -> [ ... voidp true ] */
 		duk_put_prop(thr, js_ctx->idx_loop);  /* -> [ ... ] */
@@ -1773,6 +1777,7 @@ DUK_LOCAL void duk__enc_objarr_entry(duk_json_enc_ctx *js_ctx, duk_idx_t *entry_
 	DUK_ASSERT(js_ctx->recursion_depth <= js_ctx->recursion_limit);
 	if (js_ctx->recursion_depth >= js_ctx->recursion_limit) {
 		DUK_ERROR_RANGE(thr, DUK_STR_JSONENC_RECLIMIT);
+		DUK_WO_NORETURN(return;);
 	}
 	js_ctx->recursion_depth++;
 
@@ -2370,12 +2375,14 @@ DUK_LOCAL duk_bool_t duk__json_stringify_fast_value(duk_json_enc_ctx *js_ctx, du
 		if (js_ctx->recursion_depth >= js_ctx->recursion_limit) {
 			DUK_DD(DUK_DDPRINT("fast path recursion limit"));
 			DUK_ERROR_RANGE(js_ctx->thr, DUK_STR_JSONDEC_RECLIMIT);
+			DUK_WO_NORETURN(return 0;);
 		}
 
 		for (i = 0, n = (duk_uint_fast32_t) js_ctx->recursion_depth; i < n; i++) {
 			if (DUK_UNLIKELY(js_ctx->visiting[i] == obj)) {
 				DUK_DD(DUK_DDPRINT("fast path loop detect"));
 				DUK_ERROR_TYPE(js_ctx->thr, DUK_STR_CYCLIC_INPUT);
+				DUK_WO_NORETURN(return 0;);
 			}
 		}
 
@@ -2756,7 +2763,7 @@ DUK_LOCAL duk_bool_t duk__json_stringify_fast_value(duk_json_enc_ctx *js_ctx, du
 	/* Error message doesn't matter: the error is ignored anyway. */
 	DUK_DD(DUK_DDPRINT("aborting fast path"));
 	DUK_ERROR_INTERNAL(js_ctx->thr);
-	return 0;  /* unreachable */
+	DUK_WO_NORETURN(return 0;);
 }
 
 DUK_LOCAL duk_ret_t duk__json_stringify_fast(duk_hthread *thr, void *udata) {

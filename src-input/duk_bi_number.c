@@ -23,6 +23,7 @@ DUK_LOCAL duk_double_t duk__push_this_number_plain(duk_hthread *thr) {
 	    (DUK_HOBJECT_GET_CLASS_NUMBER(h) != DUK_HOBJECT_CLASS_NUMBER)) {
 		DUK_DDD(DUK_DDDPRINT("unacceptable this value: %!T", (duk_tval *) duk_get_tval(thr, -1)));
 		DUK_ERROR_TYPE(thr, "number expected");
+		DUK_WO_NORETURN(return 0.0;);
 	}
 	duk_get_prop_stridx_short(thr, -1, DUK_STRIDX_INT_VALUE);
 	DUK_ASSERT(duk_is_number(thr, -1));

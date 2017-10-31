@@ -254,6 +254,7 @@ DUK_LOCAL duk_ret_t duk__decode_helper(duk_hthread *thr, duk__decode_context *de
 	 */
 	if (len >= (DUK_HBUFFER_MAX_BYTELEN / 3) - 3) {
 		DUK_ERROR_TYPE(thr, DUK_STR_RESULT_TOO_LONG);
+		DUK_WO_NORETURN(return 0;);
 	}
 	output = (duk_uint8_t *) duk_push_fixed_buffer_nozero(thr, 3 + (3 * len));  /* used parts will be always manually written over */
 
@@ -331,7 +332,7 @@ DUK_LOCAL duk_ret_t duk__decode_helper(duk_hthread *thr, duk__decode_context *de
 
  fail_type:
 	DUK_ERROR_TYPE(thr, DUK_STR_UTF8_DECODE_FAILED);
-	DUK_UNREACHABLE();
+	DUK_WO_NORETURN(return 0;);
 }
 
 /*
@@ -371,6 +372,7 @@ DUK_INTERNAL duk_ret_t duk_bi_textencoder_prototype_encode(duk_hthread *thr) {
 		len = (duk_size_t) DUK_HSTRING_GET_CHARLEN(h_input);
 		if (len >= DUK_HBUFFER_MAX_BYTELEN / 3) {
 			DUK_ERROR_TYPE(thr, DUK_STR_RESULT_TOO_LONG);
+			DUK_WO_NORETURN(return 0;);
 		}
 	}
 

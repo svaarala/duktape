@@ -68,7 +68,7 @@ DUK_LOCAL const duk_uint8_t *duk__utf8_backtrack(duk_hthread *thr, const duk_uin
 
  fail:
 	DUK_ERROR_INTERNAL(thr);
-	return NULL;  /* never here */
+	DUK_WO_NORETURN(return NULL;);
 }
 
 DUK_LOCAL const duk_uint8_t *duk__utf8_advance(duk_hthread *thr, const duk_uint8_t **ptr, const duk_uint8_t *ptr_start, const duk_uint8_t *ptr_end, duk_uint_fast32_t count) {
@@ -99,7 +99,7 @@ DUK_LOCAL const duk_uint8_t *duk__utf8_advance(duk_hthread *thr, const duk_uint8
 
  fail:
 	DUK_ERROR_INTERNAL(thr);
-	return NULL;  /* never here */
+	DUK_WO_NORETURN(return NULL;);
 }
 
 /*
@@ -148,6 +148,7 @@ DUK_LOCAL duk_codepoint_t duk__inp_get_prev_cp(duk_re_matcher_ctx *re_ctx, const
 DUK_LOCAL const duk_uint8_t *duk__match_regexp(duk_re_matcher_ctx *re_ctx, const duk_uint8_t *pc, const duk_uint8_t *sp) {
 	if (re_ctx->recursion_depth >= re_ctx->recursion_limit) {
 		DUK_ERROR_RANGE(re_ctx->thr, DUK_STR_REGEXP_EXECUTOR_RECURSION_LIMIT);
+		DUK_WO_NORETURN(return NULL;);
 	}
 	re_ctx->recursion_depth++;
 
@@ -156,6 +157,7 @@ DUK_LOCAL const duk_uint8_t *duk__match_regexp(duk_re_matcher_ctx *re_ctx, const
 
 		if (re_ctx->steps_count >= re_ctx->steps_limit) {
 			DUK_ERROR_RANGE(re_ctx->thr, DUK_STR_REGEXP_EXECUTOR_STEP_LIMIT);
+			DUK_WO_NORETURN(return NULL;);
 		}
 		re_ctx->steps_count++;
 
@@ -665,7 +667,7 @@ DUK_LOCAL const duk_uint8_t *duk__match_regexp(duk_re_matcher_ctx *re_ctx, const
 
  internal_error:
 	DUK_ERROR_INTERNAL(re_ctx->thr);
-	return NULL;  /* never here */
+	DUK_WO_NORETURN(return NULL;);
 }
 
 /*

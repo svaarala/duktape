@@ -2259,5 +2259,5 @@ DUK_INTERNAL void duk_numconv_parse(duk_hthread *thr, duk_small_int_t radix, duk
  parse_explimit_error:
 	DUK_DDD(DUK_DDDPRINT("parse failed, internal error, can't return a value"));
 	DUK_ERROR_RANGE(thr, "exponent too large");
-	return;
+	DUK_WO_NORETURN(return;);
 }
