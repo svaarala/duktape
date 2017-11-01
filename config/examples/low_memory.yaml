@@ -15,6 +15,12 @@
 # memory layout if the architecture supports it.
 #DUK_USE_ALIGN_BY: 1
 
+# With the vast majority of compilers some of the 'undefined behavior'
+# assumptions are fine, and produce smaller and faster code, so enable
+# by default for lowmem targets.  You may need to disable this for some
+# compilers.
+DUK_USE_ALLOW_UNDEFINED_BEHAVIOR: true
+
 DUK_USE_PREFER_SIZE: true
 DUK_USE_EXEC_PREFER_SIZE: true
 DUK_USE_FAST_REFCOUNT_DEFAULT: false
