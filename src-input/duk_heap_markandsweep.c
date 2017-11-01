@@ -1092,6 +1092,9 @@ DUK_LOCAL void duk__dump_stats(duk_heap *heap) {
 	                 (long) heap->stats_getvar_all));
 	DUK_D(DUK_DPRINT("stats putvar: all=%ld",
 	                 (long) heap->stats_putvar_all));
+	DUK_D(DUK_DPRINT("stats propcache: invalidate=%ld, hit=%ld, miss=%ld, insert=%ld",
+	                 (long) heap->stats_propcache_invalidate, (long) heap->stats_propcache_hit,
+	                 (long) heap->stats_propcache_miss, (long) heap->stats_propcache_insert));
 }
 #endif  /* DUK_USE_DEBUG */
 
@@ -1140,6 +1143,8 @@ DUK_INTERNAL void duk_heap_mark_and_sweep(duk_heap *heap, duk_small_uint_t flags
 	 */
 	DUK_ASSERT(heap->heap_thread != NULL);
 	DUK_ASSERT(heap->heap_thread->valstack != NULL);
+
+	/* FIXME: property cache invalidation or comment why not needed. */
 
 	DUK_D(DUK_DPRINT("garbage collect (mark-and-sweep) starting, requested flags: 0x%08lx, effective flags: 0x%08lx",
 	                 (unsigned long) flags, (unsigned long) (flags | heap->ms_base_flags)));

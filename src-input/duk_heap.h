@@ -148,6 +148,9 @@
 #define DUK_HEAP_STRCACHE_SIZE                            4
 #define DUK_HEAP_STRINGCACHE_NOCACHE_LIMIT                16  /* strings up to the this length are not cached */
 
+/* Propache is used for speeding up property accesses. */
+#define DUK_HEAP_PROPCACHE_SIZE                           4096
+
 /* Some list management macros. */
 #define DUK_HEAP_INSERT_INTO_HEAP_ALLOCATED(heap,hdr)     duk_heap_insert_into_heap_allocated((heap), (hdr))
 #if defined(DUK_USE_REFERENCE_COUNTING)
@@ -294,10 +297,22 @@ struct duk_breakpoint {
  *  Thus, string caches are now at the heap level now.
  */
 
-struct duk_strcache {
+struct duk_strcache_entry {
 	duk_hstring *h;
 	duk_uint32_t bidx;
 	duk_uint32_t cidx;
+};
+
+/*
+ *  Property cache
+ */
+
+struct duk_propcache_entry {
+	/* All references are borrowed. */
+	duk_hobject *obj_lookup;
+	duk_hstring *key_lookup;
+	duk_tval *val_storage;
+	duk_uint32_t generation;
 };
 
 /*
@@ -551,7 +566,11 @@ struct duk_heap {
 	/* String access cache (codepoint offset -> byte offset) for fast string
 	 * character looping; 'weak' reference which needs special handling in GC.
 	 */
-	duk_strcache strcache[DUK_HEAP_STRCACHE_SIZE];
+	duk_strcache_entry strcache[DUK_HEAP_STRCACHE_SIZE];
+
+	/* Property access cache. */
+	duk_propcache_entry propcache[DUK_HEAP_PROPCACHE_SIZE];
+	duk_uint32_t propcache_generation;
 
 	/* Built-in strings. */
 #if defined(DUK_USE_ROM_STRINGS)
@@ -607,6 +626,10 @@ struct duk_heap {
 	duk_int_t stats_putprop_proxy;
 	duk_int_t stats_getvar_all;
 	duk_int_t stats_putvar_all;
+	duk_int_t stats_propcache_invalidate;
+	duk_int_t stats_propcache_hit;
+	duk_int_t stats_propcache_miss;
+	duk_int_t stats_propcache_insert;
 #endif
 };
 
@@ -682,5 +705,10 @@ DUK_INTERNAL_DECL void duk_heap_process_finalize_list(duk_heap *heap);
 DUK_INTERNAL_DECL void duk_heap_mark_and_sweep(duk_heap *heap, duk_small_uint_t flags);
 
 DUK_INTERNAL_DECL duk_uint32_t duk_heap_hashstring(duk_heap *heap, const duk_uint8_t *str, duk_size_t len);
+
+DUK_INTERNAL_DECL void duk_propcache_invalidate_heap(duk_heap *heap);
+DUK_INTERNAL_DECL void duk_propcache_invalidate(duk_hthread *thr);
+DUK_INTERNAL_DECL duk_tval *duk_propcache_lookup(duk_hthread *thr, duk_hobject *obj, duk_hstring *key);
+DUK_INTERNAL_DECL void duk_propcache_insert(duk_hthread *thr, duk_hobject *obj, duk_hstring *key, duk_tval *storage);
 
 #endif  /* DUK_HEAP_H_INCLUDED */

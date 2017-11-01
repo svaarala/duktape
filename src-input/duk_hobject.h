@@ -655,6 +655,7 @@
 #define DUK_HOBJECT_GET_PROTOTYPE(heap,h) \
 	((duk_hobject *) DUK_USE_HEAPPTR_DEC16((heap)->heap_udata, (h)->prototype16))
 #define DUK_HOBJECT_SET_PROTOTYPE(heap,h,x) do { \
+		/* FIXME: caller property invalidation */ \
 		(h)->prototype16 = DUK_USE_HEAPPTR_ENC16((heap)->heap_udata, (void *) (x)); \
 	} while (0)
 #else
@@ -665,7 +666,9 @@
 	} while (0)
 #endif
 
-/* Set prototype, DECREF earlier value, INCREF new value (tolerating NULLs). */
+/* Set prototype, DECREF earlier value, INCREF new value (tolerating NULLs).
+ * Also automatically invalidates property cache.
+ */
 #define DUK_HOBJECT_SET_PROTOTYPE_UPDREF(thr,h,p)       duk_hobject_set_prototype_updref((thr), (h), (p))
 
 /* Set initial prototype, assume NULL previous prototype, INCREF new value,

@@ -415,6 +415,11 @@ DUK_LOCAL duk_ret_t duk__array_pop_fastpath(duk_hthread *thr, duk_harray *h_arr)
 		return 0;
 	}
 
+	/* Index properties are not cached but .length is, so invalidate
+	 * property cache.
+	 */
+	duk_propcache_invalidate(thr);
+
 	len--;
 	h_arr->length = len;
 
@@ -502,6 +507,11 @@ DUK_LOCAL duk_ret_t duk__array_push_fastpath(duk_hthread *thr, duk_harray *h_arr
 		 */
 		return 0;
 	}
+
+	/* Index properties are not cached but .length is, so invalidate
+	 * property cache.
+	 */
+	duk_propcache_invalidate(thr);
 
 	tv_src = thr->valstack_bottom;
 	tv_dst = tv_arraypart + len;
