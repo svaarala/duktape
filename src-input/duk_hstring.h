@@ -165,6 +165,9 @@
  *  Misc
  */
 
+#if (DUK_USE_ALIGN_BY == 8) && defined(DUK_USE_PACK_MSVC_PRAGMA)
+#pragma pack(push, 8)
+#endif
 struct duk_hstring {
 	/* Smaller heaphdr than for other objects, because strings are held
 	 * in string intern table which requires no link pointers.  Much of
@@ -209,7 +212,16 @@ struct duk_hstring {
 	 *  for strings, but fields above should guarantee alignment-by-4
 	 *  (but not alignment-by-8).
 	 */
-};
+}
+#if (DUK_USE_ALIGN_BY == 8) && defined(DUK_USE_PACK_GCC_ATTR)
+__attribute__ ((aligned (8)))
+#elif (DUK_USE_ALIGN_BY == 8) && defined(DUK_USE_PACK_CLANG_ATTR)
+__attribute__ ((aligned (8)))
+#endif
+;
+#if (DUK_USE_ALIGN_BY == 8) && defined(DUK_USE_PACK_MSVC_PRAGMA)
+#pragma pack(pop)
+#endif
 
 /* The external string struct is defined even when the feature is inactive. */
 struct duk_hstring_external {

@@ -32,6 +32,9 @@
 
 /* XXX: macro for shared header fields (avoids some padding issues) */
 
+#if (DUK_USE_ALIGN_BY == 8) && defined(DUK_USE_PACK_MSVC_PRAGMA)
+#pragma pack(push, 8)
+#endif
 struct duk_heaphdr {
 	duk_uint32_t h_flags;
 
@@ -77,7 +80,16 @@ struct duk_heaphdr {
 #if defined(DUK_USE_HEAPPTR16)
 	duk_uint16_t h_extra16;
 #endif
-};
+}
+#if (DUK_USE_ALIGN_BY == 8) && defined(DUK_USE_PACK_GCC_ATTR)
+__attribute__ ((aligned (8)))
+#elif (DUK_USE_ALIGN_BY == 8) && defined(DUK_USE_PACK_CLANG_ATTR)
+__attribute__ ((aligned (8)))
+#endif
+;
+#if (DUK_USE_ALIGN_BY == 8) && defined(DUK_USE_PACK_MSVC_PRAGMA)
+#pragma pack(pop)
+#endif
 
 struct duk_heaphdr_string {
 	/* 16 bits would be enough for shared heaphdr flags and duk_hstring
