@@ -2258,7 +2258,7 @@ DUK_LOCAL void duk__debug_handle_get_heap_obj_info(duk_hthread *thr, duk_heap *h
 
 		if (DUK_HOBJECT_IS_BOUNDFUNC(h_obj)) {
 			duk_hboundfunc *h_bfun;
-			h_bfun = (duk_hboundfunc *) h_obj;
+			h_bfun = (duk_hboundfunc *) (void *) h_obj;
 
 			duk__debug_getinfo_flags_key(thr, "target");
 			duk_debug_write_tval(thr, &h_bfun->target);

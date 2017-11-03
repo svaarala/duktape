@@ -621,7 +621,7 @@ DUK_INTERNAL duk_ret_t duk_bi_nodejs_buffer_constructor(duk_hthread *thr) {
 	duk_push_buffer_object(thr,
 	                       -1,
 	                       0,
-	                       DUK_HBUFFER_FIXED_GET_SIZE((duk_hbuffer_fixed *) h_buf),
+	                       DUK_HBUFFER_FIXED_GET_SIZE((duk_hbuffer_fixed *) (void *) h_buf),
 	                       DUK_BUFOBJ_UINT8ARRAY);
 	duk_push_hobject_bidx(thr, DUK_BIDX_NODEJS_BUFFER_PROTOTYPE);
 	duk_set_prototype(thr, -2);

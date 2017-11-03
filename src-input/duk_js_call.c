@@ -568,7 +568,7 @@ DUK_LOCAL void duk__handle_bound_chain_for_call(duk_hthread *thr,
 			duk_tval *tv_args;
 			duk_tval *tv_gap;
 
-			h_bound = (duk_hboundfunc *) func;
+			h_bound = (duk_hboundfunc *) (void *) func;
 			tv_args = h_bound->args;
 			len = h_bound->nargs;
 			DUK_ASSERT(len == 0 || tv_args != NULL);
