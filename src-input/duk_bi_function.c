@@ -282,7 +282,7 @@ DUK_INTERNAL duk_ret_t duk_bi_function_prototype_bind(duk_hthread *thr) {
 		if (DUK_HOBJECT_HAS_BOUNDFUNC(h_target)) {
 			duk_hboundfunc *h_boundtarget;
 
-			h_boundtarget = (duk_hboundfunc *) h_target;
+			h_boundtarget = (duk_hboundfunc *) (void *) h_target;
 
 			/* The final function should always be non-bound, unless
 			 * there's a bug in the internals.  Assert for it.

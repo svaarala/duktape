@@ -97,7 +97,7 @@ DUK_INTERNAL duk_hbuffer *duk_hbuffer_alloc(duk_heap *heap, duk_size_t size, duk
 			DUK_ASSERT(DUK_HBUFFER_DYNAMIC_GET_DATA_PTR(heap, h) == NULL);
 		}
 	} else {
-		*out_bufdata = (void *) ((duk_hbuffer_fixed *) res + 1);
+		*out_bufdata = (void *) ((duk_hbuffer_fixed *) (void *) res + 1);
 	}
 
 	DUK_HBUFFER_SET_SIZE(res, size);

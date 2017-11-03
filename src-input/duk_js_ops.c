@@ -1057,7 +1057,7 @@ DUK_INTERNAL duk_bool_t duk_js_instanceof(duk_hthread *thr, duk_tval *tv_x, duk_
 	}
 
 	if (DUK_HOBJECT_HAS_BOUNDFUNC(func)) {
-		duk_push_tval(thr, &((duk_hboundfunc *) func)->target);
+		duk_push_tval(thr, &((duk_hboundfunc *) (void *) func)->target);
 		duk_replace(thr, -2);
 		func = duk_require_hobject(thr, -1);  /* lightfunc throws */
 

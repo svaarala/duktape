@@ -499,7 +499,7 @@ DUK_INTERNAL void duk_resolve_nonbound_function(duk_hthread *thr) {
 		h = DUK_TVAL_GET_OBJECT(tv);
 		DUK_ASSERT(h != NULL);
 		if (DUK_HOBJECT_HAS_BOUNDFUNC(h)) {
-			duk_push_tval(thr, &((duk_hboundfunc *) h)->target);
+			duk_push_tval(thr, &((duk_hboundfunc *) (void *) h)->target);
 			duk_replace(thr, -2);
 #if 0
 			DUK_TVAL_SET_TVAL(tv, &((duk_hboundfunc *) h)->target);

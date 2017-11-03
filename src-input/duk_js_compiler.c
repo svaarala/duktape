@@ -772,7 +772,7 @@ DUK_LOCAL void duk__convert_to_func_template(duk_compiler_ctx *comp_ctx) {
 	                     (long) code_size, (long) data_size));
 
 	duk_push_fixed_buffer_nozero(thr, data_size);
-	h_data = (duk_hbuffer_fixed *) duk_known_hbuffer(thr, -1);
+	h_data = (duk_hbuffer_fixed *) (void *) duk_known_hbuffer(thr, -1);
 
 	DUK_HCOMPFUNC_SET_DATA(thr->heap, h_res, (duk_hbuffer *) h_data);
 	DUK_HEAPHDR_INCREF(thr, h_data);

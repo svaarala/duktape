@@ -124,6 +124,7 @@ CCOPTS_SHARED += -pedantic -ansi -std=c99 -fstrict-aliasing
 # -Wextra is very picky but catches e.g. signed/unsigned comparisons
 CCOPTS_SHARED += -Wall -Wextra -Wunused-result -Wdeclaration-after-statement -Wunused-function
 CCOPTS_SHARED += -Wcast-qual
+CCOPTS_SHARED += -Wcast-align
 CCOPTS_SHARED += -Wshadow
 CCOPTS_SHARED += -Wunreachable-code  # on some compilers unreachable code is an error
 CCOPTS_SHARED += -Wmissing-prototypes

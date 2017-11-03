@@ -170,7 +170,7 @@ DUK_INTERNAL void duk_hobject_refcount_finalize_norz(duk_heap *heap, duk_hobject
 		DUK_HOBJECT_DECREF_NORZ_ALLOWNULL(thr, (duk_hobject *) b->buf_prop);
 #endif  /* DUK_USE_BUFFEROBJECT_SUPPORT */
 	} else if (DUK_HOBJECT_IS_BOUNDFUNC(h)) {
-		duk_hboundfunc *f = (duk_hboundfunc *) h;
+		duk_hboundfunc *f = (duk_hboundfunc *) (void *) h;
 		DUK_ASSERT_HBOUNDFUNC_VALID(f);
 		DUK_TVAL_DECREF_NORZ(thr, &f->target);
 		DUK_TVAL_DECREF_NORZ(thr, &f->this_binding);

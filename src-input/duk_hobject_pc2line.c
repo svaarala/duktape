@@ -229,7 +229,7 @@ DUK_INTERNAL duk_uint_fast32_t duk_hobject_pc2line_query(duk_hthread *thr, duk_i
 	 */
 
 	duk_get_prop_stridx(thr, idx_func, DUK_STRIDX_INT_PC2LINE);
-	pc2line = (duk_hbuffer_fixed *) duk_get_hbuffer(thr, -1);
+	pc2line = (duk_hbuffer_fixed *) (void *) duk_get_hbuffer(thr, -1);
 	if (pc2line != NULL) {
 		DUK_ASSERT(!DUK_HBUFFER_HAS_DYNAMIC((duk_hbuffer *) pc2line) && !DUK_HBUFFER_HAS_EXTERNAL((duk_hbuffer *) pc2line));
 		line = duk__hobject_pc2line_query_raw(thr, pc2line, (duk_uint_fast32_t) pc);

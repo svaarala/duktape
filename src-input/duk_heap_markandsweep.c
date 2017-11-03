@@ -114,7 +114,7 @@ DUK_LOCAL void duk__mark_hobject(duk_heap *heap, duk_hobject *h) {
 		duk__mark_heaphdr(heap, (duk_heaphdr *) b->buf_prop);
 #endif  /* DUK_USE_BUFFEROBJECT_SUPPORT */
 	} else if (DUK_HOBJECT_IS_BOUNDFUNC(h)) {
-		duk_hboundfunc *f = (duk_hboundfunc *) h;
+		duk_hboundfunc *f = (duk_hboundfunc *) (void *) h;
 		DUK_ASSERT_HBOUNDFUNC_VALID(f);
 		duk__mark_tval(heap, &f->target);
 		duk__mark_tval(heap, &f->this_binding);

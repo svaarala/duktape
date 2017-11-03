@@ -3239,6 +3239,8 @@ Planned
 * Fix a few casts in duk_trans_socket_windows.c to avoid errors in a C++
   build (GH-1773)
 
+* Fix harmless -Wcast-align warnings on armhf (GH-1793)
+
 * Various compiler warning fixes (GH-1788)
 
 * Add automatic workaround for union aliasing issues with FreeBSD + -m32 +
