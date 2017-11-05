@@ -815,9 +815,8 @@ checklisttest:
 # Third party download/unpack targets, libraries etc.
 linenoise:
 	# git clone https://github.com/antirez/linenoise.git
-	# Use forked repo to get compile warnings fixed (not yet fixed in
-	# linenoise master).
-	git clone -b fix-compile-warnings https://github.com/svaarala/linenoise.git
+	# Use forked repo to get compile warnings fixed.
+	git clone -b fix-compile-warnings-duktape https://github.com/svaarala/linenoise.git
 regfuzz-0.1.tar.gz:
 	# https://code.google.com/p/regfuzz/
 	# SHA1: 774be8e3dda75d095225ba699ac59969d92ac970
