@@ -150,6 +150,7 @@ CCOPTS_SHARED += -I./extras/module-duktape
 CCOPTS_NONDEBUG = $(CCOPTS_SHARED) $(CCOPTS_FEATURES)
 CCOPTS_NONDEBUG += -Os -fomit-frame-pointer -fno-stack-protector
 CCOPTS_NONDEBUG += -g -ggdb
+#CCOPTS_NONDEBUG += -malign-double
 
 CCOPTS_DEBUG = $(CCOPTS_SHARED) $(CCOPTS_FEATURES)
 CCOPTS_DEBUG += -O0
@@ -236,7 +237,7 @@ clean:
 	@rm -f duk-perf-pgo duk-perf-pgo.O2 duk-perf-pgo.O3 duk-perf-pgo.O4
 	@rm -f duk-size
 	@rm -f duk-rom dukd-rom
-	@rm -f duk-clang duk-perf-clang
+	@rm -f duk-clang duk-perf-clang duk-sanitize-clang
 	@rm -f duk-g++ dukd-g++ duk-perf-g++
 	@rm -f duk-low duk-low-norefc duk-low-rom
 	@rm -f emduk emduk.js
@@ -462,6 +463,10 @@ duk-clang: linenoise prep/nondebug
 	# Use -Wshift-sign-overflow to trigger issues like: https://github.com/svaarala/duktape/issues/812
 	# -Weverything
 	clang -o $@ -Wcast-align -Wshift-sign-overflow -Iprep/nondebug $(CLANG_CCOPTS_NONDEBUG) prep/nondebug/duktape.c $(DUKTAPE_CMDLINE_SOURCES) $(LINENOISE_SOURCES) $(CCLIBS)
+	@ls -l $@
+	-@size $@
+duk-sanitize-clang: linenoise prep/nondebug
+	clang -o $@ -Wcast-align -Wshift-sign-overflow -fsanitize=undefined -Iprep/nondebug $(CLANG_CCOPTS_NONDEBUG) prep/nondebug/duktape.c $(DUKTAPE_CMDLINE_SOURCES) $(LINENOISE_SOURCES) $(CCLIBS)
 	@ls -l $@
 	-@size $@
 duk-perf-clang: linenoise prep/nondebug-perf
@@ -815,9 +820,8 @@ checklisttest:
 # Third party download/unpack targets, libraries etc.
 linenoise:
 	# git clone https://github.com/antirez/linenoise.git
-	# Use forked repo to get compile warnings fixed (not yet fixed in
-	# linenoise master).
-	git clone -b fix-compile-warnings https://github.com/svaarala/linenoise.git
+	# Use forked repo to get compile warnings fixed.
+	git clone -b fix-compile-warnings-duktape https://github.com/svaarala/linenoise.git
 regfuzz-0.1.tar.gz:
 	# https://code.google.com/p/regfuzz/
 	# SHA1: 774be8e3dda75d095225ba699ac59969d92ac970

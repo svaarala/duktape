@@ -3027,7 +3027,7 @@ DUK_LOCAL duk_uint32_t duk__to_new_array_length_checked(duk_hthread *thr, duk_tv
 	/* Refuse to update an Array's 'length' to a value outside the
 	 * 32-bit range.  Negative zero is accepted as zero.
 	 */
-	res = (duk_uint32_t) d;
+	res = duk_double_to_uint32_t(d);
 	if ((duk_double_t) res != d) {
 		goto fail_range;
 	}

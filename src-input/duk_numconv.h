@@ -33,9 +33,13 @@
 
 /* Maximum exponent value when parsing numbers.  This is not strictly
  * compliant as there should be no upper limit, but as we parse the
- * exponent without a bigint, impose some limit.
+ * exponent without a bigint, impose some limit.  The limit should be
+ * small enough that multiplying it (or limit-1 to be precise) won't
+ * overflow signed 32-bit integer range.  Exponent is only parsed with
+ * radix 10, but with maximum radix (36) a safe limit is:
+ * (10000000*36).toString(16) -> '15752a00'
  */
-#define DUK_S2N_MAX_EXPONENT              1000000000
+#define DUK_S2N_MAX_EXPONENT              10000000L
 
 /* Trim white space (= allow leading and trailing whitespace) */
 #define DUK_S2N_FLAG_TRIM_WHITE           (1U << 0)

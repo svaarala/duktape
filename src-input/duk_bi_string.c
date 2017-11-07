@@ -264,13 +264,37 @@ DUK_INTERNAL duk_ret_t duk_bi_string_prototype_to_string(duk_hthread *thr) {
  */
 
 DUK_INTERNAL duk_ret_t duk_bi_string_prototype_char_at(duk_hthread *thr) {
+	duk_hstring *h;
 	duk_int_t pos;
 
 	/* XXX: faster implementation */
 
-	(void) duk_push_this_coercible_to_string(thr);
+	h = duk_push_this_coercible_to_string(thr);
+	DUK_ASSERT(h != NULL);
+
 	pos = duk_to_int(thr, 0);
-	duk_substring(thr, -1, (duk_size_t) pos, (duk_size_t) (pos + 1));
+
+	if (sizeof(duk_size_t) >= sizeof(duk_uint_t)) {
+		/* Cast to duk_size_t works in this case:
+		 * - If pos < 0, (duk_size_t) pos will always be
+		 *   >= max_charlen, and result will be the empty string
+		 *   (see duk_substring()).
+		 * - If pos >= 0, pos + 1 cannot wrap.
+		 */
+		DUK_ASSERT((duk_size_t) DUK_INT_MIN >= DUK_HSTRING_MAX_BYTELEN);
+		DUK_ASSERT((duk_size_t) DUK_INT_MAX + 1U > (duk_size_t) DUK_INT_MAX);
+		duk_substring(thr, -1, (duk_size_t) pos, (duk_size_t) pos + 1U);
+	} else {
+		/* If size_t is smaller than int, explicit bounds checks
+		 * are needed because an int may wrap multiple times.
+		 */
+		if (DUK_UNLIKELY(pos < 0 || (duk_uint_t) pos >= (duk_uint_t) DUK_HSTRING_GET_CHARLEN(h))) {
+			duk_push_hstring_empty(thr);
+		} else {
+			duk_substring(thr, -1, (duk_size_t) pos, (duk_size_t) pos + 1U);
+		}
+	}
+
 	return 1;
 }
 

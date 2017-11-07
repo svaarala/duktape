@@ -799,8 +799,12 @@ DUK_EXTERNAL void duk_hex_decode(duk_hthread *thr, duk_idx_t idx) {
 		}
 	}
 	for (; i < len; i += 2) {
-		t = (((duk_int_t) duk_hex_dectab[inp[i]]) << 4) |
-		    ((duk_int_t) duk_hex_dectab[inp[i + 1]]);
+		/* First cast to duk_int_t to sign extend, second cast to
+		 * duk_uint_t to avoid signed left shift, and final cast to
+		 * duk_int_t result type.
+		 */
+		t = (duk_int_t) ((((duk_uint_t) (duk_int_t) duk_hex_dectab[inp[i]]) << 4U) |
+		                 ((duk_uint_t) (duk_int_t) duk_hex_dectab[inp[i + 1]]));
 		if (DUK_UNLIKELY(t < 0)) {
 			goto type_error;
 		}
@@ -812,8 +816,8 @@ DUK_EXTERNAL void duk_hex_decode(duk_hthread *thr, duk_idx_t idx) {
 		 * at least 16 bits.  If either nybble is invalid, the
 		 * resulting 't' will be < 0.
 		 */
-		t = (((duk_int_t) duk_hex_dectab[inp[i]]) << 4) |
-		    ((duk_int_t) duk_hex_dectab[inp[i + 1]]);
+		t = (duk_int_t) ((((duk_uint_t) (duk_int_t) duk_hex_dectab[inp[i]]) << 4U) |
+		                 ((duk_uint_t) (duk_int_t) duk_hex_dectab[inp[i + 1]]));
 		if (DUK_UNLIKELY(t < 0)) {
 			goto type_error;
 		}

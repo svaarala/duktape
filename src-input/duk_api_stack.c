@@ -5963,9 +5963,8 @@ DUK_INTERNAL void duk_pack(duk_hthread *thr, duk_idx_t count) {
 	/* Copy value stack values directly to the array part without
 	 * any refcount updates: net refcount changes are zero.
 	 */
-
 	tv_src = thr->valstack_top - count - 1;
-	DUK_MEMCPY((void *) tv_dst, (const void *) tv_src, (size_t) count * sizeof(duk_tval));
+	duk_memcpy((void *) tv_dst, (const void *) tv_src, (size_t) count * sizeof(duk_tval));
 
 	/* Overwrite result array to final value stack location and wipe
 	 * the rest; no refcount operations needed.
@@ -6626,7 +6625,8 @@ DUK_INTERNAL void duk_copy_tvals_incref(duk_hthread *thr, duk_tval *tv_dst, duk_
 	DUK_ASSERT_API_ENTRY(thr);
 	DUK_UNREF(thr);
 	DUK_ASSERT(count * sizeof(duk_tval) >= count);  /* no wrap */
-	DUK_MEMCPY((void *) tv_dst, (const void *) tv_src, count * sizeof(duk_tval));
+
+	duk_memcpy((void *) tv_dst, (const void *) tv_src, count * sizeof(duk_tval));
 
 	tv = tv_dst;
 	while (count-- > 0) {

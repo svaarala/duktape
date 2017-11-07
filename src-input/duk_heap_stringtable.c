@@ -728,7 +728,7 @@ DUK_INTERNAL duk_hstring *duk_heap_strtable_intern(duk_heap *heap, const duk_uin
 	while (h != NULL) {
 		if (DUK_HSTRING_GET_HASH(h) == strhash &&
 		    DUK_HSTRING_GET_BYTELEN(h) == blen &&
-		    DUK_MEMCMP((const void *) str, (const void *) DUK_HSTRING_GET_DATA(h), (size_t) blen) == 0) {
+		    duk_memcmp((const void *) str, (const void *) DUK_HSTRING_GET_DATA(h), (size_t) blen) == 0) {
 			/* Found existing entry. */
 			DUK_STATS_INC(heap, stats_strtab_intern_hit);
 			return h;

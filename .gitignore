@@ -11,6 +11,7 @@
 /dukd
 /dukd.*
 /duk-clang
+/duk-sanitize-clang
 /duk-g++
 /duk-size
 /duk-perf

@@ -29,3 +29,15 @@ from Duktape v2.2.x.  Note the following:
 * Base-64 and hex encoding/decoding support is now configurable and disabled
   by default in the example low_memory.yaml configuration.  Enable them
   manually if necessary using DUK_USE_BASE64_SUPPORT and DUK_USE_HEX_SUPPORT.
+
+* Several -fsanitize=undefined warnings have been fixed in the default
+  configuration using explicit checks to avoid undefined behavior.  For
+  example, floating point division by zero is avoided and behavior in that
+  case is implemented explicitly, at some cost in footprint and performance.
+  For many compilers the undefined behavior assumptions in Duktape source
+  are fine, and you can remove the extra overhead by enabling the
+  DUK_USE_ALLOW_UNDEFINED_BEHAVIOR option in configure.py (this option is
+  enabled in the low_memory.yaml example configuration).  Note, however,
+  that recent gcc/clang versions are optimizing around undefined behavior so
+  while relying on undefined behavior may work in one version, it may break
+  with newer compiler versions.
