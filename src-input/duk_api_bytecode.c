@@ -40,7 +40,7 @@ DUK_LOCAL duk_uint8_t *duk__load_buffer_raw(duk_hthread *thr, duk_uint8_t *p) {
 	len = DUK_RAW_READ_U32_BE(p);
 	buf = (duk_uint8_t *) duk_push_fixed_buffer_nozero(thr, (duk_size_t) len);
 	DUK_ASSERT(buf != NULL);
-	DUK_MEMCPY((void *) buf, (const void *) p, (size_t) len);
+	duk_memcpy((void *) buf, (const void *) p, (size_t) len);
 	p += len;
 	return p;
 }
@@ -55,7 +55,7 @@ DUK_LOCAL duk_uint8_t *duk__dump_hstring_raw(duk_uint8_t *p, duk_hstring *h) {
 	DUK_ASSERT(len <= 0xffffffffUL);  /* string limits */
 	tmp32 = (duk_uint32_t) len;
 	DUK_RAW_WRITE_U32_BE(p, tmp32);
-	DUK_MEMCPY((void *) p,
+	duk_memcpy((void *) p,
 	           (const void *) DUK_HSTRING_GET_DATA(h),
 	           len);
 	p += len;
@@ -74,7 +74,7 @@ DUK_LOCAL duk_uint8_t *duk__dump_hbuffer_raw(duk_hthread *thr, duk_uint8_t *p, d
 	DUK_ASSERT(len <= 0xffffffffUL);  /* buffer limits */
 	tmp32 = (duk_uint32_t) len;
 	DUK_RAW_WRITE_U32_BE(p, tmp32);
-	DUK_MEMCPY((void *) p,
+	duk_memcpy((void *) p,
 	           (const void *) DUK_HBUFFER_GET_DATA_PTR(thr->heap, h),
 	           len);
 	p += len;
@@ -288,7 +288,7 @@ static duk_uint8_t *duk__dump_func(duk_hthread *thr, duk_hcompfunc *func, duk_bu
 	ins_end = DUK_HCOMPFUNC_GET_CODE_END(thr->heap, func);
 	DUK_ASSERT((duk_size_t) (ins_end - ins) == (duk_size_t) count_instr);
 #if defined(DUK_USE_INTEGER_BE)
-	DUK_MEMCPY((void *) p, (const void *) ins, (size_t) (ins_end - ins));
+	duk_memcpy((void *) p, (const void *) ins, (size_t) (ins_end - ins));
 	p += (size_t) (ins_end - ins);
 #else
 	while (ins != ins_end) {
@@ -474,7 +474,7 @@ static duk_uint8_t *duk__load_func(duk_hthread *thr, duk_uint8_t *p, duk_uint8_t
 	DUK__ASSERT_LEFT(count_instr * sizeof(duk_instr_t));
 #if defined(DUK_USE_INTEGER_BE)
 	q = fun_data + sizeof(duk_tval) * count_const + sizeof(duk_hobject *) * count_funcs;
-	DUK_MEMCPY((void *) q,
+	duk_memcpy((void *) q,
 	           (const void *) p,
 	           sizeof(duk_instr_t) * count_instr);
 	p += sizeof(duk_instr_t) * count_instr;
@@ -539,15 +539,12 @@ static duk_uint8_t *duk__load_func(duk_hthread *thr, duk_uint8_t *p, duk_uint8_t
 	DUK_ASSERT((count_const == 0 && count_funcs == 0) || tv1 != NULL);
 
 	q = fun_data;
-	if (count_const > 0) {
-		/* Explicit zero size check to avoid NULL 'tv1'. */
-		DUK_MEMCPY((void *) q, (const void *) tv1, sizeof(duk_tval) * count_const);
-		for (n = count_const; n > 0; n--) {
-			DUK_TVAL_INCREF_FAST(thr, (duk_tval *) (void *) q);  /* no side effects */
-			q += sizeof(duk_tval);
-		}
-		tv1 += count_const;
+	duk_memcpy((void *) q, (const void *) tv1, sizeof(duk_tval) * count_const);
+	for (n = count_const; n > 0; n--) {
+		DUK_TVAL_INCREF_FAST(thr, (duk_tval *) (void *) q);  /* no side effects */
+		q += sizeof(duk_tval);
 	}
+	tv1 += count_const;
 
 	DUK_HCOMPFUNC_SET_FUNCS(thr->heap, h_fun, (duk_hobject **) (void *) q);
 	for (n = count_funcs; n > 0; n--) {

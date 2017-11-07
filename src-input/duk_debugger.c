@@ -346,7 +346,7 @@ DUK_INTERNAL void duk_debug_read_bytes(duk_hthread *thr, duk_uint8_t *data, duk_
 	return;
 
  fail:
-	DUK_MEMZERO((void *) data, (size_t) length);
+	duk_memzero((void *) data, (size_t) length);
 }
 
 DUK_INTERNAL duk_uint8_t duk_debug_read_byte(duk_hthread *thr) {
@@ -959,7 +959,7 @@ DUK_INTERNAL void duk_debug_write_tval(duk_hthread *thr, duk_tval *tv) {
 		                   (unsigned int) du2.uc[4], (unsigned int) du2.uc[5],
 		                   (unsigned int) du2.uc[6], (unsigned int) du2.uc[7]));
 
-		if (DUK_MEMCMP((const void *) du1.uc, (const void *) du2.uc, sizeof(du1.uc)) == 0) {
+		if (duk_memcmp((const void *) du1.uc, (const void *) du2.uc, sizeof(du1.uc)) == 0) {
 			duk_debug_write_int(thr, i32);
 		} else {
 			DUK_DBLUNION_DOUBLE_HTON(&du1);
@@ -2831,11 +2831,10 @@ DUK_INTERNAL duk_bool_t duk_debug_remove_breakpoint(duk_hthread *thr, duk_small_
 	DUK_ASSERT(h != NULL);
 
 	move_size = sizeof(duk_breakpoint) * (heap->dbg_breakpoint_count - breakpoint_index - 1);
-	if (move_size > 0) {
-		DUK_MEMMOVE((void *) b,
-		            (const void *) (b + 1),
-		            (size_t) move_size);
-	}
+	duk_memmove((void *) b,
+	            (const void *) (b + 1),
+	            (size_t) move_size);
+
 	heap->dbg_breakpoint_count--;
 	heap->dbg_breakpoints_active[0] = (duk_breakpoint *) NULL;
 

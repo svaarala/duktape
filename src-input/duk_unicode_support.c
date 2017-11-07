@@ -429,7 +429,7 @@ DUK_LOCAL duk_small_int_t duk__uni_range_match(const duk_uint8_t *unitab, duk_si
 	duk_bitdecoder_ctx bd_ctx;
 	duk_codepoint_t prev_re;
 
-	DUK_MEMZERO(&bd_ctx, sizeof(bd_ctx));
+	duk_memzero(&bd_ctx, sizeof(bd_ctx));
 	bd_ctx.data = (const duk_uint8_t *) unitab;
 	bd_ctx.length = (duk_size_t) unilen;
 
@@ -981,7 +981,7 @@ duk_codepoint_t duk__case_transform_helper(duk_hthread *thr,
 	}
 
 	/* 1:1 or special conversions, but not locale/context specific: script generated rules */
-	DUK_MEMZERO(&bd_ctx, sizeof(bd_ctx));
+	duk_memzero(&bd_ctx, sizeof(bd_ctx));
 	if (uppercase) {
 		bd_ctx.data = (const duk_uint8_t *) duk_unicode_caseconv_uc;
 		bd_ctx.length = (duk_size_t) sizeof(duk_unicode_caseconv_uc);

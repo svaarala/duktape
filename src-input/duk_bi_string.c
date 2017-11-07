@@ -81,8 +81,8 @@ DUK_LOCAL duk_int_t duk__str_search_shared(duk_hthread *thr, duk_hstring *h_this
 		 */
 
 		if ((t == firstbyte) && ((duk_size_t) (p_end - p) >= (duk_size_t) q_blen)) {
-			DUK_ASSERT(q_blen > 0);  /* no issues with memcmp() zero size, even if broken */
-			if (DUK_MEMCMP((const void *) p, (const void *) q_start, (size_t) q_blen) == 0) {
+			DUK_ASSERT(q_blen > 0);
+			if (duk_memcmp((const void *) p, (const void *) q_start, (size_t) q_blen) == 0) {
 				return cpos;
 			}
 		}
@@ -684,7 +684,7 @@ DUK_INTERNAL duk_ret_t duk_bi_string_prototype_replace(duk_hthread *thr) {
 
 			while (p <= p_end) {
 				DUK_ASSERT(p + q_blen <= DUK_HSTRING_GET_DATA(h_input) + DUK_HSTRING_GET_BYTELEN(h_input));
-				if (DUK_MEMCMP((const void *) p, (const void *) q_start, (size_t) q_blen) == 0) {
+				if (duk_memcmp((const void *) p, (const void *) q_start, (size_t) q_blen) == 0) {
 					duk_dup_0(thr);
 					h_match = duk_known_hstring(thr, -1);
 #if defined(DUK_USE_REGEXP_SUPPORT)
@@ -1065,7 +1065,7 @@ DUK_INTERNAL duk_ret_t duk_bi_string_prototype_split(duk_hthread *thr) {
 			while (p <= p_end) {
 				DUK_ASSERT(p + q_blen <= DUK_HSTRING_GET_DATA(h_input) + DUK_HSTRING_GET_BYTELEN(h_input));
 				DUK_ASSERT(q_blen > 0);  /* no issues with empty memcmp() */
-				if (DUK_MEMCMP((const void *) p, (const void *) q_start, (size_t) q_blen) == 0) {
+				if (duk_memcmp((const void *) p, (const void *) q_start, (size_t) q_blen) == 0) {
 					/* never an empty match, so step 13.c.iii can't be triggered */
 					goto found;
 				}
@@ -1383,7 +1383,7 @@ DUK_INTERNAL duk_ret_t duk_bi_string_prototype_repeat(duk_hthread *thr) {
 #if defined(DUK_USE_PREFER_SIZE)
 	p = buf;
 	while (count-- > 0) {
-		DUK_MEMCPY((void *) p, (const void *) src, input_blen);  /* copy size may be zero */
+		duk_memcpy((void *) p, (const void *) src, input_blen);  /* copy size may be zero */
 		p += input_blen;
 	}
 #else  /* DUK_USE_PREFER_SIZE */
@@ -1402,10 +1402,10 @@ DUK_INTERNAL duk_ret_t duk_bi_string_prototype_repeat(duk_hthread *thr) {
 			/* If result_len is zero, this case is taken and does
 			 * a zero size copy.
 			 */
-			DUK_MEMCPY((void *) p, (const void *) src, remain);
+			duk_memcpy((void *) p, (const void *) src, remain);
 			break;
 		} else {
-			DUK_MEMCPY((void *) p, (const void *) src, copy_size);
+			duk_memcpy((void *) p, (const void *) src, copy_size);
 			p += copy_size;
 		}
 
@@ -1460,8 +1460,7 @@ DUK_INTERNAL duk_ret_t duk_bi_string_prototype_locale_compare(duk_hthread *thr) 
 	h2_len = (duk_size_t) DUK_HSTRING_GET_BYTELEN(h2);
 	prefix_len = (h1_len <= h2_len ? h1_len : h2_len);
 
-	/* Zero size compare not an issue with DUK_MEMCMP. */
-	rc = (duk_small_int_t) DUK_MEMCMP((const void *) DUK_HSTRING_GET_DATA(h1),
+	rc = (duk_small_int_t) duk_memcmp((const void *) DUK_HSTRING_GET_DATA(h1),
 	                                  (const void *) DUK_HSTRING_GET_DATA(h2),
 	                                  (size_t) prefix_len);
 
@@ -1542,7 +1541,7 @@ DUK_INTERNAL duk_ret_t duk_bi_string_prototype_startswith_endswith(duk_hthread *
 	result = 0;
 	if (p_cmp_start >= DUK_HSTRING_GET_DATA(h) &&
 	    (duk_size_t) (p_cmp_start - (const duk_uint8_t *) DUK_HSTRING_GET_DATA(h)) + blen_search <= DUK_HSTRING_GET_BYTELEN(h)) {
-		if (DUK_MEMCMP((const void *) p_cmp_start,
+		if (duk_memcmp((const void *) p_cmp_start,
 		               (const void *) DUK_HSTRING_GET_DATA(h_search),
 		               (size_t) blen_search) == 0) {
 			result = 1;

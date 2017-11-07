@@ -30,7 +30,7 @@ DUK_INTERNAL duk_bool_t duk_hthread_init_stacks(duk_heap *heap, duk_hthread *thr
 	if (!thr->valstack) {
 		goto fail;
 	}
-	DUK_MEMZERO(thr->valstack, alloc_size);
+	duk_memzero(thr->valstack, alloc_size);
 	thr->valstack_end = thr->valstack + DUK_VALSTACK_API_ENTRY_MINIMUM;
 	thr->valstack_alloc_end = thr->valstack + DUK_VALSTACK_INITIAL_SIZE;
 	thr->valstack_bottom = thr->valstack;

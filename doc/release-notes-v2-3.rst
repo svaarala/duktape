@@ -37,7 +37,7 @@ from Duktape v2.2.x.  Note the following:
   For many compilers the undefined behavior assumptions in Duktape source
   are fine, and you can remove the extra overhead by enabling the
   DUK_USE_ALLOW_UNDEFINED_BEHAVIOR option in configure.py (this option is
-  enabled in the low_memory.yaml example configuration).  Note, however,
-  that recent gcc/clang versions are optimizing around undefined behavior so
-  while relying on undefined behavior may work in one version, it may break
-  with newer compiler versions.
+  enabled in the low_memory.yaml and performance_sensitive.yaml example
+  configurations).  Note, however, that recent gcc/clang versions are
+  optimizing around undefined behavior so while relying on undefined behavior
+  may work in one version, it may break with newer compiler versions.

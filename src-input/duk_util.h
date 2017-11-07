@@ -320,7 +320,7 @@ struct duk_bufwriter_ctx {
 		duk_size_t duk__valsz; \
 		duk__valptr = (const void *) (valptr); \
 		duk__valsz = (duk_size_t) (valsz); \
-		DUK_MEMCPY((void *) ((bw_ctx)->p), duk__valptr, duk__valsz); \
+		duk_memcpy((void *) ((bw_ctx)->p), duk__valptr, duk__valsz); \
 		(bw_ctx)->p += duk__valsz; \
 	} while (0)
 #define DUK_BW_WRITE_RAW_CSTRING(thr,bw_ctx,val) do { \
@@ -328,31 +328,31 @@ struct duk_bufwriter_ctx {
 		duk_size_t duk__val_len; \
 		duk__val = (const duk_uint8_t *) (val); \
 		duk__val_len = DUK_STRLEN((const char *) duk__val); \
-		DUK_MEMCPY((void *) ((bw_ctx)->p), (const void *) duk__val, duk__val_len); \
+		duk_memcpy((void *) ((bw_ctx)->p), (const void *) duk__val, duk__val_len); \
 		(bw_ctx)->p += duk__val_len; \
 	} while (0)
 #define DUK_BW_WRITE_RAW_HSTRING(thr,bw_ctx,val) do { \
 		duk_size_t duk__val_len; \
 		duk__val_len = DUK_HSTRING_GET_BYTELEN((val)); \
-		DUK_MEMCPY((void *) ((bw_ctx)->p), (const void *) DUK_HSTRING_GET_DATA((val)), duk__val_len); \
+		duk_memcpy((void *) ((bw_ctx)->p), (const void *) DUK_HSTRING_GET_DATA((val)), duk__val_len); \
 		(bw_ctx)->p += duk__val_len; \
 	} while (0)
 #define DUK_BW_WRITE_RAW_HBUFFER(thr,bw_ctx,val) do { \
 		duk_size_t duk__val_len; \
 		duk__val_len = DUK_HBUFFER_GET_SIZE((val)); \
-		DUK_MEMCPY((void *) ((bw_ctx)->p), (const void *) DUK_HBUFFER_GET_DATA_PTR((thr)->heap, (val)), duk__val_len); \
+		duk_memcpy((void *) ((bw_ctx)->p), (const void *) DUK_HBUFFER_GET_DATA_PTR((thr)->heap, (val)), duk__val_len); \
 		(bw_ctx)->p += duk__val_len; \
 	} while (0)
 #define DUK_BW_WRITE_RAW_HBUFFER_FIXED(thr,bw_ctx,val) do { \
 		duk_size_t duk__val_len; \
 		duk__val_len = DUK_HBUFFER_FIXED_GET_SIZE((val)); \
-		DUK_MEMCPY((void *) ((bw_ctx)->p), (const void *) DUK_HBUFFER_FIXED_GET_DATA_PTR((thr)->heap, (val)), duk__val_len); \
+		duk_memcpy((void *) ((bw_ctx)->p), (const void *) DUK_HBUFFER_FIXED_GET_DATA_PTR((thr)->heap, (val)), duk__val_len); \
 		(bw_ctx)->p += duk__val_len; \
 	} while (0)
 #define DUK_BW_WRITE_RAW_HBUFFER_DYNAMIC(thr,bw_ctx,val) do { \
 		duk_size_t duk__val_len; \
 		duk__val_len = DUK_HBUFFER_DYNAMIC_GET_SIZE((val)); \
-		DUK_MEMCPY((void *) ((bw_ctx)->p), (const void *) DUK_HBUFFER_DYNAMIC_GET_DATA_PTR((thr)->heap, (val)), duk__val_len); \
+		duk_memcpy((void *) ((bw_ctx)->p), (const void *) DUK_HBUFFER_DYNAMIC_GET_DATA_PTR((thr)->heap, (val)), duk__val_len); \
 		(bw_ctx)->p += duk__val_len; \
 	} while (0)
 
@@ -431,35 +431,35 @@ struct duk_bufwriter_ctx {
 		duk__val = (const duk_uint8_t *) (val); \
 		duk__val_len = DUK_STRLEN((const char *) duk__val); \
 		DUK_BW_ENSURE((thr), (bw_ctx), duk__val_len); \
-		DUK_MEMCPY((void *) ((bw_ctx)->p), (const void *) duk__val, duk__val_len); \
+		duk_memcpy((void *) ((bw_ctx)->p), (const void *) duk__val, duk__val_len); \
 		(bw_ctx)->p += duk__val_len; \
 	} while (0)
 #define DUK_BW_WRITE_ENSURE_HSTRING(thr,bw_ctx,val) do { \
 		duk_size_t duk__val_len; \
 		duk__val_len = DUK_HSTRING_GET_BYTELEN((val)); \
 		DUK_BW_ENSURE((thr), (bw_ctx), duk__val_len); \
-		DUK_MEMCPY((void *) ((bw_ctx)->p), (const void *) DUK_HSTRING_GET_DATA((val)), duk__val_len); \
+		duk_memcpy((void *) ((bw_ctx)->p), (const void *) DUK_HSTRING_GET_DATA((val)), duk__val_len); \
 		(bw_ctx)->p += duk__val_len; \
 	} while (0)
 #define DUK_BW_WRITE_ENSURE_HBUFFER(thr,bw_ctx,val) do { \
 		duk_size_t duk__val_len; \
 		duk__val_len = DUK_HBUFFER_GET_SIZE((val)); \
 		DUK_BW_ENSURE((thr), (bw_ctx), duk__val_len); \
-		DUK_MEMCPY((void *) ((bw_ctx)->p), (const void *) DUK_HBUFFER_GET_DATA_PTR((thr)->heap, (val)), duk__val_len); \
+		duk_memcpy((void *) ((bw_ctx)->p), (const void *) DUK_HBUFFER_GET_DATA_PTR((thr)->heap, (val)), duk__val_len); \
 		(bw_ctx)->p += duk__val_len; \
 	} while (0)
 #define DUK_BW_WRITE_ENSURE_HBUFFER_FIXED(thr,bw_ctx,val) do { \
 		duk_size_t duk__val_len; \
 		duk__val_len = DUK_HBUFFER_FIXED_GET_SIZE((val)); \
 		DUK_BW_ENSURE((thr), (bw_ctx), duk__val_len); \
-		DUK_MEMCPY((void *) ((bw_ctx)->p), (const void *) DUK_HBUFFER_FIXED_GET_DATA_PTR((thr)->heap, (val)), duk__val_len); \
+		duk_memcpy((void *) ((bw_ctx)->p), (const void *) DUK_HBUFFER_FIXED_GET_DATA_PTR((thr)->heap, (val)), duk__val_len); \
 		(bw_ctx)->p += duk__val_len; \
 	} while (0)
 #define DUK_BW_WRITE_ENSURE_HBUFFER_DYNAMIC(thr,bw_ctx,val) do { \
 		duk_size_t duk__val_len; \
 		duk__val_len = DUK_HBUFFER_DYNAMIC_GET_SIZE((val)); \
 		DUK_BW_ENSURE((thr), (bw_ctx), duk__val_len); \
-		DUK_MEMCPY((void *) ((bw_ctx)->p), (const void *) DUK_HBUFFER_DYNAMIC_GET_DATA_PTR((thr)->heap, (val)), duk__val_len); \
+		duk_memcpy((void *) ((bw_ctx)->p), (const void *) DUK_HBUFFER_DYNAMIC_GET_DATA_PTR((thr)->heap, (val)), duk__val_len); \
 		(bw_ctx)->p += duk__val_len; \
 	} while (0)
 
@@ -543,7 +543,10 @@ DUK_INTERNAL_DECL void duk_byteswap_bytes(duk_uint8_t *p, duk_small_uint_t len);
 #endif
 
 DUK_INTERNAL_DECL void duk_memcpy(void *dst, const void *src, duk_size_t len);
+DUK_INTERNAL_DECL void duk_memmove(void *dst, const void *src, duk_size_t len);
 DUK_INTERNAL_DECL duk_small_int_t duk_memcmp(const void *s1, const void *s2, duk_size_t len);
+DUK_INTERNAL_DECL void duk_memset(void *s, duk_small_int_t c, duk_size_t len);
+DUK_INTERNAL_DECL void duk_memzero(void *s, duk_size_t len);
 
 DUK_INTERNAL_DECL duk_bool_t duk_is_whole_get_int32_nonegzero(duk_double_t x, duk_int32_t *ival);
 DUK_INTERNAL_DECL duk_bool_t duk_is_whole_get_int32(duk_double_t x, duk_int32_t *ival);

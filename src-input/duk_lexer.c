@@ -336,7 +336,7 @@ DUK_LOCAL void duk__advance_bytes(duk_lexer_ctx *lex_ctx, duk_small_uint_t count
 		/* Not enough data to provide a full window, so "scroll" window to
 		 * start of buffer and fill up the rest.
 		 */
-		DUK_MEMMOVE((void *) lex_ctx->buffer,
+		duk_memmove((void *) lex_ctx->buffer,
 		            (const void *) lex_ctx->window,
 		            (size_t) avail_bytes);
 		lex_ctx->window = lex_ctx->buffer;
@@ -487,7 +487,7 @@ DUK_LOCAL void duk__advance_bytes(duk_lexer_ctx *lex_ctx, duk_small_uint_t count
 	/* Zero 'count' is also allowed to make call sites easier. */
 
 	keep_bytes = DUK_LEXER_WINDOW_SIZE * sizeof(duk_lexer_codepoint) - count_bytes;
-	DUK_MEMMOVE((void *) lex_ctx->window,
+	duk_memmove((void *) lex_ctx->window,
 	            (const void *) ((duk_uint8_t *) lex_ctx->window + count_bytes),
 	            (size_t) keep_bytes);
 
@@ -576,7 +576,7 @@ DUK_LOCAL duk_hstring *duk__internbuffer(duk_lexer_ctx *lex_ctx, duk_idx_t valst
 DUK_INTERNAL void duk_lexer_initctx(duk_lexer_ctx *lex_ctx) {
 	DUK_ASSERT(lex_ctx != NULL);
 
-	DUK_MEMZERO(lex_ctx, sizeof(*lex_ctx));
+	duk_memzero(lex_ctx, sizeof(*lex_ctx));
 #if defined(DUK_USE_EXPLICIT_NULL_INIT)
 #if defined(DUK_USE_LEXER_SLIDING_WINDOW)
 	lex_ctx->window = NULL;
@@ -1834,7 +1834,7 @@ DUK_INTERNAL void duk_lexer_parse_re_token(duk_lexer_ctx *lex_ctx, duk_re_token 
 		goto fail_token_limit;
 	}
 
-	DUK_MEMZERO(out_token, sizeof(*out_token));
+	duk_memzero(out_token, sizeof(*out_token));
 
 	x = DUK__L0();
 	y = DUK__L1();

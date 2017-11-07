@@ -18,7 +18,7 @@ DUK_INTERNAL void duk_fb_put_bytes(duk_fixedbuffer *fb, const duk_uint8_t *buffe
 	} else {
 		copylen = length;
 	}
-	DUK_MEMCPY(fb->buffer + fb->offset, buffer, copylen);
+	duk_memcpy(fb->buffer + fb->offset, buffer, copylen);
 	fb->offset += copylen;
 }
 

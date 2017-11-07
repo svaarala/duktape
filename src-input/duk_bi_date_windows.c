@@ -31,7 +31,7 @@ DUK_LOCAL void duk__convert_filetime_to_ularge(const FILETIME *ft, ULARGE_INTEGE
 #endif  /* DUK_USE_DATE_NOW_WINDOWS_SUBMS */
 
 DUK_LOCAL void duk__set_systime_jan1970(SYSTEMTIME *st) {
-	DUK_MEMZERO((void *) st, sizeof(*st));
+	duk_memzero((void *) st, sizeof(*st));
 	st->wYear = 1970;
 	st->wMonth = 1;
 	st->wDayOfWeek = 4;  /* not sure whether or not needed; Thursday */

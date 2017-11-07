@@ -132,6 +132,13 @@ rejected_plain_identifiers_list = [
 
     # avoid in internals, use duk_hthread exclusively (except in duktape.h.in)
     'duk_context',
+
+    # avoid in internal, except for duk_util_memory.c
+    'DUK_MEMCPY',
+    'DUK_MEMMOVE',
+    'DUK_MEMCMP',
+    'DUK_MEMSET',
+    'DUK_MEMZERO'
 ]
 rejected_plain_identifiers = {}
 for id in rejected_plain_identifiers_list:
@@ -301,6 +308,8 @@ def checkIdentifiers(lines, idx, filename):
         if rejected_plain_identifiers.has_key(m.group(0)):
             if m.group(0) in [ 'duk_context' ] and bn == 'duktape.h.in':
                 continue  # duk_context allowed in public API header
+            if m.group(0) in [ 'DUK_MEMCPY', 'DUK_MEMMOVE', 'DUK_MEMCMP', 'DUK_MEMSET', 'DUK_MEMZERO' ] and bn == 'duk_util_memory.c':
+                continue
             if not excludePlain:
                 raise Exception('invalid identifier %r (perhaps plain)' % m.group(0))
 

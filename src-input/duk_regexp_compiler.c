@@ -1160,7 +1160,7 @@ DUK_INTERNAL void duk_regexp_compile(duk_hthread *thr) {
 
 	/* [ ... pattern flags escaped_source buffer ] */
 
-	DUK_MEMZERO(&re_ctx, sizeof(re_ctx));
+	duk_memzero(&re_ctx, sizeof(re_ctx));
 	DUK_LEXER_INITCTX(&re_ctx.lex);  /* duplicate zeroing, expect for (possible) NULL inits */
 	re_ctx.thr = thr;
 	re_ctx.lex.thr = thr;

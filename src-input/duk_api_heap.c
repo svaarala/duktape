@@ -105,7 +105,7 @@ DUK_EXTERNAL void duk_suspend(duk_hthread *thr, duk_thread_state *state) {
 	duk_push_tval(thr, &lj->value2);
 
 	/* XXX: creating_error == 0 is asserted above, so no need to store. */
-	DUK_MEMCPY((void *) &snapshot->lj, (const void *) lj, sizeof(duk_ljstate));
+	duk_memcpy((void *) &snapshot->lj, (const void *) lj, sizeof(duk_ljstate));
 	snapshot->creating_error = heap->creating_error;
 	snapshot->curr_thread = heap->curr_thread;
 	snapshot->call_recursion_depth = heap->call_recursion_depth;
@@ -135,7 +135,7 @@ DUK_EXTERNAL void duk_resume(duk_hthread *thr, const duk_thread_state *state) {
 
 	heap = thr->heap;
 
-	DUK_MEMCPY((void *) &heap->lj, (const void *) &snapshot->lj, sizeof(duk_ljstate));
+	duk_memcpy((void *) &heap->lj, (const void *) &snapshot->lj, sizeof(duk_ljstate));
 	heap->creating_error = snapshot->creating_error;
 	heap->curr_thread = snapshot->curr_thread;
 	heap->call_recursion_depth = snapshot->call_recursion_depth;

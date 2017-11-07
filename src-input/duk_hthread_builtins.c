@@ -75,7 +75,7 @@ DUK_LOCAL void duk__duplicate_ram_global_object(duk_hthread *thr) {
 	props = DUK_ALLOC_CHECKED(thr, alloc_size);
 	DUK_ASSERT(props != NULL);
 	DUK_ASSERT(DUK_HOBJECT_GET_PROPS(thr->heap, h_oldglobal) != NULL);
-	DUK_MEMCPY((void *) props, (const void *) DUK_HOBJECT_GET_PROPS(thr->heap, h_oldglobal), alloc_size);
+	duk_memcpy((void *) props, (const void *) DUK_HOBJECT_GET_PROPS(thr->heap, h_oldglobal), alloc_size);
 
 	/* XXX: keep property attributes or tweak them here?
 	 * Properties will now be non-configurable even when they're
@@ -202,7 +202,7 @@ DUK_INTERNAL void duk_hthread_create_builtin_objects(duk_hthread *thr) {
 
 	DUK_D(DUK_DPRINT("INITBUILTINS BEGIN: DUK_NUM_BUILTINS=%d, DUK_NUM_BUILTINS_ALL=%d", (int) DUK_NUM_BUILTINS, (int) DUK_NUM_ALL_BUILTINS));
 
-	DUK_MEMZERO(&bd_ctx, sizeof(bd_ctx));
+	duk_memzero(&bd_ctx, sizeof(bd_ctx));
 	bd->data = (const duk_uint8_t *) duk_builtins_data;
 	bd->length = (duk_size_t) DUK_BUILTINS_DATA_LENGTH;
 
