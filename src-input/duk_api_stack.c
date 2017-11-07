@@ -1177,18 +1177,12 @@ DUK_EXTERNAL void duk_insert(duk_hthread *thr, duk_idx_t to_idx) {
 	DUK_DDD(DUK_DDDPRINT("duk_insert: to_idx=%ld, p=%p, q=%p, nbytes=%lu",
 	                     (long) to_idx, (void *) p, (void *) q, (unsigned long) nbytes));
 
-	/* No net refcount changes. */
-
-	if (nbytes > 0) {
-		DUK_TVAL_SET_TVAL(&tv_tmp, q);
-		DUK_ASSERT(nbytes > 0);
-		DUK_MEMMOVE((void *) (p + 1), (const void *) p, (size_t) nbytes);
-		DUK_TVAL_SET_TVAL(p, &tv_tmp);
-	} else {
-		/* nop: insert top to top */
-		DUK_ASSERT(nbytes == 0);
-		DUK_ASSERT(p == q);
-	}
+	/* No net refcount changes.  No need to special case nbytes == 0
+	 * (p == q).
+	 */
+	DUK_TVAL_SET_TVAL(&tv_tmp, q);
+	duk_memmove((void *) (p + 1), (const void *) p, (size_t) nbytes);
+	DUK_TVAL_SET_TVAL(p, &tv_tmp);
 }
 
 DUK_INTERNAL void duk_insert_undefined(duk_hthread *thr, duk_idx_t idx) {
@@ -1280,7 +1274,7 @@ DUK_EXTERNAL void duk_remove(duk_hthread *thr, duk_idx_t idx) {
 #endif
 
 	nbytes = (duk_size_t) (((duk_uint8_t *) q) - ((duk_uint8_t *) p));  /* Note: 'q' is top-1 */
-	DUK_MEMMOVE((void *) p, (const void *) (p + 1), (size_t) nbytes);  /* zero size not an issue: pointers are valid */
+	duk_memmove((void *) p, (const void *) (p + 1), (size_t) nbytes);
 
 	DUK_TVAL_SET_UNDEFINED(q);
 	thr->valstack_top--;
@@ -1333,7 +1327,7 @@ DUK_INTERNAL void duk_remove_n(duk_hthread *thr, duk_idx_t idx, duk_idx_t count)
 		DUK_TVAL_DECREF_NORZ(thr, tv);
 	}
 
-	DUK_MEMMOVE((void *) tv_dst, (const void *) tv_src, bytes);
+	duk_memmove((void *) tv_dst, (const void *) tv_src, bytes);
 
 	tv_newtop = thr->valstack_top - count;
 	for (tv = tv_newtop; tv < thr->valstack_top; tv++) {
@@ -1402,7 +1396,7 @@ DUK_EXTERNAL void duk_xcopymove_raw(duk_hthread *to_thr, duk_hthread *from_thr, 
 	 * allowed now anyway)
 	 */
 	DUK_ASSERT(nbytes > 0);
-	DUK_MEMCPY((void *) to_thr->valstack_top, (const void *) src, (size_t) nbytes);
+	duk_memcpy((void *) to_thr->valstack_top, (const void *) src, (size_t) nbytes);
 
 	p = to_thr->valstack_top;
 	to_thr->valstack_top = (duk_tval *) (void *) (((duk_uint8_t *) p) + nbytes);
@@ -1451,7 +1445,7 @@ DUK_INTERNAL duk_tval *duk_reserve_gap(duk_hthread *thr, duk_idx_t idx_base, duk
 	tv_dst = (duk_tval *) (void *) ((duk_uint8_t *) tv_src + gap_bytes);
 	copy_bytes = (duk_size_t) ((duk_uint8_t *) thr->valstack_top - (duk_uint8_t *) tv_src);
 	thr->valstack_top = (duk_tval *) (void *) ((duk_uint8_t *) thr->valstack_top + gap_bytes);
-	DUK_MEMMOVE((void *) tv_dst, (const void *) tv_src, copy_bytes);
+	duk_memmove((void *) tv_dst, (const void *) tv_src, copy_bytes);
 
 	/* Values in the gap are left as garbage: caller must fill them in
 	 * and INCREF them before any side effects.
@@ -3423,14 +3417,8 @@ DUK_EXTERNAL void *duk_to_buffer_raw(duk_hthread *thr, duk_idx_t idx, duk_size_t
 	}
 
 	dst_data = (duk_uint8_t *) duk_push_buffer(thr, src_size, (mode == DUK_BUF_MODE_DYNAMIC) /*dynamic*/);
-	if (DUK_LIKELY(src_size > 0)) {
-		/* When src_size == 0, src_data may be NULL (if source
-		 * buffer is dynamic), and dst_data may be NULL (if
-		 * target buffer is dynamic).  Avoid zero-size memcpy()
-		 * with an invalid pointer.
-		 */
-		DUK_MEMCPY((void *) dst_data, (const void *) src_data, (size_t) src_size);
-	}
+	duk_memcpy((void *) dst_data, (const void *) src_data, (size_t) src_size);
+
 	duk_replace(thr, idx);
  skip_copy:
 
@@ -5309,7 +5297,7 @@ DUK_INTERNAL void *duk_push_fixed_buffer_zero(duk_hthread *thr, duk_size_t len) 
 	/* ES2015 requires zeroing even when DUK_USE_ZERO_BUFFER_DATA
 	 * is not set.
 	 */
-	DUK_MEMZERO((void *) ptr, (size_t) len);
+	duk_memzero((void *) ptr, (size_t) len);
 #endif
 	return ptr;
 }

@@ -50,7 +50,7 @@ DUK_LOCAL void duk__push_tvals_incref_only(duk_hthread *thr, duk_tval *tv_src, d
 
 	tv_dst = thr->valstack_top;
 	copy_size = sizeof(duk_tval) * count;
-	DUK_MEMCPY((void *) tv_dst, (const void *) tv_src, copy_size);
+	duk_memcpy((void *) tv_dst, (const void *) tv_src, copy_size);
 	for (i = 0; i < count; i++) {
 		DUK_TVAL_INCREF(thr, tv_dst);
 		tv_dst++;

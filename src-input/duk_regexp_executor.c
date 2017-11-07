@@ -503,14 +503,14 @@ DUK_LOCAL const duk_uint8_t *duk__match_regexp(duk_re_matcher_ctx *re_ctx, const
 			range_save = (duk_uint8_t **) duk_push_fixed_buffer_nozero(re_ctx->thr,
 			                                                           sizeof(duk_uint8_t *) * idx_count);
 			DUK_ASSERT(range_save != NULL);
-			DUK_MEMCPY(range_save, re_ctx->saved + idx_start, sizeof(duk_uint8_t *) * idx_count);
+			duk_memcpy(range_save, re_ctx->saved + idx_start, sizeof(duk_uint8_t *) * idx_count);
 #if defined(DUK_USE_EXPLICIT_NULL_INIT)
 			idx_end = idx_start + idx_count;
 			for (idx = idx_start; idx < idx_end; idx++) {
 				re_ctx->saved[idx] = NULL;
 			}
 #else
-			DUK_MEMZERO((void *) (re_ctx->saved + idx_start), sizeof(duk_uint8_t *) * idx_count);
+			duk_memzero((void *) (re_ctx->saved + idx_start), sizeof(duk_uint8_t *) * idx_count);
 #endif
 
 			sub_sp = duk__match_regexp(re_ctx, pc, sp);
@@ -528,7 +528,7 @@ DUK_LOCAL const duk_uint8_t *duk__match_regexp(duk_re_matcher_ctx *re_ctx, const
 			DUK_DDD(DUK_DDDPRINT("fail: restore wiped/resaved values [%ld,%ld] (captures [%ld,%ld])",
 			                     (long) idx_start, (long) (idx_start + idx_count - 1),
 			                     (long) (idx_start / 2), (long) ((idx_start + idx_count - 1) / 2)));
-			DUK_MEMCPY((void *) (re_ctx->saved + idx_start),
+			duk_memcpy((void *) (re_ctx->saved + idx_start),
 			           (const void *) range_save,
 			           sizeof(duk_uint8_t *) * idx_count);
 			duk_pop_unsafe(re_ctx->thr);
@@ -560,7 +560,7 @@ DUK_LOCAL const duk_uint8_t *duk__match_regexp(duk_re_matcher_ctx *re_ctx, const
 			full_save = (duk_uint8_t **) duk_push_fixed_buffer_nozero(re_ctx->thr,
 			                                                          sizeof(duk_uint8_t *) * re_ctx->nsaved);
 			DUK_ASSERT(full_save != NULL);
-			DUK_MEMCPY(full_save, re_ctx->saved, sizeof(duk_uint8_t *) * re_ctx->nsaved);
+			duk_memcpy(full_save, re_ctx->saved, sizeof(duk_uint8_t *) * re_ctx->nsaved);
 
 			skip = duk__bc_get_i32(re_ctx, &pc);
 			sub_sp = duk__match_regexp(re_ctx, pc, sp);
@@ -585,7 +585,7 @@ DUK_LOCAL const duk_uint8_t *duk__match_regexp(duk_re_matcher_ctx *re_ctx, const
 
 		 lookahead_fail:
 			/* fail: restore saves */
-			DUK_MEMCPY((void *) re_ctx->saved,
+			duk_memcpy((void *) re_ctx->saved,
 			           (const void *) full_save,
 			           sizeof(duk_uint8_t *) * re_ctx->nsaved);
 			duk_pop_unsafe(re_ctx->thr);
@@ -733,7 +733,7 @@ DUK_LOCAL void duk__regexp_match_helper(duk_hthread *thr, duk_small_int_t force_
 
 	/* [ ... re_obj input bc ] */
 
-	DUK_MEMZERO(&re_ctx, sizeof(re_ctx));
+	duk_memzero(&re_ctx, sizeof(re_ctx));
 
 	re_ctx.thr = thr;
 	re_ctx.input = (const duk_uint8_t *) DUK_HSTRING_GET_DATA(h_input);
@@ -770,7 +770,7 @@ DUK_LOCAL void duk__regexp_match_helper(duk_hthread *thr, duk_small_int_t force_
 #elif defined(DUK_USE_ZERO_BUFFER_DATA)
 	/* buffer is automatically zeroed */
 #else
-	DUK_MEMZERO((void *) p_buf, sizeof(duk_uint8_t *) * re_ctx.nsaved);
+	duk_memzero((void *) p_buf, sizeof(duk_uint8_t *) * re_ctx.nsaved);
 #endif
 
 	DUK_DDD(DUK_DDDPRINT("regexp ctx initialized, flags=0x%08lx, nsaved=%ld, recursion_limit=%ld, steps_limit=%ld",

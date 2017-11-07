@@ -284,7 +284,7 @@ DUK_INTERNAL duk_uint_fast32_t duk_heap_strcache_offset_char2byte(duk_hthread *t
 			duk_strcache tmp;
 
 			tmp = *sce;
-			DUK_MEMMOVE((void *) (&heap->strcache[1]),
+			duk_memmove((void *) (&heap->strcache[1]),
 			            (const void *) (&heap->strcache[0]),
 			            (size_t) (((char *) sce) - ((char *) &heap->strcache[0])));
 			heap->strcache[0] = tmp;

@@ -105,7 +105,7 @@ DUK_INTERNAL void duk_bw_write_raw_slice(duk_hthread *thr, duk_bufwriter_ctx *bw
 	DUK_UNREF(thr);
 
 	p_base = bw->p_base;
-	DUK_MEMCPY((void *) bw->p,
+	duk_memcpy((void *) bw->p,
 	           (const void *) (p_base + src_off),
 	           (size_t) len);
 	bw->p += len;
@@ -137,10 +137,10 @@ DUK_INTERNAL void duk_bw_insert_raw_bytes(duk_hthread *thr, duk_bufwriter_ctx *b
 	move_sz = buf_sz - dst_off;
 
 	DUK_ASSERT(p_base != NULL);  /* buffer size is >= 1 */
-	DUK_MEMMOVE((void *) (p_base + dst_off + len),
+	duk_memmove((void *) (p_base + dst_off + len),
 	            (const void *) (p_base + dst_off),
 	            (size_t) move_sz);
-	DUK_MEMCPY((void *) (p_base + dst_off),
+	duk_memcpy((void *) (p_base + dst_off),
 	           (const void *) buf,
 	           (size_t) len);
 	bw->p += len;
@@ -184,10 +184,10 @@ DUK_INTERNAL void duk_bw_insert_raw_slice(duk_hthread *thr, duk_bufwriter_ctx *b
 	move_sz = buf_sz - dst_off;
 
 	DUK_ASSERT(p_base != NULL);  /* buffer size is >= 1 */
-	DUK_MEMMOVE((void *) (p_base + dst_off + len),
+	duk_memmove((void *) (p_base + dst_off + len),
 	            (const void *) (p_base + dst_off),
 	            (size_t) move_sz);
-	DUK_MEMCPY((void *) (p_base + dst_off),
+	duk_memcpy((void *) (p_base + dst_off),
 	           (const void *) (p_base + src_off),
 	           (size_t) len);
 	bw->p += len;
@@ -222,7 +222,7 @@ DUK_INTERNAL duk_uint8_t *duk_bw_insert_raw_area(duk_hthread *thr, duk_bufwriter
 	move_sz = buf_sz - off;
 	p_dst = p_base + off + len;
 	p_src = p_base + off;
-	DUK_MEMMOVE((void *) p_dst, (const void *) p_src, (size_t) move_sz);
+	duk_memmove((void *) p_dst, (const void *) p_src, (size_t) move_sz);
 	return p_src;  /* point to start of 'reserved area' */
 }
 
@@ -253,7 +253,7 @@ DUK_INTERNAL void duk_bw_remove_raw_slice(duk_hthread *thr, duk_bufwriter_ctx *b
 	p_dst = p_base + off;
 	p_src = p_dst + len;
 	move_sz = (duk_size_t) (bw->p - p_src);
-	DUK_MEMMOVE((void *) p_dst,
+	duk_memmove((void *) p_dst,
 	            (const void *) p_src,
 	            (size_t) move_sz);
 	bw->p -= len;
@@ -276,7 +276,7 @@ DUK_INTERNAL DUK_ALWAYS_INLINE duk_uint16_t duk_raw_read_u16_be(duk_uint8_t **p)
 		duk_uint16_t x;
 	} u;
 
-	DUK_MEMCPY((void *) u.b, (const void *) (*p), (size_t) 2);
+	duk_memcpy((void *) u.b, (const void *) (*p), (size_t) 2);
 	u.x = DUK_NTOH16(u.x);
 	*p += 2;
 	return u.x;
@@ -288,7 +288,7 @@ DUK_INTERNAL DUK_ALWAYS_INLINE duk_uint32_t duk_raw_read_u32_be(duk_uint8_t **p)
 		duk_uint32_t x;
 	} u;
 
-	DUK_MEMCPY((void *) u.b, (const void *) (*p), (size_t) 4);
+	duk_memcpy((void *) u.b, (const void *) (*p), (size_t) 4);
 	u.x = DUK_NTOH32(u.x);
 	*p += 4;
 	return u.x;
@@ -301,10 +301,10 @@ DUK_INTERNAL DUK_ALWAYS_INLINE duk_double_t duk_raw_read_double_be(duk_uint8_t *
 		duk_uint32_t x;
 	} u;
 
-	DUK_MEMCPY((void *) u.b, (const void *) (*p), (size_t) 4);
+	duk_memcpy((void *) u.b, (const void *) (*p), (size_t) 4);
 	u.x = DUK_NTOH32(u.x);
 	du.ui[DUK_DBL_IDX_UI0] = u.x;
-	DUK_MEMCPY((void *) u.b, (const void *) (*p + 4), (size_t) 4);
+	duk_memcpy((void *) u.b, (const void *) (*p + 4), (size_t) 4);
 	u.x = DUK_NTOH32(u.x);
 	du.ui[DUK_DBL_IDX_UI1] = u.x;
 	*p += 8;
@@ -319,7 +319,7 @@ DUK_INTERNAL DUK_ALWAYS_INLINE void duk_raw_write_u16_be(duk_uint8_t **p, duk_ui
 	} u;
 
 	u.x = DUK_HTON16(val);
-	DUK_MEMCPY((void *) (*p), (const void *) u.b, (size_t) 2);
+	duk_memcpy((void *) (*p), (const void *) u.b, (size_t) 2);
 	*p += 2;
 }
 
@@ -330,7 +330,7 @@ DUK_INTERNAL DUK_ALWAYS_INLINE void duk_raw_write_u32_be(duk_uint8_t **p, duk_ui
 	} u;
 
 	u.x = DUK_HTON32(val);
-	DUK_MEMCPY((void *) (*p), (const void *) u.b, (size_t) 4);
+	duk_memcpy((void *) (*p), (const void *) u.b, (size_t) 4);
 	*p += 4;
 }
 
@@ -344,9 +344,9 @@ DUK_INTERNAL DUK_ALWAYS_INLINE void duk_raw_write_double_be(duk_uint8_t **p, duk
 	du.d = val;
 	u.x = du.ui[DUK_DBL_IDX_UI0];
 	u.x = DUK_HTON32(u.x);
-	DUK_MEMCPY((void *) (*p), (const void *) u.b, (size_t) 4);
+	duk_memcpy((void *) (*p), (const void *) u.b, (size_t) 4);
 	u.x = du.ui[DUK_DBL_IDX_UI1];
 	u.x = DUK_HTON32(u.x);
-	DUK_MEMCPY((void *) (*p + 4), (const void *) u.b, (size_t) 4);
+	duk_memcpy((void *) (*p + 4), (const void *) u.b, (size_t) 4);
 	*p += 8;
 }

@@ -159,7 +159,7 @@ DUK_LOCAL void duk__sort_enum_keys_es6(duk_hthread *thr, duk_hobject *h_obj, duk
 		 * are very often in order already.
 		 */
 		if (idx != idx_insert) {
-			DUK_MEMMOVE((void *) (keys + idx_insert + 1),
+			duk_memmove((void *) (keys + idx_insert + 1),
 			            (const void *) (keys + idx_insert),
 			            ((size_t) (idx - idx_insert) * sizeof(duk_hstring *)));
 			keys[idx_insert] = h_curr;

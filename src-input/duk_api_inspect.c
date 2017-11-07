@@ -66,7 +66,7 @@ DUK_EXTERNAL void duk_inspect_value(duk_hthread *thr, duk_idx_t idx) {
 	DUK_ASSERT_API_ENTRY(thr);
 
 	/* Assume two's complement and set everything to -1. */
-	DUK_MEMSET((void *) &vals, (int) 0xff, sizeof(vals));
+	duk_memset((void *) &vals, (int) 0xff, sizeof(vals));
 	DUK_ASSERT(vals[DUK__IDX_TYPE] == -1);  /* spot check one */
 
 	tv = duk_get_tval_or_unused(thr, idx);

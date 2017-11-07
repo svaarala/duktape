@@ -47,10 +47,10 @@ DUK_INTERNAL duk_hbuffer *duk_hbuffer_alloc(duk_heap *heap, duk_size_t size, duk
 
 	/* zero everything unless requested not to do so */
 #if defined(DUK_USE_ZERO_BUFFER_DATA)
-	DUK_MEMZERO((void *) res,
+	duk_memzero((void *) res,
 	            (flags & DUK_BUF_FLAG_NOZERO) ? header_size : alloc_size);
 #else
-	DUK_MEMZERO((void *) res, header_size);
+	duk_memzero((void *) res, header_size);
 #endif
 
 	if (flags & DUK_BUF_FLAG_EXTERNAL) {

@@ -132,7 +132,7 @@ DUK_INTERNAL duk_int_t duk_bi_date_get_local_tzoffset_gmtime(duk_double_t d) {
 	t = (time_t) (d / 1000.0);
 	DUK_DDD(DUK_DDDPRINT("timeval: %lf -> time_t %ld", (double) d, (long) t));
 
-	DUK_MEMZERO((void *) tms, sizeof(struct tm) * 2);
+	duk_memzero((void *) tms, sizeof(struct tm) * 2);
 
 #if defined(DUK_USE_DATE_TZO_GMTIME_R)
 	(void) gmtime_r(&t, &tms[0]);
@@ -142,9 +142,9 @@ DUK_INTERNAL duk_int_t duk_bi_date_get_local_tzoffset_gmtime(duk_double_t d) {
 	(void) localtime_s(&t, &tms[1]);
 #elif defined(DUK_USE_DATE_TZO_GMTIME)
 	tm_ptr = gmtime(&t);
-	DUK_MEMCPY((void *) &tms[0], tm_ptr, sizeof(struct tm));
+	duk_memcpy((void *) &tms[0], tm_ptr, sizeof(struct tm));
 	tm_ptr = localtime(&t);
-	DUK_MEMCPY((void *) &tms[1], tm_ptr, sizeof(struct tm));
+	duk_memcpy((void *) &tms[1], tm_ptr, sizeof(struct tm));
 #else
 #error internal error
 #endif
@@ -205,13 +205,13 @@ DUK_INTERNAL duk_bool_t duk_bi_date_parse_string_strptime(duk_hthread *thr, cons
 
 	/* Copy to buffer with slack to avoid Valgrind gripes from strptime. */
 	DUK_ASSERT(str != NULL);
-	DUK_MEMZERO(buf, sizeof(buf));  /* valgrind whine without this */
+	duk_memzero(buf, sizeof(buf));  /* valgrind whine without this */
 	DUK_SNPRINTF(buf, sizeof(buf), "%s", (const char *) str);
 	buf[sizeof(buf) - 1] = (char) 0;
 
 	DUK_DDD(DUK_DDDPRINT("parsing: '%s'", (const char *) buf));
 
-	DUK_MEMZERO(&tm, sizeof(tm));
+	duk_memzero(&tm, sizeof(tm));
 	if (strptime((const char *) buf, "%c", &tm) != NULL) {
 		DUK_DDD(DUK_DDDPRINT("before mktime: tm={sec:%ld,min:%ld,hour:%ld,mday:%ld,mon:%ld,year:%ld,"
 		                     "wday:%ld,yday:%ld,isdst:%ld}",
@@ -242,7 +242,7 @@ DUK_INTERNAL duk_bool_t duk_bi_date_parse_string_getdate(duk_hthread *thr, const
 	 * convenient for an embeddable interpreter.
 	 */
 
-	DUK_MEMZERO(&tm, sizeof(struct tm));
+	duk_memzero(&tm, sizeof(struct tm));
 	rc = (duk_small_int_t) getdate_r(str, &tm);
 	DUK_DDD(DUK_DDDPRINT("getdate_r() -> %ld", (long) rc));
 
@@ -284,7 +284,7 @@ DUK_INTERNAL duk_bool_t duk_bi_date_format_parts_strftime(duk_hthread *thr, duk_
 		return 0;
 	}
 
-	DUK_MEMZERO(&tm, sizeof(tm));
+	duk_memzero(&tm, sizeof(tm));
 	tm.tm_sec = parts[DUK_DATE_IDX_SECOND];
 	tm.tm_min = parts[DUK_DATE_IDX_MINUTE];
 	tm.tm_hour = parts[DUK_DATE_IDX_HOUR];
@@ -294,7 +294,7 @@ DUK_INTERNAL duk_bool_t duk_bi_date_format_parts_strftime(duk_hthread *thr, duk_
 	tm.tm_wday = parts[DUK_DATE_IDX_WEEKDAY];
 	tm.tm_isdst = 0;
 
-	DUK_MEMZERO(buf, sizeof(buf));
+	duk_memzero(buf, sizeof(buf));
 	if ((flags & DUK_DATE_FLAG_TOSTRING_DATE) && (flags & DUK_DATE_FLAG_TOSTRING_TIME)) {
 		fmt = "%c";
 	} else if (flags & DUK_DATE_FLAG_TOSTRING_DATE) {

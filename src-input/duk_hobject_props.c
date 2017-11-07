@@ -807,18 +807,14 @@ DUK_INTERNAL void duk_hobject_realloc_props(duk_hthread *thr,
 	} else {
 		array_copy_size = sizeof(duk_tval) * new_a_size;
 	}
-	if (array_copy_size > 0) {
-		/* Avoid zero copy with an invalid pointer.  If obj->p is NULL,
-		 * the 'new_a' pointer will be invalid which is not allowed even
-		 * when copy size is zero.
-		 */
-		DUK_ASSERT(new_a != NULL);
-		DUK_ASSERT(DUK_HOBJECT_GET_PROPS(thr->heap, obj) != NULL);
-		DUK_ASSERT(DUK_HOBJECT_GET_ASIZE(obj) > 0);
-		DUK_MEMCPY((void *) new_a,
-		           (const void *) DUK_HOBJECT_A_GET_BASE(thr->heap, obj),
-		           array_copy_size);
-	}
+
+	DUK_ASSERT(new_a != NULL || array_copy_size == 0U);
+	DUK_ASSERT(DUK_HOBJECT_GET_PROPS(thr->heap, obj) != NULL || array_copy_size == 0U);
+	DUK_ASSERT(DUK_HOBJECT_GET_ASIZE(obj) > 0 || array_copy_size == 0U);
+	duk_memcpy((void *) new_a,
+	           (const void *) DUK_HOBJECT_A_GET_BASE(thr->heap, obj),
+	           array_copy_size);
+
 	for (i = DUK_HOBJECT_GET_ASIZE(obj); i < new_a_size; i++) {
 		duk_tval *tv = &new_a[i];
 		DUK_TVAL_SET_UNUSED(tv);
@@ -843,7 +839,7 @@ DUK_INTERNAL void duk_hobject_realloc_props(duk_hthread *thr,
 
 		/* fill new_h with u32 0xff = UNUSED */
 		DUK_ASSERT(new_h_size > 0);
-		DUK_MEMSET(new_h, 0xff, sizeof(duk_uint32_t) * new_h_size);
+		duk_memset(new_h, 0xff, sizeof(duk_uint32_t) * new_h_size);
 
 		DUK_ASSERT(new_e_next <= new_h_size);  /* equality not actually possible */
 
@@ -1431,7 +1427,7 @@ DUK_INTERNAL duk_hstring *duk_hobject_get_internal_value_string(duk_heap *heap, 
 	/* This is not strictly necessary, but avoids compiler warnings; e.g.
 	 * gcc won't reliably detect that no uninitialized data is read below.
 	 */
-	DUK_MEMZERO((void *) &tv, sizeof(duk_tval));
+	duk_memzero((void *) &tv, sizeof(duk_tval));
 
 	if (duk_hobject_get_internal_value(heap, obj, &tv)) {
 		duk_hstring *h;

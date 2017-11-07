@@ -630,7 +630,7 @@ DUK_LOCAL void duk__dec_buffer(duk_json_dec_ctx *js_ctx) {
 	src_len = (duk_size_t) (p - js_ctx->p);
 	buf = (duk_uint8_t *) duk_push_fixed_buffer_nozero(thr, src_len);
 	DUK_ASSERT(buf != NULL);
-	DUK_MEMCPY((void *) buf, (const void *) js_ctx->p, src_len);
+	duk_memcpy((void *) buf, (const void *) js_ctx->p, src_len);
 	duk_hex_decode(thr, -1);
 
 	js_ctx->p = p + 1;  /* skip '|' */
@@ -1437,7 +1437,7 @@ DUK_LOCAL duk_uint8_t *duk__enc_buffer_data_hex(const duk_uint8_t *src, duk_size
 
 	/* Unlike in duk_hex_encode() 'dst' is not necessarily aligned by 2.
 	 * For platforms where unaligned accesses are not allowed, shift 'dst'
-	 * ahead by 1 byte to get alignment and then DUK_MEMMOVE() the result
+	 * ahead by 1 byte to get alignment and then duk_memmove() the result
 	 * in place.  The faster encoding loop makes up the difference.
 	 * There's always space for one extra byte because a terminator always
 	 * follows the hex data and that's been accounted for by the caller.
@@ -1470,7 +1470,7 @@ DUK_LOCAL duk_uint8_t *duk__enc_buffer_data_hex(const duk_uint8_t *src, duk_size
 #if !defined(DUK_USE_UNALIGNED_ACCESSES_POSSIBLE)
 	if (shift_dst) {
 		q--;
-		DUK_MEMMOVE((void *) dst, (const void *) (dst + 1), 2 * len_safe);
+		duk_memmove((void *) dst, (const void *) (dst + 1), 2 * len_safe);
 		DUK_ASSERT(dst + 2 * len_safe == q);
 	}
 #endif
@@ -1546,7 +1546,7 @@ DUK_LOCAL void duk__enc_buffer_data(duk_json_enc_ctx *js_ctx, duk_uint8_t *buf_d
 #if defined(DUK_USE_JC)
 	{
 		DUK_ASSERT(js_ctx->flag_ext_compatible);
-		DUK_MEMCPY((void *) q, (const void *) "{\"_buf\":\"", 9);  /* len: 9 */
+		duk_memcpy((void *) q, (const void *) "{\"_buf\":\"", 9);  /* len: 9 */
 		q += 9;
 		q = duk__enc_buffer_data_hex(buf_data, buf_len, q);
 		*q++ = DUK_ASC_DOUBLEQUOTE;
@@ -1619,7 +1619,7 @@ DUK_LOCAL void duk__enc_pointer(duk_json_enc_ctx *js_ctx, void *ptr) {
 	DUK_ASSERT(js_ctx->flag_ext_custom || js_ctx->flag_ext_compatible);  /* caller checks */
 	DUK_ASSERT(js_ctx->flag_ext_custom_or_compatible);
 
-	DUK_MEMZERO(buf, sizeof(buf));
+	duk_memzero(buf, sizeof(buf));
 
 	/* The #if defined() clutter here needs to handle the three
 	 * cases: (1) JX+JC, (2) JX only, (3) JC only.
@@ -1709,21 +1709,21 @@ DUK_LOCAL void duk__enc_newline_indent(duk_json_enc_ctx *js_ctx, duk_uint_t dept
 	p = DUK_BW_ENSURE_GETPTR(js_ctx->thr, &js_ctx->bw, need_bytes);
 	p_start = p;
 
-	DUK_MEMCPY((void *) p, (const void *) gap_data, (size_t) gap_len);
+	duk_memcpy((void *) p, (const void *) gap_data, (size_t) gap_len);
 	p += gap_len;
 	avail_bytes = gap_len;
 	DUK_ASSERT(need_bytes >= gap_len);
 	need_bytes -= gap_len;
 
 	while (need_bytes >= avail_bytes) {
-		DUK_MEMCPY((void *) p, (const void *) p_start, (size_t) avail_bytes);
+		duk_memcpy((void *) p, (const void *) p_start, (size_t) avail_bytes);
 		p += avail_bytes;
 		need_bytes -= avail_bytes;
 		avail_bytes <<= 1;
 	}
 
 	DUK_ASSERT(need_bytes < avail_bytes);  /* need_bytes may be zero */
-	DUK_MEMCPY((void *) p, (const void *) p_start, (size_t) need_bytes);
+	duk_memcpy((void *) p, (const void *) p_start, (size_t) need_bytes);
 	p += need_bytes;
 	/*avail_bytes += need_bytes*/
 
@@ -2812,7 +2812,7 @@ void duk_bi_json_parse_helper(duk_hthread *thr,
 	                     (unsigned long) flags,
 	                     (long) duk_get_top(thr)));
 
-	DUK_MEMZERO(&js_ctx_alloc, sizeof(js_ctx_alloc));
+	duk_memzero(&js_ctx_alloc, sizeof(js_ctx_alloc));
 	js_ctx->thr = thr;
 #if defined(DUK_USE_EXPLICIT_NULL_INIT)
 	/* nothing now */
@@ -2922,7 +2922,7 @@ void duk_bi_json_stringify_helper(duk_hthread *thr,
 	 *  Context init
 	 */
 
-	DUK_MEMZERO(&js_ctx_alloc, sizeof(js_ctx_alloc));
+	duk_memzero(&js_ctx_alloc, sizeof(js_ctx_alloc));
 	js_ctx->thr = thr;
 #if defined(DUK_USE_EXPLICIT_NULL_INIT)
 	js_ctx->h_replacer = NULL;

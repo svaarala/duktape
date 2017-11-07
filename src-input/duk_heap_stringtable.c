@@ -54,7 +54,7 @@ DUK_INTERNAL void duk_heap_strtable_dump(duk_heap *heap) {
 		return;
 	}
 
-	DUK_MEMZERO((void *) count_len, sizeof(count_len));
+	duk_memzero((void *) count_len, sizeof(count_len));
 	for (i = 0; i < heap->st_size; i++) {
 		h = DUK__HEAPPTR_DEC16(heap, strtable[i]);
 		count_chain = 0;
@@ -166,7 +166,7 @@ DUK_LOCAL duk_hstring *duk__strtable_alloc_hstring(duk_heap *heap,
 		if (DUK_UNLIKELY(res == NULL)) {
 			goto alloc_error;
 		}
-		DUK_MEMZERO(res, sizeof(duk_hstring_external));
+		duk_memzero(res, sizeof(duk_hstring_external));
 #if defined(DUK_USE_EXPLICIT_NULL_INIT)
 		DUK_HEAPHDR_STRING_INIT_NULLS(&res->hdr);
 #endif
@@ -186,14 +186,14 @@ DUK_LOCAL duk_hstring *duk__strtable_alloc_hstring(duk_heap *heap,
 		if (DUK_UNLIKELY(res == NULL)) {
 			goto alloc_error;
 		}
-		DUK_MEMZERO(res, sizeof(duk_hstring));
+		duk_memzero(res, sizeof(duk_hstring));
 #if defined(DUK_USE_EXPLICIT_NULL_INIT)
 		DUK_HEAPHDR_STRING_INIT_NULLS(&res->hdr);
 #endif
 		DUK_HEAPHDR_SET_TYPE_AND_FLAGS(&res->hdr, DUK_HTYPE_STRING, 0);
 
 		data_tmp = (duk_uint8_t *) (res + 1);
-		DUK_MEMCPY(data_tmp, str, blen);
+		duk_memcpy(data_tmp, str, blen);
 		data_tmp[blen] = (duk_uint8_t) 0;
 		data = (const duk_uint8_t *) data_tmp;
 	}
@@ -690,7 +690,7 @@ DUK_LOCAL duk_hstring *duk__strtab_romstring_lookup(duk_heap *heap, const duk_ui
 	while (curr != NULL) {
 		if (strhash == DUK_HSTRING_GET_HASH(curr) &&
 		    blen == DUK_HSTRING_GET_BYTELEN(curr) &&
-		    DUK_MEMCMP((const void *) str, (const void *) DUK_HSTRING_GET_DATA(curr), blen) == 0) {
+		    duk_memcmp((const void *) str, (const void *) DUK_HSTRING_GET_DATA(curr), blen) == 0) {
 			DUK_DDD(DUK_DDDPRINT("intern check: rom string: %!O, computed hash 0x%08lx, rom hash 0x%08lx",
 			                     curr, (unsigned long) strhash, (unsigned long) DUK_HSTRING_GET_HASH(curr)));
 			return curr;

@@ -23,13 +23,13 @@ typedef union {
 	} while (0)
 
 #define DUK__DBLUNION_CMP_TRUE(a,b)  do { \
-		if (DUK_MEMCMP((const void *) (a), (const void *) (b), sizeof(duk__test_double_union)) != 0) { \
+		if (duk_memcmp((const void *) (a), (const void *) (b), sizeof(duk__test_double_union)) != 0) { \
 			DUK__FAILED("double union compares false (expected true)"); \
 		} \
 	} while (0)
 
 #define DUK__DBLUNION_CMP_FALSE(a,b)  do { \
-		if (DUK_MEMCMP((const void *) (a), (const void *) (b), sizeof(duk__test_double_union)) == 0) { \
+		if (duk_memcmp((const void *) (a), (const void *) (b), sizeof(duk__test_double_union)) == 0) { \
 			DUK__FAILED("double union compares true (expected false)"); \
 		} \
 	} while (0)
@@ -338,7 +338,7 @@ DUK_LOCAL duk_uint_t duk__selftest_double_rounding(void) {
 	 */
 	DUK__DOUBLE_INIT(&a, 0xf0, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00);
 	DUK__DOUBLE_INIT(&b, 0x3c, 0xa0, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00);
-	DUK_MEMSET((void *) &c, 0, sizeof(c));
+	duk_memset((void *) &c, 0, sizeof(c));
 	c.d = a.d + b.d;
 	if (!DUK__DOUBLE_COMPARE(&c, 0xf0, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00)) {
 		DUK_D(DUK_DPRINT("broken result (native endiannesss): %02x %02x %02x %02x %02x %02x %02x %02x",
@@ -358,7 +358,7 @@ DUK_LOCAL duk_uint_t duk__selftest_double_rounding(void) {
 	 */
 	DUK__DOUBLE_INIT(&a, 0x3f, 0xf0, 0x00, 0x00, 0x00, 0x00, 0x00, 0x01);
 	DUK__DOUBLE_INIT(&b, 0x3c, 0xa0, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00);
-	DUK_MEMSET((void *) &c, 0, sizeof(c));
+	duk_memset((void *) &c, 0, sizeof(c));
 	c.d = a.d + b.d;
 	if (!DUK__DOUBLE_COMPARE(&c, 0x3f, 0xf0, 0x00, 0x00, 0x00, 0x00, 0x00, 0x02)) {
 		DUK_D(DUK_DPRINT("broken result (native endiannesss): %02x %02x %02x %02x %02x %02x %02x %02x",

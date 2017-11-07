@@ -33,7 +33,7 @@ DUK_INTERNAL void duk_debug_log(duk_int_t level, const char *file, duk_int_t lin
 
 	va_start(ap, fmt);
 
-	DUK_MEMZERO((void *) buf, (size_t) DUK__DEBUG_BUFSIZE);
+	duk_memzero((void *) buf, (size_t) DUK__DEBUG_BUFSIZE);
 	duk_debug_vsnprintf(buf, DUK__DEBUG_BUFSIZE - 1, fmt, ap);
 
 	arg_level = (long) level;
@@ -64,7 +64,7 @@ DUK_INTERNAL void duk_debug_log(const char *fmt, ...) {
 
 	va_start(ap, fmt);
 
-	DUK_MEMZERO((void *) buf, (size_t) DUK__DEBUG_BUFSIZE);
+	duk_memzero((void *) buf, (size_t) DUK__DEBUG_BUFSIZE);
 	duk_debug_vsnprintf(buf, DUK__DEBUG_BUFSIZE - 1, fmt, ap);
 
 	arg_level = (long) duk_debug_level_stash;

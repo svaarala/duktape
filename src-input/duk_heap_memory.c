@@ -128,7 +128,7 @@ DUK_INTERNAL void *duk_heap_mem_alloc_zeroed(duk_heap *heap, duk_size_t size) {
 	res = DUK_ALLOC(heap, size);
 	if (DUK_LIKELY(res != NULL)) {
 		/* assume memset with zero size is OK */
-		DUK_MEMZERO(res, size);
+		duk_memzero(res, size);
 	}
 	return res;
 }

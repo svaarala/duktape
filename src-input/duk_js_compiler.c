@@ -477,7 +477,7 @@ DUK_LOCAL void duk__advance_helper(duk_compiler_ctx *comp_ctx, duk_small_int_t e
 	}
 
 	/* make current token the previous; need to fiddle with valstack "backing store" */
-	DUK_MEMCPY(&comp_ctx->prev_token, &comp_ctx->curr_token, sizeof(duk_token));
+	duk_memcpy(&comp_ctx->prev_token, &comp_ctx->curr_token, sizeof(duk_token));
 	duk_copy(thr, comp_ctx->tok11_idx, comp_ctx->tok21_idx);
 	duk_copy(thr, comp_ctx->tok12_idx, comp_ctx->tok22_idx);
 
@@ -525,7 +525,7 @@ DUK_LOCAL void duk__init_func_valstack_slots(duk_compiler_ctx *comp_ctx) {
 
 	entry_top = duk_get_top(thr);
 
-	DUK_MEMZERO(func, sizeof(*func));  /* intentional overlap with earlier memzero */
+	duk_memzero(func, sizeof(*func));  /* intentional overlap with earlier memzero */
 #if defined(DUK_USE_EXPLICIT_NULL_INIT)
 	func->h_name = NULL;
 	func->h_consts = NULL;
@@ -4891,7 +4891,7 @@ DUK_LOCAL void duk__expr(duk_compiler_ctx *comp_ctx, duk_ivalue *res, duk_small_
 	                     (long) rbp_flags, (long) rbp, (long) comp_ctx->curr_func.allow_in,
 	                     (long) comp_ctx->curr_func.paren_level));
 
-	DUK_MEMZERO(&tmp_alloc, sizeof(tmp_alloc));
+	duk_memzero(&tmp_alloc, sizeof(tmp_alloc));
 	tmp->x1.valstack_idx = duk_get_top(thr);
 	tmp->x2.valstack_idx = tmp->x1.valstack_idx + 1;
 	duk_push_undefined(thr);
@@ -6843,7 +6843,7 @@ DUK_LOCAL void duk__parse_stmts(duk_compiler_ctx *comp_ctx, duk_bool_t allow_sou
 	 * for nested functions (which may occur inside expressions).
 	 */
 
-	DUK_MEMZERO(&res_alloc, sizeof(res_alloc));
+	duk_memzero(&res_alloc, sizeof(res_alloc));
 	res->t = DUK_IVAL_PLAIN;
 	res->x1.t = DUK_ISPEC_VALUE;
 	res->x1.valstack_idx = duk_get_top(thr);
@@ -7751,9 +7751,9 @@ DUK_LOCAL duk_int_t duk__parse_func_like_fnum(duk_compiler_ctx *comp_ctx, duk_sm
 	DUK_DDD(DUK_DDDPRINT("before func: entry_top=%ld, curr_tok.start_offset=%ld",
 	                     (long) entry_top, (long) comp_ctx->curr_token.start_offset));
 
-	DUK_MEMCPY(&old_func, &comp_ctx->curr_func, sizeof(duk_compiler_func));
+	duk_memcpy(&old_func, &comp_ctx->curr_func, sizeof(duk_compiler_func));
 
-	DUK_MEMZERO(&comp_ctx->curr_func, sizeof(duk_compiler_func));
+	duk_memzero(&comp_ctx->curr_func, sizeof(duk_compiler_func));
 	duk__init_func_valstack_slots(comp_ctx);
 	DUK_ASSERT(comp_ctx->curr_func.num_formals == 0);
 
@@ -7820,7 +7820,7 @@ DUK_LOCAL duk_int_t duk__parse_func_like_fnum(duk_compiler_ctx *comp_ctx, duk_sm
 	} else {
 		duk_set_top(thr, entry_top);
 	}
-	DUK_MEMCPY((void *) &comp_ctx->curr_func, (void *) &old_func, sizeof(duk_compiler_func));
+	duk_memcpy((void *) &comp_ctx->curr_func, (void *) &old_func, sizeof(duk_compiler_func));
 
 	return fnum;
 }
@@ -7998,7 +7998,7 @@ DUK_INTERNAL void duk_js_compile(duk_hthread *thr, const duk_uint8_t *src_buffer
 	DUK_ASSERT(src_buffer != NULL);
 
 	/* preinitialize lexer state partially */
-	DUK_MEMZERO(&comp_stk, sizeof(comp_stk));
+	duk_memzero(&comp_stk, sizeof(comp_stk));
 	comp_stk.flags = flags;
 	DUK_LEXER_INITCTX(&comp_stk.comp_ctx_alloc.lex);
 	comp_stk.comp_ctx_alloc.lex.input = src_buffer;

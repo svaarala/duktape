@@ -130,7 +130,7 @@ DUK_INTERNAL duk_hboundfunc *duk_hboundfunc_alloc(duk_heap *heap, duk_uint_t hob
 	if (!res) {
 		return NULL;
 	}
-	DUK_MEMZERO(res, sizeof(duk_hboundfunc));
+	duk_memzero(res, sizeof(duk_hboundfunc));
 
 	duk__init_object_parts(heap, hobject_flags, &res->obj);
 
@@ -172,7 +172,7 @@ DUK_INTERNAL duk_hthread *duk_hthread_alloc_unchecked(duk_heap *heap, duk_uint_t
 	if (DUK_UNLIKELY(res == NULL)) {
 		return NULL;
 	}
-	DUK_MEMZERO(res, sizeof(duk_hthread));
+	duk_memzero(res, sizeof(duk_hthread));
 
 	duk__init_object_parts(heap, hobject_flags, &res->obj);
 

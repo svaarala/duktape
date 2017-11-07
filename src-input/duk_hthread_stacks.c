@@ -392,8 +392,8 @@ DUK_INTERNAL void duk_hthread_valstack_torture_realloc(duk_hthread *thr) {
 	/* Use DUK_ALLOC_RAW() to avoid side effects. */
 	new_ptr = (duk_tval *) DUK_ALLOC_RAW(thr->heap, alloc_size);
 	if (new_ptr != NULL) {
-		DUK_MEMCPY((void *) new_ptr, (const void *) thr->valstack, alloc_size);
-		DUK_MEMSET((void *) thr->valstack, 0x55, alloc_size);
+		duk_memcpy((void *) new_ptr, (const void *) thr->valstack, alloc_size);
+		duk_memset((void *) thr->valstack, 0x55, alloc_size);
 		DUK_FREE_CHECKED(thr, (void *) thr->valstack);
 		thr->valstack = new_ptr;
 		thr->valstack_alloc_end = (duk_tval *) ((duk_uint8_t *) new_ptr + alloc_end_off);

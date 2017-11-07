@@ -200,7 +200,7 @@ DUK_LOCAL duk_bool_t duk__parse_string_iso8601_subset(duk_hthread *thr, const ch
 	duk_small_uint_t i;
 
 	/* During parsing, month and day are one-based; set defaults here. */
-	DUK_MEMZERO(parts, sizeof(parts));
+	duk_memzero(parts, sizeof(parts));
 	DUK_ASSERT(parts[DUK_DATE_IDX_YEAR] == 0);  /* don't care value, year is mandatory */
 	parts[DUK_DATE_IDX_MONTH] = 1;
 	parts[DUK_DATE_IDX_DAY] = 1;
