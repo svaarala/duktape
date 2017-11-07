@@ -423,7 +423,7 @@
 
 #if defined(DUK_USE_ASSERTIONS)
 #define DUK_ASSERT_SET_GARBAGE(ptr,size) do { \
-		duk_memset((void *) (ptr), 0x5a, size); \
+		duk_memset_unsafe((void *) (ptr), 0x5a, size); \
 	} while (0)
 #else
 #define DUK_ASSERT_SET_GARBAGE(ptr,size) do {} while (0)

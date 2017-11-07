@@ -37,9 +37,10 @@ DUK_INTERNAL duk_ret_t duk_bi_symbol_constructor_shared(duk_hthread *thr) {
 	 *   +1    0xff after unique suffix for symbols with undefined description
 	 */
 	buf = (duk_uint8_t *) duk_push_fixed_buffer(thr, 1 + len + 1 + 17 + 1);
+	DUK_ASSERT(buf != NULL);
 	p = buf + 1;
 	DUK_ASSERT(desc != NULL || len == 0);  /* may be NULL if len is 0 */
-	duk_memcpy((void *) p, (const void *) desc, len);
+	duk_memcpy_unsafe((void *) p, (const void *) desc, len);
 	p += len;
 	if (magic == 0) {
 		/* Symbol(): create unique symbol.  Use two 32-bit values

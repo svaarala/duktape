@@ -674,6 +674,7 @@ DUK_LOCAL duk_size_t duk__dragon4_format_uint32(duk_uint8_t *buf, duk_uint32_t x
 	duk_small_int_t dig;
 	duk_uint32_t t;
 
+	DUK_ASSERT(buf != NULL);
 	DUK_ASSERT(radix >= 2 && radix <= 36);
 
 	/* A 32-bit unsigned integer formats to at most 32 digits (the

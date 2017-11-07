@@ -1019,6 +1019,7 @@ DUK_INTERNAL void duk_debug_format_funcptr(char *buf, duk_size_t buf_size, duk_u
 	duk_uint8_t *p = (duk_uint8_t *) buf;
 	duk_uint8_t *p_end = (duk_uint8_t *) (buf + buf_size - 1);
 
+	DUK_ASSERT(buf != NULL);
 	duk_memzero(buf, buf_size);
 
 	for (i = 0; i < fptr_size; i++) {

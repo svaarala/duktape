@@ -1392,8 +1392,8 @@ DUK_EXTERNAL void duk_xcopymove_raw(duk_hthread *to_thr, duk_hthread *from_thr, 
 		DUK_WO_NORETURN(return;);
 	}
 
-	/* copy values (no overlap even if to_thr == from_thr; that's not
-	 * allowed now anyway)
+	/* Copy values (no overlap even if to_thr == from_thr; that's not
+	 * allowed now anyway).
 	 */
 	DUK_ASSERT(nbytes > 0);
 	duk_memcpy((void *) to_thr->valstack_top, (const void *) src, (size_t) nbytes);
@@ -3417,7 +3417,8 @@ DUK_EXTERNAL void *duk_to_buffer_raw(duk_hthread *thr, duk_idx_t idx, duk_size_t
 	}
 
 	dst_data = (duk_uint8_t *) duk_push_buffer(thr, src_size, (mode == DUK_BUF_MODE_DYNAMIC) /*dynamic*/);
-	duk_memcpy((void *) dst_data, (const void *) src_data, (size_t) src_size);
+	/* dst_data may be NULL if size is zero. */
+	duk_memcpy_unsafe((void *) dst_data, (const void *) src_data, (size_t) src_size);
 
 	duk_replace(thr, idx);
  skip_copy:
@@ -5293,6 +5294,7 @@ DUK_INTERNAL void *duk_push_fixed_buffer_zero(duk_hthread *thr, duk_size_t len) 
 	DUK_ASSERT_API_ENTRY(thr);
 
 	ptr = duk_push_buffer_raw(thr, len, 0);
+	DUK_ASSERT(ptr != NULL);
 #if !defined(DUK_USE_ZERO_BUFFER_DATA)
 	/* ES2015 requires zeroing even when DUK_USE_ZERO_BUFFER_DATA
 	 * is not set.
@@ -5952,7 +5954,7 @@ DUK_INTERNAL void duk_pack(duk_hthread *thr, duk_idx_t count) {
 	 * any refcount updates: net refcount changes are zero.
 	 */
 	tv_src = thr->valstack_top - count - 1;
-	duk_memcpy((void *) tv_dst, (const void *) tv_src, (size_t) count * sizeof(duk_tval));
+	duk_memcpy_unsafe((void *) tv_dst, (const void *) tv_src, (size_t) count * sizeof(duk_tval));
 
 	/* Overwrite result array to final value stack location and wipe
 	 * the rest; no refcount operations needed.
@@ -6614,7 +6616,7 @@ DUK_INTERNAL void duk_copy_tvals_incref(duk_hthread *thr, duk_tval *tv_dst, duk_
 	DUK_UNREF(thr);
 	DUK_ASSERT(count * sizeof(duk_tval) >= count);  /* no wrap */
 
-	duk_memcpy((void *) tv_dst, (const void *) tv_src, count * sizeof(duk_tval));
+	duk_memcpy_unsafe((void *) tv_dst, (const void *) tv_src, count * sizeof(duk_tval));
 
 	tv = tv_dst;
 	while (count-- > 0) {
