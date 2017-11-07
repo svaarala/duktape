@@ -5,8 +5,6 @@
 - define: DUK_ISNAN
 - define: DUK_ISINF
 - define: DUK_FABS
-- define: DUK_FMIN
-- define: DUK_FMAX
 - define: DUK_FLOOR
 - define: DUK_CEIL
 - define: DUK_FMOD

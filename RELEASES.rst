@@ -3231,7 +3231,7 @@ Planned
 
 * Fix some Clang warnings by avoiding undefined behavior by default, define
   DUK_USE_ALLOW_UNDEFINED_BEHAVIOR to reduce the explicit undefined behavior
-  checks for better footprint/performance (GH-1777, GH-1795)
+  checks for better footprint/performance (GH-1777, GH-1795, GH-1796)
 
 * Fix some compilation warnings triggered when DUK_NORETURN is not defined;
   the internal DUK_WO_NORETURN() is used to include unreachable dummy

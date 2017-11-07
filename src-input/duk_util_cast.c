@@ -13,6 +13,56 @@
 
 #include "duk_internal.h"
 
+/* Portable double-to-integer cast which avoids undefined behavior and avoids
+ * relying on fmin(), fmax(), or other intrinsics.  Out-of-range results are
+ * not assumed by caller, but here value is clamped, NaN converts to minval.
+ */
+#define DUK__DOUBLE_INT_CAST1(tname,minval,maxval)  do { \
+		if (DUK_LIKELY(x >= (duk_double_t) (minval))) { \
+			DUK_ASSERT(!DUK_ISNAN(x)); \
+			if (DUK_LIKELY(x <= (duk_double_t) (maxval))) { \
+				return (tname) x; \
+			} else { \
+				return (tname) (maxval); \
+			} \
+		} else { \
+			/* NaN or below minval.  Since we don't care about the result \
+			 * for out-of-range values, just return the minimum value for \
+			 * both. \
+			 */ \
+			return (tname) (minval); \
+		} \
+	} while (0)
+
+/* Rely on specific NaN behavior for duk_double_{fmin,fmax}(): if either
+ * argument is a NaN, return the second argument.  This avoids a
+ * NaN-to-integer cast which is undefined behavior.
+ */
+#define DUK__DOUBLE_INT_CAST2(tname,minval,maxval)  do { \
+		return (tname) duk_double_fmin(duk_double_fmax(x, (duk_double_t) (minval)), (duk_double_t) (maxval)); \
+	} while (0)
+
+/* Another solution which doesn't need C99+ behavior for fmin() and fmax(). */
+#define DUK__DOUBLE_INT_CAST3(tname,minval,maxval)  do { \
+		if (DUK_ISNAN(x)) { \
+			/* 0 or any other value is fine. */ \
+			return (tname) 0; \
+		} else \
+			return (tname) DUK_FMIN(DUK_FMAX(x, (duk_double_t) (minval)), (duk_double_t) (maxval)); \
+		} \
+	} while (0)
+
+/* C99+ solution: relies on specific fmin() and fmax() behavior in C99: if
+ * one argument is NaN but the other isn't, the non-NaN argument is returned.
+ * Because the limits are non-NaN values, explicit NaN check is not needed.
+ * This may not work on all legacy platforms, and also doesn't seem to inline
+ * the fmin() and fmax() calls (unless one uses -ffast-math which we don't
+ * support).
+ */
+#define DUK__DOUBLE_INT_CAST4(tname,minval,maxval)  do { \
+		return (tname) DUK_FMIN(DUK_FMAX(x, (duk_double_t) (minval)), (duk_double_t) (maxval)); \
+	} while (0)
+
 DUK_INTERNAL duk_int_t duk_double_to_int_t(duk_double_t x) {
 #if defined(DUK_USE_ALLOW_UNDEFINED_BEHAVIOR)
 	/* Real world solution: almost any practical platform will provide
@@ -20,32 +70,7 @@ DUK_INTERNAL duk_int_t duk_double_to_int_t(duk_double_t x) {
 	 */
 	return (duk_int_t) x;
 #else
-	/* Rely on specific NaN behavior for duk_double_{fmin,fmax}(): if
-	 * either argument is a NaN, return the second argument.  This avoids
-	 * a NaN-to-integer cast which is undefined behavior.
-	 */
-	return (duk_int_t) duk_double_fmin(duk_double_fmax(x, (double) DUK_INT_MIN), (double) DUK_INT_MAX);
-#endif
-
-#if 0
-	/* Another solution which doesn't assume C99+ behavior for fmin()
-	 * and fmax().
-	 */
-	if (DUK_ISNAN(x)) {
-		return 0;
-	} else {
-		return (duk_int_t) DUK_FMIN(DUK_FMAX(x, (double) DUK_INT_MIN), (double) DUK_INT_MAX);
-	}
-#endif
-
-#if 0
-	/* C99+ solution: relies on specific fmin() and fmax() behavior in
-	 * C99: if one argument is NaN but the other isn't, the non-NaN
-	 * argument is returned.  Because the limits are non-NaN values,
-	 * explicit NaN check is not needed.  This may not work on all legacy
-	 * platforms.
-	 */
-	return (duk_int_t) DUK_FMIN(DUK_FMAX(x, (double) DUK_INT_MIN), (double) DUK_INT_MAX);
+	DUK__DOUBLE_INT_CAST1(duk_int_t, DUK_INT_MIN, DUK_INT_MAX);
 #endif
 }
 
@@ -53,18 +78,7 @@ DUK_INTERNAL duk_uint_t duk_double_to_uint_t(duk_double_t x) {
 #if defined(DUK_USE_ALLOW_UNDEFINED_BEHAVIOR)
 	return (duk_uint_t) x;
 #else
-	return (duk_uint_t) duk_double_fmin(duk_double_fmax(x, (double) DUK_UINT_MIN), (double) DUK_UINT_MAX);
-#endif
-
-#if 0
-	if (DUK_ISNAN(x)) {
-		return 0;
-	} else {
-		return (duk_uint_t) DUK_FMIN(DUK_FMAX(x, (double) DUK_UINT_MIN), (double) DUK_UINT_MAX);
-	}
-#endif
-#if 0
-	return (duk_uint_t) DUK_FMIN(DUK_FMAX(x, (double) DUK_UINT_MIN), (double) DUK_UINT_MAX);
+	DUK__DOUBLE_INT_CAST1(duk_uint_t, DUK_UINT_MIN, DUK_UINT_MAX);
 #endif
 }
 
@@ -72,18 +86,7 @@ DUK_INTERNAL duk_int32_t duk_double_to_int32_t(duk_double_t x) {
 #if defined(DUK_USE_ALLOW_UNDEFINED_BEHAVIOR)
 	return (duk_int32_t) x;
 #else
-	return (duk_int32_t) duk_double_fmin(duk_double_fmax(x, (double) DUK_INT32_MIN), (double) DUK_INT32_MAX);
-#endif
-
-#if 0
-	if (DUK_ISNAN(x)) {
-		return 0;
-	} else {
-		return (duk_int32_t) DUK_FMIN(DUK_FMAX(x, (double) DUK_INT32_MIN), (double) DUK_INT32_MAX);
-	}
-#endif
-#if 0
-	return (duk_int32_t) DUK_FMIN(DUK_FMAX(x, (double) DUK_INT32_MIN), (double) DUK_INT32_MAX);
+	DUK__DOUBLE_INT_CAST1(duk_int32_t, DUK_INT32_MIN, DUK_INT32_MAX);
 #endif
 }
 
@@ -91,18 +94,7 @@ DUK_INTERNAL duk_uint32_t duk_double_to_uint32_t(duk_double_t x) {
 #if defined(DUK_USE_ALLOW_UNDEFINED_BEHAVIOR)
 	return (duk_uint32_t) x;
 #else
-	return (duk_uint32_t) duk_double_fmin(duk_double_fmax(x, (double) DUK_UINT32_MIN), (double) DUK_UINT32_MAX);
-#endif
-
-#if 0
-	if (DUK_ISNAN(x)) {
-		return 0;
-	} else {
-		return (duk_uint32_t) DUK_FMIN(DUK_FMAX(x, (double) DUK_UINT32_MIN), (double) DUK_UINT32_MAX);
-	}
-#endif
-#if 0
-	return (duk_uint32_t) DUK_FMIN(DUK_FMAX(x, (double) DUK_UINT32_MIN), (double) DUK_UINT32_MAX);
+	DUK__DOUBLE_INT_CAST1(duk_uint32_t, DUK_UINT32_MIN, DUK_UINT32_MAX);
 #endif
 }
 
@@ -132,26 +124,32 @@ DUK_INTERNAL duk_float_t duk_double_to_float_t(duk_double_t x) {
 #if defined(DUK_USE_ALLOW_UNDEFINED_BEHAVIOR)
 	return (duk_float_t) x;
 #else
-	/* This assumes double NaN -> float NaN is considered "in range". */
-	if (DUK_ISNAN(x)) {
+	duk_double_t t;
+
+	t = DUK_FABS(x);
+	DUK_ASSERT((DUK_ISNAN(x) && DUK_ISNAN(t)) ||
+	           (!DUK_ISNAN(x) && !DUK_ISNAN(t)));
+
+	if (DUK_LIKELY(t <= DUK__FLOAT_MAX)) {
+		/* Standard in-range case, try to get here with a minimum
+		 * number of checks and branches.
+		 */
+		DUK_ASSERT(!DUK_ISNAN(x));
 		return (duk_float_t) x;
-	} else {
-		/* Assumes IEEE float/double limits. */
-		if (x > DUK__FLOAT_MAX) {
-			if (x <= DUK__FLOAT_ROUND_LIMIT) {
-				return (duk_float_t) DUK__FLOAT_MAX;
-			} else {
-				return (duk_float_t) DUK_DOUBLE_INFINITY;
-			}
-		} else if (x < -DUK__FLOAT_MAX) {
-			if (x >= -DUK__FLOAT_ROUND_LIMIT) {
-				return (duk_float_t) -DUK__FLOAT_MAX;
-			} else {
-				return (duk_float_t) -DUK_DOUBLE_INFINITY;
-			}
+	} else if (t <= DUK__FLOAT_ROUND_LIMIT) {
+		/* Out-of-range, but rounds to min/max float. */
+		DUK_ASSERT(!DUK_ISNAN(x));
+		if (x < 0.0) {
+			return (duk_float_t) -DUK__FLOAT_MAX;
 		} else {
-			return (duk_float_t) x;
+			return (duk_float_t) DUK__FLOAT_MAX;
 		}
+	} else {
+		/* This assumes double NaN -> float NaN is
+		 * considered "in range".
+		 */
+		DUK_ASSERT(DUK_ISNAN(x));
+		return (duk_float_t) x;
 	}
 #endif
 }
