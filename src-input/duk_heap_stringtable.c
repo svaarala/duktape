@@ -690,7 +690,7 @@ DUK_LOCAL duk_hstring *duk__strtab_romstring_lookup(duk_heap *heap, const duk_ui
 	while (curr != NULL) {
 		if (strhash == DUK_HSTRING_GET_HASH(curr) &&
 		    blen == DUK_HSTRING_GET_BYTELEN(curr) &&
-		    duk_memcmp((const void *) str, (const void *) DUK_HSTRING_GET_DATA(curr), blen) == 0) {
+		    duk_memcmp_unsafe((const void *) str, (const void *) DUK_HSTRING_GET_DATA(curr), blen) == 0) {
 			DUK_DDD(DUK_DDDPRINT("intern check: rom string: %!O, computed hash 0x%08lx, rom hash 0x%08lx",
 			                     curr, (unsigned long) strhash, (unsigned long) DUK_HSTRING_GET_HASH(curr)));
 			return curr;
@@ -710,6 +710,7 @@ DUK_INTERNAL duk_hstring *duk_heap_strtable_intern(duk_heap *heap, const duk_uin
 
 	/* Preliminaries. */
 
+	/* XXX: maybe just require 'str != NULL' even for zero size? */
 	DUK_ASSERT(heap != NULL);
 	DUK_ASSERT(blen == 0 || str != NULL);
 	DUK_ASSERT(blen <= DUK_HSTRING_MAX_BYTELEN);  /* Caller is responsible for ensuring this. */
@@ -728,7 +729,7 @@ DUK_INTERNAL duk_hstring *duk_heap_strtable_intern(duk_heap *heap, const duk_uin
 	while (h != NULL) {
 		if (DUK_HSTRING_GET_HASH(h) == strhash &&
 		    DUK_HSTRING_GET_BYTELEN(h) == blen &&
-		    duk_memcmp((const void *) str, (const void *) DUK_HSTRING_GET_DATA(h), (size_t) blen) == 0) {
+		    duk_memcmp_unsafe((const void *) str, (const void *) DUK_HSTRING_GET_DATA(h), (size_t) blen) == 0) {
 			/* Found existing entry. */
 			DUK_STATS_INC(heap, stats_strtab_intern_hit);
 			return h;

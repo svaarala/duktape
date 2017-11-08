@@ -47,7 +47,8 @@
 	} while (0)
 
 /* Get the current data pointer (caller must ensure buf != NULL) as a
- * duk_uint8_t ptr.
+ * duk_uint8_t ptr.  Note that the result may be NULL if the underlying
+ * buffer has zero size and is not a fixed buffer.
  */
 #define DUK_HBUFOBJ_GET_SLICE_BASE(heap,h) \
 	(DUK_ASSERT_EXPR((h) != NULL), DUK_ASSERT_EXPR((h)->buf != NULL), \

@@ -308,7 +308,8 @@ def checkIdentifiers(lines, idx, filename):
         if rejected_plain_identifiers.has_key(m.group(0)):
             if m.group(0) in [ 'duk_context' ] and bn == 'duktape.h.in':
                 continue  # duk_context allowed in public API header
-            if m.group(0) in [ 'DUK_MEMCPY', 'DUK_MEMMOVE', 'DUK_MEMCMP', 'DUK_MEMSET', 'DUK_MEMZERO' ] and bn == 'duk_util_memory.c':
+            if m.group(0) in [ 'DUK_MEMCPY', 'DUK_MEMMOVE', 'DUK_MEMCMP', 'DUK_MEMSET', 'DUK_MEMZERO' ] and \
+               bn in [ 'duk_util_memory.c', 'duk_util.h' ]:
                 continue
             if not excludePlain:
                 raise Exception('invalid identifier %r (perhaps plain)' % m.group(0))

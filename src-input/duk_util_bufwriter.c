@@ -4,6 +4,10 @@
 
 #include "duk_internal.h"
 
+/* XXX: Avoid duk_{memcmp,memmove}_unsafe() by imposing a minimum length of
+ * >0 for the underlying dynamic buffer.
+ */
+
 /*
  *  Macro support functions (use only macros in calling code)
  */
@@ -15,6 +19,9 @@ DUK_LOCAL void duk__bw_update_ptrs(duk_hthread *thr, duk_bufwriter_ctx *bw_ctx, 
 	DUK_ASSERT(bw_ctx != NULL);
 	DUK_UNREF(thr);
 
+	/* 'p' might be NULL when the underlying buffer is zero size.  If so,
+	 * the resulting pointers are not used unsafely.
+	 */
 	p = (duk_uint8_t *) DUK_HBUFFER_DYNAMIC_GET_DATA_PTR(thr->heap, bw_ctx->buf);
 	DUK_ASSERT(p != NULL || (DUK_HBUFFER_DYNAMIC_GET_SIZE(bw_ctx->buf) == 0 && curr_offset == 0 && new_length == 0));
 	bw_ctx->p = p + curr_offset;
@@ -23,7 +30,6 @@ DUK_LOCAL void duk__bw_update_ptrs(duk_hthread *thr, duk_bufwriter_ctx *bw_ctx, 
 }
 
 DUK_INTERNAL void duk_bw_init(duk_hthread *thr, duk_bufwriter_ctx *bw_ctx, duk_hbuffer_dynamic *h_buf) {
-
 	DUK_ASSERT(thr != NULL);
 	DUK_ASSERT(bw_ctx != NULL);
 	DUK_ASSERT(h_buf != NULL);
@@ -38,6 +44,7 @@ DUK_INTERNAL void duk_bw_init_pushbuf(duk_hthread *thr, duk_bufwriter_ctx *bw_ct
 
 	(void) duk_push_dynamic_buffer(thr, buf_size);
 	bw_ctx->buf = (duk_hbuffer_dynamic *) duk_known_hbuffer(thr, -1);
+	DUK_ASSERT(bw_ctx->buf != NULL);
 	duk__bw_update_ptrs(thr, bw_ctx, 0, buf_size);
 }
 
@@ -105,9 +112,9 @@ DUK_INTERNAL void duk_bw_write_raw_slice(duk_hthread *thr, duk_bufwriter_ctx *bw
 	DUK_UNREF(thr);
 
 	p_base = bw->p_base;
-	duk_memcpy((void *) bw->p,
-	           (const void *) (p_base + src_off),
-	           (size_t) len);
+	duk_memcpy_unsafe((void *) bw->p,
+	                  (const void *) (p_base + src_off),
+	                  (size_t) len);
 	bw->p += len;
 }
 
@@ -137,12 +144,12 @@ DUK_INTERNAL void duk_bw_insert_raw_bytes(duk_hthread *thr, duk_bufwriter_ctx *b
 	move_sz = buf_sz - dst_off;
 
 	DUK_ASSERT(p_base != NULL);  /* buffer size is >= 1 */
-	duk_memmove((void *) (p_base + dst_off + len),
-	            (const void *) (p_base + dst_off),
-	            (size_t) move_sz);
-	duk_memcpy((void *) (p_base + dst_off),
-	           (const void *) buf,
-	           (size_t) len);
+	duk_memmove_unsafe((void *) (p_base + dst_off + len),
+	                   (const void *) (p_base + dst_off),
+	                   (size_t) move_sz);
+	duk_memcpy_unsafe((void *) (p_base + dst_off),
+	                  (const void *) buf,
+	                  (size_t) len);
 	bw->p += len;
 }
 
@@ -184,12 +191,12 @@ DUK_INTERNAL void duk_bw_insert_raw_slice(duk_hthread *thr, duk_bufwriter_ctx *b
 	move_sz = buf_sz - dst_off;
 
 	DUK_ASSERT(p_base != NULL);  /* buffer size is >= 1 */
-	duk_memmove((void *) (p_base + dst_off + len),
-	            (const void *) (p_base + dst_off),
-	            (size_t) move_sz);
-	duk_memcpy((void *) (p_base + dst_off),
-	           (const void *) (p_base + src_off),
-	           (size_t) len);
+	duk_memmove_unsafe((void *) (p_base + dst_off + len),
+	                   (const void *) (p_base + dst_off),
+	                   (size_t) move_sz);
+	duk_memcpy_unsafe((void *) (p_base + dst_off),
+	                  (const void *) (p_base + src_off),
+	                  (size_t) len);
 	bw->p += len;
 }
 
@@ -222,7 +229,7 @@ DUK_INTERNAL duk_uint8_t *duk_bw_insert_raw_area(duk_hthread *thr, duk_bufwriter
 	move_sz = buf_sz - off;
 	p_dst = p_base + off + len;
 	p_src = p_base + off;
-	duk_memmove((void *) p_dst, (const void *) p_src, (size_t) move_sz);
+	duk_memmove_unsafe((void *) p_dst, (const void *) p_src, (size_t) move_sz);
 	return p_src;  /* point to start of 'reserved area' */
 }
 
@@ -253,9 +260,9 @@ DUK_INTERNAL void duk_bw_remove_raw_slice(duk_hthread *thr, duk_bufwriter_ctx *b
 	p_dst = p_base + off;
 	p_src = p_dst + len;
 	move_sz = (duk_size_t) (bw->p - p_src);
-	duk_memmove((void *) p_dst,
-	            (const void *) p_src,
-	            (size_t) move_sz);
+	duk_memmove_unsafe((void *) p_dst,
+	                   (const void *) p_src,
+	                   (size_t) move_sz);
 	bw->p -= len;
 }
 

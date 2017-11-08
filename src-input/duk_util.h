@@ -315,12 +315,13 @@ struct duk_bufwriter_ctx {
 		(bw_ctx)->p += duk__enc_len; \
 	} while (0)
 /* XXX: add temporary duk__p pointer here too; sharing */
+/* XXX: avoid unsafe variants */
 #define DUK_BW_WRITE_RAW_BYTES(thr,bw_ctx,valptr,valsz) do { \
 		const void *duk__valptr; \
 		duk_size_t duk__valsz; \
 		duk__valptr = (const void *) (valptr); \
 		duk__valsz = (duk_size_t) (valsz); \
-		duk_memcpy((void *) ((bw_ctx)->p), duk__valptr, duk__valsz); \
+		duk_memcpy_unsafe((void *) ((bw_ctx)->p), duk__valptr, duk__valsz); \
 		(bw_ctx)->p += duk__valsz; \
 	} while (0)
 #define DUK_BW_WRITE_RAW_CSTRING(thr,bw_ctx,val) do { \
@@ -328,31 +329,31 @@ struct duk_bufwriter_ctx {
 		duk_size_t duk__val_len; \
 		duk__val = (const duk_uint8_t *) (val); \
 		duk__val_len = DUK_STRLEN((const char *) duk__val); \
-		duk_memcpy((void *) ((bw_ctx)->p), (const void *) duk__val, duk__val_len); \
+		duk_memcpy_unsafe((void *) ((bw_ctx)->p), (const void *) duk__val, duk__val_len); \
 		(bw_ctx)->p += duk__val_len; \
 	} while (0)
 #define DUK_BW_WRITE_RAW_HSTRING(thr,bw_ctx,val) do { \
 		duk_size_t duk__val_len; \
 		duk__val_len = DUK_HSTRING_GET_BYTELEN((val)); \
-		duk_memcpy((void *) ((bw_ctx)->p), (const void *) DUK_HSTRING_GET_DATA((val)), duk__val_len); \
+		duk_memcpy_unsafe((void *) ((bw_ctx)->p), (const void *) DUK_HSTRING_GET_DATA((val)), duk__val_len); \
 		(bw_ctx)->p += duk__val_len; \
 	} while (0)
 #define DUK_BW_WRITE_RAW_HBUFFER(thr,bw_ctx,val) do { \
 		duk_size_t duk__val_len; \
 		duk__val_len = DUK_HBUFFER_GET_SIZE((val)); \
-		duk_memcpy((void *) ((bw_ctx)->p), (const void *) DUK_HBUFFER_GET_DATA_PTR((thr)->heap, (val)), duk__val_len); \
+		duk_memcpy_unsafe((void *) ((bw_ctx)->p), (const void *) DUK_HBUFFER_GET_DATA_PTR((thr)->heap, (val)), duk__val_len); \
 		(bw_ctx)->p += duk__val_len; \
 	} while (0)
 #define DUK_BW_WRITE_RAW_HBUFFER_FIXED(thr,bw_ctx,val) do { \
 		duk_size_t duk__val_len; \
 		duk__val_len = DUK_HBUFFER_FIXED_GET_SIZE((val)); \
-		duk_memcpy((void *) ((bw_ctx)->p), (const void *) DUK_HBUFFER_FIXED_GET_DATA_PTR((thr)->heap, (val)), duk__val_len); \
+		duk_memcpy_unsafe((void *) ((bw_ctx)->p), (const void *) DUK_HBUFFER_FIXED_GET_DATA_PTR((thr)->heap, (val)), duk__val_len); \
 		(bw_ctx)->p += duk__val_len; \
 	} while (0)
 #define DUK_BW_WRITE_RAW_HBUFFER_DYNAMIC(thr,bw_ctx,val) do { \
 		duk_size_t duk__val_len; \
 		duk__val_len = DUK_HBUFFER_DYNAMIC_GET_SIZE((val)); \
-		duk_memcpy((void *) ((bw_ctx)->p), (const void *) DUK_HBUFFER_DYNAMIC_GET_DATA_PTR((thr)->heap, (val)), duk__val_len); \
+		duk_memcpy_unsafe((void *) ((bw_ctx)->p), (const void *) DUK_HBUFFER_DYNAMIC_GET_DATA_PTR((thr)->heap, (val)), duk__val_len); \
 		(bw_ctx)->p += duk__val_len; \
 	} while (0)
 
@@ -416,13 +417,14 @@ struct duk_bufwriter_ctx {
 		DUK_BW_WRITE_RAW_CESU8((thr), (bw_ctx), (cp)); \
 	} while (0)
 /* XXX: add temporary duk__p pointer here too; sharing */
+/* XXX: avoid unsafe */
 #define DUK_BW_WRITE_ENSURE_BYTES(thr,bw_ctx,valptr,valsz) do { \
 		const void *duk__valptr; \
 		duk_size_t duk__valsz; \
 		duk__valptr = (const void *) (valptr); \
 		duk__valsz = (duk_size_t) (valsz); \
 		DUK_BW_ENSURE((thr), (bw_ctx), duk__valsz); \
-		duk_memcpy((void *) ((bw_ctx)->p), duk__valptr, duk__valsz); \
+		duk_memcpy_unsafe((void *) ((bw_ctx)->p), duk__valptr, duk__valsz); \
 		(bw_ctx)->p += duk__valsz; \
 	} while (0)
 #define DUK_BW_WRITE_ENSURE_CSTRING(thr,bw_ctx,val) do { \
@@ -431,35 +433,35 @@ struct duk_bufwriter_ctx {
 		duk__val = (const duk_uint8_t *) (val); \
 		duk__val_len = DUK_STRLEN((const char *) duk__val); \
 		DUK_BW_ENSURE((thr), (bw_ctx), duk__val_len); \
-		duk_memcpy((void *) ((bw_ctx)->p), (const void *) duk__val, duk__val_len); \
+		duk_memcpy_unsafe((void *) ((bw_ctx)->p), (const void *) duk__val, duk__val_len); \
 		(bw_ctx)->p += duk__val_len; \
 	} while (0)
 #define DUK_BW_WRITE_ENSURE_HSTRING(thr,bw_ctx,val) do { \
 		duk_size_t duk__val_len; \
 		duk__val_len = DUK_HSTRING_GET_BYTELEN((val)); \
 		DUK_BW_ENSURE((thr), (bw_ctx), duk__val_len); \
-		duk_memcpy((void *) ((bw_ctx)->p), (const void *) DUK_HSTRING_GET_DATA((val)), duk__val_len); \
+		duk_memcpy_unsafe((void *) ((bw_ctx)->p), (const void *) DUK_HSTRING_GET_DATA((val)), duk__val_len); \
 		(bw_ctx)->p += duk__val_len; \
 	} while (0)
 #define DUK_BW_WRITE_ENSURE_HBUFFER(thr,bw_ctx,val) do { \
 		duk_size_t duk__val_len; \
 		duk__val_len = DUK_HBUFFER_GET_SIZE((val)); \
 		DUK_BW_ENSURE((thr), (bw_ctx), duk__val_len); \
-		duk_memcpy((void *) ((bw_ctx)->p), (const void *) DUK_HBUFFER_GET_DATA_PTR((thr)->heap, (val)), duk__val_len); \
+		duk_memcpy_unsafe((void *) ((bw_ctx)->p), (const void *) DUK_HBUFFER_GET_DATA_PTR((thr)->heap, (val)), duk__val_len); \
 		(bw_ctx)->p += duk__val_len; \
 	} while (0)
 #define DUK_BW_WRITE_ENSURE_HBUFFER_FIXED(thr,bw_ctx,val) do { \
 		duk_size_t duk__val_len; \
 		duk__val_len = DUK_HBUFFER_FIXED_GET_SIZE((val)); \
 		DUK_BW_ENSURE((thr), (bw_ctx), duk__val_len); \
-		duk_memcpy((void *) ((bw_ctx)->p), (const void *) DUK_HBUFFER_FIXED_GET_DATA_PTR((thr)->heap, (val)), duk__val_len); \
+		duk_memcpy_unsafe((void *) ((bw_ctx)->p), (const void *) DUK_HBUFFER_FIXED_GET_DATA_PTR((thr)->heap, (val)), duk__val_len); \
 		(bw_ctx)->p += duk__val_len; \
 	} while (0)
 #define DUK_BW_WRITE_ENSURE_HBUFFER_DYNAMIC(thr,bw_ctx,val) do { \
 		duk_size_t duk__val_len; \
 		duk__val_len = DUK_HBUFFER_DYNAMIC_GET_SIZE((val)); \
 		DUK_BW_ENSURE((thr), (bw_ctx), duk__val_len); \
-		duk_memcpy((void *) ((bw_ctx)->p), (const void *) DUK_HBUFFER_DYNAMIC_GET_DATA_PTR((thr)->heap, (val)), duk__val_len); \
+		duk_memcpy_unsafe((void *) ((bw_ctx)->p), (const void *) DUK_HBUFFER_DYNAMIC_GET_DATA_PTR((thr)->heap, (val)), duk__val_len); \
 		(bw_ctx)->p += duk__val_len; \
 	} while (0)
 
@@ -542,11 +544,126 @@ DUK_INTERNAL_DECL void duk_raw_write_double_be(duk_uint8_t **p, duk_double_t val
 DUK_INTERNAL_DECL void duk_byteswap_bytes(duk_uint8_t *p, duk_small_uint_t len);
 #endif
 
-DUK_INTERNAL_DECL void duk_memcpy(void *dst, const void *src, duk_size_t len);
-DUK_INTERNAL_DECL void duk_memmove(void *dst, const void *src, duk_size_t len);
+/* memcpy(), memmove() etc wrappers.  The plain variants like duk_memcpy()
+ * assume C99+ and 'src' and 'dst' pointers must be non-NULL even when the
+ * operation size is zero.  The unsafe variants like duk_memcpy_safe() deal
+ * with the zero size case explicitly, and allow NULL pointers in that case
+ * (which is undefined behavior in C99+).  For the majority of actual targets
+ * a NULL pointer with a zero length is fine in practice.  These wrappers are
+ * macros to force inlining; because there are hundreds of call sites, even a
+ * few extra bytes per call site adds up to ~1kB footprint.
+ */
+#if defined(DUK_USE_ALLOW_UNDEFINED_BEHAVIOR)
+#define duk_memcpy(dst,src,len)  do { \
+		void *duk__dst = (dst); \
+		const void *duk__src = (src); \
+		duk_size_t duk__len = (len); \
+		DUK_ASSERT(duk__dst != NULL || duk__len == 0U); \
+		DUK_ASSERT(duk__src != NULL || duk__len == 0U); \
+		(void) DUK_MEMCPY(duk__dst, duk__src, (size_t) duk__len); \
+	} while (0)
+#define duk_memcpy_unsafe(dst,src,len)  duk_memcpy((dst), (src), (len))
+#define duk_memmove(dst,src,len)  do { \
+		void *duk__dst = (dst); \
+		const void *duk__src = (src); \
+		duk_size_t duk__len = (len); \
+		DUK_ASSERT(duk__dst != NULL || duk__len == 0U); \
+		DUK_ASSERT(duk__src != NULL || duk__len == 0U); \
+		(void) DUK_MEMMOVE(duk__dst, duk__src, (size_t) duk__len); \
+	} while (0)
+#define duk_memmove_unsafe(dst,src,len)  duk_memmove((dst), (src), (len))
+#define duk_memset(dst,val,len)  do { \
+		void *duk__dst = (dst); \
+		duk_small_int_t duk__val = (val); \
+		duk_size_t duk__len = (len); \
+		DUK_ASSERT(duk__dst != NULL || duk__len == 0U); \
+		(void) DUK_MEMSET(duk__dst, duk__val, (size_t) duk__len); \
+	} while (0)
+#define duk_memset_unsafe(dst,val,len)  duk_memset((dst), (val), (len))
+#define duk_memzero(dst,len)  do { \
+		void *duk__dst = (dst); \
+		duk_size_t duk__len = (len); \
+		DUK_ASSERT(duk__dst != NULL || duk__len == 0U); \
+		(void) DUK_MEMZERO(duk__dst, (size_t) duk__len); \
+	} while (0)
+#define duk_memzero_unsafe(dst,len)  duk_memzero((dst), (len))
+#else  /* DUK_USE_ALLOW_UNDEFINED_BEHAVIOR */
+#define duk_memcpy(dst,src,len)  do { \
+		void *duk__dst = (dst); \
+		const void *duk__src = (src); \
+		duk_size_t duk__len = (len); \
+		DUK_ASSERT(duk__dst != NULL); \
+		DUK_ASSERT(duk__src != NULL); \
+		(void) DUK_MEMCPY(duk__dst, duk__src, (size_t) duk__len); \
+	} while (0)
+#define duk_memcpy_unsafe(dst,src,len)  do { \
+		void *duk__dst = (dst); \
+		const void *duk__src = (src); \
+		duk_size_t duk__len = (len); \
+		DUK_ASSERT(duk__dst != NULL || duk__len == 0U); \
+		DUK_ASSERT(duk__src != NULL || duk__len == 0U); \
+		if (DUK_LIKELY(duk__len > 0U)) { \
+			DUK_ASSERT(duk__dst != NULL); \
+			DUK_ASSERT(duk__src != NULL); \
+			(void) DUK_MEMCPY(duk__dst, duk__src, (size_t) duk__len); \
+		} \
+	} while (0)
+#define duk_memmove(dst,src,len)  do { \
+		void *duk__dst = (dst); \
+		const void *duk__src = (src); \
+		duk_size_t duk__len = (len); \
+		DUK_ASSERT(duk__dst != NULL); \
+		DUK_ASSERT(duk__src != NULL); \
+		(void) DUK_MEMMOVE(duk__dst, duk__src, (size_t) duk__len); \
+	} while (0)
+#define duk_memmove_unsafe(dst,src,len)  do { \
+		void *duk__dst = (dst); \
+		const void *duk__src = (src); \
+		duk_size_t duk__len = (len); \
+		DUK_ASSERT(duk__dst != NULL || duk__len == 0U); \
+		DUK_ASSERT(duk__src != NULL || duk__len == 0U); \
+		if (DUK_LIKELY(duk__len > 0U)) { \
+			DUK_ASSERT(duk__dst != NULL); \
+			DUK_ASSERT(duk__src != NULL); \
+			(void) DUK_MEMMOVE(duk__dst, duk__src, (size_t) duk__len); \
+		} \
+	} while (0)
+#define duk_memset(dst,val,len)  do { \
+		void *duk__dst = (dst); \
+		duk_small_int_t duk__val = (val); \
+		duk_size_t duk__len = (len); \
+		DUK_ASSERT(duk__dst != NULL); \
+		(void) DUK_MEMSET(duk__dst, duk__val, (size_t) duk__len); \
+	} while (0)
+#define duk_memset_unsafe(dst,val,len)  do { \
+		void *duk__dst = (dst); \
+		duk_small_int_t duk__val = (val); \
+		duk_size_t duk__len = (len); \
+		DUK_ASSERT(duk__dst != NULL || duk__len == 0U); \
+		if (DUK_LIKELY(duk__len > 0U)) { \
+			DUK_ASSERT(duk__dst != NULL); \
+			(void) DUK_MEMSET(duk__dst, duk__val, (size_t) duk__len); \
+		} \
+	} while (0)
+#define duk_memzero(dst,len)  do { \
+		void *duk__dst = (dst); \
+		duk_size_t duk__len = (len); \
+		DUK_ASSERT(duk__dst != NULL); \
+		(void) DUK_MEMZERO(duk__dst, (size_t) duk__len); \
+	} while (0)
+#define duk_memzero_unsafe(dst,len)  do { \
+		void *duk__dst = (dst); \
+		duk_size_t duk__len = (len); \
+		DUK_ASSERT(duk__dst != NULL || duk__len == 0U); \
+		if (DUK_LIKELY(duk__len > 0U)) { \
+			DUK_ASSERT(duk__dst != NULL); \
+			(void) DUK_MEMZERO(duk__dst, (size_t) duk__len); \
+		} \
+	} while (0)
+#endif  /* DUK_USE_ALLOW_UNDEFINED_BEHAVIOR */
+
 DUK_INTERNAL_DECL duk_small_int_t duk_memcmp(const void *s1, const void *s2, duk_size_t len);
-DUK_INTERNAL_DECL void duk_memset(void *s, duk_small_int_t c, duk_size_t len);
-DUK_INTERNAL_DECL void duk_memzero(void *s, duk_size_t len);
+DUK_INTERNAL_DECL duk_small_int_t duk_memcmp_unsafe(const void *s1, const void *s2, duk_size_t len);
 
 DUK_INTERNAL_DECL duk_bool_t duk_is_whole_get_int32_nonegzero(duk_double_t x, duk_int32_t *ival);
 DUK_INTERNAL_DECL duk_bool_t duk_is_whole_get_int32(duk_double_t x, duk_int32_t *ival);

@@ -1378,12 +1378,14 @@ DUK_INTERNAL duk_ret_t duk_bi_string_prototype_repeat(duk_hthread *thr) {
 
 	/* Temporary fixed buffer, later converted to string. */
 	buf = (duk_uint8_t *) duk_push_fixed_buffer_nozero(thr, result_len);
+	DUK_ASSERT(buf != NULL);
 	src = (const duk_uint8_t *) DUK_HSTRING_GET_DATA(h_input);
+	DUK_ASSERT(src != NULL);
 
 #if defined(DUK_USE_PREFER_SIZE)
 	p = buf;
 	while (count-- > 0) {
-		duk_memcpy((void *) p, (const void *) src, input_blen);  /* copy size may be zero */
+		duk_memcpy((void *) p, (const void *) src, input_blen);  /* copy size may be zero, but pointers are valid */
 		p += input_blen;
 	}
 #else  /* DUK_USE_PREFER_SIZE */
@@ -1400,7 +1402,7 @@ DUK_INTERNAL duk_ret_t duk_bi_string_prototype_repeat(duk_hthread *thr) {
 		                     (long) result_len));
 		if (remain <= copy_size) {
 			/* If result_len is zero, this case is taken and does
-			 * a zero size copy.
+			 * a zero size copy (with valid pointers).
 			 */
 			duk_memcpy((void *) p, (const void *) src, remain);
 			break;

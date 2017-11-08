@@ -74,9 +74,10 @@ DUK_LOCAL duk_uint8_t *duk__dump_hbuffer_raw(duk_hthread *thr, duk_uint8_t *p, d
 	DUK_ASSERT(len <= 0xffffffffUL);  /* buffer limits */
 	tmp32 = (duk_uint32_t) len;
 	DUK_RAW_WRITE_U32_BE(p, tmp32);
-	duk_memcpy((void *) p,
-	           (const void *) DUK_HBUFFER_GET_DATA_PTR(thr->heap, h),
-	           len);
+	/* When len == 0, buffer data pointer may be NULL. */
+	duk_memcpy_unsafe((void *) p,
+	                  (const void *) DUK_HBUFFER_GET_DATA_PTR(thr->heap, h),
+	                  len);
 	p += len;
 	return p;
 }
@@ -288,7 +289,7 @@ static duk_uint8_t *duk__dump_func(duk_hthread *thr, duk_hcompfunc *func, duk_bu
 	ins_end = DUK_HCOMPFUNC_GET_CODE_END(thr->heap, func);
 	DUK_ASSERT((duk_size_t) (ins_end - ins) == (duk_size_t) count_instr);
 #if defined(DUK_USE_INTEGER_BE)
-	duk_memcpy((void *) p, (const void *) ins, (size_t) (ins_end - ins));
+	duk_memcpy_unsafe((void *) p, (const void *) ins, (size_t) (ins_end - ins));
 	p += (size_t) (ins_end - ins);
 #else
 	while (ins != ins_end) {

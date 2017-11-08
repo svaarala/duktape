@@ -443,6 +443,7 @@ DUK_INTERNAL void duk_hbufobj_push_uint8array_from_plain(duk_hthread *thr, duk_h
 DUK_INTERNAL void duk_hbufobj_push_validated_read(duk_hthread *thr, duk_hbufobj *h_bufobj, duk_uint8_t *p, duk_small_uint_t elem_size) {
 	duk_double_union du;
 
+	DUK_ASSERT(elem_size > 0);
 	duk_memcpy((void *) du.uc, (const void *) p, (size_t) elem_size);
 
 	switch (h_bufobj->elem_type) {
@@ -524,6 +525,7 @@ DUK_INTERNAL void duk_hbufobj_validated_write(duk_hthread *thr, duk_hbufobj *h_b
 		DUK_UNREACHABLE();
 	}
 
+	DUK_ASSERT(elem_size > 0);
 	duk_memcpy((void *) p, (const void *) du.uc, (size_t) elem_size);
 }
 
@@ -953,7 +955,7 @@ DUK_INTERNAL duk_ret_t duk_bi_typedarray_constructor(duk_hthread *thr) {
 		DUK_DDD(DUK_DDDPRINT("using memcpy: p_src=%p, p_dst=%p, byte_length=%ld",
 		                     (void *) p_src, (void *) p_dst, (long) byte_length));
 
-		duk_memcpy((void *) p_dst, (const void *) p_src, (size_t) byte_length);
+		duk_memcpy_unsafe((void *) p_dst, (const void *) p_src, (size_t) byte_length);
 		break;
 	}
 	case 1: {
@@ -1220,9 +1222,9 @@ DUK_INTERNAL duk_ret_t duk_bi_nodejs_buffer_tostring(duk_hthread *thr) {
 	 */
 
 	DUK_ASSERT(DUK_HBUFOBJ_VALID_BYTEOFFSET_EXCL(h_this, (duk_size_t) start_offset + slice_length));
-	duk_memcpy((void *) buf_slice,
-	           (const void *) (DUK_HBUFOBJ_GET_SLICE_BASE(thr->heap, h_this) + start_offset),
-	           (size_t) slice_length);
+	duk_memcpy_unsafe((void *) buf_slice,
+	                  (const void *) (DUK_HBUFOBJ_GET_SLICE_BASE(thr->heap, h_this) + start_offset),
+	                  (size_t) slice_length);
 
 	/* Use the equivalent of: new TextEncoder().encode(this) to convert the
 	 * string.  Result will be valid UTF-8; non-CESU-8 inputs are currently
@@ -1384,7 +1386,7 @@ DUK_INTERNAL duk_ret_t duk_bi_nodejs_buffer_fill(duk_hthread *thr) {
 		/* Handle single character fills as memset() even when
 		 * the fill data comes from a one-char argument.
 		 */
-		duk_memset((void *) p, (int) fill_str_ptr[0], (size_t) fill_length);
+		duk_memset_unsafe((void *) p, (int) fill_str_ptr[0], (size_t) fill_length);
 	} else if (fill_str_len > 1) {
 		duk_size_t i, n, t;
 
@@ -1435,9 +1437,9 @@ DUK_INTERNAL duk_ret_t duk_bi_nodejs_buffer_write(duk_hthread *thr) {
 
 	if (DUK_HBUFOBJ_VALID_SLICE(h_this)) {
 		/* Cannot overlap. */
-		duk_memcpy((void *) (DUK_HBUFOBJ_GET_SLICE_BASE(thr->heap, h_this) + offset),
-		           (const void *) str_data,
-		           (size_t) length);
+		duk_memcpy_unsafe((void *) (DUK_HBUFOBJ_GET_SLICE_BASE(thr->heap, h_this) + offset),
+		                  (const void *) str_data,
+		                  (size_t) length);
 	} else {
 		DUK_DDD(DUK_DDDPRINT("write() target buffer is not covered, silent ignore"));
 	}
@@ -1533,9 +1535,9 @@ DUK_INTERNAL duk_ret_t duk_bi_nodejs_buffer_copy(duk_hthread *thr) {
 		/* Must use memmove() because copy area may overlap (source and target
 		 * buffer may be the same, or from different slices.
 		 */
-		duk_memmove((void *) (DUK_HBUFOBJ_GET_SLICE_BASE(thr->heap, h_bufarg) + target_ustart),
-		            (const void *) (DUK_HBUFOBJ_GET_SLICE_BASE(thr->heap, h_this) + source_ustart),
-		            (size_t) copy_size);
+		duk_memmove_unsafe((void *) (DUK_HBUFOBJ_GET_SLICE_BASE(thr->heap, h_bufarg) + target_ustart),
+		                   (const void *) (DUK_HBUFOBJ_GET_SLICE_BASE(thr->heap, h_this) + source_ustart),
+		                   (size_t) copy_size);
 	} else {
 		DUK_DDD(DUK_DDDPRINT("buffer copy not covered by underlying buffer(s), ignoring"));
 	}
@@ -1721,7 +1723,7 @@ DUK_INTERNAL duk_ret_t duk_bi_typedarray_set(duk_hthread *thr) {
 			DUK_ASSERT(src_length == dst_length);
 
 			DUK_DDD(DUK_DDDPRINT("fast path: able to use memmove() because views are compatible"));
-			duk_memmove((void *) p_dst_base, (const void *) p_src_base, (size_t) dst_length);
+			duk_memmove_unsafe((void *) p_dst_base, (const void *) p_src_base, (size_t) dst_length);
 			return 0;
 		}
 		DUK_DDD(DUK_DDDPRINT("fast path: views are not compatible with a byte copy, copy by item"));
@@ -1764,7 +1766,7 @@ DUK_INTERNAL duk_ret_t duk_bi_typedarray_set(duk_hthread *thr) {
 			DUK_DDD(DUK_DDDPRINT("there is overlap, make a copy of the source"));
 			p_src_copy = (duk_uint8_t *) duk_push_fixed_buffer_nozero(thr, src_length);
 			DUK_ASSERT(p_src_copy != NULL);
-			duk_memcpy((void *) p_src_copy, (const void *) p_src_base, (size_t) src_length);
+			duk_memcpy_unsafe((void *) p_src_copy, (const void *) p_src_base, (size_t) src_length);
 
 			p_src_base = p_src_copy;  /* use p_src_base from now on */
 		}
@@ -1891,9 +1893,9 @@ DUK_LOCAL void duk__arraybuffer_plain_slice(duk_hthread *thr, duk_hbuffer *h_val
 	DUK_ASSERT(p_copy != NULL);
 	copy_length = slice_length;
 
-	duk_memcpy((void *) p_copy,
-	           (const void *) ((duk_uint8_t *) DUK_HBUFFER_GET_DATA_PTR(thr->heap, h_val) + start_offset),
-	           copy_length);
+	duk_memcpy_unsafe((void *) p_copy,
+	                  (const void *) ((duk_uint8_t *) DUK_HBUFFER_GET_DATA_PTR(thr->heap, h_val) + start_offset),
+	                  copy_length);
 }
 #endif /* DUK_USE_BUFFEROBJECT_SUPPORT */
 
@@ -2015,9 +2017,9 @@ DUK_INTERNAL duk_ret_t duk_bi_buffer_slice_shared(duk_hthread *thr) {
 		 * is left as zero.
 		 */
 		copy_length = DUK_HBUFOBJ_CLAMP_BYTELENGTH(h_this, slice_length);
-		duk_memcpy((void *) p_copy,
-		           (const void *) (DUK_HBUFOBJ_GET_SLICE_BASE(thr->heap, h_this) + start_offset),
-		           copy_length);
+		duk_memcpy_unsafe((void *) p_copy,
+		                  (const void *) (DUK_HBUFOBJ_GET_SLICE_BASE(thr->heap, h_this) + start_offset),
+		                  copy_length);
 
 		h_val = duk_known_hbuffer(thr, -1);
 
@@ -2209,9 +2211,9 @@ DUK_INTERNAL duk_ret_t duk_bi_nodejs_buffer_concat(duk_hthread *thr) {
 
 		if (h_bufobj->buf != NULL &&
 		    DUK_HBUFOBJ_VALID_SLICE(h_bufobj)) {
-			duk_memcpy((void *) p,
-			           (const void *) DUK_HBUFOBJ_GET_SLICE_BASE(thr->heap, h_bufobj),
-			           copy_size);
+			duk_memcpy_unsafe((void *) p,
+			                  (const void *) DUK_HBUFOBJ_GET_SLICE_BASE(thr->heap, h_bufobj),
+			                  copy_size);
 		} else {
 			/* Just skip, leaving zeroes in the result. */
 			;

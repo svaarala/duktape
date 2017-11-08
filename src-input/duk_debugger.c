@@ -309,6 +309,7 @@ DUK_INTERNAL void duk_debug_read_bytes(duk_hthread *thr, duk_uint8_t *data, duk_
 	DUK_ASSERT(thr != NULL);
 	heap = thr->heap;
 	DUK_ASSERT(heap != NULL);
+	DUK_ASSERT(data != NULL);
 
 	if (heap->dbg_read_cb == NULL) {
 		DUK_D(DUK_DPRINT("attempt to read %ld bytes in detached state, return zero data", (long) length));

@@ -811,9 +811,9 @@ DUK_INTERNAL void duk_hobject_realloc_props(duk_hthread *thr,
 	DUK_ASSERT(new_a != NULL || array_copy_size == 0U);
 	DUK_ASSERT(DUK_HOBJECT_GET_PROPS(thr->heap, obj) != NULL || array_copy_size == 0U);
 	DUK_ASSERT(DUK_HOBJECT_GET_ASIZE(obj) > 0 || array_copy_size == 0U);
-	duk_memcpy((void *) new_a,
-	           (const void *) DUK_HOBJECT_A_GET_BASE(thr->heap, obj),
-	           array_copy_size);
+	duk_memcpy_unsafe((void *) new_a,
+	                  (const void *) DUK_HOBJECT_A_GET_BASE(thr->heap, obj),
+	                  array_copy_size);
 
 	for (i = DUK_HOBJECT_GET_ASIZE(obj); i < new_a_size; i++) {
 		duk_tval *tv = &new_a[i];

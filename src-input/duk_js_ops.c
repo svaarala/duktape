@@ -727,11 +727,11 @@ DUK_INTERNAL duk_small_int_t duk_js_data_compare(const duk_uint8_t *buf1, const 
 	prefix_len = (len1 <= len2 ? len1 : len2);
 
 	/* duk_memcmp() is guaranteed to return zero (equal) for zero length
-	 * inputs so no zero length check is needed.
+	 * inputs.
 	 */
-	rc = duk_memcmp((const void *) buf1,
-	                (const void *) buf2,
-	                (size_t) prefix_len);
+	rc = duk_memcmp_unsafe((const void *) buf1,
+	                       (const void *) buf2,
+	                       (size_t) prefix_len);
 
 	if (rc < 0) {
 		return -1;
