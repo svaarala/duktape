@@ -144,12 +144,17 @@ DUK_INTERNAL duk_float_t duk_double_to_float_t(duk_double_t x) {
 		} else {
 			return (duk_float_t) DUK__FLOAT_MAX;
 		}
-	} else {
-		/* This assumes double NaN -> float NaN is
-		 * considered "in range".
-		 */
+	} else if (DUK_ISNAN(x)) {
+		/* Assumes double NaN -> float NaN considered "in range". */
 		DUK_ASSERT(DUK_ISNAN(x));
 		return (duk_float_t) x;
+	} else {
+		/* Out-of-range, rounds to +/- Infinity. */
+		if (x < 0.0) {
+			return (duk_float_t) -DUK_DOUBLE_INFINITY;
+		} else {
+			return (duk_float_t) DUK_DOUBLE_INFINITY;
+		}
 	}
 #endif
 }
