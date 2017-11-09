@@ -243,9 +243,9 @@ static void duk__cbor_encode_double(duk_cbor_encode_context *enc_ctx, double d) 
 
 		/* Check if 'd' can represented as a normal half-float.
 		 * Denormal half-floats could also be used, but that check
-		 * isn't done now.  So just check exponent range and that
-		 * at most 10 significant bits (excluding implicit leading 1)
-		 * are used in 'd'.
+		 * isn't done now (denormal half-floats are decoded of course).
+		 * So just check exponent range and that at most 10 significant
+		 * bits (excluding implicit leading 1) are used in 'd'.
 		 */
 		if (duk__cbor_is_little_endian()) {
 			exp = (duk_int16_t) ((u.s[3] & 0x7ff0U) >> 4) - 1023;
@@ -267,32 +267,84 @@ static void duk__cbor_encode_double(duk_cbor_encode_context *enc_ctx, double d) 
 				    (u.x[7] == 0 && u.x[6] == 0 && u.x[5] == 0 && u.x[4] == 0 &&
 				     u.x[3] == 0 && (u.x[2] & 0x03U) == 0);
 			}
-			use_half_float = 0;  /* XXX: disable until parsing works 100% */
 			if (use_half_float) {
-				duk_uint16_t t1;
-				duk_uint8_t t2, t3;
+				duk_uint32_t t;
 
 				p = duk__cbor_encode_reserve(enc_ctx, 1 + 2);
 
+				exp += 15;
 				if (duk__cbor_is_little_endian()) {
-					t1 = u.s[3];
-					t2 = u.x[6];
-					t3 = u.x[5];
+					t = (duk_uint32_t) (u.x[7] & 0x80U) << 8;
+					t += (duk_uint32_t) exp << 10;
+					t += ((duk_uint32_t) u.x[6] & 0x0fU) << 6;
+					t += ((duk_uint32_t) u.x[5]) >> 2;
 				} else {
-					t1 = u.s[0];
-					t2 = u.x[1];
-					t3 = u.x[2];
+					t = (duk_uint32_t) (u.x[0] & 0x80U) << 8;
+					t += (duk_uint32_t) exp << 10;
+					t += ((duk_uint32_t) u.x[1] & 0x0fU) << 6;
+					t += ((duk_uint32_t) u.x[2]) >> 2;
 				}
 
+				/* seeeeemm mmmmmmmm */
 				*p++ = 0xf9U;
-				*p++ = ((t1 & 0x8000U) ? 0x80U : 0x00U) + (((duk_uint8_t) (exp + 15) << 2) & 0x7fU) +
-				       ((t2 >> 2) & 0x03U);  /* seeeeemm */
-				*p++ = ((t2 << 6) & 0xffU) + ((t3 >> 2) & 0xffU);  /* mmmmmmmm */
+				*p++ = (t >> 8) & 0xffU;
+				*p++ = (t >> 0) & 0xffU;
 				return;
 			}
 		}
 
-		/* Same check for plain float. */
+		/* Same check for plain float.  Also no denormal support here. */
+		if (exp >= -126 && exp <= 127) {  /* float normal exponents (excl. denormals) */
+			/* double: seeeeeee eeeemmmm mmmmmmmm mmmmmmmm mmmmmmmm mmmmmmmm mmmmmmmm mmmmmmmm */
+			/* float:     seeee eeeemmmm mmmmmmmm mmmmmmmm mmm00000 00000000 00000000 00000000 */
+			int use_float;
+
+			/* We could do this explicit mantissa check, but doing
+			 * a double-float-double cast is fine because we've
+			 * already verified that the exponent is in range so
+			 * that the narrower cast is not undefined behavior.
+			 */
+#if 0
+			if (duk__cbor_is_little_endian()) {
+				use_float =
+				    (u.x[0] == 0 && u.x[1] == 0 && u.x[2] == 0 && (u.x[3] & 0xe0U) == 0);
+			} else {
+				use_float =
+				    (u.x[7] == 0 && u.x[6] == 0 && u.x[5] == 0 && (u.x[4] & 0xe0U) == 0);
+			}
+#endif
+			use_float = ((duk_double_t) (duk_float_t) d == d);
+			if (use_float) {
+				duk_uint32_t t;
+
+				p = duk__cbor_encode_reserve(enc_ctx, 1 + 4);
+
+				exp += 127;
+				if (duk__cbor_is_little_endian()) {
+					t = (duk_uint32_t) (u.x[7] & 0x80U) << 24;
+					t += (duk_uint32_t) exp << 23;
+					t += ((duk_uint32_t) u.x[6] & 0x0fU) << 19;
+					t += ((duk_uint32_t) u.x[5]) << 11;
+					t += ((duk_uint32_t) u.x[4]) << 3;
+					t += ((duk_uint32_t) u.x[3]) >> 5;
+				} else {
+					t = (duk_uint32_t) (u.x[0] & 0x80U) << 24;
+					t += (duk_uint32_t) exp << 23;
+					t += ((duk_uint32_t) u.x[1] & 0x0fU) << 19;
+					t += ((duk_uint32_t) u.x[2]) << 11;
+					t += ((duk_uint32_t) u.x[3]) << 3;
+					t += ((duk_uint32_t) u.x[4]) >> 5;
+				}
+
+				/* seeeeeee emmmmmmm mmmmmmmm mmmmmmmm */
+				*p++ = 0xfaU;
+				*p++ = (t >> 24) & 0xffU;
+				*p++ = (t >> 16) & 0xffU;
+				*p++ = (t >> 8) & 0xffU;
+				*p++ = (t >> 0) & 0xffU;
+				return;
+			}
+		}
 
 		/* Cannot use half-float or float, encode as full IEEE double. */
 		p = duk__cbor_encode_reserve(enc_ctx, 1 + 8);
@@ -355,7 +407,7 @@ static void duk__cbor_encode_string_top(duk_cbor_encode_context *enc_ctx) {
 	}
 	duk__cbor_encode_uint32(enc_ctx, (duk_uint32_t) len, 0x60U);
 	p = duk__cbor_encode_reserve(enc_ctx, len);
-	memcpy((void *) p, (const void *) str, len);
+	(void) memcpy((void *) p, (const void *) str, len);
 }
 
 static void duk__cbor_encode_value(duk_cbor_encode_context *enc_ctx) {
@@ -411,7 +463,7 @@ static void duk__cbor_encode_value(duk_cbor_encode_context *enc_ctx) {
 			}
 			duk__cbor_encode_uint32(enc_ctx, (duk_uint32_t) len, 0x40U);
 			p = duk__cbor_encode_reserve(enc_ctx, len);
-			memcpy((void *) p, (const void *) buf, len);
+			(void) memcpy((void *) p, (const void *) buf, len);
 		} else {
 			/* We don't know the number of properties in advance
 			 * but would still like to encode at least small
@@ -450,7 +502,7 @@ static void duk__cbor_encode_value(duk_cbor_encode_context *enc_ctx) {
 		}
 		duk__cbor_encode_uint32(enc_ctx, (duk_uint32_t) len, 0x40U);
 		p = duk__cbor_encode_reserve(enc_ctx, len);
-		memcpy((void *) p, (const void *) buf, len);
+		(void) memcpy((void *) p, (const void *) buf, len);
 		break;
 	case DUK_TYPE_POINTER:
 		/* Pointers (void *) are challenging to encode.  They can't
@@ -462,7 +514,8 @@ static void duk__cbor_encode_value(duk_cbor_encode_context *enc_ctx) {
 		 * to recover compatible pointers.
 		 *
 		 * For now, encode as %p string.  There doesn't seem to be an
-		 * appropriate tag.
+		 * appropriate tag, so pointers don't currently survive a CBOR
+		 * encode/decode roundtrip intact.
 		 */
 		duk_to_string(enc_ctx->ctx, -1);
 		duk__cbor_encode_string_top(enc_ctx);
@@ -597,7 +650,7 @@ static void duk__cbor_decode_buffer(duk_cbor_decode_context *dec_ctx, duk_uint8_
 	len = duk__cbor_decode_aival_uint32(dec_ctx, ib);
 	inp = duk__cbor_decode_consume(dec_ctx, len);
 	buf = (duk_uint8_t *) duk_push_fixed_buffer(dec_ctx->ctx, (duk_size_t) len);
-	memcpy((void *) buf, (const void *) inp, (size_t) len);
+	(void) memcpy((void *) buf, (const void *) inp, (size_t) len);
 }
 
 static void duk__cbor_decode_join_buffers(duk_cbor_decode_context *dec_ctx, duk_idx_t count) {
@@ -615,7 +668,7 @@ static void duk__cbor_decode_join_buffers(duk_cbor_decode_context *dec_ctx, duk_
 			buf_data = duk_require_buffer(dec_ctx->ctx, idx, &buf_size);
 			if (p != NULL) {
 				if (buf_size > 0U) {
-					memcpy((void *) p, (const void *) buf_data, buf_size);
+					(void) memcpy((void *) p, (const void *) buf_data, buf_size);
 				}
 				p += buf_size;
 			} else {
@@ -654,6 +707,107 @@ static void duk__cbor_decode_and_join_strbuf(duk_cbor_decode_context *dec_ctx, d
 	} else if (count > 1) {
 		duk__cbor_decode_join_buffers(dec_ctx, count);
 	}
+}
+
+static duk_double_t duk__cbor_decode_half_float(duk_cbor_decode_context *dec_ctx) {
+	duk_cbor_dblunion u;
+	const duk_uint8_t *inp;
+	duk_int_t exp;
+	duk_uint_t u16;
+	duk_uint_t tmp;
+	duk_double_t res;
+
+	inp = duk__cbor_decode_consume(dec_ctx, 2);
+	u16 = ((duk_uint_t) inp[0] << 8) + (duk_uint_t) inp[1];
+	exp = (duk_int_t) ((u16 >> 10) & 0x1fU) - 15;
+
+	if (exp == -15) {
+		/* Zero or denormal; but note that half float
+		 * denormals become double normals.
+		 */
+		if ((u16 & 0x03ffU) == 0) {
+			u.x[0] = inp[0] & 0x80U;
+			u.x[1] = 0U;
+			u.x[2] = 0U;
+			u.x[3] = 0U;
+			u.x[4] = 0U;
+			u.x[5] = 0U;
+			u.x[6] = 0U;
+			u.x[7] = 0U;
+		} else {
+			/* Create denormal by first creating a double that
+			 * contains the denormal bits and a leading implicit
+			 * 1-bit.  Then subtract away the implicit 1-bit.
+			 *
+			 *    0.mmmmmmmmmm * 2^-14
+			 *    1.mmmmmmmmmm 0.... * 2^-14
+			 *   -1.0000000000 0.... * 2^-14
+			 *
+			 * Double exponent: -14 + 1023 = 0x3f1
+			 */
+			u.x[0] = 0x3fU;
+			u.x[1] = 0x10U + (duk_uint8_t) ((u16 >> 6) & 0x0fU);
+			u.x[2] = (duk_uint8_t) ((u16 << 2) & 0xffU);  /* Mask is really 0xfcU */
+			u.x[3] = 0U;
+			u.x[4] = 0U;
+			u.x[5] = 0U;
+			u.x[6] = 0U;
+			u.x[7] = 0U;
+			if (duk__cbor_is_little_endian()) {
+				duk__cbor_bswap8(u.x);
+			}
+			res = u.d - 0.00006103515625;  /* 2^(-14) */
+			if (u16 & 0x8000U) {
+				res = -res;
+			}
+			return res;
+		}
+	} else if (exp == 16) {
+		/* +/- Inf or NaN. */
+		if ((u16 & 0x03ffU) == 0) {
+			u.x[0] = (inp[0] & 0x80U) + 0x7fU;
+			u.x[1] = 0xf0U;
+			u.x[2] = 0U;
+			u.x[3] = 0U;
+			u.x[4] = 0U;
+			u.x[5] = 0U;
+			u.x[6] = 0U;
+			u.x[7] = 0U;
+		} else {
+			/* Create a 'quiet NaN' with highest
+			 * bit set (there are some platforms
+			 * where the NaN payload convention is
+			 * the opposite).  Keep sign.
+			 */
+			u.x[0] = (inp[0] & 0x80U) + 0x7fU;
+			u.x[1] = 0xf8U;
+			u.x[2] = 0U;
+			u.x[3] = 0U;
+			u.x[4] = 0U;
+			u.x[5] = 0U;
+			u.x[6] = 0U;
+			u.x[7] = 0U;
+		}
+	} else {
+		/* Normal. */
+		tmp = (inp[0] & 0x80U) ? 0x80000000UL : 0UL;
+		tmp += (duk_uint_t) (exp + 1023) << 20;
+		tmp += (duk_uint_t) (inp[0] & 0x03U) << 18;
+		tmp += (duk_uint_t) (inp[1] & 0xffU) << 10;
+		u.x[0] = (tmp >> 24) & 0xffU;
+		u.x[1] = (tmp >> 16) & 0xffU;
+		u.x[2] = (tmp >> 8) & 0xffU;
+		u.x[3] = (tmp >> 0) & 0xffU;
+		u.x[4] = 0U;
+		u.x[5] = 0U;
+		u.x[6] = 0U;
+		u.x[7] = 0U;
+	}
+	if (duk__cbor_is_little_endian()) {
+		duk__cbor_bswap8(u.x);
+	}
+
+	return u.d;
 }
 
 static void duk__cbor_decode_value(duk_cbor_decode_context *dec_ctx) {
@@ -830,62 +984,16 @@ static void duk__cbor_decode_value(duk_cbor_decode_context *dec_ctx) {
 			goto format_error;  /* none defined so far, and 0-31 not allowed */
 		}
 		case 0x19U: {  /* half-float (2 bytes) */
-			duk_cbor_dblunion u;
-			const duk_uint8_t *inp;
-			duk_int_t exp;
-			duk_uint_t tmp;
-
-			inp = duk__cbor_decode_consume(dec_ctx, 2);
-			exp = (duk_int_t) ((inp[0] >> 2) & 0x1fU) - 15;
-			if (exp == -15) {
-				/* Zero or denormal; but note that half float
-				 * denormals become double normals.
-				 */
-				tmp = (duk_uint_t) (inp[0] & 0x03U) << 8;
-				tmp += (duk_uint_t) inp[1];
-				if (tmp == 0) {
-					u.x[0] = inp[0] & 0x80U;
-					u.x[1] = 0U;
-					u.x[2] = 0U;
-					u.x[3] = 0U;
-					u.x[4] = 0U;
-					u.x[5] = 0U;
-					u.x[6] = 0U;
-					u.x[7] = 0U;
-				} else {
-					/* XXX: denormal support */
-					goto format_error;
-				}
-			} else if (exp == 17) {
-				/* +/- Inf or NaN. */
-				/* XXX: Inf/NaN support */
-				goto format_error;
-			} else {
-				/* Normal. */
-				tmp = (inp[0] & 0x80U) ? 0x80000000UL : 0UL;
-				tmp += (duk_uint_t) (exp + 1023) << 20;
-				tmp += (duk_uint_t) (inp[0] & 0x03U) << 18;
-				tmp += (duk_uint_t) (inp[1] & 0xffU) << 10;
-				u.x[0] = (tmp >> 24) & 0xffU;
-				u.x[1] = (tmp >> 16) & 0xffU;
-				u.x[2] = (tmp >> 8) & 0xffU;
-				u.x[3] = (tmp >> 0) & 0xffU;
-				u.x[4] = 0U;
-				u.x[5] = 0U;
-				u.x[6] = 0U;
-				u.x[7] = 0U;
-			}
-			if (duk__cbor_is_little_endian()) {
-				duk__cbor_bswap8(u.x);
-			}
-			duk_push_number(dec_ctx->ctx, u.d);
+			duk_double_t d;
+			d = duk__cbor_decode_half_float(dec_ctx);
+			duk_push_number(dec_ctx->ctx, d);
 			break;
 		}
 		case 0x1aU: {  /* float (4 bytes) */
 			duk_cbor_fltunion u;
 			const duk_uint8_t *inp;
 			inp = duk__cbor_decode_consume(dec_ctx, 4);
-			memcpy((void *) u.x, (const void *) inp, 4);
+			(void) memcpy((void *) u.x, (const void *) inp, 4);
 			if (duk__cbor_is_little_endian()) {
 				duk__cbor_bswap4(u.x);
 			}
@@ -896,7 +1004,7 @@ static void duk__cbor_decode_value(duk_cbor_decode_context *dec_ctx) {
 			duk_cbor_dblunion u;
 			const duk_uint8_t *inp;
 			inp = duk__cbor_decode_consume(dec_ctx, 8);
-			memcpy((void *) u.x, (const void *) inp, 8);
+			(void) memcpy((void *) u.x, (const void *) inp, 8);
 			if (duk__cbor_is_little_endian()) {
 				duk__cbor_bswap8(u.x);
 			}
