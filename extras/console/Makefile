@@ -1,4 +1,4 @@
-# For manual testing; say 'make' in extras/print-alert and run ./test.
+# For manual testing; say 'make' in extras/console and run ./test.
 
 .PHONY: test
 test:

@@ -28,6 +28,14 @@ summary: |
   }
   </pre>
 
+  <p>If the return value is ignored, cast to void to avoid compilation
+  warnings:</p>
+  <pre class="c-code">
+  if (argvalue &lt; 0) {
+      (void) duk_error(ctx, DUK_ERR_TYPE_ERROR, "invalid argument value: %d", (int) argvalue);
+  }
+  </pre>
+
 example: |
   duk_error(ctx, DUK_ERR_RANGE_ERROR, "argument out of range: %d", (int) argval);
 
