@@ -3,7 +3,9 @@
 
 .PHONY: test
 test:
-	gcc -std=c99 -Wall -Wextra -o $@ -I../../src/ -I. ../../src/duktape.c duk_module_duktape.c test.c -lm
+	-rm -rf ./prep
+	python2 ../../tools/configure.py --quiet --output-directory ./prep
+	gcc -std=c99 -Wall -Wextra -o $@ -I./prep -I. ./prep/duktape.c duk_module_duktape.c test.c -lm
 	@printf '\n'
 	./test 'assert(typeof require === "function");'
 	./test 'assert(require.name === "require");'
@@ -12,3 +14,8 @@ test:
 	./test 'Duktape.modSearch = function myModSearch(id) { return "exports.foo = 123;" }; assert(require("dummy").foo === 123);'
 	./test 'Duktape.modSearch = function myModSearch(id) { return "exports.foo = 234;" }; delete Duktape; assert(typeof Duktape === "undefined"); assert(require("dummy").foo === 234);'
 	./test 'Duktape.modSearch = function myModSearch(id) { return "exports.foo = 234; // comment" }; delete Duktape; assert(typeof Duktape === "undefined"); assert(require("dummy").foo === 234);'
+
+.PHONY: clean
+clean:
+	-rm -rf ./prep
+	-rm -f test

@@ -2,5 +2,12 @@
 
 .PHONY: test
 test:
-	gcc -std=c99 -Wall -Wextra -o $@ -I../../src/ -I. ../../src/duktape.c duk_v1_compat.c test.c -lm
+	-rm -rf ./prep
+	python2 ../../tools/configure.py --quiet --output-directory ./prep
+	gcc -std=c99 -Wall -Wextra -o $@ -I./prep -I. ./prep/duktape.c duk_v1_compat.c test.c -lm
 	./test
+
+.PHONY: clean
+clean:
+	-rm -rf ./prep
+	-rm -f test
