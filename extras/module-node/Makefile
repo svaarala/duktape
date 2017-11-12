@@ -2,7 +2,9 @@
 
 .PHONY: test
 test:
-	gcc -std=c99 -Wall -Wextra -o $@ -I../../src/ -I. ../../src/duktape.c duk_module_node.c test.c -lm
+	-rm -rf ./prep
+	python2 ../../tools/configure.py --quiet --output-directory ./prep
+	gcc -std=c99 -Wall -Wextra -o $@ -I./prep -I. ./prep/duktape.c duk_module_node.c test.c -lm
 	@printf '\n'
 	./test 'assert(typeof require("pig") === "string", "basic require()");'
 	./test 'assert(require("cow").indexOf("pig") !== -1, "nested require()");'
@@ -17,3 +19,8 @@ test:
 	./test 'var badger = require("badger"); assert(badger.foo === 123 && badger.bar === 234, "exports.foo assignment");'
 	./test 'var comment = require("comment"); assert(comment.foo === 123 && comment.bar === 234, "last line with // comment");'
 	./test 'var shebang = require("shebang"); assert(shebang.foo === 123 && shebang.bar === 234, "shebang");'
+
+.PHONY: clean
+clean:
+	-rm -rf ./prep
+	-rm -f test
