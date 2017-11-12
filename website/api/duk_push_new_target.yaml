@@ -1,0 +1,22 @@
+name: duk_push_new_target
+
+proto: |
+  void duk_push_new_target(duk_context *ctx);
+
+stack: |
+  [ ... ] -> [ ... undefined! ]  (if no current function or not a constructor call)
+  [ ... ] -> [ ... func! ]  (if current function call is a constructor call)
+
+summary: |
+  <p>Push the equivalent of <code>new.target</code> for the currently running
+  function to the stack.  The value pushed is <code>undefined</code> if the
+  current call is not a constructor call, or if the call stack is empty.</p>
+
+example: |
+  duk_push_new_target(ctx);
+
+tags:
+  - stack
+  - function
+
+introduced: 2.3.0
