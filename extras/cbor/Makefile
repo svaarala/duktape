@@ -1,6 +1,9 @@
 # For manual testing; say 'make' in extras/cbor.
 
 VALGRIND=valgrind
+CCOPTS=-std=c99 -Wall -Wextra -O2
+#CCOPTS+=-fsanitize=undefined
+
 .PHONY: all
 all: clean jsoncbor test-runs
 
@@ -8,6 +11,7 @@ all: clean jsoncbor test-runs
 clean:
 	-rm -rf ./prep
 	-rm -f jsoncbor
+	-rm -f appendix_a.json
 
 jsoncbor: jsoncbor.c duk_cbor.c duk_cbor.h
 	-rm -rf ./prep
@@ -17,44 +21,20 @@ jsoncbor: jsoncbor.c duk_cbor.c duk_cbor.h
 		-DDUK_USE_JSON_EATWHITE_FASTPATH \
 		-DDUK_USE_JSON_QUOTESTRING_FASTPATH \
 		-DDUK_USE_JSON_STRINGIFY_FASTPATH
-	gcc -std=c99 -Wall -Wextra -O2 -o $@ -I./prep -I. \
-		./prep/duktape.c duk_cbor.c jsoncbor.c -lm
+	gcc $(CCOPTS) -o $@ -I./prep -I. ./prep/duktape.c duk_cbor.c jsoncbor.c -lm
+
+appendix_a.json:
+	wget -O $@ https://raw.githubusercontent.com/cbor/test-vectors/master/appendix_a.json
 
 .PHONY: test-runs
 test-runs: jsoncbor \
 	enc-primitives enc-number enc-buffer enc-string enc-array enc-object enc-half-float enc-float enc-misc \
-	dec-half-float dec-half-float
+	dec-half-float dec-half-float dec-array dec-object
 
-.PHONY: dec-misc
-dec-misc: jsoncbor
-	python -c 'import sys; sys.stdout.write("\xa1cfoocbar")'| python cbordecode.py
-	python -c 'import sys; sys.stdout.write("\xa1cfoocbar")'| $(VALGRIND) -q ./jsoncbor -d
-	python -c 'import sys; sys.stdout.write("\xa1\xa0\xa0")'| python cbordecode.py
-	python -c 'import sys; sys.stdout.write("\xa1\xa0\xa0")'| $(VALGRIND) -q ./jsoncbor -d  # object key, gets string coerced in JSON output
-	python -c 'import sys; sys.stdout.write("\x7f\xff")'| python cbordecode.py
-	python -c 'import sys; sys.stdout.write("\x7f\xff")'| $(VALGRIND) -q ./jsoncbor -d
-	python -c 'import sys; sys.stdout.write("\x7f`````````````````````````````````````````````````````````````````````````````````````````````````````````\xff")'| python cbordecode.py
-	python -c 'import sys; sys.stdout.write("\x7f`````````````````````````````````````````````````````````````````````````````````````````````````````````\xff")'| $(VALGRIND) -q ./jsoncbor -d
-	python -c 'import sys; sys.stdout.write("\x7fcfoo\xff")'| python cbordecode.py
-	python -c 'import sys; sys.stdout.write("\x7fcfoo\xff")'| $(VALGRIND) -q ./jsoncbor -d
-	python -c 'import sys; sys.stdout.write("\x7fcfoocbaraqau`auax\xff")'| python cbordecode.py
-	python -c 'import sys; sys.stdout.write("\x7fcfoocbaraqau`auax\xff")'| $(VALGRIND) -q ./jsoncbor -d
-	python -c 'import sys; sys.stdout.write("\x5f\xff")'| python cbordecode.py
-	python -c 'import sys; sys.stdout.write("\x5f\xff")'| $(VALGRIND) -q ./jsoncbor -d
-	python -c 'import sys; sys.stdout.write("\x5f@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@\xff")'| python cbordecode.py
-	python -c 'import sys; sys.stdout.write("\x5f@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@\xff")'| $(VALGRIND) -q ./jsoncbor -d
-	python -c 'import sys; sys.stdout.write("\x5fCfoo\xff")'| python cbordecode.py
-	python -c 'import sys; sys.stdout.write("\x5fCfoo\xff")'| $(VALGRIND) -q ./jsoncbor -d
-	python -c 'import sys; sys.stdout.write("\x5fCfooCbarAqAu@AuAx\xff")'| python cbordecode.py
-	python -c 'import sys; sys.stdout.write("\x5fCfooCbarAqAu@AuAx\xff")'| $(VALGRIND) -q ./jsoncbor -d
-	python -c 'import sys; sys.stdout.write("\xc0cfoo")'| python cbordecode.py
-	python -c 'import sys; sys.stdout.write("\xc0cfoo")'| $(VALGRIND) -q ./jsoncbor -d
-	python -c 'import sys; sys.stdout.write("\xc0\xc1cfoo")'| python cbordecode.py
-	python -c 'import sys; sys.stdout.write("\xc0\xc1cfoo")'| $(VALGRIND) -q ./jsoncbor -d
-	python -c 'import sys; sys.stdout.write("\xc0\xd7cfoo")'| python cbordecode.py
-	python -c 'import sys; sys.stdout.write("\xc0\xd7cfoo")'| $(VALGRIND) -q ./jsoncbor -d
-	python -c 'import sys; sys.stdout.write("\xc0\xd8\xffcfoo")'| python cbordecode.py
-	python -c 'import sys; sys.stdout.write("\xc0\xd8\xffcfoo")'| $(VALGRIND) -q ./jsoncbor -d
+.PHONY: test-vectors
+test-vectors: appendix_a.json
+	echo "Expects 'duk' to exist in local directory for now..."
+	./duk run_testvectors.js
 
 .PHONY: dec-half-float
 dec-half-float: jsoncbor
@@ -115,6 +95,48 @@ dec-half-float: jsoncbor
 	python -c 'import sys; sys.stdout.write("\xf9\x7f\x12")'| $(VALGRIND) -q ./jsoncbor -d
 	python -c 'import sys; sys.stdout.write("\xf9\xff\x12")'| python cbordecode.py
 	python -c 'import sys; sys.stdout.write("\xf9\xff\x12")'| $(VALGRIND) -q ./jsoncbor -d
+
+.PHONY: dec-array
+dec-array: jsoncbor
+	python -c 'import sys; sys.stdout.write("\x9f\x01\x02\x03\x9f\xff\x04\x80\x80\x9f\x10\x11\xff\x84\x04\x03\x02\x01\xff")' | python cbordecode.py
+	python -c 'import sys; sys.stdout.write("\x9f\x01\x02\x03\x9f\xff\x04\x80\x80\x9f\x10\x11\xff\x84\x04\x03\x02\x01\xff")' | $(VALGRIND) -q ./jsoncbor -d
+
+.PHONY: dec-object
+dec-object: jsoncbor
+	python -c 'import sys; sys.stdout.write("\xbf\x63foo\x63bar\x63bar\xa0\x64quux\xbf\xff\x63baz\xa2\x61a\x61b\x61c\x61d\x65quuux\xbf\x61x\x61y\x61z\x61w\xff\xff")' | python cbordecode.py
+	python -c 'import sys; sys.stdout.write("\xbf\x63foo\x63bar\x63bar\xa0\x64quux\xbf\xff\x63baz\xa2\x61a\x61b\x61c\x61d\x65quuux\xbf\x61x\x61y\x61z\x61w\xff\xff")' | $(VALGRIND) -q ./jsoncbor -d
+
+.PHONY: dec-misc
+dec-misc: jsoncbor
+	python -c 'import sys; sys.stdout.write("\xa1cfoocbar")'| python cbordecode.py
+	python -c 'import sys; sys.stdout.write("\xa1cfoocbar")'| $(VALGRIND) -q ./jsoncbor -d
+	python -c 'import sys; sys.stdout.write("\xa1\xa0\xa0")'| python cbordecode.py
+	python -c 'import sys; sys.stdout.write("\xa1\xa0\xa0")'| $(VALGRIND) -q ./jsoncbor -d  # object key, gets string coerced in JSON output
+	python -c 'import sys; sys.stdout.write("\x7f\xff")'| python cbordecode.py
+	python -c 'import sys; sys.stdout.write("\x7f\xff")'| $(VALGRIND) -q ./jsoncbor -d
+	python -c 'import sys; sys.stdout.write("\x7f`````````````````````````````````````````````````````````````````````````````````````````````````````````\xff")'| python cbordecode.py
+	python -c 'import sys; sys.stdout.write("\x7f`````````````````````````````````````````````````````````````````````````````````````````````````````````\xff")'| $(VALGRIND) -q ./jsoncbor -d
+	python -c 'import sys; sys.stdout.write("\x7fcfoo\xff")'| python cbordecode.py
+	python -c 'import sys; sys.stdout.write("\x7fcfoo\xff")'| $(VALGRIND) -q ./jsoncbor -d
+	python -c 'import sys; sys.stdout.write("\x7fcfoocbaraqau`auax\xff")'| python cbordecode.py
+	python -c 'import sys; sys.stdout.write("\x7fcfoocbaraqau`auax\xff")'| $(VALGRIND) -q ./jsoncbor -d
+	python -c 'import sys; sys.stdout.write("\x5f\xff")'| python cbordecode.py
+	python -c 'import sys; sys.stdout.write("\x5f\xff")'| $(VALGRIND) -q ./jsoncbor -d
+	python -c 'import sys; sys.stdout.write("\x5f@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@\xff")'| python cbordecode.py
+	python -c 'import sys; sys.stdout.write("\x5f@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@\xff")'| $(VALGRIND) -q ./jsoncbor -d
+	python -c 'import sys; sys.stdout.write("\x5fCfoo\xff")'| python cbordecode.py
+	python -c 'import sys; sys.stdout.write("\x5fCfoo\xff")'| $(VALGRIND) -q ./jsoncbor -d
+	python -c 'import sys; sys.stdout.write("\x5fCfooCbarAqAu@AuAx\xff")'| python cbordecode.py
+	python -c 'import sys; sys.stdout.write("\x5fCfooCbarAqAu@AuAx\xff")'| $(VALGRIND) -q ./jsoncbor -d
+	python -c 'import sys; sys.stdout.write("\xc0cfoo")'| python cbordecode.py
+	python -c 'import sys; sys.stdout.write("\xc0cfoo")'| $(VALGRIND) -q ./jsoncbor -d
+	python -c 'import sys; sys.stdout.write("\xc0\xc1cfoo")'| python cbordecode.py
+	python -c 'import sys; sys.stdout.write("\xc0\xc1cfoo")'| $(VALGRIND) -q ./jsoncbor -d
+	python -c 'import sys; sys.stdout.write("\xc0\xd7cfoo")'| python cbordecode.py
+	python -c 'import sys; sys.stdout.write("\xc0\xd7cfoo")'| $(VALGRIND) -q ./jsoncbor -d
+	python -c 'import sys; sys.stdout.write("\xc0\xd8\xffcfoo")'| python cbordecode.py
+	python -c 'import sys; sys.stdout.write("\xc0\xd8\xffcfoo")'| $(VALGRIND) -q ./jsoncbor -d
+
 
 .PHONY: enc-primitives
 enc-primitives: jsoncbor

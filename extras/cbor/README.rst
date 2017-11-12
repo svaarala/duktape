@@ -8,7 +8,16 @@ Overview
 C functions to encode/decode values in CBOR format, and a simple command
 line utility to convert between JSON and CBOR.
 
-Basic usage of the conversion tool::
+To integrate CBOR into your application:
+
+* Call ``duk_cbor_encode()`` and ``duk_cbor_decode()`` directly if a C API
+  is enough.
+
+* Call ``duk_cbor_init()`` to register a global ``CBOR`` object with
+  Ecmascript bindings ``CBOR.encode()`` and ``CBOR.decode()``, roughly
+  matching https://github.com/paroga/cbor-js.
+
+Basic usage of the ``jsoncbor`` conversion tool::
 
     $ make jsoncbor
     [...]
@@ -48,8 +57,6 @@ Future work
 - Decode test cases, also for cases we don't produce.
 - https://datatracker.ietf.org/doc/draft-jroatch-cbor-tags/?include_text=1
   could be used for typed arrays.
-- Half-float encoding and decoding.
-- Single precision encoding when no precision lost.
 - 64-bit integer encoding.
 - Better 64-bit integer decoding (workaround for non-64-bit targets).
 - Objects with non-string keys, could be represented as a Map.
