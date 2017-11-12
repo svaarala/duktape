@@ -137,6 +137,7 @@ def create_dist_directories(dist):
     mkdir(os.path.join(dist, 'extras', 'module-duktape'))
     mkdir(os.path.join(dist, 'extras', 'module-node'))
     mkdir(os.path.join(dist, 'extras', 'alloc-pool'))
+    mkdir(os.path.join(dist, 'extras', 'cbor'))
     mkdir(os.path.join(dist, 'polyfills'))
     #mkdir(os.path.join(dist, 'doc'))  # Empty, so omit
     mkdir(os.path.join(dist, 'licenses'))
@@ -705,6 +706,16 @@ def main():
         'Makefile',
         'test.c'
     ], os.path.join('extras', 'alloc-pool'), os.path.join(dist, 'extras', 'alloc-pool'))
+
+    copy_files([
+        'README.rst',
+        'cbordecode.py',
+        'duk_cbor.c',
+        'duk_cbor.h',
+        'jsoncbor.c',
+        'run_testvectors.js',
+        'Makefile'
+    ], os.path.join('extras', 'cbor'), os.path.join(dist, 'extras', 'cbor'))
 
     copy_files([
         'Makefile.cmdline',

@@ -3218,6 +3218,8 @@ Planned
 * Add a duk_uint64_t to duk_hbuffer_fixed forced alignment union trick just
   in case double and uint64_t alignment requirements differ (GH-1799)
 
+* Add a CBOR encoder/decoder as an extra (GH-1781, GH-1800, GH-1801)
+
 * Fix debugger StepOver behavior when a tailcall happens in a nested
   function (not the function where stepping started from) (GH-1786, GH-1787)
 
