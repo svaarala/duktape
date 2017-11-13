@@ -5020,40 +5020,7 @@ DUK_LOCAL DUK_NOINLINE DUK_HOT void duk__js_execute_bytecode_inner(duk_hthread *
 
 #if defined(DUK_USE_ES6)
 		case DUK_OP_NEWTARGET: {
-			/* https://www.ecma-international.org/ecma-262/6.0/#sec-meta-properties-runtime-semantics-evaluation
-			 * https://www.ecma-international.org/ecma-262/6.0/#sec-getnewtarget
-			 *
-			 * No newTarget support now, so as a first approximation
-			 * use the resolved (non-bound) target function.
-			 */
-			/* XXX: C API: push_new_target()? */
-			duk_activation *act;
-
-			act = thr->callstack_curr;
-			DUK_ASSERT(act != NULL);
-
-			/* Check CONSTRUCT flag from current function, or if running
-			 * direct eval, from a non-direct-eval parent (with possibly
-			 * more than one nested direct eval).  An alternative to this
-			 * would be to store [[NewTarget]] as a hidden symbol of the
-			 * lexical scope, and then just look up that variable.
-			 */
-			for (;;) {
-				if (act == NULL) {
-					duk_push_undefined(thr);
-					break;
-				}
-				if (act->flags & DUK_ACT_FLAG_CONSTRUCT) {
-					duk_push_tval(thr, &act->tv_func);
-					break;
-				} else if (act->flags & DUK_ACT_FLAG_DIRECT_EVAL) {
-					act = act->parent;
-				} else {
-					duk_push_undefined(thr);
-					break;
-				}
-			}
-
+			duk_push_new_target(thr);
 			DUK__REPLACE_TOP_BC_BREAK();
 		}
 #endif  /* DUK_USE_ES6 */

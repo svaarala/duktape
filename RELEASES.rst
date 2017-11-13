@@ -3190,6 +3190,11 @@ Planned
 2.3.0 (XXXX-XX-XX)
 ------------------
 
+* Add duk_push_new_target() to allow C code to access new.target; at present
+  this is for completeness because without actual class support it's only
+  useful to detect constructor calls which can already be done using
+  duk_is_constructor_call() (GH-1745)
+
 * ES2015 Number constructor properties: EPSILON, MIN_SAFE_INTEGER,
   MAX_SAFE_INTEGER, isFinite(), isInteger(), isNaN(), isSafeInteger(),
   parseInt(), parseFloat() (GH-1756, GH-1761)

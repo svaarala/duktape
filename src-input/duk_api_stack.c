@@ -4452,6 +4452,46 @@ DUK_INTERNAL duk_tval *duk_get_borrowed_this_tval(duk_hthread *thr) {
 	return thr->valstack_bottom - 1;
 }
 
+DUK_EXTERNAL void duk_push_new_target(duk_hthread *thr) {
+	duk_activation *act;
+
+	DUK_ASSERT_API_ENTRY(thr);
+
+	/* https://www.ecma-international.org/ecma-262/6.0/#sec-meta-properties-runtime-semantics-evaluation
+	 * https://www.ecma-international.org/ecma-262/6.0/#sec-getnewtarget
+	 *
+	 * No newTarget support now, so as a first approximation
+	 * use the resolved (non-bound) target function.
+	 *
+	 * Check CONSTRUCT flag from current function, or if running
+	 * direct eval, from a non-direct-eval parent (with possibly
+	 * more than one nested direct eval).  An alternative to this
+	 * would be to store [[NewTarget]] as a hidden symbol of the
+	 * lexical scope, and then just look up that variable.
+	 *
+	 * Calls from the application will either be for an empty
+	 * call stack, or a Duktape/C function as the top activation.
+	 */
+
+	act = thr->callstack_curr;
+	for (;;) {
+		if (act == NULL) {
+			break;
+		}
+
+		if (act->flags & DUK_ACT_FLAG_CONSTRUCT) {
+			duk_push_tval(thr, &act->tv_func);
+			return;
+		} else if (act->flags & DUK_ACT_FLAG_DIRECT_EVAL) {
+			act = act->parent;
+		} else {
+			break;
+		}
+	}
+
+	duk_push_undefined(thr);
+}
+
 DUK_EXTERNAL void duk_push_current_function(duk_hthread *thr) {
 	duk_activation *act;
 
