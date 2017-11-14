@@ -31,27 +31,27 @@
 # A few commands which may need to be edited.  NodeJS is sometimes found
 # as 'nodejs', sometimes as 'node'; sometimes 'node' is unrelated to NodeJS
 # so check 'nodejs' first.
-GIT:=$(shell command -v git 2>/dev/null)
-NODE:=$(shell { command -v nodejs || command -v node; } 2>/dev/null)
-WGET:=$(shell command -v wget 2>/dev/null)
-JAVA:=$(shell command -v java 2>/dev/null)
-VALGRIND:=$(shell command -v valgrind 2>/dev/null)
-PYTHON:=$(shell { command -v python2 || command -v python; } 2>/dev/null)
+GIT := $(shell command -v git 2>/dev/null)
+NODE := $(shell { command -v nodejs || command -v node; } 2>/dev/null)
+WGET := $(shell command -v wget 2>/dev/null)
+JAVA := $(shell command -v java 2>/dev/null)
+VALGRIND := $(shell command -v valgrind 2>/dev/null)
+PYTHON := $(shell { command -v python2 || command -v python; } 2>/dev/null)
 
 # Scrape version from the public header; convert from e.g. 10203 -> '1.2.3'
-DUK_VERSION:=$(shell cat src-input/duktape.h.in | grep 'define ' | grep DUK_VERSION | tr -s ' ' ' ' | cut -d ' ' -f 3 | tr -d 'L')
-DUK_MAJOR:=$(shell echo "$(DUK_VERSION) / 10000" | bc)
-DUK_MINOR:=$(shell echo "$(DUK_VERSION) % 10000 / 100" | bc)
-DUK_PATCH:=$(shell echo "$(DUK_VERSION) % 100" | bc)
-DUK_VERSION_FORMATTED:=$(DUK_MAJOR).$(DUK_MINOR).$(DUK_PATCH)
-GIT_BRANCH:=$(shell git rev-parse --abbrev-ref HEAD)
-GIT_DESCRIBE:=$(shell git describe --always --dirty)
+DUK_VERSION := $(shell cat src-input/duktape.h.in | grep 'define ' | grep DUK_VERSION | tr -s ' ' ' ' | cut -d ' ' -f 3 | tr -d 'L')
+DUK_MAJOR := $(shell echo "$(DUK_VERSION) / 10000" | bc)
+DUK_MINOR := $(shell echo "$(DUK_VERSION) % 10000 / 100" | bc)
+DUK_PATCH := $(shell echo "$(DUK_VERSION) % 100" | bc)
+DUK_VERSION_FORMATTED := $(DUK_MAJOR).$(DUK_MINOR).$(DUK_PATCH)
+GIT_BRANCH := $(shell git rev-parse --abbrev-ref HEAD)
+GIT_DESCRIBE := $(shell git describe --always --dirty)
 ifeq ($(GIT_BRANCH),master)
-GIT_INFO:=$(GIT_DESCRIBE)
+GIT_INFO := $(GIT_DESCRIBE)
 else
-GIT_INFO:=$(GIT_DESCRIBE)-$(GIT_BRANCH)
+GIT_INFO := $(GIT_DESCRIBE)-$(GIT_BRANCH)
 endif
-BUILD_DATETIME:=$(shell date +%Y%m%d%H%M%S)
+BUILD_DATETIME := $(shell date +%Y%m%d%H%M%S)
 
 # Source lists.
 DUKTAPE_CMDLINE_SOURCES = \
@@ -76,33 +76,33 @@ LINENOISE_SOURCES = linenoise/linenoise.c
 endif
 
 # Configure.py options for a few configuration profiles needed.
-CONFIGOPTS_NONDEBUG=--option-file util/makeduk_base.yaml
-CONFIGOPTS_NONDEBUG_SCANBUILD=--option-file util/makeduk_base.yaml --option-file util/makeduk_scanbuild.yaml
-CONFIGOPTS_NONDEBUG_PERF=--option-file config/examples/performance_sensitive.yaml
-CONFIGOPTS_NONDEBUG_SIZE=--option-file config/examples/low_memory.yaml
-CONFIGOPTS_NONDEBUG_ROM=--rom-support --rom-auto-lightfunc --option-file util/makeduk_base.yaml -DDUK_USE_ROM_STRINGS -DDUK_USE_ROM_OBJECTS -DDUK_USE_ROM_GLOBAL_INHERIT -UDUK_USE_HSTRING_ARRIDX
-CONFIGOPTS_NONDEBUG_DUKLOW=--option-file config/examples/low_memory.yaml --option-file util/makeduk_duklow.yaml --fixup-file util/makeduk_duklow_fixup.h
-CONFIGOPTS_DEBUG_DUKLOW=$(CONFIGOPTS_NONDEBUG_DUKLOW) -DDUK_USE_ASSERTIONS -DDUK_USE_SELF_TESTS
-CONFIGOPTS_NONDEBUG_DUKLOW_ROM=--rom-support --rom-auto-lightfunc --option-file config/examples/low_memory.yaml --option-file util/makeduk_duklow.yaml --fixup-file util/makeduk_duklow_fixup.h --builtin-file util/example_user_builtins1.yaml --builtin-file util/example_user_builtins2.yaml -DDUK_USE_ROM_STRINGS -DDUK_USE_ROM_OBJECTS -DDUK_USE_ROM_GLOBAL_INHERIT -UDUK_USE_HSTRING_ARRIDX -UDUK_USE_DEBUG
-CONFIGOPTS_DEBUG_DUKLOW_ROM=$(CONFIGOPTS_NONDEBUG_DUKLOW_ROM) -DDUK_USE_ASSERTIONS -DDUK_USE_SELF_TESTS
-CONFIGOPTS_NONDEBUG_DUKLOW_NOREFC=--option-file config/examples/low_memory.yaml --option-file util/makeduk_duklow.yaml --fixup-file util/makeduk_duklow_fixup.h -UDUK_USE_REFERENCE_COUNTING -UDUK_USE_DOUBLE_LINKED_HEAP
-CONFIGOPTS_DEBUG_DUKLOW_NOREFC=$(CONFIGOPTS_NONDEBUG_DUKLOW_NOREFC) -DDUK_USE_ASSERTIONS -DDUK_USE_SELF_TESTS
-CONFIGOPTS_DEBUG=--option-file util/makeduk_base.yaml --option-file util/makeduk_debug.yaml
-CONFIGOPTS_DEBUG_SCANBUILD=--option-file util/makeduk_base.yaml --option-file util/makeduk_debug.yaml --option-file util/makeduk_scanbuild.yaml
-CONFIGOPTS_DEBUG_ROM=--rom-support --rom-auto-lightfunc --option-file util/makeduk_base.yaml --option-file util/makeduk_debug.yaml -DDUK_USE_ROM_STRINGS -DDUK_USE_ROM_OBJECTS -DDUK_USE_ROM_GLOBAL_INHERIT -UDUK_USE_HSTRING_ARRIDX
-CONFIGOPTS_EMDUK=-UDUK_USE_FASTINT -UDUK_USE_PACKED_TVAL
-CONFIGOPTS_DUKWEB=--option-file util/dukweb_base.yaml --fixup-file util/dukweb_fixup.h
+CONFIGOPTS_NONDEBUG = --option-file util/makeduk_base.yaml
+CONFIGOPTS_NONDEBUG_SCANBUILD = --option-file util/makeduk_base.yaml --option-file util/makeduk_scanbuild.yaml
+CONFIGOPTS_NONDEBUG_PERF = --option-file config/examples/performance_sensitive.yaml
+CONFIGOPTS_NONDEBUG_SIZE = --option-file config/examples/low_memory.yaml
+CONFIGOPTS_NONDEBUG_ROM = --rom-support --rom-auto-lightfunc --option-file util/makeduk_base.yaml -DDUK_USE_ROM_STRINGS -DDUK_USE_ROM_OBJECTS -DDUK_USE_ROM_GLOBAL_INHERIT -UDUK_USE_HSTRING_ARRIDX
+CONFIGOPTS_NONDEBUG_DUKLOW = --option-file config/examples/low_memory.yaml --option-file util/makeduk_duklow.yaml --fixup-file util/makeduk_duklow_fixup.h
+CONFIGOPTS_DEBUG_DUKLOW = $(CONFIGOPTS_NONDEBUG_DUKLOW) -DDUK_USE_ASSERTIONS -DDUK_USE_SELF_TESTS
+CONFIGOPTS_NONDEBUG_DUKLOW_ROM = --rom-support --rom-auto-lightfunc --option-file config/examples/low_memory.yaml --option-file util/makeduk_duklow.yaml --fixup-file util/makeduk_duklow_fixup.h --builtin-file util/example_user_builtins1.yaml --builtin-file util/example_user_builtins2.yaml -DDUK_USE_ROM_STRINGS -DDUK_USE_ROM_OBJECTS -DDUK_USE_ROM_GLOBAL_INHERIT -UDUK_USE_HSTRING_ARRIDX -UDUK_USE_DEBUG
+CONFIGOPTS_DEBUG_DUKLOW_ROM = $(CONFIGOPTS_NONDEBUG_DUKLOW_ROM) -DDUK_USE_ASSERTIONS -DDUK_USE_SELF_TESTS
+CONFIGOPTS_NONDEBUG_DUKLOW_NOREFC = --option-file config/examples/low_memory.yaml --option-file util/makeduk_duklow.yaml --fixup-file util/makeduk_duklow_fixup.h -UDUK_USE_REFERENCE_COUNTING -UDUK_USE_DOUBLE_LINKED_HEAP
+CONFIGOPTS_DEBUG_DUKLOW_NOREFC = $(CONFIGOPTS_NONDEBUG_DUKLOW_NOREFC) -DDUK_USE_ASSERTIONS -DDUK_USE_SELF_TESTS
+CONFIGOPTS_DEBUG = --option-file util/makeduk_base.yaml --option-file util/makeduk_debug.yaml
+CONFIGOPTS_DEBUG_SCANBUILD = --option-file util/makeduk_base.yaml --option-file util/makeduk_debug.yaml --option-file util/makeduk_scanbuild.yaml
+CONFIGOPTS_DEBUG_ROM = --rom-support --rom-auto-lightfunc --option-file util/makeduk_base.yaml --option-file util/makeduk_debug.yaml -DDUK_USE_ROM_STRINGS -DDUK_USE_ROM_OBJECTS -DDUK_USE_ROM_GLOBAL_INHERIT -UDUK_USE_HSTRING_ARRIDX
+CONFIGOPTS_EMDUK = -UDUK_USE_FASTINT -UDUK_USE_PACKED_TVAL
+CONFIGOPTS_DUKWEB = --option-file util/dukweb_base.yaml --fixup-file util/dukweb_fixup.h
 
 # Profile guided optimization test set.
-PGO_TEST_SET=\
+PGO_TEST_SET = \
 	tests/ecmascript/test-dev-mandel2-func.js \
 	tests/ecmascript/test-dev-totp.js \
 	tests/perf/test-fib.js \
 	tests/ecmascript/test-regexp-ipv6-regexp.js
 
 # Compiler setup for Linux.
-CC	= gcc
-GXX	= g++
+CC = gcc
+GXX = g++
 
 CCOPTS_SHARED =
 CCOPTS_SHARED += -DDUK_CMDLINE_PRINTALERT_SUPPORT
@@ -203,18 +203,18 @@ endif
 #
 # Reducing the TOTAL_MEMORY and TOTAL_STACK values is useful if you run
 # Duktape cmdline with resource limits (i.e. "duk -r test.js").
-#EMCCOPTS=-s TOTAL_MEMORY=2097152 -s TOTAL_STACK=524288 --memory-init-file 0
-EMCCOPTS=-O2 -std=c99 -Wall --memory-init-file 0
-EMCCOPTS_DUKVM=-O2 -std=c99 -Wall --memory-init-file 0 -DEMSCRIPTEN
-EMCCOPTS_DUKWEB_EXPORT=-s EXPORTED_FUNCTIONS='["_dukweb_is_open", "_dukweb_open","_dukweb_close","_dukweb_eval"]'
-EMDUKOPTS=-s TOTAL_MEMORY=268435456 -DDUK_CMDLINE_PRINTALERT_SUPPORT
-EMDUKOPTS+=-DEMSCRIPTEN  # enable stdin workaround in duk_cmdline.c
+#EMCCOPTS = -s TOTAL_MEMORY=2097152 -s TOTAL_STACK=524288 --memory-init-file 0
+EMCCOPTS = -O2 -std=c99 -Wall --memory-init-file 0
+EMCCOPTS_DUKVM = -O2 -std=c99 -Wall --memory-init-file 0 -DEMSCRIPTEN
+EMCCOPTS_DUKWEB_EXPORT = -s EXPORTED_FUNCTIONS='["_dukweb_is_open", "_dukweb_open","_dukweb_close","_dukweb_eval"]'
+EMDUKOPTS = -s TOTAL_MEMORY=268435456 -DDUK_CMDLINE_PRINTALERT_SUPPORT
+EMDUKOPTS += -DEMSCRIPTEN  # enable stdin workaround in duk_cmdline.c
 
 # Mandelbrot test, base-64 encoded.
-MAND_BASE64=dyA9IDgwOyBoID0gNDA7IGl0ZXIgPSAxMDA7IGZvciAoaSA9IDA7IGkgLSBoOyBpICs9IDEpIHsgeTAgPSAoaSAvIGgpICogNC4wIC0gMi4wOyByZXMgPSBbXTsgZm9yIChqID0gMDsgaiAtIHc7IGogKz0gMSkgeyB4MCA9IChqIC8gdykgKiA0LjAgLSAyLjA7IHh4ID0gMDsgeXkgPSAwOyBjID0gIiMiOyBmb3IgKGsgPSAwOyBrIC0gaXRlcjsgayArPSAxKSB7IHh4MiA9IHh4Knh4OyB5eTIgPSB5eSp5eTsgaWYgKE1hdGgubWF4KDAsIDQuMCAtICh4eDIgKyB5eTIpKSkgeyB5eSA9IDIqeHgqeXkgKyB5MDsgeHggPSB4eDIgLSB5eTIgKyB4MDsgfSBlbHNlIHsgYyA9ICIuIjsgYnJlYWs7IH0gfSByZXNbcmVzLmxlbmd0aF0gPSBjOyB9IHByaW50KHJlcy5qb2luKCIiKSk7IH0K
+MAND_BASE64 = dyA9IDgwOyBoID0gNDA7IGl0ZXIgPSAxMDA7IGZvciAoaSA9IDA7IGkgLSBoOyBpICs9IDEpIHsgeTAgPSAoaSAvIGgpICogNC4wIC0gMi4wOyByZXMgPSBbXTsgZm9yIChqID0gMDsgaiAtIHc7IGogKz0gMSkgeyB4MCA9IChqIC8gdykgKiA0LjAgLSAyLjA7IHh4ID0gMDsgeXkgPSAwOyBjID0gIiMiOyBmb3IgKGsgPSAwOyBrIC0gaXRlcjsgayArPSAxKSB7IHh4MiA9IHh4Knh4OyB5eTIgPSB5eSp5eTsgaWYgKE1hdGgubWF4KDAsIDQuMCAtICh4eDIgKyB5eTIpKSkgeyB5eSA9IDIqeHgqeXkgKyB5MDsgeHggPSB4eDIgLSB5eTIgKyB4MDsgfSBlbHNlIHsgYyA9ICIuIjsgYnJlYWs7IH0gfSByZXNbcmVzLmxlbmd0aF0gPSBjOyB9IHByaW50KHJlcy5qb2luKCIiKSk7IH0K
 
 # Options for runtests.js.
-RUNTESTSOPTS=--prep-test-path util/prep_test.py --minify-uglifyjs2 UglifyJS2/bin/uglifyjs --util-include-path tests/ecmascript --known-issues doc/testcase-known-issues.yaml
+RUNTESTSOPTS = --prep-test-path util/prep_test.py --minify-uglifyjs2 UglifyJS2/bin/uglifyjs --util-include-path tests/ecmascript --known-issues doc/testcase-known-issues.yaml
 
 # Compile 'duk' only by default
 .PHONY:	all
