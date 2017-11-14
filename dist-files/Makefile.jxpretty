@@ -2,7 +2,7 @@
 #  Example Makefile for building the jxpretty example
 #
 
-CC	= gcc
+CC = gcc
 
 jxpretty:
 	$(CC) -o $@ -std=c99 -Wall -Wextra -O2 -Isrc \

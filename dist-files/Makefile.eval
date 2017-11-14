@@ -2,7 +2,7 @@
 #  Example Makefile for building the eval example
 #
 
-CC	= gcc
+CC = gcc
 
 eval:
 	$(CC) -o $@ -std=c99 -O2 -Wall -Wextra -Isrc/ \

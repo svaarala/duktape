@@ -1,4 +1,4 @@
-CC	= gcc
+CC = gcc
 
 codepage:
 	$(CC) -o $@ -std=c99 -O2 -Wall -Wextra -Isrc/ \
