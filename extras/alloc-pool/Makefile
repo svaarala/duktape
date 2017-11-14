@@ -1,8 +1,8 @@
 # For manual testing; say 'make' in extras/alloc-pool and run ./test.
 
-CC=gcc
-DEFS=
-#DEFS+='-DDUK_ALLOC_POOL_DEBUG'
+CC = gcc
+DEFS =
+#DEFS += '-DDUK_ALLOC_POOL_DEBUG'
 
 .PHONY: test
 test:

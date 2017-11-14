@@ -1,6 +1,6 @@
 # For manual testing; say 'make' in extras/print-alert and run ./test.
 
-CC	= gcc
+CC = gcc
 
 .PHONY: test
 test:
