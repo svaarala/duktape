@@ -1,10 +1,12 @@
 # For manual testing; say 'make' in extras/module-node and run ./test.
 
+CC	= gcc
+
 .PHONY: test
 test:
 	-rm -rf ./prep
 	python2 ../../tools/configure.py --quiet --output-directory ./prep
-	gcc -std=c99 -Wall -Wextra -o $@ -I./prep -I. ./prep/duktape.c duk_module_node.c test.c -lm
+	$(CC) -std=c99 -Wall -Wextra -o $@ -I./prep -I. ./prep/duktape.c duk_module_node.c test.c -lm
 	@printf '\n'
 	./test 'assert(typeof require("pig") === "string", "basic require()");'
 	./test 'assert(require("cow").indexOf("pig") !== -1, "nested require()");'

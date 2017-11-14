@@ -1,6 +1,7 @@
 # For manual testing; say 'make' in extras/cbor.
 
 VALGRIND=valgrind
+CC=gcc
 CCOPTS=-std=c99 -Wall -Wextra -O2
 #CCOPTS+=-fsanitize=undefined
 
@@ -21,7 +22,7 @@ jsoncbor: jsoncbor.c duk_cbor.c duk_cbor.h
 		-DDUK_USE_JSON_EATWHITE_FASTPATH \
 		-DDUK_USE_JSON_QUOTESTRING_FASTPATH \
 		-DDUK_USE_JSON_STRINGIFY_FASTPATH
-	gcc $(CCOPTS) -o $@ -I./prep -I. ./prep/duktape.c duk_cbor.c jsoncbor.c -lm
+	$(CC) $(CCOPTS) -o $@ -I./prep -I. ./prep/duktape.c duk_cbor.c jsoncbor.c -lm
 
 appendix_a.json:
 	wget -O $@ https://raw.githubusercontent.com/cbor/test-vectors/master/appendix_a.json
