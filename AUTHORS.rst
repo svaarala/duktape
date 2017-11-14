@@ -48,6 +48,7 @@ and agreed to irrevocably license their contributions under the Duktape
 * \J. McC. (https://github.com/jmhmccr)
 * Jakub Nowakowski (https://github.com/jimvonmoon)
 * Tommy Nguyen (https://github.com/tn0502)
+* Fabrice Fontaine (https://github.com/ffontaine)
 
 Other contributions
 ===================

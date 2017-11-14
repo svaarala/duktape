@@ -36,6 +36,8 @@ INSTALL_PREFIX=/usr/local
 DUKTAPE_SRCDIR=./src
 #DUKTAPE_SRCDIR=./src-noline
 
+CC=gcc
+
 .PHONY: all
 all: libduktape.so.$(REAL_VERSION) libduktaped.so.$(REAL_VERSION)
 
@@ -44,11 +46,11 @@ all: libduktape.so.$(REAL_VERSION) libduktaped.so.$(REAL_VERSION)
 # to $INSTALL_PREFIX/include on installation.
 
 libduktape.so.$(REAL_VERSION):
-	gcc -shared -fPIC -Wall -Wextra -Os -Wl,-soname,libduktape.so.$(SONAME_VERSION) \
+	$(CC) -shared -fPIC -Wall -Wextra -Os -Wl,-soname,libduktape.so.$(SONAME_VERSION) \
 		-o $@ $(DUKTAPE_SRCDIR)/duktape.c
 
 libduktaped.so.$(REAL_VERSION):
-	gcc -shared -fPIC -g -Wall -Wextra -Os -Wl,-soname,libduktaped.so.$(SONAME_VERSION) \
+	$(CC) -shared -fPIC -g -Wall -Wextra -Os -Wl,-soname,libduktaped.so.$(SONAME_VERSION) \
 		-o $@ $(DUKTAPE_SRCDIR)/duktape.c
 
 # Symlinks depend on platform conventions.
@@ -68,4 +70,4 @@ install: libduktape.so.$(REAL_VERSION) libduktaped.so.$(REAL_VERSION)
 #CCOPTS=-I/usr/local/include -L/usr/local/lib
 CCOPTS=-I./examples/cmdline
 duk:
-	gcc $(CCOPTS) -Wall -Wextra -Os -o $@ ./examples/cmdline/duk_cmdline.c -lduktape -lm
+	$(CC) $(CCOPTS) -Wall -Wextra -Os -o $@ ./examples/cmdline/duk_cmdline.c -lduktape -lm
