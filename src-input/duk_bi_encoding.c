@@ -350,7 +350,7 @@ DUK_INTERNAL duk_ret_t duk_bi_textencoder_constructor(duk_hthread *thr) {
 }
 
 DUK_INTERNAL duk_ret_t duk_bi_textencoder_prototype_encoding_getter(duk_hthread *thr) {
-	duk_push_string(thr, "utf-8");
+	duk_push_literal(thr, "utf-8");
 	return 1;
 }
 
@@ -492,7 +492,7 @@ DUK_INTERNAL duk_ret_t duk_bi_textdecoder_prototype_shared_getter(duk_hthread *t
 		/* Encoding is now fixed, so _Context lookup is only needed to
 		 * validate the 'this' binding (TypeError if not TextDecoder-like).
 		 */
-		duk_push_string(thr, "utf-8");
+		duk_push_literal(thr, "utf-8");
 		break;
 	case 1:
 		duk_push_boolean(thr, dec_ctx->fatal);

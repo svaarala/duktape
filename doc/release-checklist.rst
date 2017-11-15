@@ -32,6 +32,9 @@ Checklist for ordinary releases
 
   - Verify by running Duktape cmdline and evaluating ``Duktape.version``
 
+* Check for API calls and config options tagged experimental to see if they
+  should lose their experimental status
+
 * Check dist-files/README.rst
 
   - Update release specific release notes link

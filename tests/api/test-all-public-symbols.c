@@ -237,6 +237,7 @@ static duk_ret_t test_func(duk_context *ctx, void *udata) {
 	(void) duk_push_heap_stash(ctx);
 	(void) duk_push_heapptr(ctx, NULL);
 	(void) duk_push_int(ctx, 0);
+	(void) duk_push_literal(ctx, "dummy");
 	(void) duk_push_lstring(ctx, "dummy", 0);
 	(void) duk_push_nan(ctx);
 	(void) duk_push_null(ctx);

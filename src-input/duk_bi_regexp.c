@@ -119,7 +119,7 @@ DUK_INTERNAL duk_ret_t duk_bi_regexp_prototype_tostring(duk_hthread *thr) {
 	/* This must be generic in ES2015 and later. */
 	DUK_ASSERT_TOP(thr, 0);
 	duk_push_this(thr);
-	duk_push_string(thr, "/");
+	duk_push_literal(thr, "/");
 	duk_get_prop_stridx(thr, 0, DUK_STRIDX_SOURCE);
 	duk_dup_m2(thr);  /* another "/" */
 	duk_get_prop_stridx(thr, 0, DUK_STRIDX_FLAGS);
@@ -183,7 +183,7 @@ DUK_INTERNAL duk_ret_t duk_bi_regexp_prototype_shared_getter(duk_hthread *thr) {
 		if (magic != 16 /* .source */) {
 			return 0;
 		}
-		duk_push_string(thr, "(?:)");  /* .source handled by switch-case */
+		duk_push_literal(thr, "(?:)");  /* .source handled by switch-case */
 		re_flags = 0;
 	} else {
 		DUK_DCERROR_TYPE_INVALID_ARGS(thr);

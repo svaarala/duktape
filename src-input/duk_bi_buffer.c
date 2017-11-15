@@ -1191,7 +1191,7 @@ DUK_INTERNAL duk_ret_t duk_bi_nodejs_buffer_tostring(duk_hthread *thr) {
 	h_this = duk__get_bufobj_this(thr);
 	if (h_this == NULL) {
 		/* XXX: happens e.g. when evaluating: String(Buffer.prototype). */
-		duk_push_string(thr, "[object Object]");
+		duk_push_literal(thr, "[object Object]");
 		return 1;
 	}
 	DUK_ASSERT_HBUFOBJ_VALID(h_this);

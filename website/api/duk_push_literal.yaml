@@ -1,0 +1,57 @@
+name: duk_push_literal
+
+proto: |
+  const char *duk_push_literal(duk_context *ctx, const char *str);
+
+stack: |
+  [ ... ] -> [ ... str! ]
+
+summary: |
+  <p>Push a C literal into the stack and return a pointer to the interned
+  string data area (which may or may not be the same as the argument literal).
+  The argument <code>str</code must be a non-NULL C literal that can be
+  operated on using e.g. <code>sizeof(str)</code>.  The data contents of the
+  literal must be immutable, and the string must not contain NUL characters.
+  The <code>str</code> argument may be evaluated multiple times by the API
+  macro.  Finally, no runtime NULL pointer check is made for the
+  <code>str</code> argument so passing in a NULL causes memory unsafe
+  behavior.</p>
+
+  <p>This call is conceptually equivalent to duk_push_(l)string(), and
+  only needs to be used if the minor differences in footprint or speed
+  matter.  The properties of immutable literals allows minor optimizations
+  in Duktape internals:</p>
+  <ul>
+  <li>The length of the string can be computed at compile time using
+      <code>sizeof(str) - 1</code> at the call site.</li>
+  <li>Because the string data is assumed to be immutable, the internal
+      string representation could just point to the data instead of
+      making a copy.  (This optimization is not done as of Duktape 2.3.)</li>
+  <li>Because the string address is fixed at runtime, it could be used
+      for speeding up a string table lookup for the literal.  While common,
+      there's no assumption that strings are deduplicated, so there may be
+      multiple addresses with the same literal.  (This optimization is not
+      done as of Duktape 2.3.)</li>
+  </ul>
+
+  <p>If input string might contain internal NUL characters, use
+  <code><a href="#duk_push_lstring">duk_push_lstring()</a></code> instead.
+  For <code>duk_push_literal()</code> handling of embedded NULs depends
+  on config options and calling code should never rely on the behavior.</p>
+
+example: |
+  /* Basic case. */
+  duk_push_literal(ctx, "foo");
+
+  /* Argument may involve compile time concatenation and parentheses. */
+  duk_push_literal(ctx, ("foo" "bar"));
+
+  /* Argument may also be e.g. DUK_HIDDEN_SYMBOL() which produces a literal. */
+  duk_push_literal(ctx, DUK_HIDDEN_SYMBOL("mySymbol"));
+
+tags:
+  - stack
+  - string
+  - experimental
+
+introduced: 2.3.0
