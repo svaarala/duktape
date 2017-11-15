@@ -56,6 +56,7 @@ libduktaped.so.$(REAL_VERSION):
 # Symlinks depend on platform conventions.
 .PHONY: install
 install: libduktape.so.$(REAL_VERSION) libduktaped.so.$(REAL_VERSION)
+	mkdir -p $(INSTALL_PREFIX)/lib/
 	cp $+ $(INSTALL_PREFIX)/lib/
 	rm -f $(INSTALL_PREFIX)/lib/libduktape.so $(INSTALL_PREFIX)/lib/libduktape.so.$(SONAME_VERSION)
 	ln -s libduktape.so.$(REAL_VERSION) $(INSTALL_PREFIX)/lib/libduktape.so
@@ -63,6 +64,7 @@ install: libduktape.so.$(REAL_VERSION) libduktaped.so.$(REAL_VERSION)
 	rm -f $(INSTALL_PREFIX)/lib/libduktaped.so $(INSTALL_PREFIX)/lib/libduktaped.so.$(SONAME_VERSION)
 	ln -s libduktaped.so.$(REAL_VERSION) $(INSTALL_PREFIX)/lib/libduktaped.so
 	ln -s libduktaped.so.$(REAL_VERSION) $(INSTALL_PREFIX)/lib/libduktaped.so.$(SONAME_VERSION)
+	mkdir -p $(INSTALL_PREFIX)/include/
 	cp $(DUKTAPE_SRCDIR)/duktape.h $(DUKTAPE_SRCDIR)/duk_config.h $(INSTALL_PREFIX)/include/
 
 # Note: assumes /usr/local/include/ and /usr/local/lib/ are in include/link
