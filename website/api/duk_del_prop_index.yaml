@@ -26,4 +26,11 @@ example: |
 tags:
   - property
 
+seealso:
+  - duk_del_prop
+  - duk_del_prop_string
+  - duk_del_prop_lstring
+  - duk_del_prop_literal
+  - duk_del_prop_heapptr
+
 introduced: 1.0.0

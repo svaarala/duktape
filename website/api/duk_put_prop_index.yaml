@@ -25,4 +25,11 @@ example: |
 tags:
   - property
 
+seealso:
+  - duk_put_prop
+  - duk_put_prop_string
+  - duk_put_prop_lstring
+  - duk_put_prop_literal
+  - duk_put_prop_heapptr
+
 introduced: 1.0.0

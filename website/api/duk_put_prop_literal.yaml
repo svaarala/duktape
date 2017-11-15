@@ -1,0 +1,32 @@
+name: duk_put_prop_literal
+
+proto: |
+  duk_bool_t duk_put_prop_literal(duk_context *ctx, duk_idx_t obj_idx, const char *key_literal);
+
+stack: |
+  [ ... obj! ... val! ] -> [ ... obj! ... ]
+
+summary: |
+  <p>Like <code><a href="#duk_put_prop">duk_put_prop()</a></code>,
+  but the property name is given as a string literal (see
+  <code><a href="#duk_push_literal">duk_push_literal()</a></code>).</p>
+
+example: |
+  duk_bool_t rc;
+
+  duk_push_string(ctx, "value");
+  rc = duk_put_prop_literal(ctx, -3, "myPropertyName");
+  printf("rc=%d\n", (int) rc);
+
+tags:
+  - property
+  - experimental
+
+seealso:
+  - duk_put_prop
+  - duk_put_prop_index
+  - duk_put_prop_string
+  - duk_put_prop_lstring
+  - duk_put_prop_heapptr
+
+introduced: 2.3.0

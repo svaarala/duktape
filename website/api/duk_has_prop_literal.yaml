@@ -1,0 +1,32 @@
+name: duk_has_prop_literal
+
+proto: |
+  duk_bool_t duk_has_prop_literal(duk_context *ctx, duk_idx_t obj_idx, const char *key_literal);
+
+stack: |
+  [ ... obj! ... ] -> [ ... obj! ... ]
+
+summary: |
+  <p>Like <code><a href="#duk_has_prop">duk_has_prop()</a></code>,
+  but the property name is given as a string literal (see
+  <code><a href="#duk_push_literal">duk_push_literal()</a></code>).</p>
+
+example: |
+  if (duk_has_prop_literal(ctx, -3, "myPropertyKey");
+      printf("obj has 'myPropertyKey'\n");
+  } else {
+      printf("obj does not have 'myPropertyKey'\n");
+  }
+
+tags:
+  - property
+  - experimental
+
+seealso:
+  - duk_has_prop
+  - duk_has_prop_index
+  - duk_has_prop_string
+  - duk_has_prop_lstring
+  - duk_has_prop_heapptr
+
+introduced: 2.3.0

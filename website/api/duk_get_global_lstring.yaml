@@ -19,7 +19,7 @@ tags:
 
 seealso:
   - duk_get_global_string
-  - duk_put_global_string
-  - duk_put_global_lstring
+  - duk_get_global_literal
+  - duk_get_global_heapptr
 
 introduced: 2.0.0

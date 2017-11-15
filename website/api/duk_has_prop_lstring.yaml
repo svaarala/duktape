@@ -21,6 +21,10 @@ tags:
   - property
 
 seealso:
+  - duk_has_prop
+  - duk_has_prop_index
   - duk_has_prop_string
+  - duk_has_prop_literal
+  - duk_has_prop_heapptr
 
 introduced: 2.0.0
