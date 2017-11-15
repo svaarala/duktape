@@ -98,6 +98,16 @@ delete obj.nul<NUL>key -> rc=1
 {"123":"123val","foo":"fooval","bar":"barval","undefined":"undefinedval"}
 final top: 3
 ==> rc=0, result='undefined'
+*** test_delpropliteral_a_safecall (duk_safe_call)
+delete obj.foo -> rc=1
+{"123":"123val","bar":"barval","nul\u0000key":"nulval","undefined":"undefinedval"}
+final top: 3
+==> rc=0, result='undefined'
+*** test_delpropliteral_a (duk_pcall)
+delete obj.foo -> rc=1
+{"123":"123val","bar":"barval","nul\u0000key":"nulval","undefined":"undefinedval"}
+final top: 3
+==> rc=0, result='undefined'
 *** test_delpropheapptr_a_safecall (duk_safe_call)
 delete obj.foo -> rc=1
 delete obj.nonexistent -> rc=1
@@ -546,6 +556,25 @@ static duk_ret_t test_delproplstring_a_safecall(duk_context *ctx, void *udata) {
 	return test_delproplstring_a(ctx);
 }
 
+/* duk_del_prop_literal(), success case */
+static duk_ret_t test_delpropliteral_a(duk_context *ctx) {
+	duk_ret_t rc;
+	prep(ctx);
+
+	rc = duk_del_prop_literal(ctx, 0, "foo");
+	printf("delete obj.foo -> rc=%d\n", (int) rc);
+
+	duk_json_encode(ctx, 0);
+	printf("%s\n", duk_to_string(ctx, 0));
+
+	printf("final top: %ld\n", (long) duk_get_top(ctx));
+	return 0;
+}
+static duk_ret_t test_delpropliteral_a_safecall(duk_context *ctx, void *udata) {
+	(void) udata;
+	return test_delpropliteral_a(ctx);
+}
+
 /* duk_del_prop_heapptr(), success cases */
 static duk_ret_t test_delpropheapptr_a_safecall(duk_context *ctx, void *udata) {
 	duk_ret_t rc;
@@ -688,6 +717,9 @@ void test(duk_context *ctx) {
 
 	TEST_SAFE_CALL(test_delproplstring_a_safecall);
 	TEST_PCALL(test_delproplstring_a);
+
+	TEST_SAFE_CALL(test_delpropliteral_a_safecall);
+	TEST_PCALL(test_delpropliteral_a);
 
 	TEST_SAFE_CALL(test_delpropheapptr_a_safecall);
 	TEST_PCALL(test_delpropheapptr_a);

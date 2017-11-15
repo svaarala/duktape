@@ -50,6 +50,19 @@ final top: 3
 ==> rc=1, result='RangeError: invalid stack index 234'
 *** test_hasproplstring_c (duk_safe_call)
 ==> rc=1, result='RangeError: invalid stack index -2147483648'
+*** test_haspropliteral_a (duk_safe_call)
+obj.foo -> rc=1
+obj.nonexistent -> rc=0
+obj['123'] -> rc=1
+arr.nonexistent -> rc=0
+arr['2'] -> rc=1
+arr.length -> rc=1
+final top: 3
+==> rc=0, result='undefined'
+*** test_haspropliteral_b (duk_safe_call)
+==> rc=1, result='RangeError: invalid stack index 234'
+*** test_haspropliteral_c (duk_safe_call)
+==> rc=1, result='RangeError: invalid stack index -2147483648'
 *** test_haspropheapptr_a (duk_safe_call)
 obj.foo -> rc=1
 obj.nonexistent -> rc=0
@@ -349,6 +362,65 @@ static duk_ret_t test_hasproplstring_c(duk_context *ctx, void *udata) {
 	return 0;
 }
 
+/* duk_has_prop_literal(), success cases */
+static duk_ret_t test_haspropliteral_a(duk_context *ctx, void *udata) {
+	duk_ret_t rc;
+
+	(void) udata;
+
+	prep(ctx);
+
+	rc = duk_has_prop_literal(ctx, 0, "foo");
+	printf("obj.foo -> rc=%d\n", (int) rc);
+
+	rc = duk_has_prop_literal(ctx, 0, "nonexistent");
+	printf("obj.nonexistent -> rc=%d\n", (int) rc);
+
+	rc = duk_has_prop_literal(ctx, 0, "123");
+	printf("obj['123'] -> rc=%d\n", (int) rc);
+
+	rc = duk_has_prop_literal(ctx, 1, "nonexistent");
+	printf("arr.nonexistent -> rc=%d\n", (int) rc);
+
+	rc = duk_has_prop_literal(ctx, 1, "2");
+	printf("arr['2'] -> rc=%d\n", (int) rc);
+
+	rc = duk_has_prop_literal(ctx, 1, "length");
+	printf("arr.length -> rc=%d\n", (int) rc);
+
+	printf("final top: %ld\n", (long) duk_get_top(ctx));
+	return 0;
+}
+
+/* duk_has_prop_literal(), invalid index */
+static duk_ret_t test_haspropliteral_b(duk_context *ctx, void *udata) {
+	duk_ret_t rc;
+
+	(void) udata;
+
+	prep(ctx);
+
+	rc = duk_has_prop_literal(ctx, 234, "foo");
+	printf("obj.foo -> rc=%d\n", (int) rc);
+
+	printf("final top: %ld\n", (long) duk_get_top(ctx));
+	return 0;
+}
+
+/* duk_has_prop_literal(), DUK_INVALID_INDEX */
+static duk_ret_t test_haspropliteral_c(duk_context *ctx, void *udata) {
+	duk_ret_t rc;
+
+	(void) udata;
+
+	prep(ctx);
+
+	rc = duk_has_prop_literal(ctx, DUK_INVALID_INDEX, "foo");
+	printf("obj.foo -> rc=%d\n", (int) rc);
+
+	printf("final top: %ld\n", (long) duk_get_top(ctx));
+	return 0;
+}
 /* duk_has_prop_heapptr(), success cases */
 static duk_ret_t test_haspropheapptr_a(duk_context *ctx, void *udata) {
 	duk_ret_t rc;
@@ -453,6 +525,10 @@ void test(duk_context *ctx) {
 	TEST_SAFE_CALL(test_hasproplstring_a);
 	TEST_SAFE_CALL(test_hasproplstring_b);
 	TEST_SAFE_CALL(test_hasproplstring_c);
+
+	TEST_SAFE_CALL(test_haspropliteral_a);
+	TEST_SAFE_CALL(test_haspropliteral_b);
+	TEST_SAFE_CALL(test_haspropliteral_c);
 
 	TEST_SAFE_CALL(test_haspropheapptr_a);
 	TEST_SAFE_CALL(test_haspropheapptr_b);
