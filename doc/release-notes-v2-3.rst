@@ -18,6 +18,9 @@ Main changes in this release (see RELEASES.rst for full details):
   conceptually similar to the duk_xxx_string() variants, but can take advantage
   of the fact that e.g. string length for a C literal can be determined at
   compile time using sizeof("myProperty") - 1 (the -1 is for NUL termination).
+  Literal strings used by application code are also automatically pinned for
+  the duration of the heap, and a small lookup cache makes mapping a C literal
+  to a heap string object quite fast (almost as fast as using a heapptr).
   For now the calls are experimental.
 
 Upgrading from Duktape 2.2
@@ -27,6 +30,22 @@ No action (other than recompiling) should be needed for most users to upgrade
 from Duktape v2.2.x.  Note the following:
 
 * TBD.
+
+* If performance matters, you might consider using duk_xxx_literal() variants
+  in place of duk_xxx_string() variants when the argument is a C literal.
+  With literal pinning and the literal lookup cache this improves property
+  access performance around 20% with minimal application changes.  Make sure
+  that the arguments are C literals, e.g. duk_get_prop_literal(ctx, "mykey")
+  and not pointers to strings like duk_get_prop_literal(ctx, strptr).
+
+* If you're using the duk_xxx_heapptr() API call variants, you might consider
+  switching to the duk_xxx_literal() variants.  They are less error prone, and
+  with literal pinning and the literal lookup cache almost as fast as using a
+  borrowed heap pointer.
+
+* If you're working with a low memory target or any other target where memory
+  usage matters, you may want to ensure UDK_USE_LITCACHE_SIZE is undefined in
+  configure.py configuration (this is included in low_memory.yaml base config).
 
 * If you're working with a low memory target or any other target where memory
   usage matters, you may want to force DUK_USE_ALIGN_BY to a lower value
