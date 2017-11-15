@@ -559,11 +559,10 @@ DUK_EXTERNAL_DECL const char *duk_push_vsprintf(duk_context *ctx, const char *fm
  * behavior will then depend on config options.
  */
 #if defined(DUK_USE_PREFER_SIZE)
-#define duk_push_literal(ctx,cstring) \
-	duk_push_string((ctx), (cstring))
+#define duk_push_literal(ctx,cstring)  duk_push_string((ctx), (cstring))
 #else
-#define duk_push_literal(ctx,cstring) \
-	duk_push_lstring((ctx), (cstring), sizeof((cstring)) - 1)
+DUK_EXTERNAL_DECL const char *duk_push_literal_raw(duk_context *ctx, const char *str, duk_size_t len);
+#define duk_push_literal(ctx,cstring)  duk_push_literal_raw((ctx), (cstring), sizeof((cstring)) - 1U)
 #endif
 
 DUK_EXTERNAL_DECL void duk_push_this(duk_context *ctx);
@@ -899,29 +898,54 @@ DUK_EXTERNAL_DECL void duk_config_buffer(duk_context *ctx, duk_idx_t idx, void *
 /*
  *  Property access
  *
- *  The basic function assumes key is on stack.  The _string variant takes
- *  a C string as a property name, while the _index variant takes an array
- *  index as a property name (e.g. 123 is equivalent to the key "123").
+ *  The basic function assumes key is on stack.  The _(l)string variant takes
+ *  a C string as a property name; the _literal variant takes a C literal.
+ *  The _index variant takes an array index as a property name (e.g. 123 is
+ *  equivalent to the key "123").
  */
 
 DUK_EXTERNAL_DECL duk_bool_t duk_get_prop(duk_context *ctx, duk_idx_t obj_idx);
 DUK_EXTERNAL_DECL duk_bool_t duk_get_prop_string(duk_context *ctx, duk_idx_t obj_idx, const char *key);
 DUK_EXTERNAL_DECL duk_bool_t duk_get_prop_lstring(duk_context *ctx, duk_idx_t obj_idx, const char *key, duk_size_t key_len);
+#if defined(DUK_USE_PREFER_SIZE)
+#define duk_get_prop_literal(ctx,obj_idx,key)  duk_get_prop_string((ctx), (obj_idx), (key))
+#else
+DUK_EXTERNAL_DECL duk_bool_t duk_get_prop_literal_raw(duk_context *ctx, duk_idx_t obj_idx, const char *key, duk_size_t key_len);
+#define duk_get_prop_literal(ctx,obj_idx,key)  duk_get_prop_literal_raw((ctx), (obj_idx), (key), sizeof((key)) - 1U)
+#endif
 DUK_EXTERNAL_DECL duk_bool_t duk_get_prop_index(duk_context *ctx, duk_idx_t obj_idx, duk_uarridx_t arr_idx);
 DUK_EXTERNAL_DECL duk_bool_t duk_get_prop_heapptr(duk_context *ctx, duk_idx_t obj_idx, void *ptr);
 DUK_EXTERNAL_DECL duk_bool_t duk_put_prop(duk_context *ctx, duk_idx_t obj_idx);
 DUK_EXTERNAL_DECL duk_bool_t duk_put_prop_string(duk_context *ctx, duk_idx_t obj_idx, const char *key);
 DUK_EXTERNAL_DECL duk_bool_t duk_put_prop_lstring(duk_context *ctx, duk_idx_t obj_idx, const char *key, duk_size_t key_len);
+#if defined(DUK_USE_PREFER_SIZE)
+#define duk_put_prop_literal(ctx,obj_idx,key)  duk_put_prop_string((ctx), (obj_idx), (key))
+#else
+DUK_EXTERNAL_DECL duk_bool_t duk_put_prop_literal_raw(duk_context *ctx, duk_idx_t obj_idx, const char *key, duk_size_t key_len);
+#define duk_put_prop_literal(ctx,obj_idx,key)  duk_put_prop_literal_raw((ctx), (obj_idx), (key), sizeof((key)) - 1U)
+#endif
 DUK_EXTERNAL_DECL duk_bool_t duk_put_prop_index(duk_context *ctx, duk_idx_t obj_idx, duk_uarridx_t arr_idx);
 DUK_EXTERNAL_DECL duk_bool_t duk_put_prop_heapptr(duk_context *ctx, duk_idx_t obj_idx, void *ptr);
 DUK_EXTERNAL_DECL duk_bool_t duk_del_prop(duk_context *ctx, duk_idx_t obj_idx);
 DUK_EXTERNAL_DECL duk_bool_t duk_del_prop_string(duk_context *ctx, duk_idx_t obj_idx, const char *key);
 DUK_EXTERNAL_DECL duk_bool_t duk_del_prop_lstring(duk_context *ctx, duk_idx_t obj_idx, const char *key, duk_size_t key_len);
+#if defined(DUK_USE_PREFER_SIZE)
+#define duk_del_prop_literal(ctx,obj_idx,key)  duk_del_prop_string((ctx), (obj_idx), (key))
+#else
+DUK_EXTERNAL_DECL duk_bool_t duk_del_prop_literal_raw(duk_context *ctx, duk_idx_t obj_idx, const char *key, duk_size_t key_len);
+#define duk_del_prop_literal(ctx,obj_idx,key)  duk_del_prop_literal_raw((ctx), (obj_idx), (key), sizeof((key)) - 1U)
+#endif
 DUK_EXTERNAL_DECL duk_bool_t duk_del_prop_index(duk_context *ctx, duk_idx_t obj_idx, duk_uarridx_t arr_idx);
 DUK_EXTERNAL_DECL duk_bool_t duk_del_prop_heapptr(duk_context *ctx, duk_idx_t obj_idx, void *ptr);
 DUK_EXTERNAL_DECL duk_bool_t duk_has_prop(duk_context *ctx, duk_idx_t obj_idx);
 DUK_EXTERNAL_DECL duk_bool_t duk_has_prop_string(duk_context *ctx, duk_idx_t obj_idx, const char *key);
 DUK_EXTERNAL_DECL duk_bool_t duk_has_prop_lstring(duk_context *ctx, duk_idx_t obj_idx, const char *key, duk_size_t key_len);
+#if defined(DUK_USE_PREFER_SIZE)
+#define duk_has_prop_literal(ctx,obj_idx,key)  duk_has_prop_string((ctx), (obj_idx), (key))
+#else
+DUK_EXTERNAL_DECL duk_bool_t duk_has_prop_literal_raw(duk_context *ctx, duk_idx_t obj_idx, const char *key, duk_size_t key_len);
+#define duk_has_prop_literal(ctx,obj_idx,key)  duk_has_prop_literal_raw((ctx), (obj_idx), (key), sizeof((key)) - 1U)
+#endif
 DUK_EXTERNAL_DECL duk_bool_t duk_has_prop_index(duk_context *ctx, duk_idx_t obj_idx, duk_uarridx_t arr_idx);
 DUK_EXTERNAL_DECL duk_bool_t duk_has_prop_heapptr(duk_context *ctx, duk_idx_t obj_idx, void *ptr);
 
@@ -930,8 +954,22 @@ DUK_EXTERNAL_DECL void duk_def_prop(duk_context *ctx, duk_idx_t obj_idx, duk_uin
 
 DUK_EXTERNAL_DECL duk_bool_t duk_get_global_string(duk_context *ctx, const char *key);
 DUK_EXTERNAL_DECL duk_bool_t duk_get_global_lstring(duk_context *ctx, const char *key, duk_size_t key_len);
+#if defined(DUK_USE_PREFER_SIZE)
+#define duk_get_global_literal(ctx,key)  duk_get_global_string((ctx), (key))
+#else
+DUK_EXTERNAL_DECL duk_bool_t duk_get_global_literal_raw(duk_context *ctx, const char *key, duk_size_t key_len);
+#define duk_get_global_literal(ctx,key)  duk_get_global_literal_raw((ctx), (key), sizeof((key)) - 1U)
+#endif
+DUK_EXTERNAL_DECL duk_bool_t duk_get_global_heapptr(duk_context *ctx, void *ptr);
 DUK_EXTERNAL_DECL duk_bool_t duk_put_global_string(duk_context *ctx, const char *key);
 DUK_EXTERNAL_DECL duk_bool_t duk_put_global_lstring(duk_context *ctx, const char *key, duk_size_t key_len);
+#if defined(DUK_USE_PREFER_SIZE)
+#define duk_put_global_literal(ctx,key)  duk_put_global_string((ctx), (key))
+#else
+DUK_EXTERNAL_DECL duk_bool_t duk_put_global_literal_raw(duk_context *ctx, const char *key, duk_size_t key_len);
+#define duk_put_global_literal(ctx,key)  duk_put_global_literal_raw((ctx), (key), sizeof((key)) - 1U)
+#endif
+DUK_EXTERNAL_DECL duk_bool_t duk_put_global_heapptr(duk_context *ctx, void *ptr);
 
 /*
  *  Inspection

@@ -4355,6 +4355,17 @@ DUK_EXTERNAL const char *duk_push_string(duk_hthread *thr, const char *str) {
 	}
 }
 
+#if !defined(DUK_USE_PREFER_SIZE)
+DUK_EXTERNAL const char *duk_push_literal_raw(duk_hthread *thr, const char *str, duk_size_t len) {
+	DUK_ASSERT_API_ENTRY(thr);
+	DUK_ASSERT(str != NULL);
+	DUK_ASSERT(str[len] == (char) 0);
+
+	/* No difference to duk_push_lstring() for now. */
+	return duk_push_lstring(thr, str, len);
+}
+#endif
+
 DUK_EXTERNAL void duk_push_pointer(duk_hthread *thr, void *val) {
 	duk_tval *tv_slot;
 
