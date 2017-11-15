@@ -8,10 +8,10 @@ DUKTAPE_SOURCES = src/duktape.c
 CMDLINE_SOURCES = \
 	examples/cmdline/duk_cmdline.c
 
-CC	= gcc
-CCOPTS	= -Os -pedantic -std=c99 -Wall -fstrict-aliasing -fomit-frame-pointer
+CC = gcc
+CCOPTS = -Os -pedantic -std=c99 -Wall -fstrict-aliasing -fomit-frame-pointer
 CCOPTS += -I./examples/cmdline -I./src   # duktape.h and duk_config.h must be in include path
-CCLIBS	= -lm
+CCLIBS = -lm
 
 # Enable print() and alert() for command line using an optional extra module.
 CCOPTS += -DDUK_CMDLINE_PRINTALERT_SUPPORT -I./extras/print-alert
@@ -33,13 +33,13 @@ CMDLINE_SOURCES += extras/module-duktape/duk_module_duktape.c
 # will cause some harmless compilation warnings.
 #CCOPTS += -DDUK_CMDLINE_FANCY -I./linenoise
 #CMDLINE_SOURCES += linenoise/linenoise.c
-#duk:	linenoise
+#duk: linenoise
 
 # Use the tools/configure.py utility to modify Duktape default configuration:
 # http://duktape.org/guide.html#compiling
 # http://wiki.duktape.org/Configuring.html
 
-duk:	$(DUKTAPE_SOURCES) $(CMDLINE_SOURCES)
+duk: $(DUKTAPE_SOURCES) $(CMDLINE_SOURCES)
 	$(CC) -o $@ $(DEFINES) $(CCOPTS) $(DUKTAPE_SOURCES) $(CMDLINE_SOURCES) $(CCLIBS)
 
 linenoise/linenoise.c: linenoise

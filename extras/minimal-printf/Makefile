@@ -1,5 +1,5 @@
 # Just for manual testing
-CC	= gcc
+CC = gcc
 
 .PHONY: test
 test: duk_minimal_printf.c

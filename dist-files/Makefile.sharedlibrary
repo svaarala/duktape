@@ -24,19 +24,19 @@
 # convention is to set soname version to (100*MAJOR + MINOR), e.g. 104 for
 # Duktape 1.4.x, so that it gets automatically bumped for major and minor
 # releases (potentially binary incompatible), but not for patch releases.
-DUK_VERSION=@DUK_VERSION@
-SONAME_VERSION=@SONAME_VERSION@
-REAL_VERSION=$(SONAME_VERSION).$(DUK_VERSION)
+DUK_VERSION = @DUK_VERSION@
+SONAME_VERSION = @SONAME_VERSION@
+REAL_VERSION = $(SONAME_VERSION).$(DUK_VERSION)
 
 # Change to actual path for actual distribution packaging.
-INSTALL_PREFIX=/usr/local
+INSTALL_PREFIX = /usr/local
 
 # The 'noline' variant may be more appropriate for some distributions; it
 # doesn't have #line directives in the combined source.
-DUKTAPE_SRCDIR=./src
-#DUKTAPE_SRCDIR=./src-noline
+DUKTAPE_SRCDIR = ./src
+#DUKTAPE_SRCDIR = ./src-noline
 
-CC=gcc
+CC = gcc
 
 .PHONY: all
 all: libduktape.so.$(REAL_VERSION) libduktaped.so.$(REAL_VERSION)
@@ -67,7 +67,7 @@ install: libduktape.so.$(REAL_VERSION) libduktaped.so.$(REAL_VERSION)
 
 # Note: assumes /usr/local/include/ and /usr/local/lib/ are in include/link
 # path which may not be the case for all distributions.
-#CCOPTS=-I/usr/local/include -L/usr/local/lib
-CCOPTS=-I./examples/cmdline
+#CCOPTS = -I/usr/local/include -L/usr/local/lib
+CCOPTS = -I./examples/cmdline
 duk:
 	$(CC) $(CCOPTS) -Wall -Wextra -Os -o $@ ./examples/cmdline/duk_cmdline.c -lduktape -lm

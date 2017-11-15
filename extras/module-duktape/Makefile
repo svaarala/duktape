@@ -1,7 +1,7 @@
 # For manual testing; say 'make' in extras/module-duktape and run ./test.
 # There's test coverage in tests/ecmascript, so tests here are very simple.
 
-CC	= gcc
+CC = gcc
 
 .PHONY: test
 test:

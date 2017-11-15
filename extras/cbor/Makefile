@@ -1,9 +1,9 @@
 # For manual testing; say 'make' in extras/cbor.
 
-VALGRIND=valgrind
-CC=gcc
-CCOPTS=-std=c99 -Wall -Wextra -O2
-#CCOPTS+=-fsanitize=undefined
+VALGRIND = valgrind
+CC = gcc
+CCOPTS = -std=c99 -Wall -Wextra -O2
+#CCOPTS += -fsanitize=undefined
 
 .PHONY: all
 all: clean jsoncbor test-runs
