@@ -685,7 +685,8 @@ DUK_LOCAL void duk__dump_type_sizes(void) {
 	DUK__DUMPSZ(duk_heap);
 	DUK__DUMPSZ(duk_activation);
 	DUK__DUMPSZ(duk_catcher);
-	DUK__DUMPSZ(duk_strcache);
+	DUK__DUMPSZ(duk_strcache_entry);
+	DUK__DUMPSZ(duk_litcache_entry);
 	DUK__DUMPSZ(duk_ljstate);
 	DUK__DUMPSZ(duk_fixedbuffer);
 	DUK__DUMPSZ(duk_bitdecoder_ctx);
@@ -979,7 +980,7 @@ duk_heap *duk_heap_alloc(duk_alloc_function alloc_func,
 
 	/* XXX: use the pointer as a seed for now: mix in time at least */
 
-	/* The casts through duk_intptr_t is to avoid the following GCC warning:
+	/* The casts through duk_uintptr_t is to avoid the following GCC warning:
 	 *
 	 *   warning: cast from pointer to integer of different size [-Wpointer-to-int-cast]
 	 *
@@ -990,7 +991,7 @@ duk_heap *duk_heap_alloc(duk_alloc_function alloc_func,
 	DUK_D(DUK_DPRINT("using rom strings, force heap hash_seed to fixed value 0x%08lx", (long) DUK__FIXED_HASH_SEED));
 	res->hash_seed = (duk_uint32_t) DUK__FIXED_HASH_SEED;
 #else  /* DUK_USE_ROM_STRINGS */
-	res->hash_seed = (duk_uint32_t) (duk_intptr_t) res;
+	res->hash_seed = (duk_uint32_t) (duk_uintptr_t) res;
 #if !defined(DUK_USE_STRHASH_DENSE)
 	res->hash_seed ^= 5381;  /* Bernstein hash init value is normally 5381; XOR it in in case pointer low bits are 0 */
 #endif
@@ -1056,6 +1057,23 @@ duk_heap *duk_heap_alloc(duk_alloc_function alloc_func,
 		}
 	}
 #endif
+
+	/*
+	 *  Init litcache
+	 */
+#if defined(DUK_USE_LITCACHE_SIZE)
+	DUK_ASSERT(DUK_USE_LITCACHE_SIZE > 0);
+	DUK_ASSERT(DUK_IS_POWER_OF_TWO((duk_uint_t) DUK_USE_LITCACHE_SIZE));
+#if defined(DUK_USE_EXPLICIT_NULL_INIT)
+	{
+		duk_small_uint_t i;
+		for (i = 0; i < DUK_USE_LITCACHE_SIZE; i++) {
+			res->litcache[i].addr = NULL;
+			res->litcache[i].h = NULL;
+		}
+	}
+#endif
+#endif  /* DUK_USE_LITCACHE_SIZE */
 
 	/* XXX: error handling is incomplete.  It would be cleanest if
 	 * there was a setjmp catchpoint, so that all init code could

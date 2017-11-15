@@ -1069,9 +1069,9 @@ DUK_INTERNAL void duk_debug_send_status(duk_hthread *thr) {
 		duk_debug_write_int(thr, 0);
 	} else {
 		duk_push_tval(thr, &act->tv_func);
-		duk_get_prop_string(thr, -1, "fileName");
+		duk_get_prop_literal(thr, -1, "fileName");
 		duk__debug_write_hstring_safe_top(thr);
-		duk_get_prop_string(thr, -2, "name");
+		duk_get_prop_literal(thr, -2, "name");
 		duk__debug_write_hstring_safe_top(thr);
 		duk_pop_3(thr);
 		/* Report next pc/line to be executed. */
@@ -1116,7 +1116,7 @@ DUK_INTERNAL void duk_debug_send_throw(duk_hthread *thr, duk_bool_t fatal) {
 		act = thr->callstack_curr;
 		if (act != NULL) {
 			duk_push_tval(thr, &act->tv_func);
-			duk_get_prop_string(thr, -1, "fileName");
+			duk_get_prop_literal(thr, -1, "fileName");
 			duk__debug_write_hstring_safe_top(thr);
 			pc = (duk_uint32_t) duk_hthread_get_act_prev_pc(thr, act);
 			duk_debug_write_uint(thr, (duk_uint32_t) duk_hobject_pc2line_query(thr, -2, pc));

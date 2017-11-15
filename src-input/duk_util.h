@@ -690,4 +690,21 @@ DUK_INTERNAL_DECL duk_int32_t duk_double_to_int32_t(duk_double_t x);
 DUK_INTERNAL_DECL duk_uint32_t duk_double_to_uint32_t(duk_double_t x);
 DUK_INTERNAL_DECL duk_float_t duk_double_to_float_t(duk_double_t x);
 
+/*
+ *  Miscellaneous
+ */
+
+/* Example: x     = 0x10 = 0b00010000
+ *          x - 1 = 0x0f = 0b00001111
+ *          x & (x - 1) == 0
+ *
+ *          x     = 0x07 = 0b00000111
+ *          x - 1 = 0x06 = 0b00000110
+ *          x & (x - 1) != 0
+ *
+ * However, incorrectly true for x == 0 so check for that explicitly.
+ */
+#define DUK_IS_POWER_OF_TWO(x) \
+	((x) != 0U && ((x) & ((x) - 1U)) == 0U)
+
 #endif  /* DUK_UTIL_H_INCLUDED */

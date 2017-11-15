@@ -82,12 +82,12 @@ DUK_EXTERNAL void duk_inspect_value(duk_hthread *thr, duk_idx_t idx) {
 		goto finish;
 	}
 	duk_push_pointer(thr, (void *) h);
-	duk_put_prop_string(thr, -2, "hptr");
+	duk_put_prop_literal(thr, -2, "hptr");
 
 #if 0
 	/* Covers a lot of information, e.g. buffer and string variants. */
 	duk_push_uint(thr, (duk_uint_t) DUK_HEAPHDR_GET_FLAGS(h));
-	duk_put_prop_string(thr, -2, "hflags");
+	duk_put_prop_literal(thr, -2, "hflags");
 #endif
 
 #if defined(DUK_USE_REFERENCE_COUNTING)

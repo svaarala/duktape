@@ -688,6 +688,7 @@ DUK_LOCAL duk_hstring *duk__strtab_romstring_lookup(duk_heap *heap, const duk_ui
 
 	curr = DUK_LOSE_CONST(duk_rom_strings_lookup[lookup_hash]);
 	while (curr != NULL) {
+		/* Unsafe memcmp() because for zero blen, str may be NULL. */
 		if (strhash == DUK_HSTRING_GET_HASH(curr) &&
 		    blen == DUK_HSTRING_GET_BYTELEN(curr) &&
 		    duk_memcmp_unsafe((const void *) str, (const void *) DUK_HSTRING_GET_DATA(curr), blen) == 0) {
@@ -806,6 +807,61 @@ DUK_INTERNAL duk_hstring *duk_heap_strtable_intern_checked(duk_hthread *thr, con
 	}
 	return res;
 }
+
+#if defined(DUK_USE_LITCACHE_SIZE)
+DUK_LOCAL duk_uint_t duk__strtable_litcache_key(const duk_uint8_t *str, duk_uint32_t blen) {
+	duk_uintptr_t key;
+
+	DUK_ASSERT(DUK_USE_LITCACHE_SIZE > 0);
+	DUK_ASSERT(DUK_IS_POWER_OF_TWO((duk_uint_t) DUK_USE_LITCACHE_SIZE));
+
+	key = (duk_uintptr_t) blen ^ (duk_uintptr_t) str;
+	key &= (duk_uintptr_t) (DUK_USE_LITCACHE_SIZE - 1);  /* Assumes size is power of 2. */
+	/* Due to masking, cast is in 32-bit range. */
+	DUK_ASSERT(key <= DUK_UINT_MAX);
+	return (duk_uint_t) key;
+}
+
+DUK_INTERNAL duk_hstring *duk_heap_strtable_intern_literal_checked(duk_hthread *thr, const duk_uint8_t *str, duk_uint32_t blen) {
+	duk_uint_t key;
+	duk_litcache_entry *ent;
+	duk_hstring *h;
+
+	/* Fast path check: literal exists in literal cache. */
+	key = duk__strtable_litcache_key(str, blen);
+	ent = thr->heap->litcache + key;
+	if (ent->addr == str) {
+		DUK_D(DUK_DPRINT("intern check for cached, pinned literal: str=%p, blen=%ld -> duk_hstring %!O",
+		                 (const void *) str, (long) blen, (duk_heaphdr *) ent->h));
+		DUK_ASSERT(ent->h != NULL);
+		DUK_ASSERT(DUK_HSTRING_HAS_PINNED_LITERAL(ent->h));
+		DUK_STATS_INC(thr->heap, stats_strtab_litcache_hit);
+		return ent->h;
+	}
+
+	/* Intern and update (overwrite) cache entry. */
+	h = duk_heap_strtable_intern_checked(thr, str, blen);
+	ent->addr = str;
+	ent->h = h;
+	DUK_STATS_INC(thr->heap, stats_strtab_litcache_miss);
+
+	/* Pin the duk_hstring for the duration of the heap.  This means
+	 * litcache entries don't need to be invalidated as their target
+	 * duk_hstring is not freed until heap destruction.  The pin remains
+	 * even if the literal cache entry is overwritten, and is still useful
+	 * to avoid string table traffic.
+	 */
+	if (!DUK_HSTRING_HAS_PINNED_LITERAL(h)) {
+		DUK_D(DUK_DPRINT("pin duk_hstring because it is a literal: %!O", (duk_heaphdr *) h));
+		DUK_ASSERT(!DUK_HEAPHDR_HAS_READONLY((duk_heaphdr *) h));
+		DUK_HSTRING_INCREF(thr, h);
+		DUK_HSTRING_SET_PINNED_LITERAL(h);
+		DUK_STATS_INC(thr->heap, stats_strtab_litcache_pin);
+	}
+
+	return h;
+}
+#endif  /* DUK_USE_LITCACHE_SIZE */
 
 DUK_INTERNAL duk_hstring *duk_heap_strtable_intern_u32_checked(duk_hthread *thr, duk_uint32_t val) {
 	duk_hstring *res;
