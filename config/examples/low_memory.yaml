@@ -71,6 +71,9 @@ DUK_USE_STRTAB_GROW_LIMIT: 65536       # -""-
 DUK_USE_STRTAB_RESIZE_CHECK_MASK: 255  # -""-
 #DUK_USE_STRTAB_PTRCOMP: true  # sometimes useful with pointer compression
 
+# Disable literal pinning and litcache.
+DUK_USE_LITCACHE_SIZE: false
+
 DUK_USE_HSTRING_ARRIDX: false
 DUK_USE_HSTRING_LAZY_CLEN: false  # non-lazy charlen is smaller
 
