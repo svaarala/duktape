@@ -3197,13 +3197,23 @@ Planned
 
 * Add experimental API call variants for plain C literals, for example
   duk_push_literal(ctx, "key") and duk_get_prop_literal(ctx, "propname"),
-  which may allow e.g. better performance or RAM footprint later on; calls
-  added: duk_push_literal(), duk_get_prop_literal(), duk_put_prop_literal(),
-  duk_has_prop_literal(), duk_del_prop_literal(), duk_get_global_literal(),
-  duk_put_global_literal() (GH-1805)
+  which allow e.g. better performance; calls added: duk_push_literal(),
+  duk_get_prop_literal(), duk_put_prop_literal(), duk_has_prop_literal(),
+  duk_del_prop_literal(), duk_get_global_literal(), duk_put_global_literal()
+  (GH-1805)
 
 * Add duk_get_global_heapptr() and duk_put_global_heapptr() for completeness
   (GH-1805)
+
+* Automatically pin strings accessed using the C literal API call variants
+  such as duk_get_prop_literal(ctx, "propname") so that the strings are only
+  freed on heap destruction; this behavior can be disabled by disabling
+  DUK_USE_LITCACHE_SIZE in configure.py (GH-1813)
+
+* Add a lookup cache for C literals to speed up string table lookups when
+  using API call variants such as duk_get_prop_literal(ctx, "propname");
+  the cache relies on literals being pinned, and can be disabled by disabling
+  DUK_USE_LITCACHE_SIZE in configure.py (GH-1813)
 
 * ES2015 Number constructor properties: EPSILON, MIN_SAFE_INTEGER,
   MAX_SAFE_INTEGER, isFinite(), isInteger(), isNaN(), isSafeInteger(),
