@@ -21,11 +21,11 @@ example: |
   buf = duk_require_string(ctx, -3);
   printf("value is a string: %s\n", buf);
 
-seealso:
-  - duk_require_lstring
-
 tags:
   - stack
   - string
+
+seealso:
+  - duk_require_lstring
 
 introduced: 1.0.0

@@ -16,6 +16,7 @@ example: |
 
 tags:
   - property
+  - string
 
 seealso:
   - duk_put_global_string

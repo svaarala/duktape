@@ -29,13 +29,13 @@ example: |
       printf("value is a string, %lu bytes\n", (unsigned long) len);
   }
 
+tags:
+  - stack
+  - string
+
 seealso:
   - duk_get_string
   - duk_get_lstring_default
   - duk_get_string_default
-
-tags:
-  - stack
-  - string
 
 introduced: 1.0.0

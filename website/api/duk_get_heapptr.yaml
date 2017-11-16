@@ -43,6 +43,7 @@ example: |
 tags:
   - stack
   - borrowed
+  - heapptr
 
 seealso:
   - duk_require_heapptr

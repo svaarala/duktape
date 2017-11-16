@@ -18,6 +18,7 @@ example: |
 
 tags:
   - property
+  - string
 
 seealso:
   - duk_del_prop

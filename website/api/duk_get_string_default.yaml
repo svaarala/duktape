@@ -16,11 +16,11 @@ summary: |
 example: |
   const char *host = duk_get_string_default(ctx, 3, "localhost");
 
-seealso:
-  - duk_get_lstring_default
-
 tags:
   - stack
   - string
+
+seealso:
+  - duk_get_lstring_default
 
 introduced: 2.1.0

@@ -20,6 +20,7 @@ example: |
 
 tags:
   - property
+  - string
 
 seealso:
   - duk_put_prop

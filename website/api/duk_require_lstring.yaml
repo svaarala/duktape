@@ -20,11 +20,11 @@ example: |
   buf = duk_require_lstring(ctx, -3, &len);
   printf("value is a string, %lu bytes\n", (unsigned long) len);
 
-seealso:
-  - duk_require_string
-
 tags:
   - stack
   - string
+
+seealso:
+  - duk_require_string
 
 introduced: 1.0.0
