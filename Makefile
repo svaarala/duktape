@@ -272,6 +272,7 @@ clean:
 	@rm -f dukweb.js
 	@rm -rf /tmp/dukweb-test/
 	@rm -f massif-*.out
+	@rm -f literal_intern_test
 
 .PHONY: cleanall
 cleanall: clean
@@ -584,6 +585,11 @@ dukweb.js: emscripten prep/dukweb
 		-Iprep/dukweb prep/dukweb/duktape.c dukweb/dukweb.c -o dukweb.js
 	cat dukweb/dukweb_extra.js >> dukweb.js
 	@wc dukweb.js
+literal_intern_test: prep/nondebug misc/literal_intern_test.c
+	$(CC) -o $@ -std=c99 -O2 -fstrict-aliasing -Wall -Wextra \
+		-Iprep/nondebug prep/nondebug/duktape.c misc/literal_intern_test.c -lm
+literalinterntest: literal_intern_test
+	bash -c 'for i in 0 1 2 3 10 11 12 13 20 21 22 23; do echo; echo "*** $$i ***"; echo; for j in 1 2 3 4 5; do time ./literal_intern_test $$i; sleep 10; done; done'
 
 # Miscellaneous dumps.
 .PHONY: dump-public
