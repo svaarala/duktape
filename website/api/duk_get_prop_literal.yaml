@@ -1,0 +1,31 @@
+name: duk_get_prop_literal
+
+proto: |
+  duk_bool_t duk_get_prop_literal(duk_context *ctx, const char *key_literal);
+
+stack: |
+  [ ... obj! ... ] -> [ ... obj! ... val! ]  (if key exists)
+  [ ... obj! ... ] -> [ ... obj! ... undefined! ]  (if key doesn't exist)
+
+summary: |
+  <p>Like <code><a href="#duk_get_prop">duk_get_prop()</a></code>,
+  but the property name is given as a string literal (see
+  <code><a href="#duk_push_literal">duk_push_literal()</a></code>).</p>
+
+example: |
+  (void) duk_get_prop_literal(ctx, -3, "myPropertyName");
+  printf("obj.myPropertyName = %s\n", duk_to_string(ctx, -1));
+  duk_pop(ctx);
+
+tags:
+  - property
+  - experimental
+
+seealso:
+  - duk_get_prop
+  - duk_get_prop_index
+  - duk_get_prop_string
+  - duk_get_prop_lstring
+  - duk_get_prop_heapptr
+
+introduced: 2.3.0

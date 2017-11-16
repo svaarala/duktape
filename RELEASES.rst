@@ -3195,8 +3195,15 @@ Planned
   useful to detect constructor calls which can already be done using
   duk_is_constructor_call() (GH-1745)
 
-* Add experimental duk_push_literal() API call which may allow e.g. better
-  lowmem behavior for string literals later on (GH-1805)
+* Add experimental API call variants for plain C literals, for example
+  duk_push_literal(ctx, "key") and duk_get_prop_literal(ctx, "propname"),
+  which may allow e.g. better performance or RAM footprint later on; calls
+  added: duk_push_literal(), duk_get_prop_literal(), duk_put_prop_literal(),
+  duk_has_prop_literal(), duk_del_prop_literal(), duk_get_global_literal(),
+  duk_put_global_literal() (GH-1805)
+
+* Add duk_get_global_heapptr() and duk_put_global_heapptr() for completeness
+  (GH-1805)
 
 * ES2015 Number constructor properties: EPSILON, MIN_SAFE_INTEGER,
   MAX_SAFE_INTEGER, isFinite(), isInteger(), isNaN(), isSafeInteger(),

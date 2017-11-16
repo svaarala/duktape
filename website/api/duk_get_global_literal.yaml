@@ -1,0 +1,31 @@
+name: duk_get_global_literal
+
+proto: |
+  duk_bool_t duk_get_global_literal(duk_context *ctx, const char *key_literal);
+
+stack: |
+  [ ... ] -> [ ... val! ]  (if key exists)
+  [ ... ] -> [ ... undefined! ]  (if key doesn't exist)
+
+summary: |
+  <p>Like <code><a href="#duk_get_global_string">duk_get_global_string()</a></code>,
+  but the property name is given as a string literal (see
+  <code><a href="#duk_push_literal">duk_push_literal()</a></code>).</p>
+
+example: |
+  (void) duk_get_global_literal(ctx, "encodeURIComponent");
+  duk_push_string(ctx, "foo bar");
+  duk_call(ctx, 1);  /* [ ... encodeURIComponent "foo bar" ] -> [ "foo%20bar" ] */
+  printf("encoded: %s\n", duk_to_string(ctx, -1));
+  duk_pop(ctx);
+
+tags:
+  - property
+  - experimental
+
+seealso:
+  - duk_get_global_string
+  - duk_get_global_lstring
+  - duk_get_global_heapptr
+
+introduced: 2.3.0

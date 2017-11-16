@@ -13,6 +13,13 @@ Main changes in this release (see RELEASES.rst for full details):
   potentially unsafe assumptions about compiler behavior for unaligned memory
   accesses and pointers (which may be an issue even on x86).
 
+* duk_xxx_literal() API call variants which take a plain C literal argument,
+  for example duk_get_prop_literal(ctx, -2, "myProperty").  The calls are
+  conceptually similar to the duk_xxx_string() variants, but can take advantage
+  of the fact that e.g. string length for a C literal can be determined at
+  compile time using sizeof("myProperty") - 1 (the -1 is for NUL termination).
+  For now the calls are experimental.
+
 Upgrading from Duktape 2.2
 ==========================
 

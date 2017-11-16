@@ -1,0 +1,27 @@
+name: duk_get_global_heapptr
+
+proto: |
+  duk_bool_t duk_get_global_heapptr(duk_context *ctx, void *ptr);
+
+stack: |
+  [ ... ] -> [ ... val! ]  (if key exists)
+  [ ... ] -> [ ... undefined! ]  (if key doesn't exist)
+
+summary: |
+  <p>Like <code><a href="#duk_get_global_string">duk_get_global_string()</a></code>,
+  but the property name is given as a Duktape heap pointer obtained e.g. using
+  <code><a href="#duk_get_heapptr">duk_get_heapptr()</a></code>.  If
+  <code>ptr</code> is NULL, <code>undefined</code> is used as the key.</p>
+
+example: |
+  (void) duk_get_global_heapptr(ctx, my_ptr_ref);
+
+tags:
+  - property
+
+seealso:
+  - duk_get_global_string
+  - duk_get_global_lstring
+  - duk_get_global_literal
+
+introduced: 2.3.0

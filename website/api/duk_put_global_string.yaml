@@ -30,7 +30,7 @@ tags:
 
 seealso:
   - duk_put_global_lstring
-  - duk_get_global_string
-  - duk_get_global_lstring
+  - duk_put_global_literal
+  - duk_put_global_heapptr
 
 introduced: 1.0.0

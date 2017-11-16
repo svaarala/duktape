@@ -17,7 +17,7 @@ final top: 3
 *** test_getprop_d (duk_safe_call)
 Math.PI is 3.141593
 configuration setting present, value: setting value
-final top: 4
+final top: 3
 ==> rc=0, result='undefined'
 *** test_getprop_e (duk_safe_call)
 ==> rc=1, result='TypeError: cannot read property 'foo' of null'
@@ -59,6 +59,21 @@ final top: 3
 *** test_getproplstring_b (duk_safe_call)
 ==> rc=1, result='RangeError: invalid stack index 234'
 *** test_getproplstring_c (duk_safe_call)
+==> rc=1, result='RangeError: invalid stack index -2147483648'
+*** test_getpropliteral_a (duk_safe_call)
+obj.foo -> rc=1, result='fooval'
+obj.nonexistent -> rc=0, result='undefined'
+obj['123'] -> rc=1, result='123val'
+arr.nonexistent -> rc=0, result='undefined'
+arr['2'] -> rc=1, result='quux'
+arr.length -> rc=1, result='3'
+'test_string'['5'] -> rc=1, result='s'
+'test_string'.length -> rc=1, result='11'
+final top: 3
+==> rc=0, result='undefined'
+*** test_getpropliteral_b (duk_safe_call)
+==> rc=1, result='RangeError: invalid stack index 234'
+*** test_getpropliteral_c (duk_safe_call)
 ==> rc=1, result='RangeError: invalid stack index -2147483648'
 *** test_getpropheapptr_a (duk_safe_call)
 obj.foo -> rc=1, result='fooval'
@@ -211,6 +226,8 @@ static duk_ret_t test_getprop_d(duk_context *ctx, void *udata) {
 	    printf("configuration setting missing\n");
 	}
 	duk_pop(ctx);  /* remember to pop, regardless of whether or not present */
+
+	duk_pop(ctx);  /* config object */
 
 	printf("final top: %ld\n", (long) duk_get_top(ctx));
 	return 0;
@@ -438,6 +455,84 @@ static duk_ret_t test_getproplstring_c(duk_context *ctx, void *udata) {
 	return 0;
 }
 
+/* duk_get_prop_literal(), success cases */
+static duk_ret_t test_getpropliteral_a(duk_context *ctx, void *udata) {
+	duk_ret_t rc;
+
+	(void) udata;
+
+	prep(ctx);
+
+	rc = duk_get_prop_literal(ctx, 0, "foo");
+	printf("obj.foo -> rc=%d, result='%s'\n", (int) rc, duk_to_string(ctx, -1));
+	duk_pop(ctx);
+
+	/* No embedded NUL test: config specific behavior. */
+
+	rc = duk_get_prop_literal(ctx, 0, "nonexistent");
+	printf("obj.nonexistent -> rc=%d, result='%s'\n", (int) rc, duk_to_string(ctx, -1));
+	duk_pop(ctx);
+
+	rc = duk_get_prop_literal(ctx, 0, "123");
+	printf("obj['123'] -> rc=%d, result='%s'\n", (int) rc, duk_to_string(ctx, -1));
+	duk_pop(ctx);
+
+	rc = duk_get_prop_literal(ctx, 1, "nonexistent");
+	printf("arr.nonexistent -> rc=%d, result='%s'\n", (int) rc, duk_to_string(ctx, -1));
+	duk_pop(ctx);
+
+	rc = duk_get_prop_literal(ctx, 1, "2");
+	printf("arr['2'] -> rc=%d, result='%s'\n", (int) rc, duk_to_string(ctx, -1));
+	duk_pop(ctx);
+
+	rc = duk_get_prop_literal(ctx, 1, "length");
+	printf("arr.length -> rc=%d, result='%s'\n", (int) rc, duk_to_string(ctx, -1));
+	duk_pop(ctx);
+
+	rc = duk_get_prop_literal(ctx, 2, "5");
+	printf("'test_string'['5'] -> rc=%d, result='%s'\n", (int) rc, duk_to_string(ctx, -1));
+	duk_pop(ctx);
+
+	rc = duk_get_prop_literal(ctx, 2, "length");
+	printf("'test_string'.length -> rc=%d, result='%s'\n", (int) rc, duk_to_string(ctx, -1));
+	duk_pop(ctx);
+
+	printf("final top: %ld\n", (long) duk_get_top(ctx));
+	return 0;
+}
+
+/* duk_get_prop_literal(), invalid index */
+static duk_ret_t test_getpropliteral_b(duk_context *ctx, void *udata) {
+	duk_ret_t rc;
+
+	(void) udata;
+
+	prep(ctx);
+
+	rc = duk_get_prop_literal(ctx, 234, "foo");
+	printf("obj.foo -> rc=%d, result='%s'\n", (int) rc, duk_to_string(ctx, -1));
+	duk_pop(ctx);
+
+	printf("final top: %ld\n", (long) duk_get_top(ctx));
+	return 0;
+}
+
+/* duk_get_prop_literal(), DUK_INVALID_INDEX */
+static duk_ret_t test_getpropliteral_c(duk_context *ctx, void *udata) {
+	duk_ret_t rc;
+
+	(void) udata;
+
+	prep(ctx);
+
+	rc = duk_get_prop_literal(ctx, DUK_INVALID_INDEX, "foo");
+	printf("obj.foo -> rc=%d, result='%s'\n", (int) rc, duk_to_string(ctx, -1));
+	duk_pop(ctx);
+
+	printf("final top: %ld\n", (long) duk_get_top(ctx));
+	return 0;
+}
+
 /* duk_get_prop_heapptr(), success cases */
 static duk_ret_t test_getpropheapptr_a(duk_context *ctx, void *udata) {
 	duk_ret_t rc;
@@ -548,6 +643,10 @@ void test(duk_context *ctx) {
 	TEST_SAFE_CALL(test_getproplstring_a);
 	TEST_SAFE_CALL(test_getproplstring_b);
 	TEST_SAFE_CALL(test_getproplstring_c);
+
+	TEST_SAFE_CALL(test_getpropliteral_a);
+	TEST_SAFE_CALL(test_getpropliteral_b);
+	TEST_SAFE_CALL(test_getpropliteral_c);
 
 	TEST_SAFE_CALL(test_getpropheapptr_a);
 	TEST_SAFE_CALL(test_getpropheapptr_b);

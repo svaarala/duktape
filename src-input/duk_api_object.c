@@ -40,7 +40,7 @@ DUK_EXTERNAL duk_bool_t duk_get_prop_string(duk_hthread *thr, duk_idx_t obj_idx,
 	DUK_ASSERT(key != NULL);
 
 	obj_idx = duk_require_normalize_index(thr, obj_idx);
-	duk_push_string(thr, key);
+	(void) duk_push_string(thr, key);
 	return duk_get_prop(thr, obj_idx);
 }
 
@@ -49,9 +49,21 @@ DUK_EXTERNAL duk_bool_t duk_get_prop_lstring(duk_hthread *thr, duk_idx_t obj_idx
 	DUK_ASSERT(key != NULL);
 
 	obj_idx = duk_require_normalize_index(thr, obj_idx);
-	duk_push_lstring(thr, key, key_len);
+	(void) duk_push_lstring(thr, key, key_len);
 	return duk_get_prop(thr, obj_idx);
 }
+
+#if !defined(DUK_USE_PREFER_SIZE)
+DUK_EXTERNAL duk_bool_t duk_get_prop_literal_raw(duk_hthread *thr, duk_idx_t obj_idx, const char *key, duk_size_t key_len) {
+	DUK_ASSERT_API_ENTRY(thr);
+	DUK_ASSERT(key != NULL);
+	DUK_ASSERT(key[key_len] == (char) 0);
+
+	obj_idx = duk_require_normalize_index(thr, obj_idx);
+	(void) duk_push_literal_raw(thr, key, key_len);
+	return duk_get_prop(thr, obj_idx);
+}
+#endif
 
 DUK_EXTERNAL duk_bool_t duk_get_prop_index(duk_hthread *thr, duk_idx_t obj_idx, duk_uarridx_t arr_idx) {
 	DUK_ASSERT_API_ENTRY(thr);
@@ -65,7 +77,7 @@ DUK_EXTERNAL duk_bool_t duk_get_prop_heapptr(duk_hthread *thr, duk_idx_t obj_idx
 	DUK_ASSERT_API_ENTRY(thr);
 
 	obj_idx = duk_require_normalize_index(thr, obj_idx);
-	duk_push_heapptr(thr, ptr);  /* NULL -> 'undefined' */
+	(void) duk_push_heapptr(thr, ptr);  /* NULL -> 'undefined' */
 	return duk_get_prop(thr, obj_idx);
 }
 
@@ -74,7 +86,7 @@ DUK_INTERNAL duk_bool_t duk_get_prop_stridx(duk_hthread *thr, duk_idx_t obj_idx,
 	DUK_ASSERT_STRIDX_VALID(stridx);
 
 	obj_idx = duk_require_normalize_index(thr, obj_idx);
-	duk_push_hstring(thr, DUK_HTHREAD_GET_STRING(thr, stridx));
+	(void) duk_push_hstring(thr, DUK_HTHREAD_GET_STRING(thr, stridx));
 	return duk_get_prop(thr, obj_idx);
 }
 
@@ -156,6 +168,18 @@ DUK_EXTERNAL duk_bool_t duk_put_prop_lstring(duk_hthread *thr, duk_idx_t obj_idx
 	return duk__put_prop_shared(thr, obj_idx, -1);
 }
 
+#if !defined(DUK_USE_PREFER_SIZE)
+DUK_EXTERNAL duk_bool_t duk_put_prop_literal_raw(duk_hthread *thr, duk_idx_t obj_idx, const char *key, duk_size_t key_len) {
+	DUK_ASSERT_API_ENTRY(thr);
+	DUK_ASSERT(key != NULL);
+	DUK_ASSERT(key[key_len] == (char) 0);
+
+	obj_idx = duk_normalize_index(thr, obj_idx);
+	(void) duk_push_literal_raw(thr, key, key_len);
+	return duk__put_prop_shared(thr, obj_idx, -1);
+}
+#endif
+
 DUK_EXTERNAL duk_bool_t duk_put_prop_index(duk_hthread *thr, duk_idx_t obj_idx, duk_uarridx_t arr_idx) {
 	DUK_ASSERT_API_ENTRY(thr);
 
@@ -168,7 +192,7 @@ DUK_EXTERNAL duk_bool_t duk_put_prop_heapptr(duk_hthread *thr, duk_idx_t obj_idx
 	DUK_ASSERT_API_ENTRY(thr);
 
 	obj_idx = duk_require_normalize_index(thr, obj_idx);
-	duk_push_heapptr(thr, ptr);  /* NULL -> 'undefined' */
+	(void) duk_push_heapptr(thr, ptr);  /* NULL -> 'undefined' */
 	return duk__put_prop_shared(thr, obj_idx, -1);
 }
 
@@ -215,7 +239,7 @@ DUK_EXTERNAL duk_bool_t duk_del_prop_string(duk_hthread *thr, duk_idx_t obj_idx,
 	DUK_ASSERT(key != NULL);
 
 	obj_idx = duk_require_normalize_index(thr, obj_idx);
-	duk_push_string(thr, key);
+	(void) duk_push_string(thr, key);
 	return duk_del_prop(thr, obj_idx);
 }
 
@@ -224,9 +248,21 @@ DUK_EXTERNAL duk_bool_t duk_del_prop_lstring(duk_hthread *thr, duk_idx_t obj_idx
 	DUK_ASSERT(key != NULL);
 
 	obj_idx = duk_require_normalize_index(thr, obj_idx);
-	duk_push_lstring(thr, key, key_len);
+	(void) duk_push_lstring(thr, key, key_len);
 	return duk_del_prop(thr, obj_idx);
 }
+
+#if !defined(DUK_USE_PREFER_SIZE)
+DUK_EXTERNAL duk_bool_t duk_del_prop_literal_raw(duk_hthread *thr, duk_idx_t obj_idx, const char *key, duk_size_t key_len) {
+	DUK_ASSERT_API_ENTRY(thr);
+	DUK_ASSERT(key != NULL);
+	DUK_ASSERT(key[key_len] == (char) 0);
+
+	obj_idx = duk_require_normalize_index(thr, obj_idx);
+	(void) duk_push_literal_raw(thr, key, key_len);
+	return duk_del_prop(thr, obj_idx);
+}
+#endif
 
 DUK_EXTERNAL duk_bool_t duk_del_prop_index(duk_hthread *thr, duk_idx_t obj_idx, duk_uarridx_t arr_idx) {
 	DUK_ASSERT_API_ENTRY(thr);
@@ -240,7 +276,7 @@ DUK_EXTERNAL duk_bool_t duk_del_prop_heapptr(duk_hthread *thr, duk_idx_t obj_idx
 	DUK_ASSERT_API_ENTRY(thr);
 
 	obj_idx = duk_require_normalize_index(thr, obj_idx);
-	duk_push_heapptr(thr, ptr);  /* NULL -> 'undefined' */
+	(void) duk_push_heapptr(thr, ptr);  /* NULL -> 'undefined' */
 	return duk_del_prop(thr, obj_idx);
 }
 
@@ -286,7 +322,7 @@ DUK_EXTERNAL duk_bool_t duk_has_prop_string(duk_hthread *thr, duk_idx_t obj_idx,
 	DUK_ASSERT(key != NULL);
 
 	obj_idx = duk_require_normalize_index(thr, obj_idx);
-	duk_push_string(thr, key);
+	(void) duk_push_string(thr, key);
 	return duk_has_prop(thr, obj_idx);
 }
 
@@ -295,9 +331,21 @@ DUK_EXTERNAL duk_bool_t duk_has_prop_lstring(duk_hthread *thr, duk_idx_t obj_idx
 	DUK_ASSERT(key != NULL);
 
 	obj_idx = duk_require_normalize_index(thr, obj_idx);
-	duk_push_lstring(thr, key, key_len);
+	(void) duk_push_lstring(thr, key, key_len);
 	return duk_has_prop(thr, obj_idx);
 }
+
+#if !defined(DUK_USE_PREFER_SIZE)
+DUK_EXTERNAL duk_bool_t duk_has_prop_literal_raw(duk_hthread *thr, duk_idx_t obj_idx, const char *key, duk_size_t key_len) {
+	DUK_ASSERT_API_ENTRY(thr);
+	DUK_ASSERT(key != NULL);
+	DUK_ASSERT(key[key_len] == (char) 0);
+
+	obj_idx = duk_require_normalize_index(thr, obj_idx);
+	(void) duk_push_literal_raw(thr, key, key_len);
+	return duk_has_prop(thr, obj_idx);
+}
+#endif
 
 DUK_EXTERNAL duk_bool_t duk_has_prop_index(duk_hthread *thr, duk_idx_t obj_idx, duk_uarridx_t arr_idx) {
 	DUK_ASSERT_API_ENTRY(thr);
@@ -311,7 +359,7 @@ DUK_EXTERNAL duk_bool_t duk_has_prop_heapptr(duk_hthread *thr, duk_idx_t obj_idx
 	DUK_ASSERT_API_ENTRY(thr);
 
 	obj_idx = duk_require_normalize_index(thr, obj_idx);
-	duk_push_heapptr(thr, ptr);  /* NULL -> 'undefined' */
+	(void) duk_push_heapptr(thr, ptr);  /* NULL -> 'undefined' */
 	return duk_has_prop(thr, obj_idx);
 }
 
@@ -697,6 +745,38 @@ DUK_EXTERNAL duk_bool_t duk_get_global_lstring(duk_hthread *thr, const char *key
 	return ret;
 }
 
+#if !defined(DUK_USE_PREFER_SIZE)
+DUK_EXTERNAL duk_bool_t duk_get_global_literal_raw(duk_hthread *thr, const char *key, duk_size_t key_len) {
+	duk_bool_t ret;
+
+	DUK_ASSERT_API_ENTRY(thr);
+	DUK_ASSERT(thr->builtins[DUK_BIDX_GLOBAL] != NULL);
+	DUK_ASSERT(key[key_len] == (char) 0);
+
+	/* XXX: direct implementation */
+
+	duk_push_hobject(thr, thr->builtins[DUK_BIDX_GLOBAL]);
+	ret = duk_get_prop_literal_raw(thr, -1, key, key_len);
+	duk_remove_m2(thr);
+	return ret;
+}
+#endif
+
+DUK_EXTERNAL duk_bool_t duk_get_global_heapptr(duk_hthread *thr, void *ptr) {
+	duk_bool_t ret;
+
+	DUK_ASSERT_API_ENTRY(thr);
+	DUK_ASSERT(thr->builtins[DUK_BIDX_GLOBAL] != NULL);
+
+	/* XXX: direct implementation */
+
+	duk_push_hobject(thr, thr->builtins[DUK_BIDX_GLOBAL]);
+	ret = duk_get_prop_heapptr(thr, -1, ptr);
+	duk_remove_m2(thr);
+	return ret;
+}
+
+
 DUK_EXTERNAL duk_bool_t duk_put_global_string(duk_hthread *thr, const char *key) {
 	duk_bool_t ret;
 
@@ -723,6 +803,39 @@ DUK_EXTERNAL duk_bool_t duk_put_global_lstring(duk_hthread *thr, const char *key
 	duk_push_hobject(thr, thr->builtins[DUK_BIDX_GLOBAL]);
 	duk_insert(thr, -2);
 	ret = duk_put_prop_lstring(thr, -2, key, key_len);  /* [ ... global val ] -> [ ... global ] */
+	duk_pop(thr);
+	return ret;
+}
+
+#if !defined(DUK_USE_PREFER_SIZE)
+DUK_EXTERNAL duk_bool_t duk_put_global_literal_raw(duk_hthread *thr, const char *key, duk_size_t key_len) {
+	duk_bool_t ret;
+
+	DUK_ASSERT_API_ENTRY(thr);
+	DUK_ASSERT(thr->builtins[DUK_BIDX_GLOBAL] != NULL);
+	DUK_ASSERT(key[key_len] == (char) 0);
+
+	/* XXX: direct implementation */
+
+	duk_push_hobject(thr, thr->builtins[DUK_BIDX_GLOBAL]);
+	duk_insert(thr, -2);
+	ret = duk_put_prop_literal_raw(thr, -2, key, key_len);  /* [ ... global val ] -> [ ... global ] */
+	duk_pop(thr);
+	return ret;
+}
+#endif
+
+DUK_EXTERNAL duk_bool_t duk_put_global_heapptr(duk_hthread *thr, void *ptr) {
+	duk_bool_t ret;
+
+	DUK_ASSERT_API_ENTRY(thr);
+	DUK_ASSERT(thr->builtins[DUK_BIDX_GLOBAL] != NULL);
+
+	/* XXX: direct implementation */
+
+	duk_push_hobject(thr, thr->builtins[DUK_BIDX_GLOBAL]);
+	duk_insert(thr, -2);
+	ret = duk_put_prop_heapptr(thr, -2, ptr);  /* [ ... global val ] -> [ ... global ] */
 	duk_pop(thr);
 	return ret;
 }
