@@ -14,12 +14,14 @@ description: >
   pointers with duk_xxx_heapptr().
 
   When this option is defined, duk_hstrings related to literals encountered
-  in duk_xxx_literal() API calls are automatically pinned for the lifetime of
-  the heap.  This accomplishes two things.  First, it avoids the need for
-  any form of cache invalidation for the literal cache.  Second, it avoids
-  string table traffic (i.e. freeing and reallocating) for literals which are
-  likely to occur again and again.  However, the downside is that some strings
-  that may occur only temporarily will remain pinned.  You can avoid this by
-  simply using e.g. duk_xxx_string() when dealing with such strings.
+  in duk_xxx_literal() API calls are automatically pinned between
+  mark-and-sweep rounds.  This accomplishes two things.  First, it avoids the
+  need for cache invalidation for the literal cache in normal operation between
+  mark-and-sweep rounds.  Second, it reduces string table traffic (i.e. freeing
+  and reallocating) for literals which are likely to occur again and again.
+  However, the downside is that some strings that may occur only temporarily
+  will remain pinned until the next mark-and-sweep round.  If this matter, you
+  can avoid it by simply using e.g. duk_xxx_string() when dealing with such
+  strings.
 
   The literal cache size must be a power of two (2^N).
