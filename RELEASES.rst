@@ -3209,14 +3209,16 @@ Planned
   (GH-1805)
 
 * Automatically pin strings accessed using the C literal API call variants
-  such as duk_get_prop_literal(ctx, "propname") so that the strings are only
-  freed on heap destruction; this behavior can be disabled by disabling
-  DUK_USE_LITCACHE_SIZE in configure.py (GH-1813)
+  such as duk_get_prop_literal(ctx, "propname") between mark-and-sweep rounds
+  to facilitate literal caching and to reduce string table traffic; this
+  behavior can be disabled by disabling DUK_USE_LITCACHE_SIZE in configure.py
+  (GH-1813)
 
 * Add a lookup cache for C literals to speed up string table lookups when
   using API call variants such as duk_get_prop_literal(ctx, "propname");
-  the cache relies on literals being pinned, and can be disabled by disabling
-  DUK_USE_LITCACHE_SIZE in configure.py (GH-1813)
+  the cache relies on literals being pinned between mark-and-sweep rounds,
+  and can be disabled by disabling DUK_USE_LITCACHE_SIZE in configure.py
+  (GH-1813)
 
 * ES2015 Number constructor properties: EPSILON, MIN_SAFE_INTEGER,
   MAX_SAFE_INTEGER, isFinite(), isInteger(), isNaN(), isSafeInteger(),
