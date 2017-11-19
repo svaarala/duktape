@@ -2325,7 +2325,10 @@ def rom_emit_strings_source(genc, meta):
     for lst in romstr_hash:
         for v in reversed(lst):
             tmp = 'DUK_INTERNAL const duk_romstr_%d %s = {' % (len(v), bi_str_map[v])
-            flags = [ 'DUK_HTYPE_STRING', 'DUK_HEAPHDR_FLAG_READONLY', 'DUK_HEAPHDR_FLAG_REACHABLE' ]
+            flags = [ 'DUK_HTYPE_STRING',
+                      'DUK_HEAPHDR_FLAG_READONLY',
+                      'DUK_HEAPHDR_FLAG_REACHABLE',
+                      'DUK_HSTRING_FLAG_PINNED_LITERAL' ]
             is_arridx = string_is_arridx(v)
 
             blen = len(v)

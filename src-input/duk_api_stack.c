@@ -4316,19 +4316,19 @@ DUK_EXTERNAL const char *duk_push_lstring(duk_hthread *thr, const char *str, duk
 
 	DUK_ASSERT_API_ENTRY(thr);
 
-	/* check stack before interning (avoid hanging temp) */
+	/* Check stack before interning (avoid hanging temp). */
 	DUK__CHECK_SPACE();
 
 	/* NULL with zero length represents an empty string; NULL with higher
-	 * length is also now trated like an empty string although it is
+	 * length is also now treated like an empty string although it is
 	 * a bit dubious.  This is unlike duk_push_string() which pushes a
 	 * 'null' if the input string is a NULL.
 	 */
-	if (!str) {
-		len = 0;
+	if (DUK_UNLIKELY(str == NULL)) {
+		len = 0U;
 	}
 
-	/* Check for maximum string length */
+	/* Check for maximum string length. */
 	if (DUK_UNLIKELY(len > DUK_HSTRING_MAX_BYTELEN)) {
 		DUK_ERROR_RANGE(thr, DUK_STR_STRING_TOO_LONG);
 		DUK_WO_NORETURN(return NULL;);
@@ -4356,15 +4356,40 @@ DUK_EXTERNAL const char *duk_push_string(duk_hthread *thr, const char *str) {
 }
 
 #if !defined(DUK_USE_PREFER_SIZE)
+#if defined(DUK_USE_LITCACHE_SIZE)
+DUK_EXTERNAL const char *duk_push_literal_raw(duk_hthread *thr, const char *str, duk_size_t len) {
+	duk_hstring *h;
+	duk_tval *tv_slot;
+
+	DUK_ASSERT_API_ENTRY(thr);
+	DUK_ASSERT(str != NULL);
+	DUK_ASSERT(str[len] == (char) 0);
+
+	/* Check for maximum string length. */
+	if (DUK_UNLIKELY(len > DUK_HSTRING_MAX_BYTELEN)) {
+		DUK_ERROR_RANGE(thr, DUK_STR_STRING_TOO_LONG);
+		DUK_WO_NORETURN(return NULL;);
+	}
+
+	h = duk_heap_strtable_intern_literal_checked(thr, (const duk_uint8_t *) str, (duk_uint32_t) len);
+	DUK_ASSERT(h != NULL);
+
+	tv_slot = thr->valstack_top++;
+	DUK_TVAL_SET_STRING(tv_slot, h);
+	DUK_HSTRING_INCREF(thr, h);  /* no side effects */
+
+	return (const char *) DUK_HSTRING_GET_DATA(h);
+}
+#else  /* DUK_USE_LITCACHE_SIZE */
 DUK_EXTERNAL const char *duk_push_literal_raw(duk_hthread *thr, const char *str, duk_size_t len) {
 	DUK_ASSERT_API_ENTRY(thr);
 	DUK_ASSERT(str != NULL);
 	DUK_ASSERT(str[len] == (char) 0);
 
-	/* No difference to duk_push_lstring() for now. */
 	return duk_push_lstring(thr, str, len);
 }
-#endif
+#endif  /* DUK_USE_LITCACHE_SIZE */
+#endif  /* !DUK_USE_PREFER_SIZE */
 
 DUK_EXTERNAL void duk_push_pointer(duk_hthread *thr, void *val) {
 	duk_tval *tv_slot;

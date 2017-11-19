@@ -27,6 +27,7 @@ example: |
 
 tags:
   - codec
+  - hex
 
 seealso:
   - duk_hex_decode

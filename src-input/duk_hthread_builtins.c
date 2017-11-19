@@ -748,7 +748,7 @@ DUK_INTERNAL void duk_hthread_create_builtin_objects(duk_hthread *thr) {
 			"f"
 #endif
 			" "
-			/* Low memory options */
+			/* Low memory/performance options */
 #if defined(DUK_USE_STRTAB_PTRCOMP)
 			"s"
 #endif
@@ -788,6 +788,9 @@ DUK_INTERNAL void duk_hthread_create_builtin_objects(duk_hthread *thr) {
 			 * are in ROM.
 			 */
 			"Z"
+#endif
+#if defined(DUK_USE_LITCACHE_SIZE)
+			"l"
 #endif
 	                " "
 			/* Object property allocation layout */

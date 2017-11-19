@@ -18,5 +18,6 @@ example: |
 
 tags:
   - compile
+  - string
 
 introduced: 1.0.0

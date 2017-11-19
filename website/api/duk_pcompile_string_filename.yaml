@@ -27,5 +27,6 @@ example: |
 tags:
   - compile
   - protected
+  - string
 
 introduced: 1.0.0

@@ -21,6 +21,7 @@ example: |
 tags:
   - stack
   - borrowed
+  - heapptr
 
 seealso:
   - duk_get_heapptr

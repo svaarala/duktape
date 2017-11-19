@@ -27,11 +27,11 @@ example: |
 
   str = duk_opt_lstring(ctx, -3, &len, "foo" "\x00" "bar", 7);
 
-seealso:
-  - duk_opt_string
-
 tags:
   - stack
   - string
+
+seealso:
+  - duk_opt_string
 
 introduced: 2.1.0

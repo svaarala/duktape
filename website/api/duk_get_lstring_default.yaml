@@ -19,11 +19,11 @@ example: |
 
   str = duk_get_lstring_default(ctx, -3, &len, "foo" "\x00" "bar", 7);
 
-seealso:
-  - duk_get_string_default
-
 tags:
   - stack
   - string
+
+seealso:
+  - duk_get_string_default
 
 introduced: 2.1.0

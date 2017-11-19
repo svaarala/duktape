@@ -22,6 +22,7 @@ example: |
 
 tags:
   - codec
+  - base64
 
 seealso:
   - duk_base64_encode

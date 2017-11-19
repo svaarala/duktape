@@ -57,6 +57,7 @@ tags:
   - stack
   - object
   - borrowed
+  - heapptr
 
 seealso:
   - duk_get_heapptr

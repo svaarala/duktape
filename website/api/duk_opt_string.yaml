@@ -27,11 +27,11 @@ summary: |
 example: |
   const char *host = duk_opt_string(ctx, 3, "localhost");
 
-seealso:
-  - duk_opt_lstring
-
 tags:
   - stack
   - string
+
+seealso:
+  - duk_opt_lstring
 
 introduced: 2.1.0

@@ -19,6 +19,7 @@ example: |
 
 tags:
   - property
+  - string
 
 seealso:
   - duk_has_prop

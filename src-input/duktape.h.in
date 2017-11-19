@@ -901,7 +901,8 @@ DUK_EXTERNAL_DECL void duk_config_buffer(duk_context *ctx, duk_idx_t idx, void *
  *  The basic function assumes key is on stack.  The _(l)string variant takes
  *  a C string as a property name; the _literal variant takes a C literal.
  *  The _index variant takes an array index as a property name (e.g. 123 is
- *  equivalent to the key "123").
+ *  equivalent to the key "123").  The _heapptr variant takes a raw, borrowed
+ *  heap pointer.
  */
 
 DUK_EXTERNAL_DECL duk_bool_t duk_get_prop(duk_context *ctx, duk_idx_t obj_idx);

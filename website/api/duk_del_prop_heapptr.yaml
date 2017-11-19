@@ -25,6 +25,8 @@ example: |
 
 tags:
   - property
+  - borrowed
+  - heapptr
 
 seealso:
   - duk_del_prop

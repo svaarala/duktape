@@ -24,6 +24,7 @@ example: |
 
 tags:
   - compile
+  - string
 
 seealso:
   - duk_eval_lstring_noresult

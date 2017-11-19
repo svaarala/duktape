@@ -294,7 +294,7 @@ struct duk_breakpoint {
  *  Thus, string caches are now at the heap level now.
  */
 
-struct duk_strcache {
+struct duk_strcache_entry {
 	duk_hstring *h;
 	duk_uint32_t bidx;
 	duk_uint32_t cidx;
@@ -324,6 +324,15 @@ struct duk_ljstate {
 		DUK_ASSERT(heap != NULL); \
 		DUK_ASSERT(heap->lj.type != DUK_LJ_TYPE_UNKNOWN); \
 	} while (0)
+
+/*
+ *  Literal intern cache
+ */
+
+struct duk_litcache_entry {
+	const duk_uint8_t *addr;
+	duk_hstring *h;
+};
 
 /*
  *  Main heap structure
@@ -551,7 +560,15 @@ struct duk_heap {
 	/* String access cache (codepoint offset -> byte offset) for fast string
 	 * character looping; 'weak' reference which needs special handling in GC.
 	 */
-	duk_strcache strcache[DUK_HEAP_STRCACHE_SIZE];
+	duk_strcache_entry strcache[DUK_HEAP_STRCACHE_SIZE];
+
+#if defined(DUK_USE_LITCACHE_SIZE)
+	/* Literal intern cache.  When enabled, strings interned as literals
+	 * (e.g. duk_push_literal()) will be pinned and cached for the lifetime
+	 * of the heap.
+	 */
+	duk_litcache_entry litcache[DUK_USE_LITCACHE_SIZE];
+#endif
 
 	/* Built-in strings. */
 #if defined(DUK_USE_ROM_STRINGS)
@@ -583,6 +600,9 @@ struct duk_heap {
 	duk_int_t stats_strtab_resize_check;
 	duk_int_t stats_strtab_resize_grow;
 	duk_int_t stats_strtab_resize_shrink;
+	duk_int_t stats_strtab_litcache_hit;
+	duk_int_t stats_strtab_litcache_miss;
+	duk_int_t stats_strtab_litcache_pin;
 	duk_int_t stats_object_realloc_props;
 	duk_int_t stats_object_abandon_array;
 	duk_int_t stats_getownpropdesc_count;
@@ -643,6 +663,9 @@ DUK_INTERNAL_DECL void duk_heap_switch_thread(duk_heap *heap, duk_hthread *new_t
 
 DUK_INTERNAL_DECL duk_hstring *duk_heap_strtable_intern(duk_heap *heap, const duk_uint8_t *str, duk_uint32_t blen);
 DUK_INTERNAL_DECL duk_hstring *duk_heap_strtable_intern_checked(duk_hthread *thr, const duk_uint8_t *str, duk_uint32_t len);
+#if defined(DUK_USE_LITCACHE_SIZE)
+DUK_INTERNAL_DECL duk_hstring *duk_heap_strtable_intern_literal_checked(duk_hthread *thr, const duk_uint8_t *str, duk_uint32_t blen);
+#endif
 DUK_INTERNAL_DECL duk_hstring *duk_heap_strtable_intern_u32(duk_heap *heap, duk_uint32_t val);
 DUK_INTERNAL_DECL duk_hstring *duk_heap_strtable_intern_u32_checked(duk_hthread *thr, duk_uint32_t val);
 #if defined(DUK_USE_REFERENCE_COUNTING)

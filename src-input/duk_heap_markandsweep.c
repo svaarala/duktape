@@ -588,7 +588,13 @@ DUK_LOCAL void duk__sweep_stringtable(duk_heap *heap, duk_size_t *out_count_keep
 			duk_hstring *next;
 			next = h->hdr.h_next;
 
-			if (DUK_HEAPHDR_HAS_REACHABLE((duk_heaphdr *) h)) {
+#if defined(DUK_USE_LITCACHE_SIZE)
+			if (DUK_HEAPHDR_HAS_REACHABLE((duk_heaphdr *) h) ||
+			    DUK_HSTRING_HAS_PINNED_LITERAL(h))
+#else
+			if (DUK_HEAPHDR_HAS_REACHABLE((duk_heaphdr *) h))
+#endif
+			{
 				DUK_HEAPHDR_CLEAR_REACHABLE((duk_heaphdr *) h);
 				count_keep++;
 				prev = h;
@@ -990,6 +996,7 @@ DUK_LOCAL void duk__clear_assert_refcounts(duk_heap *heap) {
 
 DUK_LOCAL void duk__check_refcount_heaphdr(duk_heaphdr *hdr) {
 	duk_bool_t count_ok;
+	duk_size_t expect_refc;
 
 	/* The refcount check only makes sense for reachable objects on
 	 * heap_allocated or string table, after the sweep phase.  Prior to
@@ -1006,7 +1013,11 @@ DUK_LOCAL void duk__check_refcount_heaphdr(duk_heaphdr *hdr) {
 	 */
 	DUK_ASSERT(!DUK_HEAPHDR_HAS_READONLY(hdr));
 
-	count_ok = ((duk_size_t) DUK_HEAPHDR_GET_REFCOUNT(hdr) == hdr->h_assert_refcount);
+	expect_refc = hdr->h_assert_refcount;
+	if (DUK_HEAPHDR_IS_STRING(hdr) && DUK_HSTRING_HAS_PINNED_LITERAL((duk_hstring *) hdr)) {
+		expect_refc++;
+	}
+	count_ok = ((duk_size_t) DUK_HEAPHDR_GET_REFCOUNT(hdr) == expect_refc);
 	if (!count_ok) {
 		DUK_D(DUK_DPRINT("refcount mismatch for: %p: header=%ld counted=%ld --> %!iO",
 		                 (void *) hdr, (long) DUK_HEAPHDR_GET_REFCOUNT(hdr),
@@ -1063,10 +1074,13 @@ DUK_LOCAL void duk__dump_stats(duk_heap *heap) {
 	DUK_D(DUK_DPRINT("stats mark-and-sweep: try_count=%ld, skip_count=%ld, emergency_count=%ld",
 	                 (long) heap->stats_ms_try_count, (long) heap->stats_ms_skip_count,
 	                 (long) heap->stats_ms_emergency_count));
-	DUK_D(DUK_DPRINT("stats stringtable: intern_hit=%ld, intern_miss=%ld, resize_check=%ld, resize_grow=%ld, resize_shrink=%ld",
+	DUK_D(DUK_DPRINT("stats stringtable: intern_hit=%ld, intern_miss=%ld, "
+	                 "resize_check=%ld, resize_grow=%ld, resize_shrink=%ld, "
+	                 "litcache_hit=%ld, litcache_miss=%ld, litcache_pin=%ld",
 	                 (long) heap->stats_strtab_intern_hit, (long) heap->stats_strtab_intern_miss,
 	                 (long) heap->stats_strtab_resize_check, (long) heap->stats_strtab_resize_grow,
-	                 (long) heap->stats_strtab_resize_shrink));
+	                 (long) heap->stats_strtab_resize_shrink, (long) heap->stats_strtab_litcache_hit,
+	                 (long) heap->stats_strtab_litcache_miss, (long) heap->stats_strtab_litcache_pin));
 	DUK_D(DUK_DPRINT("stats object: realloc_props=%ld, abandon_array=%ld",
 	                 (long) heap->stats_object_realloc_props, (long) heap->stats_object_abandon_array));
 	DUK_D(DUK_DPRINT("stats getownpropdesc: count=%ld, hit=%ld, miss=%ld",

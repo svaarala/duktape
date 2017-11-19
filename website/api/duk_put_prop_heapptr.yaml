@@ -26,6 +26,8 @@ example: |
 
 tags:
   - property
+  - borrowed
+  - heapptr
 
 seealso:
   - duk_put_prop

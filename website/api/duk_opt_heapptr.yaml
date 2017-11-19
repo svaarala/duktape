@@ -23,5 +23,6 @@ example: |
 tags:
   - stack
   - borrowed
+  - heapptr
 
 introduced: 2.1.0

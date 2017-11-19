@@ -29,6 +29,7 @@ example: |
 tags:
   - compile
   - protected
+  - string
 
 seealso:
   - duk_peval_lstring_noresult

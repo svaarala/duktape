@@ -1,7 +1,7 @@
 name: duk_push_literal
 
 proto: |
-  const char *duk_push_literal(duk_context *ctx, const char *literal_str);
+  const char *duk_push_literal(duk_context *ctx, const char *str_literal);
 
 stack: |
   [ ... ] -> [ ... str! ]
@@ -9,26 +9,37 @@ stack: |
 summary: |
   <p>Push a C literal into the stack and return a pointer to the interned
   string data area (which may or may not be the same as the argument literal).
-  The argument <code>str_literal</code> must be a non-NULL C literal that can be
-  operated on using e.g. <code>sizeof(str)</code>.  The data contents of the
-  literal must be immutable, and the string must not contain NUL characters.
-  The <code>str_literal</code> argument may be evaluated multiple times by the
-  API macro.  Finally, no runtime NULL pointer check is made for the
+  The argument <code>str_literal</code>:</p>
+  <ul>
+  <li>must be a non-NULL C literal like <code>"foo"</code> which can be operated
+      on using e.g. <code>sizeof(str)</code>, where sizeof() yields string
+      length, including the automatic NUL terminator (for example, sizeof("foo")
+      is 4);</li>
+  <li>must have immutable data contents, i.e. read-only memory, or writable
+      memory but guaranteed not to be changed; and</li>
+  <li>must not contain internal NUL characters, and must have a terminating
+      NUL as usual for C strings.</li>
+  </ul>
+
+  <p>The <code>str_literal</code> argument may be evaluated multiple times by
+  the API macro.  No runtime NULL pointer check is made for the
   <code>str_literal</code> argument so passing in a NULL causes memory unsafe
   behavior.</p>
 
-  <p>This call is conceptually equivalent to duk_push_string(), and
-  only needs to be used if the minor differences in footprint or speed
-  matter.  The properties of immutable literals allows minor optimizations
+  <p>This call is conceptually equivalent to duk_push_string().  Calling code
+  only needs to use it if the minor differences in footprint or speed
+  matter.  The properties of immutable C literals allows minor optimizations
   in Duktape internals:</p>
   <ul>
   <li>The length of the string can be computed at compile time using
       <code>sizeof(str_literal) - 1</code> at the call site.</li>
-  <li>Because the string address is fixed at runtime, it could be used
-      for speeding up a string table lookup for the literal.  While common,
-      there's no assumption that strings are deduplicated, so there may be
-      multiple addresses with the same literal.  (This optimization is not
-      done as of Duktape 2.3.)</li>
+  <li>By default heap strings accessed via C literals (duk_push_literal()
+      or any of the literal convenience calls like duk_get_prop_literal())
+      are automatically pinned until heap destruction, and there's a lookup
+      cache for mapping a C literal address to the pinned internal heap string.
+      This optimization doesn't assume string deduplication (which is not
+      guaranteed), i.e. there may be multiple addresses with the same literal
+      data.</li>
   <li>Because the string data is assumed to be immutable, the internal
       string representation could just point to the data instead of
       making a copy.  (This optimization is not done as of Duktape 2.3.)</li>
@@ -51,7 +62,7 @@ example: |
 
 tags:
   - stack
-  - string
+  - literal
   - experimental
 
 introduced: 2.3.0

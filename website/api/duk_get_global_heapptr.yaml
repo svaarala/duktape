@@ -18,6 +18,8 @@ example: |
 
 tags:
   - property
+  - borrowed
+  - heapptr
 
 seealso:
   - duk_get_global_string
