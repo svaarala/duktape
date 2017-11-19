@@ -1035,7 +1035,7 @@ duk_heap *duk_heap_alloc(duk_alloc_function alloc_func,
 #else
 #if defined(DUK_USE_EXPLICIT_NULL_INIT)
 	{
-		duk_small_uint_t i;
+		duk_uint32_t i;
 	        for (i = 0; i < st_initsize; i++) {
 			res->strtable[i] = NULL;
 	        }
@@ -1051,7 +1051,7 @@ duk_heap *duk_heap_alloc(duk_alloc_function alloc_func,
 
 #if defined(DUK_USE_EXPLICIT_NULL_INIT)
 	{
-		duk_small_uint_t i;
+		duk_uint_t i;
 		for (i = 0; i < DUK_HEAP_STRCACHE_SIZE; i++) {
 			res->strcache[i].h = NULL;
 		}
@@ -1066,7 +1066,7 @@ duk_heap *duk_heap_alloc(duk_alloc_function alloc_func,
 	DUK_ASSERT(DUK_IS_POWER_OF_TWO((duk_uint_t) DUK_USE_LITCACHE_SIZE));
 #if defined(DUK_USE_EXPLICIT_NULL_INIT)
 	{
-		duk_small_uint_t i;
+		duk_uint_t i;
 		for (i = 0; i < DUK_USE_LITCACHE_SIZE; i++) {
 			res->litcache[i].addr = NULL;
 			res->litcache[i].h = NULL;

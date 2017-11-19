@@ -831,8 +831,8 @@ DUK_INTERNAL duk_hstring *duk_heap_strtable_intern_literal_checked(duk_hthread *
 	key = duk__strtable_litcache_key(str, blen);
 	ent = thr->heap->litcache + key;
 	if (ent->addr == str) {
-		DUK_D(DUK_DPRINT("intern check for cached, pinned literal: str=%p, blen=%ld -> duk_hstring %!O",
-		                 (const void *) str, (long) blen, (duk_heaphdr *) ent->h));
+		DUK_DD(DUK_DDPRINT("intern check for cached, pinned literal: str=%p, blen=%ld -> duk_hstring %!O",
+		                   (const void *) str, (long) blen, (duk_heaphdr *) ent->h));
 		DUK_ASSERT(ent->h != NULL);
 		DUK_ASSERT(DUK_HSTRING_HAS_PINNED_LITERAL(ent->h));
 		DUK_STATS_INC(thr->heap, stats_strtab_litcache_hit);
@@ -845,14 +845,15 @@ DUK_INTERNAL duk_hstring *duk_heap_strtable_intern_literal_checked(duk_hthread *
 	ent->h = h;
 	DUK_STATS_INC(thr->heap, stats_strtab_litcache_miss);
 
-	/* Pin the duk_hstring for the duration of the heap.  This means
-	 * litcache entries don't need to be invalidated as their target
-	 * duk_hstring is not freed until heap destruction.  The pin remains
-	 * even if the literal cache entry is overwritten, and is still useful
-	 * to avoid string table traffic.
+	/* Pin the duk_hstring until the next mark-and-sweep.  This means
+	 * litcache entries don't need to be invalidated until the next
+	 * mark-and-sweep as their target duk_hstring is not freed before
+	 * the mark-and-sweep happens.  The pin remains even if the literal
+	 * cache entry is overwritten, and is still useful to avoid string
+	 * table traffic.
 	 */
 	if (!DUK_HSTRING_HAS_PINNED_LITERAL(h)) {
-		DUK_D(DUK_DPRINT("pin duk_hstring because it is a literal: %!O", (duk_heaphdr *) h));
+		DUK_DD(DUK_DDPRINT("pin duk_hstring because it is a literal: %!O", (duk_heaphdr *) h));
 		DUK_ASSERT(!DUK_HEAPHDR_HAS_READONLY((duk_heaphdr *) h));
 		DUK_HSTRING_INCREF(thr, h);
 		DUK_HSTRING_SET_PINNED_LITERAL(h);
