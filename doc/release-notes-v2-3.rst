@@ -18,9 +18,9 @@ Main changes in this release (see RELEASES.rst for full details):
   conceptually similar to the duk_xxx_string() variants, but can take advantage
   of the fact that e.g. string length for a C literal can be determined at
   compile time using sizeof("myProperty") - 1 (the -1 is for NUL termination).
-  Literal strings used by application code are also automatically pinned for
-  the duration of the heap, and a small lookup cache makes mapping a C literal
-  to a heap string object quite fast (almost as fast as using a heapptr).
+  Literal strings used by application code are also automatically pinned
+  between mark-and-sweep rounds, and a small lookup cache makes mapping a C
+  literal to a heap string object quite fast (almost as fast as using a heapptr).
   For now the calls are experimental.
 
 Upgrading from Duktape 2.2
