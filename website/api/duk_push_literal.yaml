@@ -35,11 +35,11 @@ summary: |
       <code>sizeof(str_literal) - 1</code> at the call site.</li>
   <li>By default heap strings accessed via C literals (duk_push_literal()
       or any of the literal convenience calls like duk_get_prop_literal())
-      are automatically pinned until heap destruction, and there's a lookup
-      cache for mapping a C literal address to the pinned internal heap string.
-      This optimization doesn't assume string deduplication (which is not
-      guaranteed), i.e. there may be multiple addresses with the same literal
-      data.</li>
+      are automatically pinned until the next mark-and-sweep round, and
+      there's a lookup cache for mapping a C literal address to the pinned
+      internal heap string.  This optimization doesn't assume string
+      deduplication (which is common but not guaranteed), i.e. there may be
+      multiple addresses with the same literal data.</li>
   <li>Because the string data is assumed to be immutable, the internal
       string representation could just point to the data instead of
       making a copy.  (This optimization is not done as of Duktape 2.3.)</li>
