@@ -588,12 +588,7 @@ DUK_LOCAL void duk__sweep_stringtable(duk_heap *heap, duk_size_t *out_count_keep
 			duk_hstring *next;
 			next = h->hdr.h_next;
 
-#if defined(DUK_USE_LITCACHE_SIZE)
-			if (DUK_HEAPHDR_HAS_REACHABLE((duk_heaphdr *) h) ||
-			    DUK_HSTRING_HAS_PINNED_LITERAL(h))
-#else
 			if (DUK_HEAPHDR_HAS_REACHABLE((duk_heaphdr *) h))
-#endif
 			{
 				DUK_HEAPHDR_CLEAR_REACHABLE((duk_heaphdr *) h);
 				count_keep++;
@@ -603,13 +598,26 @@ DUK_LOCAL void duk__sweep_stringtable(duk_heap *heap, duk_size_t *out_count_keep
 				count_free++;
 #endif
 
+				/* For pinned strings the refcount has been
+				 * bumped.  We could unbump it here before
+				 * freeing, but that's actually not necessary
+				 * except for assertions.
+				 */
+#if 0
+				if (DUK_HSTRING_HAS_PINNED_LITERAL(h)) {
+					DUK_ASSERT(DUK_HEAPHDR_GET_REFCOUNT((duk_heaphdr *) h) > 0U);
+					DUK_HSTRING_DECREF_NORZ(heap->heap_thread, h);
+					DUK_HSTRING_CLEAR_PINNED_LITERAL(h);
+				}
+#endif
 #if defined(DUK_USE_REFERENCE_COUNTING)
 				/* Non-zero refcounts should not happen for unreachable strings,
 				 * because we refcount finalize all unreachable objects which
 				 * should have decreased unreachable string refcounts to zero
-				 * (even for cycles).
+				 * (even for cycles).  However, pinned strings have a +1 bump.
 				 */
-				DUK_ASSERT(DUK_HEAPHDR_GET_REFCOUNT((duk_heaphdr *) h) == 0);
+				DUK_ASSERT(DUK_HEAPHDR_GET_REFCOUNT((duk_heaphdr *) h) ==
+				           DUK_HSTRING_HAS_PINNED_LITERAL(h) ? 1U : 0U);
 #endif
 
 				/* Deal with weak references first. */
@@ -811,6 +819,26 @@ DUK_LOCAL void duk__sweep_heap(duk_heap *heap, duk_small_uint_t flags, duk_size_
 #endif
 	*out_count_keep = count_keep;
 }
+
+/*
+ *  Litcache helpers.
+ */
+
+#if defined(DUK_USE_LITCACHE_SIZE)
+DUK_LOCAL void duk__wipe_litcache(duk_heap *heap) {
+	duk_uint_t i;
+	duk_litcache_entry *e;
+
+	e = heap->litcache;
+	for (i = 0; i < DUK_USE_LITCACHE_SIZE; i++) {
+		e->addr = NULL;
+		/* e->h does not need to be invalidated: when e->addr is
+		 * NULL, e->h is considered garbage.
+		 */
+		e++;
+	}
+}
+#endif  /* DUK_USE_LITCACHE_SIZE */
 
 /*
  *  Object compaction.
@@ -1054,6 +1082,22 @@ DUK_LOCAL void duk__check_assert_refcounts(duk_heap *heap) {
 	}
 }
 #endif  /* DUK_USE_REFERENCE_COUNTING */
+
+#if defined(DUK_USE_LITCACHE_SIZE)
+DUK_LOCAL void duk__assert_litcache_nulls(duk_heap *heap) {
+	duk_uint_t i;
+	duk_litcache_entry *e;
+
+	e = heap->litcache;
+	for (i = 0; i < DUK_USE_LITCACHE_SIZE; i++) {
+		/* Entry addresses were NULLed before mark-and-sweep, check
+		 * that they're still NULL afterwards to ensure no pointers
+		 * were recorded through any side effects.
+		 */
+		DUK_ASSERT(e->addr == NULL);
+	}
+}
+#endif  /* DUK_USE_LITCACHE_SIZE */
 #endif  /* DUK_USE_ASSERTIONS */
 
 /*
@@ -1221,6 +1265,9 @@ DUK_INTERNAL void duk_heap_mark_and_sweep(duk_heap *heap, duk_small_uint_t flags
 #if defined(DUK_USE_ASSERTIONS) && defined(DUK_USE_REFERENCE_COUNTING)
 	duk__clear_assert_refcounts(heap);
 #endif
+#if defined(DUK_USE_LITCACHE_SIZE)
+	duk__wipe_litcache(heap);
+#endif
 	duk__mark_roots_heap(heap);               /* Mark main reachability roots. */
 #if defined(DUK_USE_REFERENCE_COUNTING)
 	DUK_ASSERT(heap->refzero_list == NULL);   /* Always handled to completion inline in DECREF. */
@@ -1326,6 +1373,9 @@ DUK_INTERNAL void duk_heap_mark_and_sweep(duk_heap *heap, duk_small_uint_t flags
 	 */
 	duk__assert_valid_refcounts(heap);
 #endif  /* DUK_USE_REFERENCE_COUNTING */
+#if defined(DUK_USE_LITCACHE_SIZE)
+	duk__assert_litcache_nulls(heap);
+#endif  /* DUK_USE_LITCACHE_SIZE */
 #endif  /* DUK_USE_ASSERTIONS */
 
 	/*

@@ -77,6 +77,23 @@ static duk_ret_t test_basic(duk_context *ctx, void *udata) {
 	printf("len: %ld\n", (long) len);
 	duk_pop(ctx);
 
+	/* Push a literal (which pins it temporarily), force mark-and-sweep to
+	 * free it, repush, etc.  This exercises freeing of temporarily pinned
+	 * literals, and is useful for assertion testing.
+	 */
+	(void) duk_push_literal(ctx, "canBeCollected");
+	duk_pop(ctx);
+	duk_gc(ctx, 0);
+	duk_gc(ctx, 0);
+	(void) duk_push_literal(ctx, "canBeCollected");
+	duk_pop(ctx);
+	duk_gc(ctx, 0);
+	duk_gc(ctx, 0);
+	(void) duk_push_literal(ctx, "canBeCollected");
+	duk_pop(ctx);
+	duk_gc(ctx, 0);
+	duk_gc(ctx, 0);
+
 	printf("final top: %ld\n", (long) duk_get_top(ctx));
 	return 0;
 }

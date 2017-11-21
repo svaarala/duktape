@@ -18,7 +18,7 @@
  */
 
 DUK_INTERNAL void duk_heap_strcache_string_remove(duk_heap *heap, duk_hstring *h) {
-	duk_small_int_t i;
+	duk_uint_t i;
 	for (i = 0; i < DUK_HEAP_STRCACHE_SIZE; i++) {
 		duk_strcache_entry *c = heap->strcache + i;
 		if (c->h == h) {
@@ -94,7 +94,7 @@ DUK_INTERNAL duk_uint_fast32_t duk_heap_strcache_offset_char2byte(duk_hthread *t
 	duk_heap *heap;
 	duk_strcache_entry *sce;
 	duk_uint_fast32_t byte_offset;
-	duk_small_int_t i;
+	duk_uint_t i;
 	duk_bool_t use_cache;
 	duk_uint_fast32_t dist_start, dist_end, dist_sce;
 	duk_uint_fast32_t char_length;

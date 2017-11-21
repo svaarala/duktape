@@ -540,7 +540,7 @@ static duk_uint8_t *duk__load_func(duk_hthread *thr, duk_uint8_t *p, duk_uint8_t
 	DUK_ASSERT((count_const == 0 && count_funcs == 0) || tv1 != NULL);
 
 	q = fun_data;
-	duk_memcpy((void *) q, (const void *) tv1, sizeof(duk_tval) * count_const);
+	duk_memcpy_unsafe((void *) q, (const void *) tv1, sizeof(duk_tval) * count_const);
 	for (n = count_const; n > 0; n--) {
 		DUK_TVAL_INCREF_FAST(thr, (duk_tval *) (void *) q);  /* no side effects */
 		q += sizeof(duk_tval);
