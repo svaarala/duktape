@@ -3190,6 +3190,9 @@ Planned
 2.3.0 (XXXX-XX-XX)
 ------------------
 
+* Add duk_random() to allow C code access to the same random number source
+  as Ecmascript code (GH-1815)
+
 * Add duk_push_new_target() to allow C code to access new.target; at present
   this is for completeness because without actual class support it's only
   useful to detect constructor calls which can already be done using
