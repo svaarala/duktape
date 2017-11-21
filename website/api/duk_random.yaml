@@ -1,0 +1,18 @@
+name: duk_random
+
+proto: |
+  duk_double_t duk_random(duk_context *ctx);
+
+summary: |
+  <p>C API counterpart to <code>Math.random()</code>; returns a
+  random IEEE double in the range [0,1[.</p>
+
+example: |
+  if (duk_random(ctx) <= 0.01) {
+      printf("surprise!\n");
+  }
+
+tags:
+  - random
+
+introduced: 2.3.0

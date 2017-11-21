@@ -1046,6 +1046,12 @@ DUK_EXTERNAL_DECL duk_bool_t duk_samevalue(duk_context *ctx, duk_idx_t idx1, duk
 DUK_EXTERNAL_DECL duk_bool_t duk_instanceof(duk_context *ctx, duk_idx_t idx1, duk_idx_t idx2);
 
 /*
+ *  Random
+ */
+
+DUK_EXTERNAL_DECL duk_double_t duk_random(duk_context *ctx);
+
+/*
  *  Function (method) calls
  */
 
