@@ -272,6 +272,7 @@ static duk_ret_t test_func(duk_context *ctx, void *udata) {
 	(void) duk_put_prop_lstring(ctx, 0, "dummy", 0);
 	(void) duk_put_prop_string(ctx, 0, "dummy");
 	(void) duk_put_prop(ctx, 0);
+	(void) duk_random(ctx);
 	duk_range_error(ctx, "dummy");
 	duk_range_error_va(ctx, "dummy", NULL);
 	(void) duk_realloc_raw(ctx, NULL, 0);
