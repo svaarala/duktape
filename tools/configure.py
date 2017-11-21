@@ -405,6 +405,7 @@ def main():
         'duk_api_inspect.c',
         'duk_api_memory.c',
         'duk_api_object.c',
+        'duk_api_random.c',
         'duk_api_string.c',
         'duk_api_time.c',
         'duk_api_debug.c',
