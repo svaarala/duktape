@@ -2505,6 +2505,9 @@ DUK_INTERNAL duk_bool_t duk_handle_ecma_call_setup(duk_hthread *thr,
 		duk_size_t cs_index;
 		duk_int_t i_stk;  /* must be signed for loop structure */
 		duk_idx_t i_arg;
+#if defined(DUK_USE_DEBUGGER_SUPPORT)
+		duk_hthread *prev_step_thread;
+#endif
 
 		/*
 		 *  Tailcall handling
@@ -2538,9 +2541,21 @@ DUK_INTERNAL duk_bool_t duk_handle_ecma_call_setup(duk_hthread *thr,
 		}
 		duk_hthread_catchstack_unwind_norz(thr, i_stk + 1);
 
-		/* Unwind the topmost callstack entry before reusing it */
+		/* Unwind the topmost callstack entry before reusing it.
+		 * Avoid StepOut processing for the reused entry by NULLing
+		 * the step thread (compared in unwind), see
+		 * https://github.com/svaarala/duktape/issues/1684.
+		 */
 		DUK_ASSERT(thr->callstack_top > 0);
+#if defined(DUK_USE_DEBUGGER_SUPPORT)
+		prev_step_thread = thr->heap->dbg_step_thread;
+		thr->heap->dbg_step_thread = NULL;
+#endif
 		duk_hthread_callstack_unwind_norz(thr, thr->callstack_top - 1);
+#if defined(DUK_USE_DEBUGGER_SUPPORT)
+		DUK_ASSERT(thr->heap->dbg_step_thread == NULL);
+		thr->heap->dbg_step_thread = prev_step_thread;
+#endif
 
 		/* Then reuse the unwound activation; callstack was not shrunk so there is always space */
 		DUK_ASSERT(thr->callstack_top < thr->callstack_size);
