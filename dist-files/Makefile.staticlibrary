@@ -1,0 +1,52 @@
+#
+#  Example of how to build and install locally as a static library
+#
+#  Usage:
+#
+#    $ make -f Makefile.staticlibrary
+#    $ sudo make -f Makefile.staticlibrary install
+#    $ make -f Makefile.staticlibrary duk  # --> example 'duk' linked to static libduktape
+#
+#    $ ls -l duk
+#    -rwxrwxr-x 1 duktape duktape 413408 Nov 30 15:48 duk
+#
+#  Based on: http://tldp.org/HOWTO/Program-Library-HOWTO/static-libraries.html
+
+# Change to actual path for actual distribution packaging.
+INSTALL_PREFIX = /usr/local
+
+# The 'noline' variant may be more appropriate for some distributions; it
+# doesn't have #line directives in the combined source.
+DUKTAPE_SRCDIR = ./src
+#DUKTAPE_SRCDIR = ./src-noline
+
+AR ?= ar
+AR := $(AR)
+CC ?= gcc
+CC := $(CC)
+
+.PHONY: all
+all: libduktape.a libduktaped.a
+
+# If the default duk_config.h is not suitable for the distribution, modify it
+# before compiling the static library and copy the same, edited duk_config.h
+# to $INSTALL_PREFIX/include on installation.
+
+libduktape.a:
+	$(CC) -Wall -Wextra -Os -c $(DUKTAPE_SRCDIR)/duktape.c -o $(DUKTAPE_SRCDIR)/duktape.o
+	$(AR) rcs $@ $(DUKTAPE_SRCDIR)/duktape.o
+
+libduktaped.a:
+	$(CC) -g -Wall -Wextra -Os -c $(DUKTAPE_SRCDIR)/duktape.c -o $(DUKTAPE_SRCDIR)/duktaped.o
+	$(AR) rcs $@ $(DUKTAPE_SRCDIR)/duktaped.o
+
+.PHONY: install
+install: libduktape.a libduktaped.a
+	mkdir -p $(INSTALL_PREFIX)/lib/
+	cp $+ $(INSTALL_PREFIX)/lib/
+	mkdir -p $(INSTALL_PREFIX)/include/
+	cp $(DUKTAPE_SRCDIR)/duktape.h $(DUKTAPE_SRCDIR)/duk_config.h $(INSTALL_PREFIX)/include/
+
+CCOPTS = -I./examples/cmdline
+duk:
+	$(CC) $(CCOPTS) -I$(INSTALL_PREFIX)/include -L$(INSTALL_PREFIX)/lib -Wall -Wextra -Os -o $@ ./examples/cmdline/duk_cmdline.c -lduktape -lm
