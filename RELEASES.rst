@@ -3279,6 +3279,10 @@ Planned
 
 * Fix harmless -Wcast-align warnings on armhf (GH-1793)
 
+* Use __builtin_{setjmp,longjmp} for MinGW (GH-1443)
+
+* Identify Cygwin as "cygwin" instead of "windows" in Duktape.env (GH-1443)
+
 * Various compiler warning fixes (GH-1788)
 
 * Add automatic workaround for union aliasing issues with FreeBSD + -m32 +
