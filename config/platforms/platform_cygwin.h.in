@@ -12,4 +12,4 @@
 #define DUK_SETJMP(jb)        _setjmp((jb))
 #define DUK_LONGJMP(jb)       _longjmp((jb), 1)
 
-#define DUK_USE_OS_STRING "windows"
+#define DUK_USE_OS_STRING "cygwin"
