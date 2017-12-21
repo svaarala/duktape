@@ -874,11 +874,16 @@ def metadata_add_string_define_names(strlist, special_defs):
         if len(v) >= 1 and v[0] == '\x82':
             pfx = 'DUK_STRIDX_INT_'
             v = v[1:]
+        elif len(v) >= 1 and v[0] == '\x81' and v[-1] == '\xff':
+            pfx = 'DUK_STRIDX_WELLKNOWN_'
+            v = v[1:-1]
         else:
             pfx = 'DUK_STRIDX_'
 
         t = re.sub(r'([a-z0-9])([A-Z])', r'\1_\2', v)  # add underscores: aB -> a_B
+        t = re.sub(r'\.', '_', t)  # replace . with _, e.g. Symbol.iterator
         s['define'] = pfx + t.upper()
+        logger.debug('stridx define: ' + s['define'])
 
 # Add a 'stridx_used' flag for strings which need a stridx.
 def metadata_add_string_used_stridx(strlist, used_stridx_meta):
@@ -1389,6 +1394,7 @@ def steal_prop(props, key, allow_accessor=True):
 LENGTH_PROPERTY_ATTRIBUTES = 'c'
 ACCESSOR_PROPERTY_ATTRIBUTES = 'c'
 DEFAULT_DATA_PROPERTY_ATTRIBUTES = 'wc'
+DEFAULT_FUNC_PROPERTY_ATTRIBUTES = 'wc'
 
 # Encoding constants (must match duk_hthread_builtins.c).
 PROP_FLAGS_BITS = 3
@@ -1960,6 +1966,16 @@ def gen_ramobj_initdata_for_props(meta, be, bi, string_to_stridx, natfunc_name_t
         assert(magic >= 0)
         assert(magic <= 0xffff)
         be.varuint(magic)
+
+        default_attrs = DEFAULT_FUNC_PROPERTY_ATTRIBUTES
+        attrs = funprop.get('attributes', default_attrs)
+        attrs = attrs.replace('a', '')  # ram bitstream doesn't encode 'accessor' attribute
+        if attrs != default_attrs:
+            logger.debug('non-default attributes: %s -> %r (default %r)' % (funprop['key'], attrs, default_attrs))
+            be.bits(1, 1)  # flag: have custom attributes
+            be.bits(encode_property_flags(attrs), PROP_FLAGS_BITS)
+        else:
+            be.bits(0, 1)  # flag: no custom attributes
 
     return count_normal_props, count_function_props
 
