@@ -43,6 +43,9 @@ DUK_INTERNAL_DECL duk_small_int_t duk_js_buffer_compare(duk_heap *heap, duk_hbuf
 #endif
 DUK_INTERNAL_DECL duk_bool_t duk_js_compare_helper(duk_hthread *thr, duk_tval *tv_x, duk_tval *tv_y, duk_small_uint_t flags);
 DUK_INTERNAL_DECL duk_bool_t duk_js_instanceof(duk_hthread *thr, duk_tval *tv_x, duk_tval *tv_y);
+#if defined(DUK_USE_SYMBOL_BUILTIN)
+DUK_INTERNAL_DECL duk_bool_t duk_js_instanceof_ordinary(duk_hthread *thr, duk_tval *tv_x, duk_tval *tv_y);
+#endif
 DUK_INTERNAL_DECL duk_bool_t duk_js_in(duk_hthread *thr, duk_tval *tv_x, duk_tval *tv_y);
 DUK_INTERNAL_DECL duk_small_uint_t duk_js_typeof_stridx(duk_tval *tv_x);
 

@@ -2786,6 +2786,22 @@ DUK_EXTERNAL duk_bool_t duk_to_boolean(duk_hthread *thr, duk_idx_t idx) {
 	return val;
 }
 
+DUK_INTERNAL duk_bool_t duk_to_boolean_top_pop(duk_hthread *thr) {
+	duk_tval *tv;
+	duk_bool_t val;
+
+	DUK_ASSERT_API_ENTRY(thr);
+
+	tv = duk_require_tval(thr, -1);
+	DUK_ASSERT(tv != NULL);
+
+	val = duk_js_toboolean(tv);
+	DUK_ASSERT(val == 0 || val == 1);
+
+	duk_pop_unsafe(thr);
+	return val;
+}
+
 DUK_EXTERNAL duk_double_t duk_to_number(duk_hthread *thr, duk_idx_t idx) {
 	duk_tval *tv;
 	duk_double_t d;

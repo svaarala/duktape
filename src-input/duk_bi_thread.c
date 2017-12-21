@@ -66,8 +66,9 @@ DUK_INTERNAL duk_ret_t duk_bi_thread_resume(duk_hthread *ctx) {
 	DUK_ASSERT(thr->heap->curr_thread == thr);
 
 	thr_resume = duk_require_hthread(thr, 0);
-	is_error = (duk_small_uint_t) duk_to_boolean(thr, 2);
-	duk_set_top(thr, 2);
+	DUK_ASSERT(duk_get_top(thr) == 3);
+	is_error = (duk_small_uint_t) duk_to_boolean_top_pop(thr);
+	DUK_ASSERT(duk_get_top(thr) == 2);
 
 	/* [ thread value ] */
 
@@ -215,8 +216,9 @@ DUK_INTERNAL duk_ret_t duk_bi_thread_yield(duk_hthread *thr) {
 	DUK_ASSERT(thr->state == DUK_HTHREAD_STATE_RUNNING);
 	DUK_ASSERT(thr->heap->curr_thread == thr);
 
-	is_error = (duk_small_uint_t) duk_to_boolean(thr, 1);
-	duk_set_top(thr, 1);
+	DUK_ASSERT(duk_get_top(thr) == 2);
+	is_error = (duk_small_uint_t) duk_to_boolean_top_pop(thr);
+	DUK_ASSERT(duk_get_top(thr) == 1);
 
 	/* [ value ] */
 
