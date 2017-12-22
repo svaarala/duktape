@@ -14,6 +14,11 @@ summary: |
   <p>This primitive minimizes the number of intermediate string interning
   operations and is better than concatenating strings manually.</p>
 
+  <div class="note">
+  Unlike <code>Array.prototype.concat()</code>, this API call does not
+  flatten array arguments or support <code>Symbol.isConcatSpreadable</code>.
+  </div>
+
 example: |
   duk_push_string(ctx, "foo");
   duk_push_int(ctx, 123);
