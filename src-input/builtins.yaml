@@ -2838,6 +2838,7 @@ objects:
         value: "Math"
         attributes: "c"
         es6: true
+        present_if: DUK_USE_SYMBOL_BUILTIN
 
   - id: bi_json
     class: JSON
@@ -2868,6 +2869,7 @@ objects:
       #    string: "Symbol.toStringTag"
       #  value: XXX
       #  es6: true
+      #  present_if: DUK_USE_SYMBOL_BUILTIN
 
   # E5 Section 13.2.3
   - id: bi_type_error_thrower
@@ -3451,7 +3453,7 @@ objects:
           type: symbol
           variant: wellknown
           string: "Symbol.toStringTag"
-        value: "symbol"
+        value: "Symbol"
         attributes: "c"
         es6: true
         present_if: DUK_USE_SYMBOL_BUILTIN

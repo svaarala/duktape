@@ -486,6 +486,10 @@ strings:
       type: symbol
       variant: wellknown
       string: "Symbol.hasInstance"
+  - str:
+      type: symbol
+      variant: wellknown
+      string: "Symbol.toStringTag"
 
   # Misc
   - str: "setPrototypeOf"

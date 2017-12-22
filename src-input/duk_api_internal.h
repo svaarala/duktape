@@ -147,7 +147,7 @@ DUK_INTERNAL_DECL duk_bool_t duk_to_boolean_top_pop(duk_hthread *thr);
 #if defined(DUK_USE_DEBUGGER_SUPPORT)  /* only needed by debugger for now */
 DUK_INTERNAL_DECL duk_hstring *duk_safe_to_hstring(duk_hthread *thr, duk_idx_t idx);
 #endif
-DUK_INTERNAL_DECL void duk_push_class_string_tval(duk_hthread *thr, duk_tval *tv);
+DUK_INTERNAL_DECL void duk_push_class_string_tval(duk_hthread *thr, duk_tval *tv, duk_bool_t avoid_side_effects);
 
 DUK_INTERNAL_DECL duk_int_t duk_to_int_clamped_raw(duk_hthread *thr, duk_idx_t idx, duk_int_t minval, duk_int_t maxval, duk_bool_t *out_clamped);  /* out_clamped=NULL, RangeError if outside range */
 DUK_INTERNAL_DECL duk_int_t duk_to_int_clamped(duk_hthread *thr, duk_idx_t idx, duk_int_t minval, duk_int_t maxval);
