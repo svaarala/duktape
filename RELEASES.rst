@@ -3190,6 +3190,10 @@ Planned
 2.3.0 (XXXX-XX-XX)
 ------------------
 
+* Add support for Symbol.hasInstance (@@hasInstance) check for 'instanceof'
+  operator and duk_instanceof() API call; also add Symbol.hasInstance and
+  Function.prototype[@@hasInstance] (GH-1821)
+
 * Add duk_random() to allow C code access to the same random number source
   as Ecmascript code (GH-1815)
 
@@ -3249,6 +3253,8 @@ Planned
   in case double and uint64_t alignment requirements differ (GH-1799)
 
 * Add a CBOR encoder/decoder as an extra (GH-1781, GH-1800, GH-1801)
+
+* Fix performance.now() property attributes to 'wec' (earlier 'wc') (GH-1821)
 
 * Fix debugger StepOver behavior when a tailcall happens in a nested
   function (not the function where stepping started from) (GH-1786, GH-1787)
