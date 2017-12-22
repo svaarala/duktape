@@ -6703,7 +6703,7 @@ DUK_LOCAL void duk__parse_stmt(duk_compiler_ctx *comp_ctx, duk_ivalue *res, duk_
 				 */
 
 				if (DUK_HSTRING_GET_BYTELEN(h_dir) == 10 &&
-				    DUK_STRNCMP((const char *) DUK_HSTRING_GET_DATA(h_dir), "use strict", 10) == 0) {
+				    DUK_STRCMP((const char *) DUK_HSTRING_GET_DATA(h_dir), "use strict") == 0) {
 #if defined(DUK_USE_STRICT_DECL)
 					DUK_DDD(DUK_DDDPRINT("use strict directive detected: strict flag %ld -> %ld",
 					                     (long) comp_ctx->curr_func.is_strict, (long) 1));
@@ -6712,7 +6712,7 @@ DUK_LOCAL void duk__parse_stmt(duk_compiler_ctx *comp_ctx, duk_ivalue *res, duk_
 					DUK_DDD(DUK_DDDPRINT("use strict detected but strict declarations disabled, ignoring"));
 #endif
 				} else if (DUK_HSTRING_GET_BYTELEN(h_dir) == 14 &&
-				           DUK_STRNCMP((const char *) DUK_HSTRING_GET_DATA(h_dir), "use duk notail", 14) == 0) {
+				           DUK_STRCMP((const char *) DUK_HSTRING_GET_DATA(h_dir), "use duk notail") == 0) {
 					DUK_DDD(DUK_DDDPRINT("use duk notail directive detected: notail flag %ld -> %ld",
 					                     (long) comp_ctx->curr_func.is_notail, (long) 1));
 					comp_ctx->curr_func.is_notail = 1;

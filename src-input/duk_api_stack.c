@@ -2686,48 +2686,42 @@ DUK_EXTERNAL void duk_to_null(duk_hthread *thr, duk_idx_t idx) {
 }
 
 /* E5 Section 9.1 */
-DUK_EXTERNAL void duk_to_primitive(duk_hthread *thr, duk_idx_t idx, duk_int_t hint) {
-	/* inline initializer for coercers[] is not allowed by old compilers like BCC */
+DUK_LOCAL const char * const duk__toprim_hint_strings[3] = {
+	"default", "string", "number"
+};
+DUK_LOCAL void duk__to_primitive_helper(duk_hthread *thr, duk_idx_t idx, duk_int_t hint, duk_bool_t check_symbol) {
+	/* Inline initializer for coercers[] is not allowed by old compilers like BCC. */
 	duk_small_uint_t coercers[2];
-	duk_small_uint_t class_number;
 
 	DUK_ASSERT_API_ENTRY(thr);
 	DUK_ASSERT(hint == DUK_HINT_NONE || hint == DUK_HINT_NUMBER || hint == DUK_HINT_STRING);
 
 	idx = duk_require_normalize_index(thr, idx);
 
+	/* If already primitive, return as is. */
 	if (!duk_check_type_mask(thr, idx, DUK_TYPE_MASK_OBJECT |
 	                                   DUK_TYPE_MASK_LIGHTFUNC |
 	                                   DUK_TYPE_MASK_BUFFER)) {
-		/* Any other values stay as is. */
 		DUK_ASSERT(!duk_is_buffer(thr, idx));  /* duk_to_string() relies on this behavior */
 		return;
 	}
 
-	class_number = duk_get_class_number(thr, idx);
-
-	/* XXX: Symbol objects normally coerce via the ES2015-revised ToPrimitive()
-	 * algorithm which consults value[@@toPrimitive] and avoids calling
-	 * .valueOf() and .toString().  Before that is implemented, special
-	 * case Symbol objects to behave as if they had the default @@toPrimitive
-	 * algorithm of E6 Section 19.4.3.4, i.e. return the plain symbol value
-	 * with no further side effects.
+	/* @@toPrimitive lookup.  Also do for plain buffers and lightfuncs
+	 * which mimic objects.
 	 */
-
-	if (class_number == DUK_HOBJECT_CLASS_SYMBOL) {
-		duk_hobject *h_obj;
-		duk_hstring *h_str;
-
-		/* XXX: pretty awkward, index based API for internal value access? */
-		h_obj = duk_known_hobject(thr, idx);
-		h_str = duk_hobject_get_internal_value_string(thr->heap, h_obj);
-		if (h_str) {
-			duk_push_hstring(thr, h_str);
-			duk_replace(thr, idx);
-			return;
+	if (check_symbol && duk_get_method_stridx(thr, idx, DUK_STRIDX_WELLKNOWN_SYMBOL_TO_PRIMITIVE)) {
+		DUK_ASSERT(hint >= 0 && hint < sizeof(duk__toprim_hint_strings) / sizeof(const char *));
+		duk_dup(thr, idx);
+		duk_push_string(thr, duk__toprim_hint_strings[hint]);
+		duk_call_method(thr, 1);  /* [ ... method value hint ] -> [ ... res] */
+		if (duk_check_type_mask(thr, -1, DUK_TYPE_MASK_OBJECT |
+	                                         DUK_TYPE_MASK_LIGHTFUNC |
+		                                 DUK_TYPE_MASK_BUFFER)) {
+			goto fail;
 		}
+		duk_replace(thr, idx);
+		return;
 	}
-
 
 	/* Objects are coerced based on E5 specification.
 	 * Lightfuncs are coerced because they behave like
@@ -2736,17 +2730,29 @@ DUK_EXTERNAL void duk_to_primitive(duk_hthread *thr, duk_idx_t idx, duk_int_t hi
 	 * like ArrayBuffer objects since Duktape 2.x.
 	 */
 
-	coercers[0] = DUK_STRIDX_VALUE_OF;
-	coercers[1] = DUK_STRIDX_TO_STRING;
-
+	/* Hint magic for Date is unnecessary in ES2015 because of
+	 * Date.prototype[@@toPrimitive].  However, it is needed if
+	 * symbol support is not enabled.
+	 */
+#if defined(DUK_USE_SYMBOL_BUILTIN)
 	if (hint == DUK_HINT_NONE) {
+		hint = DUK_HINT_NUMBER;
+	}
+#else  /* DUK_USE_SYMBOL_BUILTIN */
+	if (hint == DUK_HINT_NONE) {
+		duk_small_uint_t class_number;
+
+		class_number = duk_get_class_number(thr, idx);
 		if (class_number == DUK_HOBJECT_CLASS_DATE) {
 			hint = DUK_HINT_STRING;
 		} else {
 			hint = DUK_HINT_NUMBER;
 		}
 	}
+#endif  /* DUK_USE_SYMBOL_BUILTIN */
 
+	coercers[0] = DUK_STRIDX_VALUE_OF;
+	coercers[1] = DUK_STRIDX_TO_STRING;
 	if (hint == DUK_HINT_STRING) {
 		coercers[0] = DUK_STRIDX_TO_STRING;
 		coercers[1] = DUK_STRIDX_VALUE_OF;
@@ -2762,9 +2768,20 @@ DUK_EXTERNAL void duk_to_primitive(duk_hthread *thr, duk_idx_t idx, duk_int_t hi
 		return;
 	}
 
+ fail:
 	DUK_ERROR_TYPE(thr, DUK_STR_TOPRIMITIVE_FAILED);
 	DUK_WO_NORETURN(return;);
 }
+
+DUK_EXTERNAL void duk_to_primitive(duk_hthread *thr, duk_idx_t idx, duk_int_t hint) {
+	duk__to_primitive_helper(thr, idx, hint, 1 /*check_symbol*/);
+}
+
+#if defined(DUK_USE_SYMBOL_BUILTIN)
+DUK_INTERNAL void duk_to_primitive_ordinary(duk_hthread *thr, duk_idx_t idx, duk_int_t hint) {
+	duk__to_primitive_helper(thr, idx, hint, 0 /*check_symbol*/);
+}
+#endif
 
 /* E5 Section 9.2 */
 DUK_EXTERNAL duk_bool_t duk_to_boolean(duk_hthread *thr, duk_idx_t idx) {
