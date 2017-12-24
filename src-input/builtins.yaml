@@ -871,12 +871,17 @@ objects:
         present_if: DUK_USE_FUNCTION_BUILTIN
 
       # ES2015
-      #- key:  # @@hasInstance
-      #    type: symbol
-      #    variant: wellknown
-      #    string: "Symbol.hasInstance"
-      #  value: XXX
-      #  es6: true
+      - key:  # @@hasInstance
+          type: symbol
+          variant: wellknown
+          string: "Symbol.hasInstance"
+        value:
+          type: function
+          native: duk_bi_function_prototype_hasinstance
+          length: 1
+        attributes: ""
+        es6: true
+        present_if: DUK_USE_SYMBOL_BUILTIN
 
   # Duktape specific %NativeFunctionPrototype% which provides some getters.
   #
@@ -3314,13 +3319,14 @@ objects:
         attributes: "wc"
         es6: true
 
-      #- key: "hasInstance"
-      #  value:
-      #    type: symbol
-      #    variant: wellknown
-      #    string: "Symbol.hasInstance"
-      #  attributes: ""
-      #  es6: true
+      - key: "hasInstance"
+        value:
+          type: symbol
+          variant: wellknown
+          string: "Symbol.hasInstance"
+        attributes: ""
+        es6: true
+        present_if: DUK_USE_SYMBOL_BUILTIN
       #- key: "isConcatSpreadable"
       #  value:
       #    type: symbol
@@ -3335,6 +3341,7 @@ objects:
           string: "Symbol.iterator"
         attributes: ""
         es6: true
+        present_if: DUK_USE_SYMBOL_BUILTIN
       #- key: "match"
       #  value:
       #    type: symbol
@@ -5469,16 +5476,13 @@ objects:
       # Firefox and Chrome: data property with 'wec' attributes,
       # inherited from PerformancePrototype.  Use own data property
       # for now.
-      # XXX: we'd like to use 'wec' but current built-in init data doesn't
-      # support it; use 'wc' for consistency so ROM built-ins have the same
-      # behavior.
       - key: "now"
         value:
           type: function
           native: duk_bi_performance_now
           length: 0
           nargs: 0
-        attributes: "wc"
+        attributes: "wec"
         performance_api: true
       # Missing until semantics decided.
       #- key: "timeOrigin"

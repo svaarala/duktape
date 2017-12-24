@@ -440,3 +440,14 @@ DUK_INTERNAL duk_ret_t duk_bi_native_function_name(duk_hthread *thr) {
  fail_type:
 	DUK_DCERROR_TYPE_INVALID_ARGS(thr);
 }
+
+#if defined(DUK_USE_SYMBOL_BUILTIN)
+DUK_INTERNAL duk_ret_t duk_bi_function_prototype_hasinstance(duk_hthread *thr) {
+	/* This binding: RHS, stack index 0: LHS. */
+	duk_bool_t ret;
+
+	ret = duk_js_instanceof_ordinary(thr, DUK_GET_TVAL_POSIDX(thr, 0), DUK_GET_THIS_TVAL_PTR(thr));
+	duk_push_boolean(thr, ret);
+	return 1;
+}
+#endif  /* DUK_USE_SYMBOL_BUILTIN */

@@ -998,22 +998,19 @@ DUK_INTERNAL duk_bool_t duk_js_compare_helper(duk_hthread *thr, duk_tval *tv_x, 
  */
 
 /*
- *  E5 Section 11.8.6 describes the main algorithm, which uses
- *  [[HasInstance]].  [[HasInstance]] is defined for only
- *  function objects:
+ *  ES2015 Section 7.3.19 describes the OrdinaryHasInstance() algorithm
+ *  which covers both bound and non-bound functions; in effect the algorithm
+ *  includes E5 Sections 11.8.6, 15.3.5.3, and 15.3.4.5.3.
  *
- *    - Normal functions:
- *      E5 Section 15.3.5.3
- *    - Functions established with Function.prototype.bind():
- *      E5 Section 15.3.4.5.3
- *
- *  For other objects, a TypeError is thrown.
+ *  ES2015 Section 12.9.4 describes the instanceof operator which first
+ *  checks @@hasInstance well-known symbol and falls back to
+ *  OrdinaryHasInstance().
  *
  *  Limited Proxy support: don't support 'getPrototypeOf' trap but
  *  continue lookup in Proxy target if the value is a Proxy.
  */
 
-DUK_INTERNAL duk_bool_t duk_js_instanceof(duk_hthread *thr, duk_tval *tv_x, duk_tval *tv_y) {
+DUK_LOCAL duk_bool_t duk__js_instanceof_helper(duk_hthread *thr, duk_tval *tv_x, duk_tval *tv_y, duk_bool_t skip_sym_check) {
 	duk_hobject *func;
 	duk_hobject *val;
 	duk_hobject *proto;
@@ -1035,6 +1032,23 @@ DUK_INTERNAL duk_bool_t duk_js_instanceof(duk_hthread *thr, duk_tval *tv_x, duk_
 	duk_push_tval(thr, tv_y);
 	func = duk_require_hobject(thr, -1);
 	DUK_ASSERT(func != NULL);
+
+#if defined(DUK_USE_SYMBOL_BUILTIN)
+	/*
+	 *  @@hasInstance check, ES2015 Section 12.9.4, Steps 2-4.
+	 */
+	if (!skip_sym_check) {
+		if (duk_get_method_stridx(thr, -1, DUK_STRIDX_WELLKNOWN_SYMBOL_HAS_INSTANCE)) {
+			/* [ ... lhs rhs func ] */
+			duk_insert(thr, -3);    /* -> [ ... func lhs rhs ] */
+			duk_swap_top(thr, -2);  /* -> [ ... func rhs(this) lhs ] */
+			duk_call_method(thr, 1);
+			return duk_to_boolean_top_pop(thr);
+		}
+	}
+#else
+	DUK_UNREF(skip_sym_check);
+#endif
 
 	/*
 	 *  For bound objects, [[HasInstance]] just calls the target function
@@ -1187,6 +1201,16 @@ DUK_INTERNAL duk_bool_t duk_js_instanceof(duk_hthread *thr, duk_tval *tv_x, duk_
 	DUK_ERROR_TYPE(thr, DUK_STR_INVALID_INSTANCEOF_RVAL_NOPROTO);
 	DUK_WO_NORETURN(return 0;);
 #endif
+}
+
+#if defined(DUK_USE_SYMBOL_BUILTIN)
+DUK_INTERNAL duk_bool_t duk_js_instanceof_ordinary(duk_hthread *thr, duk_tval *tv_x, duk_tval *tv_y) {
+	return duk__js_instanceof_helper(thr, tv_x, tv_y, 1 /*skip_sym_check*/);
+}
+#endif
+
+DUK_INTERNAL duk_bool_t duk_js_instanceof(duk_hthread *thr, duk_tval *tv_x, duk_tval *tv_y) {
+	return duk__js_instanceof_helper(thr, tv_x, tv_y, 0 /*skip_sym_check*/);
 }
 
 /*

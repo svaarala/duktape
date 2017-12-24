@@ -482,6 +482,10 @@ strings:
       type: symbol
       variant: wellknown
       string: "Symbol.toPrimitive"
+  - str:
+      type: symbol
+      variant: wellknown
+      string: "Symbol.hasInstance"
 
   # Misc
   - str: "setPrototypeOf"

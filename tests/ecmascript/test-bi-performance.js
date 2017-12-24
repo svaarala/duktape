@@ -5,7 +5,7 @@ true
 true true true
 function
 true
-true false true
+true true true
 undefined
 true
 number
@@ -28,9 +28,8 @@ function test() {
     print(pd.value !== void 0);
     print(pd.writable, pd.enumerable, pd.configurable);
 
-    // 'performance.now' is a function.
-    // XXX: attributes should be 'wec', not 'wc'; this is due to built-in
-    // init data limitations.
+    // 'performance.now' is a function, property attributes don't follow
+    // the convention of normal built-ins and are 'wec'.
     print(typeof performance.now);
     pd = Object.getOwnPropertyDescriptor(performance, 'now');
     print(pd.value !== void 0);

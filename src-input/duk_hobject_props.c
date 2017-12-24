@@ -2907,7 +2907,7 @@ DUK_INTERNAL duk_bool_t duk_hobject_hasprop(duk_hthread *thr, duk_tval *tv_obj, 
 			duk_push_hobject(thr, h_target);  /* target */
 			duk_push_tval(thr, tv_key);       /* P */
 			duk_call_method(thr, 2 /*nargs*/);
-			tmp_bool = duk_to_boolean(thr, -1);
+			tmp_bool = duk_to_boolean_top_pop(thr);
 			if (!tmp_bool) {
 				/* Target object must be checked for a conflicting
 				 * non-configurable property.
@@ -2931,7 +2931,7 @@ DUK_INTERNAL duk_bool_t duk_hobject_hasprop(duk_hthread *thr, duk_tval *tv_obj, 
 				}
 			}
 
-			duk_pop_2_unsafe(thr);  /* [ key trap_result ] -> [] */
+			duk_pop_unsafe(thr);  /* [ key ] -> [] */
 			return tmp_bool;
 		}
 
@@ -3495,8 +3495,7 @@ DUK_INTERNAL duk_bool_t duk_hobject_putprop(duk_hthread *thr, duk_tval *tv_obj, 
 				duk_push_tval(thr, tv_val);       /* V */
 				duk_push_tval(thr, tv_obj);       /* Receiver: Proxy object */
 				duk_call_method(thr, 4 /*nargs*/);
-				tmp_bool = duk_to_boolean(thr, -1);
-				duk_pop_nodecref_unsafe(thr);
+				tmp_bool = duk_to_boolean_top_pop(thr);
 				if (!tmp_bool) {
 					goto fail_proxy_rejected;
 				}
@@ -4470,8 +4469,7 @@ DUK_INTERNAL duk_bool_t duk_hobject_delprop(duk_hthread *thr, duk_tval *tv_obj, 
 				duk_push_hobject(thr, h_target);  /* target */
 				duk_dup_m4(thr);  /* P */
 				duk_call_method(thr, 2 /*nargs*/);
-				tmp_bool = duk_to_boolean(thr, -1);
-				duk_pop_nodecref_unsafe(thr);
+				tmp_bool = duk_to_boolean_top_pop(thr);
 				if (!tmp_bool) {
 					goto fail_proxy_rejected;  /* retval indicates delete failed */
 				}
@@ -4976,7 +4974,7 @@ void duk_hobject_prepare_property_descriptor(duk_hthread *thr,
 
 	if (duk_get_prop_stridx(thr, idx_in, DUK_STRIDX_WRITABLE)) {
 		is_data_desc = 1;
-		if (duk_to_boolean(thr, -1)) {
+		if (duk_to_boolean_top_pop(thr)) {
 			defprop_flags |= DUK_DEFPROP_HAVE_WRITABLE | DUK_DEFPROP_WRITABLE;
 		} else {
 			defprop_flags |= DUK_DEFPROP_HAVE_WRITABLE;
@@ -5028,7 +5026,7 @@ void duk_hobject_prepare_property_descriptor(duk_hthread *thr,
 	}
 
 	if (duk_get_prop_stridx(thr, idx_in, DUK_STRIDX_ENUMERABLE)) {
-		if (duk_to_boolean(thr, -1)) {
+		if (duk_to_boolean_top_pop(thr)) {
 			defprop_flags |= DUK_DEFPROP_HAVE_ENUMERABLE | DUK_DEFPROP_ENUMERABLE;
 		} else {
 			defprop_flags |= DUK_DEFPROP_HAVE_ENUMERABLE;
@@ -5036,7 +5034,7 @@ void duk_hobject_prepare_property_descriptor(duk_hthread *thr,
 	}
 
 	if (duk_get_prop_stridx(thr, idx_in, DUK_STRIDX_CONFIGURABLE)) {
-		if (duk_to_boolean(thr, -1)) {
+		if (duk_to_boolean_top_pop(thr)) {
 			defprop_flags |= DUK_DEFPROP_HAVE_CONFIGURABLE | DUK_DEFPROP_CONFIGURABLE;
 		} else {
 			defprop_flags |= DUK_DEFPROP_HAVE_CONFIGURABLE;

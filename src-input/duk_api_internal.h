@@ -142,6 +142,8 @@ DUK_INTERNAL_DECL duk_hobject *duk_to_hobject(duk_hthread *thr, duk_idx_t idx);
 DUK_INTERNAL_DECL duk_double_t duk_to_number_m1(duk_hthread *thr);
 DUK_INTERNAL_DECL duk_double_t duk_to_number_m2(duk_hthread *thr);
 
+DUK_INTERNAL_DECL duk_bool_t duk_to_boolean_top_pop(duk_hthread *thr);
+
 #if defined(DUK_USE_DEBUGGER_SUPPORT)  /* only needed by debugger for now */
 DUK_INTERNAL_DECL duk_hstring *duk_safe_to_hstring(duk_hthread *thr, duk_idx_t idx);
 #endif
@@ -282,6 +284,8 @@ DUK_INTERNAL_DECL void duk_xdef_prop_stridx_builtin(duk_hthread *thr, duk_idx_t 
 #endif
 
 DUK_INTERNAL_DECL void duk_xdef_prop_stridx_thrower(duk_hthread *thr, duk_idx_t obj_idx, duk_small_uint_t stridx);  /* [] -> [] */
+
+DUK_INTERNAL_DECL duk_bool_t duk_get_method_stridx(duk_hthread *thr, duk_idx_t idx, duk_small_uint_t stridx);
 
 DUK_INTERNAL_DECL void duk_pack(duk_hthread *thr, duk_idx_t count);
 DUK_INTERNAL_DECL duk_idx_t duk_unpack_array_like(duk_hthread *thr, duk_idx_t idx);

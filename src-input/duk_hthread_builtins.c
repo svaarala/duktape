@@ -444,11 +444,9 @@ DUK_INTERNAL void duk_hthread_create_builtin_objects(duk_hthread *thr) {
 			 *  signaled using a single flag bit in the bitstream.
 			 */
 
-			if (duk_bd_decode_flag(bd)) {
-				defprop_flags = (duk_small_uint_t) duk_bd_decode(bd, DUK__PROP_FLAGS_BITS);
-			} else {
-				defprop_flags = DUK_PROPDESC_FLAGS_WC;
-			}
+			defprop_flags = (duk_small_uint_t) duk_bd_decode_flagged(bd,
+			                                                         DUK__PROP_FLAGS_BITS,
+			                                                         (duk_uint32_t) DUK_PROPDESC_FLAGS_WC);
 			defprop_flags |= DUK_DEFPROP_FORCE |
 			                 DUK_DEFPROP_HAVE_VALUE |
 			                 DUK_DEFPROP_HAVE_WRITABLE |
@@ -553,6 +551,7 @@ DUK_INTERNAL void duk_hthread_create_builtin_objects(duk_hthread *thr) {
 #if defined(DUK_USE_LIGHTFUNC_BUILTINS)
 			duk_small_int_t lightfunc_eligible;
 #endif
+			duk_small_uint_t defprop_flags;
 
 			duk__push_stridx_or_string(thr, bd);
 			h_key = duk_known_hstring(thr, -1);
@@ -672,10 +671,19 @@ DUK_INTERNAL void duk_hthread_create_builtin_objects(duk_hthread *thr) {
 		 lightfunc_skip:
 #endif
 
-			/* XXX: So far all ES builtins are 'wc' but e.g.
-			 * performance.now() should be 'wec'.
-			 */
-			duk_xdef_prop(thr, (duk_idx_t) i, DUK_PROPDESC_FLAGS_WC);
+			defprop_flags = (duk_small_uint_t) duk_bd_decode_flagged(bd,
+			                                                         DUK__PROP_FLAGS_BITS,
+			                                                         (duk_uint32_t) DUK_PROPDESC_FLAGS_WC);
+			defprop_flags |= DUK_DEFPROP_FORCE |
+			                 DUK_DEFPROP_HAVE_VALUE |
+			                 DUK_DEFPROP_HAVE_WRITABLE |
+			                 DUK_DEFPROP_HAVE_ENUMERABLE |
+			                 DUK_DEFPROP_HAVE_CONFIGURABLE;
+			DUK_ASSERT(DUK_PROPDESC_FLAG_WRITABLE == DUK_DEFPROP_WRITABLE);
+			DUK_ASSERT(DUK_PROPDESC_FLAG_ENUMERABLE == DUK_DEFPROP_ENUMERABLE);
+			DUK_ASSERT(DUK_PROPDESC_FLAG_CONFIGURABLE == DUK_DEFPROP_CONFIGURABLE);
+
+			duk_def_prop(thr, (duk_idx_t) i, defprop_flags);
 
 			/* [ (builtin objects) ] */
 		}
