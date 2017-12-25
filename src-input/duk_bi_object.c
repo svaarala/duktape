@@ -7,12 +7,9 @@
 /* Needed even when Object built-in disabled. */
 DUK_INTERNAL duk_ret_t duk_bi_object_prototype_to_string(duk_hthread *thr) {
 	duk_tval *tv;
+
 	tv = DUK_HTHREAD_THIS_PTR(thr);
-	/* XXX: This is not entirely correct anymore; in ES2015 the
-	 * default lookup should use @@toStringTag to come up with
-	 * e.g. [object Symbol].
-	 */
-	duk_push_class_string_tval(thr, tv);
+	duk_push_class_string_tval(thr, tv, 0 /*avoid_side_effects*/);
 	return 1;
 }
 

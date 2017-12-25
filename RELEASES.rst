@@ -3194,6 +3194,9 @@ Planned
   operator and duk_instanceof() API call; also add Symbol.hasInstance and
   Function.prototype[@@hasInstance] (GH-1821)
 
+* Add support for Symbol.toStringTag (@@toStringTag) in
+  Object.prototype.toString() (GH-1822)
+
 * Add duk_random() to allow C code access to the same random number source
   as Ecmascript code (GH-1815)
 
