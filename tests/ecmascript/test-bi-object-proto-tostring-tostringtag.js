@@ -72,6 +72,10 @@ false
 false
 false
 true
+Proxy get Symbol(Symbol.toStringTag)
+Hohum
+Proxy get Symbol(Symbol.toStringTag)
+[object Hohum]
 Number.prototype[@@toStringTag] read
 object false true false
 OverrideString
@@ -128,6 +132,18 @@ function primTypeTest() {
         print(e.message.indexOf('[object Number]') >= 0);
         print(e.message.indexOf('123') >= 0);
     }
+
+    // If the target is a Proxy, a @@toStringTag lookup is made on the Proxy.
+    var proxy = new Proxy({}, {
+        get: function (targ, key, recv) {
+            print('Proxy get', String(key));
+            if (key === Symbol.toStringTag) {
+                return 'Hohum';
+            }
+        }
+    });
+    print(proxy[Symbol.toStringTag]);
+    print(Object.prototype.toString.call(proxy));
 
     // If @@toStringTag is a getter, the getter 'this' binding must be a
     // ToObject() coercion of the primitive value.  Normally the 'this'
