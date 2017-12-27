@@ -1,14 +1,11 @@
 define: DUK_USE_NONSTD_ARRAY_CONCAT_TRAILER
 introduced: 1.0.0
+removed: 2.3.0
 default: true
 tags:
   - ecmascript
   - compliance
 description: >
-  For better compatibility with existing code, enable non-standard
-  Array.prototype.concat() behavior for trailing non-existent elements of
-  the concat result, see
-  https://github.com/svaarala/duktape/blob/master/tests/ecmascript/test-bi-array-proto-concat-nonstd-trailing.js.
-
-  If this option is disabled, concat() will behave in a strictly conforming
-  fashion, ignoring non-existent trailing elements in the result length.
+  In ES5.1 trailing gaps of an argument array don't count towards the result
+  length.  This is in essence a specification "bug" which was fixed in ES2015.
+  This option was removed in 2.3.0, and the remaining behavior matches ES2015.
