@@ -490,6 +490,10 @@ strings:
       type: symbol
       variant: wellknown
       string: "Symbol.toStringTag"
+  - str:
+      type: symbol
+      variant: wellknown
+      string: "Symbol.isConcatSpreadable"
 
   # Misc
   - str: "setPrototypeOf"

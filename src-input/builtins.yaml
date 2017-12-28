@@ -3329,13 +3329,13 @@ objects:
         attributes: ""
         es6: true
         present_if: DUK_USE_SYMBOL_BUILTIN
-      #- key: "isConcatSpreadable"
-      #  value:
-      #    type: symbol
-      #    variant: wellknown
-      #    string: "Symbol.isConcatSpreadable"
-      #  attributes: ""
-      #  es6: true
+      - key: "isConcatSpreadable"
+        value:
+          type: symbol
+          variant: wellknown
+          string: "Symbol.isConcatSpreadable"
+        attributes: ""
+        es6: true
       - key: "iterator"
         value:
           type: symbol

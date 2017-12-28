@@ -1,7 +1,5 @@
 # Enable compliant behavior, defaults favor "real world" compatibility.
 
-DUK_USE_NONSTD_ARRAY_CONCAT_TRAILER: false
-DUK_USE_NONSTD_ARRAY_MAP_TRAILER: false
 DUK_USE_NONSTD_ARRAY_SPLICE_DELCOUNT: false
 DUK_USE_NONSTD_FUNC_CALLER_PROPERTY: false
 DUK_USE_NONSTD_FUNC_SOURCE_PROPERTY: false

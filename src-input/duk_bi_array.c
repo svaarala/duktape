@@ -230,11 +230,17 @@ DUK_INTERNAL duk_ret_t duk_bi_array_prototype_to_string(duk_hthread *thr) {
 
 DUK_INTERNAL duk_ret_t duk_bi_array_prototype_concat(duk_hthread *thr) {
 	duk_idx_t i, n;
-	duk_uarridx_t idx, idx_last;
-	duk_uarridx_t j, len;
+	duk_uint32_t j, idx, len;
 	duk_hobject *h;
+	duk_size_t tmp_len;
 
-	/* XXX: the insert here is a bit expensive if there are a lot of items.
+	/* XXX: In ES2015 Array .length can be up to 2^53-1.  The current
+	 * implementation is limited to 2^32-1.
+	 */
+
+	/* XXX: Fast path for array 'this' and array element. */
+
+	/* XXX: The insert here is a bit expensive if there are a lot of items.
 	 * It could also be special cased in the outermost for loop quite easily
 	 * (as the element is dup()'d anyway).
 	 */
@@ -252,59 +258,97 @@ DUK_INTERNAL duk_ret_t duk_bi_array_prototype_concat(duk_hthread *thr) {
 	 */
 
 	idx = 0;
-	idx_last = 0;
 	for (i = 0; i < n; i++) {
+		duk_bool_t spreadable;
+		duk_bool_t need_has_check;
+
 		DUK_ASSERT_TOP(thr, n + 1);
 
 		/* [ ToObject(this) item1 ... itemN arr ] */
 
-		duk_dup(thr, i);
-		h = duk_get_hobject_with_class(thr, -1, DUK_HOBJECT_CLASS_ARRAY);
-		if (!h) {
-			duk_xdef_prop_index_wec(thr, -2, idx++);
-			idx_last = idx;
+		h = duk_get_hobject(thr, i);
+
+		if (h == NULL) {
+			spreadable = 0;
+		} else {
+#if defined(DUK_USE_SYMBOL_BUILTIN)
+			duk_get_prop_stridx(thr, i, DUK_STRIDX_WELLKNOWN_SYMBOL_IS_CONCAT_SPREADABLE);
+			if (duk_is_undefined(thr, -1)) {
+				spreadable = (DUK_HOBJECT_GET_CLASS_NUMBER(h) == DUK_HOBJECT_CLASS_ARRAY);
+			} else {
+				spreadable = duk_to_boolean(thr, -1);
+			}
+			duk_pop_nodecref_unsafe(thr);
+#else
+			spreadable = (DUK_HOBJECT_GET_CLASS_NUMBER(h) == DUK_HOBJECT_CLASS_ARRAY);
+#endif
+		}
+
+		if (!spreadable) {
+			duk_dup(thr, i);
+			duk_xdef_prop_index_wec(thr, -2, idx);
+			idx++;
+			if (DUK_UNLIKELY(idx == 0U)) {
+				/* Index after update is 0, and index written
+				 * was 0xffffffffUL which is no longer a valid
+				 * array index.
+				 */
+				goto fail_wrap;
+			}
 			continue;
 		}
 
-		/* [ ToObject(this) item1 ... itemN arr item(i) ] */
+		DUK_ASSERT(duk_is_object(thr, i));
+		need_has_check = (DUK_HOBJECT_IS_PROXY(h) != 0);  /* Always 0 w/o Proxy support. */
 
-		/* XXX: an array can have length higher than 32 bits; this is not handled
-		 * correctly now.
-		 */
-		len = (duk_uarridx_t) duk_get_length(thr, -1);
-		for (j = 0; j < len; j++) {
-			if (duk_get_prop_index(thr, -1, j)) {
-				/* [ ToObject(this) item1 ... itemN arr item(i) item(i)[j] ] */
-				duk_xdef_prop_index_wec(thr, -3, idx++);
-				idx_last = idx;
-			} else {
-				idx++;
-				duk_pop_undefined(thr);
-#if defined(DUK_USE_NONSTD_ARRAY_CONCAT_TRAILER)
-				/* According to E5.1 Section 15.4.4.4 nonexistent trailing
-				 * elements do not affect 'length' of the result.  Test262
-				 * and other engines disagree, so update idx_last here too.
-				 */
-				idx_last = idx;
-#else
-				/* Strict standard behavior, ignore trailing elements for
-				 * result 'length'.
-				 */
-#endif
-			}
+		/* [ ToObject(this) item1 ... itemN arr ] */
+
+		tmp_len = duk_get_length(thr, i);
+		len = (duk_uint32_t) tmp_len;
+		if (DUK_UNLIKELY(tmp_len != (duk_size_t) len)) {
+			goto fail_wrap;
 		}
-		duk_pop_unsafe(thr);
+		if (DUK_UNLIKELY(idx + len < idx)) {
+			/* Result length must be at most 0xffffffffUL to be
+			 * a valid 32-bit array index.
+			 */
+			goto fail_wrap;
+		}
+		for (j = 0; j < len; j++) {
+			/* For a Proxy element, an explicit 'has' check is
+			 * needed to allow the Proxy to present gaps.
+			 */
+			if (need_has_check) {
+				if (duk_has_prop_index(thr, i, j)) {
+					duk_get_prop_index(thr, i, j);
+					duk_xdef_prop_index_wec(thr, -2, idx);
+				}
+			} else {
+				if (duk_get_prop_index(thr, i, j)) {
+					duk_xdef_prop_index_wec(thr, -2, idx);
+				} else {
+					duk_pop_undefined(thr);
+				}
+			}
+			idx++;
+			DUK_ASSERT(idx != 0U);  /* Wrap check above. */
+		}
 	}
 
-	/* The E5.1 Section 15.4.4.4 algorithm doesn't set the length explicitly
-	 * in the end, but because we're operating with an internal value which
-	 * is known to be an array, this should be equivalent.
+	/* ES5.1 has a specification "bug" in that nonexistent trailing
+	 * elements don't affect the result .length.  Test262 and other
+	 * engines disagree, and the specification bug was fixed in ES2015
+	 * (see NOTE 1 in https://www.ecma-international.org/ecma-262/6.0/#sec-array.prototype.concat).
 	 */
-	duk_push_uarridx(thr, idx_last);
+	duk_push_uarridx(thr, idx);
 	duk_xdef_prop_stridx_short(thr, -2, DUK_STRIDX_LENGTH, DUK_PROPDESC_FLAGS_W);
 
 	DUK_ASSERT_TOP(thr, n + 1);
 	return 1;
+
+ fail_wrap:
+	DUK_ERROR_RANGE_INVALID_LENGTH(thr);
+	DUK_WO_NORETURN(return 0;);
 }
 
 /*
@@ -1426,20 +1470,12 @@ DUK_INTERNAL duk_ret_t duk_bi_array_prototype_iter_shared(duk_hthread *thr) {
 		DUK_ASSERT_TOP(thr, 5);
 
 		if (!duk_get_prop_index(thr, 2, (duk_uarridx_t) i)) {
-#if defined(DUK_USE_NONSTD_ARRAY_MAP_TRAILER)
-			/* Real world behavior for map(): trailing non-existent
-			 * elements don't invoke the user callback, but are still
-			 * counted towards result 'length'.
+			/* For 'map' trailing missing elements don't invoke the
+			 * callback but count towards the result length.
 			 */
 			if (iter_type == DUK__ITER_MAP) {
 				res_length = i + 1;
 			}
-#else
-			/* Standard behavior for map(): trailing non-existent
-			 * elements don't invoke the user callback and are not
-			 * counted towards result 'length'.
-			 */
-#endif
 			duk_pop_undefined(thr);
 			continue;
 		}
