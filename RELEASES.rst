@@ -3210,6 +3210,9 @@ Planned
   actually did match the "non-standard" behavior provided by the option
   (GH-1823)
 
+* Add support for Symbol.toPrimitive (@@toPrimitive) in ToPrimitive()
+  internal algorithm and duk_to_primitive() API call (GH-1825)
+
 * Add duk_random() to allow C code access to the same random number source
   as Ecmascript code (GH-1815)
 

@@ -323,6 +323,10 @@ DUK_INTERNAL_DECL void duk_concat_2(duk_hthread *thr);
 
 DUK_INTERNAL_DECL duk_int_t duk_pcall_method_flags(duk_hthread *thr, duk_idx_t nargs, duk_small_uint_t call_flags);
 
+#if defined(DUK_USE_SYMBOL_BUILTIN)
+DUK_INTERNAL_DECL void duk_to_primitive_ordinary(duk_hthread *thr, duk_idx_t idx, duk_int_t hint);
+#endif
+
 /* Raw internal valstack access macros: access is unsafe so call site
  * must have a guarantee that the index is valid.  When that is the case,
  * using these macro results in faster and smaller code than duk_get_tval().

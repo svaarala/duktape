@@ -2060,12 +2060,18 @@ objects:
           magic: 39
         section_b: true
 
-      #- key:  # @@toPrimitive
-      #    type: symbol
-      #    variant: wellknown
-      #    string: "Symbol.toPrimitive"
-      #  value: XXX
-      #  es6: true
+      - key:  # @@toPrimitive
+          type: symbol
+          variant: wellknown
+          string: "Symbol.toPrimitive"
+        value:
+          type: function
+          native: duk_bi_date_prototype_toprimitive
+          length: 1
+          name: "[Symbol.toPrimitive]"
+        attributes: "c"
+        es6: true
+        present_if: DUK_USE_SYMBOL_BUILTIN
 
   - id: bi_regexp_constructor
     class: Function
