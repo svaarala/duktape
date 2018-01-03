@@ -19,7 +19,7 @@ Main features:
 * Ecmascript E5/E5.1 compliant, with some semantics updated from ES2015+
 * Partial support for Ecmascript 2015 (E6) and Ecmascript 2016 (E7),
   [Post-ES5 feature status](http://wiki.duktape.org/PostEs5Features.html),
-  [kangax/compat-table](https://kangax.github.io/compat-table">kangax/compat-table)
+  [kangax/compat-table](https://kangax.github.io/compat-table)
 * ES2015 TypedArray and Node.js Buffer bindings
 * WHATWG Encoding API living standard
 * Built-in debugger
