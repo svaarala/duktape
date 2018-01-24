@@ -5602,9 +5602,8 @@ DUK_EXTERNAL duk_idx_t duk_push_proxy(duk_hthread *thr, duk_uint_t proxy_flags) 
 	 * by stealing the value stack refcounts via direct value stack
 	 * manipulation.  INCREF is needed for the Proxy itself however.
 	 */
-	DUK_ASSERT(h_target != NULL);
+
 	h_proxy->target = h_target;
-	DUK_ASSERT(h_handler != NULL);
 	h_proxy->handler = h_handler;
 	DUK_ASSERT_HPROXY_VALID(h_proxy);
 
