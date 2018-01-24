@@ -53,6 +53,7 @@
 #define DUK_STR_NOT_C_FUNCTION                   "unexpected type"
 #define DUK_STR_NOT_FUNCTION                     "unexpected type"
 #define DUK_STR_NOT_REGEXP                       "unexpected type"
+#define DUK_STR_NOT_PROMISE                      "unexpected type"
 #define DUK_STR_TOPRIMITIVE_FAILED               "coercion to primitive failed"
 #define DUK_STR_NUMBER_OUTSIDE_RANGE             "number outside range"
 #define DUK_STR_NOT_OBJECT_COERCIBLE             "not object coercible"
