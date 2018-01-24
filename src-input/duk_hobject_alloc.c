@@ -269,3 +269,11 @@ DUK_INTERNAL duk_hproxy *duk_hproxy_alloc(duk_hthread *thr, duk_uint_t hobject_f
 
 	return res;
 }
+
+DUK_INTERNAL duk_hproxy *duk_hpromise_alloc(duk_hthread *thr, duk_uint_t hobject_flags) {
+	duk_hproxy *res;
+
+	res = (duk_hpromise *) duk__hobject_alloc_init(thr, hobject_flags, sizeof(duk_hpromise));
+
+	return res;
+}

@@ -69,6 +69,7 @@ DUK_USE_USER_DECLARE()
 #include "duk_henv.h"
 #include "duk_hbuffer.h"
 #include "duk_hproxy.h"
+#include "duk_hpromise.h"
 #include "duk_heap.h"
 #include "duk_debugger.h"
 #include "duk_debug.h"
