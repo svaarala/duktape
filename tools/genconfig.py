@@ -917,6 +917,16 @@ def add_override_defines_section(opts, ret):
     ret.line('/* __OVERRIDE_DEFINES__ */')
     ret.empty()
 
+# Add a header snippet for conditional C/C++ include files.
+def add_conditional_includes_section(opts, ret):
+    ret.empty()
+    ret.line('/*')
+    ret.line(' *  Conditional includes')
+    ret.line(' */')
+    ret.empty()
+    ret.snippet_relative('platform_conditionalincludes.h.in')
+    ret.empty()
+
 # Development time helper: add DUK_ACTIVE which provides a runtime C string
 # indicating what DUK_USE_xxx config options are active at run time.  This
 # is useful in genconfig development so that one can e.g. diff the active
@@ -1292,6 +1302,10 @@ def generate_duk_config_header(opts, meta_dir):
         ret.empty()
 
     add_override_defines_section(opts, ret)
+
+    # Some headers are only included if final DUK_USE_xxx option settings
+    # indicate they're needed, for example C++ <exception>.
+    add_conditional_includes_section(opts, ret)
 
     # Date provider snippet is after custom header and overrides, so that
     # the user may define e.g. DUK_USE_DATE_NOW_GETTIMEOFDAY in their

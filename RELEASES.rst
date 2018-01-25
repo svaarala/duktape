@@ -3273,6 +3273,9 @@ Planned
 
 * Add a CBOR encoder/decoder as an extra (GH-1781, GH-1800, GH-1801)
 
+* Include <exception> only when compiling as C++ with C++ exception support
+  enabled (GH-1838, GH-1839)
+
 * Fix performance.now() property attributes to 'wec' (earlier 'wc') (GH-1821)
 
 * Fix debugger StepOver behavior when a tailcall happens in a nested

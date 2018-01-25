@@ -1,0 +1,3 @@
+#if defined(DUK_F_CPP) && defined(DUK_USE_CPP_EXCEPTIONS)
+#include <exception>  /* std::exception */
+#endif
