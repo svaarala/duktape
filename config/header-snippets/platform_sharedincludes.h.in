@@ -21,6 +21,4 @@
 #include <stdint.h>
 #endif
 
-#if defined(DUK_F_CPP)
-#include <exception>  /* std::exception */
-#endif
+/* <exception> is only included if needed, based on DUK_USE_xxx flags. */
