@@ -49,6 +49,7 @@ and agreed to irrevocably license their contributions under the Duktape
 * Jakub Nowakowski (https://github.com/jimvonmoon)
 * Tommy Nguyen (https://github.com/tn0502)
 * Fabrice Fontaine (https://github.com/ffontaine)
+* Christopher Hiller (https://github.com/boneskull)
 
 Other contributions
 ===================

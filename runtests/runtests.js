@@ -44,7 +44,7 @@ function mkTempName(ext) {
 function safeUnlinkSync(filePath) {
     try {
         if (filePath) {
-            fs.unlink(filePath);
+            fs.unlinkSync(filePath);
         }
     } catch (e) {
         console.log('Failed to unlink ' + filePath + ' (ignoring): ' + e);
