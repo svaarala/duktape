@@ -3190,6 +3190,9 @@ Planned
 2.3.0 (XXXX-XX-XX)
 ------------------
 
+* Update UnicodeData.txt and SpecialCasing.txt used for building internal
+  Unicode control data to Unicode version 10.0.0 (GH-1851)
+
 * Add support for Symbol.hasInstance (@@hasInstance) check for 'instanceof'
   operator and duk_instanceof() API call; also add Symbol.hasInstance and
   Function.prototype[@@hasInstance] (GH-1821)
