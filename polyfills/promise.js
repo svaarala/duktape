@@ -1,0 +1,235 @@
+/*
+ *  Minimal ES2015+ Promise polyfill
+ *
+ *  Limitations:
+ *
+ *    - Caller must manually call Promise.runQueue() to process pending jobs.
+ *    - No Promise subclassing or non-subclass foreign Promises yet.
+ *    - Promise.all() and Promise.race() assume a plain array, not iterator.
+ *    - Doesn't handle errors from core operations, e.g. out-of-memory or
+ *      internal error when queueing/running jobs.  These are implementation
+ *      defined for the most part.
+ *    - See XXX in source for more.
+ *
+ *  This polyfill was originally used to gain a better understanding of the
+ *  ES2015 specification algorithms, before implementing Promises natively.
+ *  As such this polyfill may not be production quality.
+ *
+ *  See also: https://github.com/stefanpenner/es6-promise#readme
+ */
+
+(function () {
+    if ('Promise' in this) { return; }
+
+    // Job queue to simulate ES2015 job queues, linked list, 'next' reference.
+    // LIFO implementation, FIFO would probably be preferable by users.
+    var queueHead = null;
+    function queueJob(job) { job.next = queueHead; queueHead = job; }
+
+    // Helper to define non-enumerable properties.
+    function def(obj, key, val) {
+        Object.defineProperty(obj, key, {
+            value: val, writable: true, enumerable: false, configurable: true
+        });
+    }
+
+    // Promise detection (plain or subclassed Promise), in spec has [[PromiseState]]
+    // internal slot which isn't affected by Proxy behaviors etc.
+    var symMarker = Symbol('promise');
+    function isPromise(p) { return p !== null && typeof p === 'object' && symMarker in p; }
+    function requirePromise(p) { if (!isPromise(p)) { throw new Error('Promise required'); } }
+
+    // Raw fulfill/reject operations, assume resolution processing done.
+    function doFulfill(p, val) {
+        if (p.state !== void 0) { return; }  // should not happen
+        p.state = true; p.value = val;
+        var reactions = p.fulfillReactions;
+        delete p.fulfillReactions; delete p.rejectReactions;
+        reactions.forEach(function (r) {
+            queueJob({ handler: r.handler, resolve: r.resolve, reject: r.reject, value: val });  // only value is new
+        });
+    }
+    function doReject(p, val) {
+        if (p.state !== void 0) { return; }  // should not happen
+        p.state = false; p.value = val;
+        var reactions = p.rejectReactions;
+        delete p.fulfillReactions; delete p.rejectReactions;
+        reactions.forEach(function (r) {
+            queueJob({ handler: r.handler, resolve: r.resolve, reject: r.reject, value: val });  // only value is new
+        });
+    }
+
+    // Create a new resolve/reject pair for a Promise.  Multiple pairs are
+    // needed in thenable handling, with all but the most recent pair being
+    // neutralized ('alreadyResolved').  Because Promises are resolved only
+    // via this resolution process, it shouldn't be possible for the Promise
+    // to be settled but check it anyway: it may be useful for e.g. the C API
+    // to forcibly resolve/fulfill/reject a Promise regardless of extant
+    // resolve/reject functions.
+    function getResolutionFunctions(p) {
+        var reject = function (err) {
+            if (reject.state.alreadyResolved) { return; }
+            reject.state.alreadyResolved = true;  // neutralize this resolve/reject pair
+            if (p.state !== void 0) { return; }
+            doReject(p, err);
+        };
+        var resolve = function (val) {
+            if (resolve.state.alreadyResolved) { return; }
+            resolve.state.alreadyResolved = true;  // neutralize this resolve/reject pair
+            if (p.state !== void 0) { return; }
+            if (val === p) { return doReject(p, new TypeError('self resolution')); }
+            try {
+                var then = (val !== null && typeof val === 'object' && val.then);
+                if (typeof then === 'function') {
+                    var t = getResolutionFunctions(p);
+                    return queueJob({ thenable: val, then: then, resolve: t.resolve, reject: t.reject });
+                    // old resolve/reject is neutralized, only the new pair is live
+                }
+                return doFulfill(p, val);
+            } catch (e) {
+                return doReject(p, e);
+            }
+        };
+        reject.state = resolve.state = {};  // shared state for [[AlreadyResolved]]
+        return { resolve: resolve, reject: reject };
+    }
+
+    // Job queue simulation.
+    function runQueueEntry() {
+        var res;
+        if (!queueHead) { return false; }
+        var job = queueHead; queueHead = job.next;
+        if (!job) { return false; }
+        if (job.then && job.resolve && job.reject) {
+            try {
+                void job.then.call(job.thenable, job.resolve, job.reject);
+            } catch (e) {
+                job.reject(e);
+            }
+        } else if (job.handler && job.resolve && job.reject) {
+            try {
+                if (job.handler === 'Identity') {
+                    res = job.value;
+                } else if (job.handler === 'Thrower') {
+                    throw job.value;
+                } else {
+                    res = job.handler.call(void 0, job.value);
+                }
+                job.resolve(res);
+            } catch (e) {
+                job.reject(e);
+            }
+        } else {
+            throw new Error('internal error');  // unknown job
+        }
+        return true;
+    }
+
+    // %Promise% constructor.
+    var cons = function Promise(executor) {
+        if (!new.target) { throw new Error('Promise must be called as a constructor'); }
+        var _this = this;
+        this[symMarker] = true;
+        def(this, 'state', void 0);   // undefined (pending), true (fulfilled), false (rejected)
+        def(this, 'value', void 0);
+        def(this, 'fulfillReactions', []);
+        def(this, 'rejectReactions', []);
+        var t = getResolutionFunctions(this);
+        try {
+            void executor(t.resolve, t.reject);
+        } catch (e) {
+            t.reject(e);
+        }
+    };
+    var proto = cons.prototype;
+
+    // %Promise%.then(), also used for .catch().
+    function then(onFulfilled, onRejected) {
+        // No subclassing support here now, no NewPromiseCapability() handling.
+        requirePromise(this);
+        var resolveFn, rejectFn;
+        var p = new Promise(function (resolve, reject) { resolveFn = resolve; rejectFn = reject; });
+        onFulfilled = (typeof onFulfilled === 'function' ? onFulfilled : 'Identity');
+        onRejected = (typeof onRejected === 'function' ? onRejected : 'Thrower');
+        if (this.state === void 0) {  // pending
+            this.fulfillReactions.push({ handler: onFulfilled, resolve: resolveFn, reject: rejectFn });
+            this.rejectReactions.push({ handler: onRejected, resolve: resolveFn, reject: rejectFn });
+        } else if (this.state) {  // fulfilled
+            queueJob({ handler: onFulfilled, resolve: resolveFn, reject: rejectFn, value: this.value });
+        } else {  // rejected
+            queueJob({ handler: onRejected, resolve: resolveFn, reject: rejectFn, value: this.value });
+        }
+        return p;
+    }
+
+    // %Promise%.all().
+    function all(list) {
+        var resolveFn, rejectFn;
+        var p = new Promise(function (resolve, reject) { resolveFn = resolve; rejectFn = reject; });
+        var state = { values: [], remaining: 1, resolve: resolveFn, reject: rejectFn };  // remaining intentionally 1, not 0
+        var index = 0;
+        list.forEach(function (x) {  // XXX: no iterator support
+            var t = Promise.resolve(x);
+            var f = function promiseAllElement(val) {
+                var F = promiseAllElement;
+                var S = F.state;
+                if (F.alreadyCalled) { return; }
+                F.alreadyCalled = true;
+                S.values[F.index] = val;
+                if (--S.remaining === 0) {
+                    S.resolve.call(void 0, S.values);
+                }
+            }
+            f.state = state;
+            f.index = index++;
+            state.remaining++;
+            t.then(f, rejectFn);
+        });
+        if (--state.remaining === 0) {
+            resolveFn.call(void 0, state.values);
+        }
+        return p;
+    }
+
+    // %Promise%.race().
+    function race(list) {
+        var resolveFn, rejectFn;
+        var p = new Promise(function (resolve, reject) { resolveFn = resolve; rejectFn = reject; });
+        list.forEach(function (x) {  // XXX: no iterator support
+            var t = Promise.resolve(x);
+            t.then(resolveFn, rejectFn);
+        });
+        return p;
+    }
+
+    // %Promise%.try(), https://github.com/tc39/proposal-promise-try,
+    // simple polyfill-style implementation.
+    function _try(func) {
+        // XXX: check 'this' for callability, or Promise / subclass.
+        return new this(function (resolve, reject) { resolve(func()); });
+    }
+
+    // Define visible objects and properties.
+    (function () {
+        def(this, 'Promise', cons);
+        def(cons, 'resolve', function resolve(val) {  // XXX: direct handling
+            if (isPromise(val) && val.constructor === this) { return val; }
+            return new Promise(function (resolve, reject) { resolve(val); });
+        });
+        def(cons, 'reject', function reject(val) {  // XXX: direct handling
+            return new Promise(function (resolve, reject) { reject(val); });
+        });
+        def(cons, 'all', all);
+        def(cons, 'race', race);
+        def(cons, 'try', _try);  // XXX: name should be 'try'
+        def(proto, 'then', then);
+        def(proto, 'catch', function _catch(onRejected) {  // XXX: name should be 'catch'
+            return this.then.call(this, void 0, onRejected);
+        });
+
+        // Not part of the actual Promise API, but used to drive the "job queue".
+        def(cons, 'runQueue', function _runQueueUntilEmpty() {
+            while (runQueueEntry()) {}
+        });
+    }());
+}());
