@@ -37,7 +37,7 @@
     // internal slot which isn't affected by Proxy behaviors etc.
     var symMarker = Symbol('promise');
     function isPromise(p) { return p !== null && typeof p === 'object' && symMarker in p; }
-    function requirePromise(p) { if (!isPromise(p)) { throw new Error('Promise required'); } }
+    function requirePromise(p) { if (!isPromise(p)) { throw new TypeError('Promise required'); } }
 
     // Raw fulfill/reject operations, assume resolution processing done.
     function doFulfill(p, val) {
@@ -127,7 +127,8 @@
 
     // %Promise% constructor.
     var cons = function Promise(executor) {
-        if (!new.target) { throw new Error('Promise must be called as a constructor'); }
+        if (!new.target) { throw new TypeError('Promise must be called as a constructor'); }
+        if (typeof executor !== 'function') { throw new TypeError('executor must be callable'); }
         var _this = this;
         this[symMarker] = true;
         def(this, 'state', void 0);   // undefined (pending), true (fulfilled), false (rejected)
@@ -142,6 +143,7 @@
         }
     };
     var proto = cons.prototype;
+    Object.defineProperty(cons, 'prototype', { writable: false, enumerable: false, configurable: false });
 
     // %Promise%.then(), also used for .catch().
     function then(onFulfilled, onRejected) {
@@ -226,6 +228,7 @@
         def(proto, 'catch', function _catch(onRejected) {  // XXX: name should be 'catch'
             return this.then.call(this, void 0, onRejected);
         });
+        def(proto, Symbol.toStringTag, 'Promise');
 
         // Not part of the actual Promise API, but used to drive the "job queue".
         def(cons, 'runQueue', function _runQueueUntilEmpty() {

@@ -488,7 +488,7 @@ def check_known_issues(dirname, output):
 # http://stackoverflow.com/questions/1191374/using-module-subprocess-with-timeout
 # For Cygwin the command name should use Unix path but argument paths
 # should be Windows converted.
-def execute_ecmascript_testcase(res, data, name):
+def execute_ecmascript_testcase(res, data, name, polyfills):
     test_fn = os.path.abspath(os.path.join(tempdir, name))
     write_file(test_fn, data)
 
@@ -516,6 +516,8 @@ def execute_ecmascript_testcase(res, data, name):
                 cmd += [ path_to_platform(os.path.abspath(opts.duk)) ]
             else:
                 cmd += [ os.path.abspath(opts.duk) ]
+            for fn in polyfills:
+                cmd += [ path_to_platform(os.path.abspath(fn)) ]
             cmd += [ path_to_platform(os.path.abspath(test_fn)) ]
             res['command'] = cmd
 
@@ -725,11 +727,13 @@ def main():
         description='Prepare an Ecmascript or API testcase for execution and (optionally) execute the testcase, print a summary, and write a JSON result file for further user.  Testcase can be given using a full path or using just the test name in which case it is looked up from ../tests/ecmascript/ relative to the runtest.py script.'
     )
     parser.add_option('--known-issues', dest='known_issues', default=None, help='Path to known issues directory, default is autodetect')
+    parser.add_option('--ignore-skip', dest='ignore_skip', default=False, action='store_true', help='Ignore skip=true in metadata')
     parser.add_option('--minify-uglifyjs2', dest='minify_uglifyjs2', default=None, help='Path to UglifyJS2 to be used for minifying')
     parser.add_option('--minify-uglifyjs', dest='minify_uglifyjs', default=None, help='Path to UglifyJS to be used for minifying')
     parser.add_option('--minify-closure', dest='minify_closure', default=None, help='Path to Closure compiler.jar to be used for minifying')
     parser.add_option('--duk', dest='duk', default=None, help='Path to "duk" command, default is autodetect')
     parser.add_option('--timeout', dest='timeout', type='int', default=15*60, help='Test execution timeout (seconds), default 15min')
+    parser.add_option('--polyfill', dest='polyfills', default=[], action='append', help='Polyfill script(s) for duk')
     parser.add_option('--valgrind', dest='valgrind', action='store_true', default=False, help='Run test inside valgrind')
     parser.add_option('--valgrind-tool', dest='valgrind_tool', default=None, help='Valgrind tool to use (implies --valgrind)')
     parser.add_option('--memcheck', dest='memcheck', default=False, action='store_true', help='Shorthand for --valgrind-tool memcheck')
@@ -812,11 +816,11 @@ def main():
     # of running multiple tests).  Print a maximally helpful, human readable
     # summary based on the same JSON-compatible result object.
     if not opts.prepare_only:
-        if meta.get('skip', False):
+        if meta.get('skip', False) and not opts.ignore_skip:
             res['skipped'] = True
         else:
             res['skipped'] = False
-            execute_ecmascript_testcase(res, data, name)
+            execute_ecmascript_testcase(res, data, name, opts.polyfills)
             interpret_test_result(res, expect)
 
         print_summary(res)
