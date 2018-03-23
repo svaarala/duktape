@@ -22,9 +22,32 @@
     if ('Promise' in this) { return; }
 
     // Job queue to simulate ES2015 job queues, linked list, 'next' reference.
-    // LIFO implementation, FIFO would probably be preferable by users.
+    // While ES2015 doesn't guarantee the relative order of jobs in different
+    // job queues, within a certain queue strict FIFO is required.  See ES5.1
+    // https://www.ecma-international.org/ecma-262/6.0/#sec-jobs-and-job-queues:
+    // "The PendingJob records from a single Job Queue are always initiated in
+    // FIFO order. This specification does not define the order in which multiple
+    // Job Queues are serviced."
     var queueHead = null;
-    function queueJob(job) { job.next = queueHead; queueHead = job; }
+    var queueTail = null;
+    function queueJob(job) {
+        if (queueHead) {
+            queueTail.next = job;
+            queueTail = job;
+        } else {
+            queueHead = queueTail = job;
+        }
+    }
+    function unqueueJob() {
+        var ret = queueHead;
+        if (ret) {
+            queueHead = ret.next;
+            if (!queueHead) {
+                queueTail = null;
+            }
+        }
+        return ret;
+    }
 
     // Helper to define non-enumerable properties.
     function def(obj, key, val) {
@@ -96,9 +119,7 @@
 
     // Job queue simulation.
     function runQueueEntry() {
-        var res;
-        if (!queueHead) { return false; }
-        var job = queueHead; queueHead = job.next;
+        var job = unqueueJob();
         if (!job) { return false; }
         if (job.then && job.resolve && job.reject) {
             try {
