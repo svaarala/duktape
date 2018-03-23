@@ -14,6 +14,7 @@ Promise
 true
 true
 propdesc Promise: value=function:Promise, writable=true, enumerable=false, configurable=true
+true
 - properties
 propdesc length: value=1, writable=false, enumerable=false, configurable=true
 propdesc name: value="Promise", writable=false, enumerable=false, configurable=true
@@ -22,6 +23,7 @@ propdesc all: value=function:all, writable=true, enumerable=false, configurable=
 propdesc race: value=function:race, writable=true, enumerable=false, configurable=true
 propdesc reject: value=function:reject, writable=true, enumerable=false, configurable=true
 propdesc resolve: value=function:resolve, writable=true, enumerable=false, configurable=true
+done
 ===*/
 
 // General.
@@ -34,6 +36,7 @@ print(Promise.name);
 print('Promise' in GLOBAL);
 print(Object.getPrototypeOf(Promise) === Function.prototype);
 print(Test.getPropDescString(GLOBAL, 'Promise'));
+print(Object.getPrototypeOf(new Promise(function () {})) === Promise.prototype);
 
 print('- properties');
 print(Test.getPropDescString(Promise, 'length'));
@@ -44,3 +47,5 @@ print(Test.getPropDescString(Promise, 'race'));
 print(Test.getPropDescString(Promise, 'reject'));
 print(Test.getPropDescString(Promise, 'resolve'));
 // @@species separately
+
+print('done');
