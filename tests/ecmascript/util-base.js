@@ -56,39 +56,56 @@
 
     // Get property descriptor string for arbitrary object and key.
     function getPropDescString(obj, key) {
+        var strkey = String(key);  // handle symbols
         if (obj === void 0) {
-            return 'propdesc ' + key + ': undefined object';
+            return 'propdesc ' + strkey + ': undefined object';
         } else if (obj === null) {
-            return 'propdesc ' + key + ': null object';
+            return 'propdesc ' + strkey + ': null object';
         } else {
             try {
                 var pd = Object.getOwnPropertyDescriptor(obj, key);
                 var parts = [];
-                if (typeof pd.value !== 'undefined') {
-                    parts.push('value=' + valueToString(pd.value));
+                if (pd) {
+                    if (typeof pd.value !== 'undefined') {
+                        parts.push('value=' + valueToString(pd.value));
+                    }
+                    if (typeof pd.writable !== 'undefined') {
+                        parts.push('writable=' + valueToString(pd.writable));
+                    }
+                    if (typeof pd.enumerable !== 'undefined') {
+                        parts.push('enumerable=' + valueToString(pd.enumerable));
+                    }
+                    if (typeof pd.configurable !== 'undefined') {
+                        parts.push('configurable=' + valueToString(pd.configurable));
+                    }
+                    if (typeof pd.get !== 'undefined') {
+                        parts.push('get=' + valueToString(pd.get));
+                    }
+                    if (typeof pd.set !== 'undefined') {
+                        parts.push('set=' + valueToString(pd.set));
+                    }
+                    return 'propdesc ' + strkey + ': ' + parts.join(', ');
+                } else {
+                    return 'propdesc ' + strkey + ': no such property';
                 }
-                if (typeof pd.writable !== 'undefined') {
-                    parts.push('writable=' + valueToString(pd.writable));
-                }
-                if (typeof pd.enumerable !== 'undefined') {
-                    parts.push('enumerable=' + valueToString(pd.enumerable));
-                }
-                if (typeof pd.configurable !== 'undefined') {
-                    parts.push('configurable=' + valueToString(pd.configurable));
-                }
-                if (typeof pd.get !== 'undefined') {
-                    parts.push('get=' + valueToString(pd.get));
-                }
-                if (typeof pd.set !== 'undefined') {
-                    parts.push('set=' + valueToString(pd.set));
-                }
-                return 'propdesc ' + key + ': ' + parts.join(', ');
             } catch (e) {
-                return 'propdesc ' + key + ': ' + String(e);
+                return 'propdesc ' + strkey + ': ' + String(e);
             }
         }
     }
 
+    // Permute array.
+    function permuteArray(arr) {
+        var res = [];
+        var len = arr.length;
+        for (var i = 0; i < len; i++) {
+            var idx = Math.floor(Math.random() * arr.length);
+            res.push(arr.splice(idx, 1)[0]);
+        }
+        return res;
+    }
+
     Test.valueToString = valueToString;
     Test.getPropDescString = getPropDescString;
+    Test.permuteArray = permuteArray;
 }());
