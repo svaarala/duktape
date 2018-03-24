@@ -30,7 +30,7 @@
     // Job Queues are serviced."
     var queueHead = null;
     var queueTail = null;
-    function queueJob(job) {
+    function enqueueJob(job) {
         if (queueHead) {
             queueTail.next = job;
             queueTail = job;
@@ -38,7 +38,7 @@
             queueHead = queueTail = job;
         }
     }
-    function unqueueJob() {
+    function dequeueJob() {
         var ret = queueHead;
         if (ret) {
             queueHead = ret.next;
@@ -50,9 +50,13 @@
     }
 
     // Helper to define non-enumerable properties.
-    function def(obj, key, val) {
+    function def(obj, key, val, attrs) {
+        if (attrs === void 0) { attrs = 'wc'; }
         Object.defineProperty(obj, key, {
-            value: val, writable: true, enumerable: false, configurable: true
+            value: val,
+            writable: attrs.indexOf('w') >= 0,
+            enumerable: attrs.indexOf('e') >= 0,
+            configurable: attrs.indexOf('c') >= 0
         });
     }
 
@@ -69,7 +73,7 @@
         var reactions = p.fulfillReactions;
         delete p.fulfillReactions; delete p.rejectReactions;
         reactions.forEach(function (r) {
-            queueJob({ handler: r.handler, resolve: r.resolve, reject: r.reject, value: val });  // only value is new
+            enqueueJob({ handler: r.handler, resolve: r.resolve, reject: r.reject, value: val });  // only value is new
         });
     }
     function doReject(p, val) {
@@ -78,7 +82,7 @@
         var reactions = p.rejectReactions;
         delete p.fulfillReactions; delete p.rejectReactions;
         reactions.forEach(function (r) {
-            queueJob({ handler: r.handler, resolve: r.resolve, reject: r.reject, value: val });  // only value is new
+            enqueueJob({ handler: r.handler, resolve: r.resolve, reject: r.reject, value: val });  // only value is new
         });
     }
 
@@ -105,7 +109,7 @@
                 var then = (val !== null && typeof val === 'object' && val.then);
                 if (typeof then === 'function') {
                     var t = getResolutionFunctions(p);
-                    return queueJob({ thenable: val, then: then, resolve: t.resolve, reject: t.reject });
+                    return enqueueJob({ thenable: val, then: then, resolve: t.resolve, reject: t.reject });
                     // old resolve/reject is neutralized, only the new pair is live
                 }
                 return doFulfill(p, val);
@@ -119,7 +123,7 @@
 
     // Job queue simulation.
     function runQueueEntry() {
-        var job = unqueueJob();
+        var job = dequeueJob();
         if (!job) { return false; }
         if (job.then && job.resolve && job.reject) {
             try {
@@ -166,23 +170,17 @@
     var proto = cons.prototype;
     Object.defineProperty(cons, 'prototype', { writable: false, enumerable: false, configurable: false });
 
-    // %Promise%.then(), also used for .catch().
-    function then(onFulfilled, onRejected) {
-        // No subclassing support here now, no NewPromiseCapability() handling.
-        requirePromise(this);
-        var resolveFn, rejectFn;
-        var p = new Promise(function (resolve, reject) { resolveFn = resolve; rejectFn = reject; });
-        onFulfilled = (typeof onFulfilled === 'function' ? onFulfilled : 'Identity');
-        onRejected = (typeof onRejected === 'function' ? onRejected : 'Thrower');
-        if (this.state === void 0) {  // pending
-            this.fulfillReactions.push({ handler: onFulfilled, resolve: resolveFn, reject: rejectFn });
-            this.rejectReactions.push({ handler: onRejected, resolve: resolveFn, reject: rejectFn });
-        } else if (this.state) {  // fulfilled
-            queueJob({ handler: onFulfilled, resolve: resolveFn, reject: rejectFn, value: this.value });
-        } else {  // rejected
-            queueJob({ handler: onRejected, resolve: resolveFn, reject: rejectFn, value: this.value });
-        }
-        return p;
+    // %Promise%.resolve().
+    // XXX: direct handling
+    function resolve(val) {
+        if (isPromise(val) && val.constructor === this) { return val; }
+        return new Promise(function (resolve, reject) { resolve(val); });
+    }
+
+    // %Promise%.reject()
+    // XXX: direct handling
+    function reject(val) {
+        return new Promise(function (resolve, reject) { reject(val); });
     }
 
     // %Promise%.all().
@@ -202,7 +200,7 @@
                 if (--S.remaining === 0) {
                     S.resolve.call(void 0, S.values);
                 }
-            }
+            };
             f.state = state;
             f.index = index++;
             state.remaining++;
@@ -225,31 +223,50 @@
         return p;
     }
 
+    // %PromisePrototype%.then(), also used for .catch().
+    function then(onFulfilled, onRejected) {
+        // No subclassing support here now, no NewPromiseCapability() handling.
+        requirePromise(this);
+        var resolveFn, rejectFn;
+        var p = new Promise(function (resolve, reject) { resolveFn = resolve; rejectFn = reject; });
+        onFulfilled = (typeof onFulfilled === 'function' ? onFulfilled : 'Identity');
+        onRejected = (typeof onRejected === 'function' ? onRejected : 'Thrower');
+        if (this.state === void 0) {  // pending
+            this.fulfillReactions.push({ handler: onFulfilled, resolve: resolveFn, reject: rejectFn });
+            this.rejectReactions.push({ handler: onRejected, resolve: resolveFn, reject: rejectFn });
+        } else if (this.state) {  // fulfilled
+            enqueueJob({ handler: onFulfilled, resolve: resolveFn, reject: rejectFn, value: this.value });
+        } else {  // rejected
+            enqueueJob({ handler: onRejected, resolve: resolveFn, reject: rejectFn, value: this.value });
+        }
+        return p;
+    }
+
+    // %PromisePrototype%.catch.
+    var _catch = function (onRejected) {
+        return this.then.call(this, void 0, onRejected);
+    };
+    def(_catch, 'name', 'catch', 'c');
+
     // %Promise%.try(), https://github.com/tc39/proposal-promise-try,
     // simple polyfill-style implementation.
-    function _try(func) {
+    var _try = function (func) {
         // XXX: check 'this' for callability, or Promise / subclass.
         return new this(function (resolve, reject) { resolve(func()); });
-    }
+    };
+    def(_try, 'name', 'try', 'c');
 
     // Define visible objects and properties.
     (function () {
         def(this, 'Promise', cons);
-        def(cons, 'resolve', function resolve(val) {  // XXX: direct handling
-            if (isPromise(val) && val.constructor === this) { return val; }
-            return new Promise(function (resolve, reject) { resolve(val); });
-        });
-        def(cons, 'reject', function reject(val) {  // XXX: direct handling
-            return new Promise(function (resolve, reject) { reject(val); });
-        });
+        def(cons, 'resolve', resolve);
+        def(cons, 'reject', reject);
         def(cons, 'all', all);
         def(cons, 'race', race);
-        def(cons, 'try', _try);  // XXX: name should be 'try'
+        def(cons, 'try', _try);
         def(proto, 'then', then);
-        def(proto, 'catch', function _catch(onRejected) {  // XXX: name should be 'catch'
-            return this.then.call(this, void 0, onRejected);
-        });
-        def(proto, Symbol.toStringTag, 'Promise');
+        def(proto, 'catch', _catch);
+        def(proto, Symbol.toStringTag, 'Promise', 'c');
 
         // Not part of the actual Promise API, but used to drive the "job queue".
         def(cons, 'runQueue', function _runQueueUntilEmpty() {
