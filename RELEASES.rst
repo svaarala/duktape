@@ -3276,6 +3276,8 @@ Planned
 
 * Add a CBOR encoder/decoder as an extra (GH-1781, GH-1800, GH-1801)
 
+* Add a minimal ES2015 Promise polyfill into the distribution (GH-1865)
+
 * Include <exception> only when compiling as C++ with C++ exception support
   enabled (GH-1838, GH-1839)
 
