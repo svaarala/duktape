@@ -21,4 +21,3 @@ EventLoop.connect(HOST, PORT, function (fd) {
                         "User-Agent: client-socket-test.js\r\n" +
                         "\r\n");
 });
-

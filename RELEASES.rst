@@ -3312,6 +3312,9 @@ Planned
 
 * Fix harmless -Wcast-align warnings on armhf (GH-1793)
 
+* Allow undefined timeout in eventloop example setTimeout() and setInterval()
+  bindings (GH-1866)
+
 * Various compiler warning fixes (GH-1788)
 
 * Add automatic workaround for union aliasing issues with FreeBSD + -m32 +

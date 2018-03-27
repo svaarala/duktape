@@ -14,4 +14,3 @@ intervalId = setInterval(function (x, y) {
         clearInterval(intervalId);
     }
 }, 400, 'foo', 'bar');
-
