@@ -19,7 +19,7 @@
  */
 
 (function () {
-    if ('Promise' in this) { return; }
+    if (typeof Promise !== 'undefined') { return; }
 
     // Job queue to simulate ES2015 job queues, linked list, 'next' reference.
     // While ES2015 doesn't guarantee the relative order of jobs in different
@@ -30,10 +30,14 @@
     // multiple Job Queues are serviced."
     var queueHead = null, queueTail = null;
     function enqueueJob(job) {
+        compact(job);
         if (queueHead) {
-            queueTail.next = job; queueTail = job;
+            queueTail.next = job;
+            compact(queueTail);
+            queueTail = job;
         } else {
-            queueHead = job; queueTail = job;
+            queueHead = job;
+            queueTail = job;
         }
     }
     function dequeueJob() {
@@ -47,7 +51,7 @@
         return ret;
     }
 
-    // Helper to define non-enumerable properties.
+    // Helper to define/modify properties more compactly.
     function def(obj, key, val, attrs) {
         if (attrs === void 0) { attrs = 'wc'; }
         Object.defineProperty(obj, key, {
@@ -57,6 +61,10 @@
             configurable: attrs.indexOf('c') >= 0
         });
     }
+
+    // Helper for Duktape specific object compaction.
+    var compact = (typeof Duktape === 'object' && Duktape.compact) ||
+                  function (v) { return v; };
 
     // Promise detection (plain or subclassed Promise), in spec has
     // [[PromiseState]] internal slot which isn't affected by Proxy
@@ -74,7 +82,7 @@
         if (p.state !== void 0) { return; }  // should not happen
         p.state = true; p.value = val;
         var reactions = p.fulfillReactions;
-        delete p.fulfillReactions; delete p.rejectReactions;
+        delete p.fulfillReactions; delete p.rejectReactions; compact(p);
         reactions.forEach(function (r) {
             enqueueJob({
                 handler: r.handler,
@@ -88,7 +96,7 @@
         if (p.state !== void 0) { return; }  // should not happen
         p.state = false; p.value = val;
         var reactions = p.rejectReactions;
-        delete p.fulfillReactions; delete p.rejectReactions;
+        delete p.fulfillReactions; delete p.rejectReactions; compact(p);
         reactions.forEach(function (r) {
             enqueueJob({
                 handler: r.handler,
@@ -106,7 +114,7 @@
     // to be settled but check it anyway: it may be useful for e.g. the C API
     // to forcibly resolve/fulfill/reject a Promise regardless of extant
     // resolve/reject functions.
-    function getResolutionFunctions(p) {
+    function createResolutionFunctions(p) {
         // In ES2015 the resolve/reject functions have a shared 'state' object
         // with a [[AlreadyResolved]] slot.  Here we use an in-scope variable.
         var alreadyResolved = false;
@@ -127,7 +135,7 @@
                 var then = (val !== null && typeof val === 'object' &&
                             val.then);
                 if (typeof then === 'function') {
-                    var t = getResolutionFunctions(p);
+                    var t = createResolutionFunctions(p);
                     return enqueueJob({
                         thenable: val,
                         then: then,
@@ -187,7 +195,8 @@
         def(this, 'value', void 0);
         def(this, 'fulfillReactions', []);
         def(this, 'rejectReactions', []);
-        var t = getResolutionFunctions(this);
+        compact(this);
+        var t = createResolutionFunctions(this);
         try {
             void executor(t.resolve, t.reject);
         } catch (e) {
@@ -324,5 +333,7 @@
         def(cons, 'runQueue', function _runQueueUntilEmpty() {
             while (runQueueEntry()) {}
         });
+
+        compact(this); compact(cons); compact(proto);
     }());
 }());

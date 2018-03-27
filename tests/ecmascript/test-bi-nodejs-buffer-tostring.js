@@ -643,7 +643,7 @@ function miscDecodeTest() {
 
     function test(bytes) {
         var buf = makeBuffer(bytes);
-        console.log(Array.prototype.map.call(buf.toString(), function (v) { return v.charCodeAt(0); }).join(' '));
+        print(Array.prototype.map.call(buf.toString(), function (v) { return v.charCodeAt(0); }).join(' '));
     }
 
     // All initial bytes.
