@@ -516,7 +516,8 @@ def main():
         'duktape-isfastint.js',
         'duktape-error-setter-writable.js',
         'duktape-error-setter-nonwritable.js',
-        'duktape-buffer.js'
+        'duktape-buffer.js',
+        'promise.js'
     ], 'polyfills', os.path.join(dist, 'polyfills'))
 
     copy_files([
