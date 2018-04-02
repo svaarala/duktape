@@ -1676,17 +1676,37 @@ DUK_LOCAL duk_small_uint_t duk__handle_return(duk_hthread *thr,
 
 	resumer = thr->resumer;
 
-	/* Share yield longjmp handler. */
+	/* Share yield longjmp handler.
+	 *
+	 * This sequence of steps is a bit fragile (see GH-1845):
+	 * - We need the return value from 'thr' (resumed thread) value stack.
+	 *   The termination unwinds its value stack, losing the value.
+	 * - We need a refcounted reference for 'thr', which may only exist
+	 *   in the caller value stack.  We can't unwind or reconfigure the
+	 *   caller's value stack without potentially freeing 'thr'.
+	 *
+	 * Current approach is to capture the 'thr' return value and store
+	 * a reference to 'thr' in the caller value stack temporarily.  This
+	 * keeps 'thr' reachable until final yield/return handling which
+	 * removes the references atomatically.
+	 */
+
 	DUK_ASSERT(thr->valstack_top - 1 >= thr->valstack_bottom);
-	duk__handle_yield(thr, resumer, resumer->callstack_top - 2, thr->valstack_top - 1);
+	duk_push_tval(resumer, thr->valstack_top - 1);  /* Capture return value, side effect free. */
+	duk_push_hthread(resumer, thr);  /* Make 'thr' reachable again, before side effects. */
 
-	duk_hthread_terminate(thr);  /* updates thread state, minimizes its allocations */
-	DUK_ASSERT(thr->state == DUK_HTHREAD_STATE_TERMINATED);
-
+	duk_hthread_terminate(thr);  /* Updates thread state, minimizes its allocations. */
 	thr->resumer = NULL;
 	DUK_HTHREAD_DECREF(thr, resumer);
+	DUK_ASSERT(thr->state == DUK_HTHREAD_STATE_TERMINATED);
+
 	resumer->state = DUK_HTHREAD_STATE_RUNNING;
 	DUK_HEAP_SWITCH_THREAD(thr->heap, resumer);
+
+	DUK_ASSERT(resumer->valstack_top - 2 >= resumer->valstack_bottom);
+	duk__handle_yield(thr, resumer, resumer->callstack_top - 2, resumer->valstack_top - 2);
+	thr = NULL;  /* 'thr' invalidated by call */
+
 #if 0
 	thr = resumer;  /* not needed */
 #endif
