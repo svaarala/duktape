@@ -3281,6 +3281,9 @@ Planned
 * Include <exception> only when compiling as C++ with C++ exception support
   enabled (GH-1838, GH-1839)
 
+* Fix potential dangling pointer use in Duktape thread termination handling;
+  the dangling pointer could cause unsafe memory behavior (GH-1845, GH-1868)
+
 * Fix performance.now() property attributes to 'wec' (earlier 'wc') (GH-1821)
 
 * Fix debugger StepOver behavior when a tailcall happens in a nested
