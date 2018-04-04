@@ -3230,8 +3230,14 @@ DUK_INTERNAL void duk_push_class_string_tval(duk_hthread *thr, duk_tval *tv, duk
 	duk_hobject *h_obj;
 	duk_small_uint_t classnum;
 	duk_small_uint_t stridx;
+	duk_tval tv_tmp;
 
 	DUK_ASSERT_API_ENTRY(thr);
+	DUK_ASSERT(tv != NULL);
+
+	/* Stabilize 'tv', duk_push_literal() may trigger side effects. */
+	DUK_TVAL_SET_TVAL(&tv_tmp, tv);
+	tv = &tv_tmp;
 
 	/* Conceptually for any non-undefined/null value we should do a
 	 * ToObject() coercion and look up @@toStringTag (from the object
