@@ -1125,8 +1125,10 @@ DUK_LOCAL void duk__dump_stats(duk_heap *heap) {
 	                 (long) heap->stats_strtab_resize_check, (long) heap->stats_strtab_resize_grow,
 	                 (long) heap->stats_strtab_resize_shrink, (long) heap->stats_strtab_litcache_hit,
 	                 (long) heap->stats_strtab_litcache_miss, (long) heap->stats_strtab_litcache_pin));
-	DUK_D(DUK_DPRINT("stats object: realloc_props=%ld, abandon_array=%ld",
-	                 (long) heap->stats_object_realloc_props, (long) heap->stats_object_abandon_array));
+	DUK_D(DUK_DPRINT("stats object: realloc_props=%ld, abandon_array=%ld, "
+	                 "proto_potential=%ld, proto_create=%ld",
+	                 (long) heap->stats_object_realloc_props, (long) heap->stats_object_abandon_array,
+	                 (long) heap->stats_object_proto_potential, (long) heap->stats_object_proto_create));
 	DUK_D(DUK_DPRINT("stats getownpropdesc: count=%ld, hit=%ld, miss=%ld",
 	                 (long) heap->stats_getownpropdesc_count, (long) heap->stats_getownpropdesc_hit,
 	                 (long) heap->stats_getownpropdesc_miss));

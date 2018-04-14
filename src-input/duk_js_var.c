@@ -395,11 +395,14 @@ void duk_js_push_closure(duk_hthread *thr,
 	/* [ ... closure template ] */
 
 	if (add_auto_proto) {
+		DUK_STATS_INC(thr->heap, stats_object_proto_potential);
+#if 0  /* FIXME: testing */
 		duk_push_object(thr);  /* -> [ ... closure template newobj ] */
 		duk_dup_m3(thr);       /* -> [ ... closure template newobj closure ] */
 		duk_xdef_prop_stridx_short(thr, -2, DUK_STRIDX_CONSTRUCTOR, DUK_PROPDESC_FLAGS_WC);  /* -> [ ... closure template newobj ] */
 		duk_compact(thr, -1);  /* compact the prototype */
 		duk_xdef_prop_stridx_short(thr, -3, DUK_STRIDX_PROTOTYPE, DUK_PROPDESC_FLAGS_W);     /* -> [ ... closure template ] */
+#endif
 	}
 
 	/*
@@ -470,7 +473,9 @@ void duk_js_push_closure(duk_hthread *thr,
 	DUK_ASSERT(DUK_HOBJECT_GET_PROTOTYPE(thr->heap, &fun_clos->obj) == thr->builtins[DUK_BIDX_FUNCTION_PROTOTYPE]);
 	DUK_ASSERT(DUK_HOBJECT_HAS_EXTENSIBLE(&fun_clos->obj));
 	DUK_ASSERT(duk_has_prop_stridx(thr, -2, DUK_STRIDX_LENGTH) != 0);
+#if 0  /* FIXME: has check triggers creation of .prototype! */
 	DUK_ASSERT(add_auto_proto == 0 || duk_has_prop_stridx(thr, -2, DUK_STRIDX_PROTOTYPE) != 0);
+#endif
 	/* May be missing .name */
 	DUK_ASSERT(!DUK_HOBJECT_HAS_STRICT(&fun_clos->obj) ||
 	           duk_has_prop_stridx(thr, -2, DUK_STRIDX_CALLER) != 0);

@@ -605,6 +605,8 @@ struct duk_heap {
 	duk_int_t stats_strtab_litcache_pin;
 	duk_int_t stats_object_realloc_props;
 	duk_int_t stats_object_abandon_array;
+	duk_int_t stats_object_proto_potential;
+	duk_int_t stats_object_proto_create;
 	duk_int_t stats_getownpropdesc_count;
 	duk_int_t stats_getownpropdesc_hit;
 	duk_int_t stats_getownpropdesc_miss;

@@ -5138,6 +5138,10 @@ DUK_LOCAL duk_idx_t duk__push_c_function_raw(duk_hthread *thr, duk_c_function fu
 
 	DUK_ASSERT_BIDX_VALID(proto_bidx);
 	DUK_HOBJECT_SET_PROTOTYPE_INIT_INCREF(thr, (duk_hobject *) obj, thr->builtins[proto_bidx]);
+
+	if (flags & DUK_HOBJECT_FLAG_CONSTRUCTABLE) {
+		DUK_STATS_INC(thr->heap, stats_object_proto_potential);
+	}
 	return ret;
 
  api_error:
