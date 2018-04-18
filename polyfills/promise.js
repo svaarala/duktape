@@ -15,6 +15,9 @@
  *  ES2015 specification algorithms, before implementing Promises natively.
  *  As such this polyfill may not be production quality.
  *
+ *  The polyfill uses a Symbol to mark Promise instances, but falls back to
+ *  an ordinary (non-enumerable) property if no Symbol support is available.
+ *
  *  See also: https://github.com/stefanpenner/es6-promise#readme
  */
 
@@ -69,9 +72,10 @@
     // Promise detection (plain or subclassed Promise), in spec has
     // [[PromiseState]] internal slot which isn't affected by Proxy
     // behaviors etc.
-    var symMarker = Symbol('promise');
+    var haveSymbols = (typeof Symbol === 'function');
+    var promiseMarker = haveSymbols ? Symbol('promise') : '__PromiseInstance__';
     function isPromise(p) {
-        return p !== null && typeof p === 'object' && symMarker in p;
+        return p !== null && typeof p === 'object' && promiseMarker in p;
     }
     function requirePromise(p) {
         if (!isPromise(p)) { throw new TypeError('Promise required'); }
@@ -190,7 +194,7 @@
             throw new TypeError('executor must be callable');
         }
         var _this = this;
-        this[symMarker] = true;
+        def(this, promiseMarker, true, '');
         def(this, 'state', void 0);   // undefined (pending), true/false
         def(this, 'value', void 0);
         def(this, 'fulfillReactions', []);
@@ -327,7 +331,9 @@
         def(cons, 'try', _try);
         def(proto, 'then', then);
         def(proto, 'catch', _catch);
-        def(proto, Symbol.toStringTag, 'Promise', 'c');
+        if (haveSymbols) {
+            def(proto, Symbol.toStringTag, 'Promise', 'c');
+        }
 
         // Custom API to drive the "job queue".
         def(cons, 'runQueue', function _runQueueUntilEmpty() {
