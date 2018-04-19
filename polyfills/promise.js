@@ -1,7 +1,7 @@
 /*
  *  Minimal ES2015+ Promise polyfill
  *
- *  Limitations:
+ *  Limitations (also see XXX in source):
  *
  *    - Caller must manually call Promise.runQueue() to process pending jobs.
  *    - No Promise subclassing or non-subclass foreign Promises yet.
@@ -9,11 +9,9 @@
  *    - Doesn't handle errors from core operations, e.g. out-of-memory or
  *      internal error when queueing/running jobs.  These are implementation
  *      defined for the most part.
- *    - See XXX in source for more.
  *
  *  This polyfill was originally used to gain a better understanding of the
  *  ES2015 specification algorithms, before implementing Promises natively.
- *  As such this polyfill may not be production quality.
  *
  *  The polyfill uses a Symbol to mark Promise instances, but falls back to
  *  an ordinary (non-enumerable) property if no Symbol support is available.
