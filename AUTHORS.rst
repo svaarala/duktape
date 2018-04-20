@@ -50,6 +50,7 @@ and agreed to irrevocably license their contributions under the Duktape
 * Tommy Nguyen (https://github.com/tn0502)
 * Fabrice Fontaine (https://github.com/ffontaine)
 * Christopher Hiller (https://github.com/boneskull)
+* Gonzalo Diethelm (https://github.com/gonzus)
 
 Other contributions
 ===================
