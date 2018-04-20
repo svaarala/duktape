@@ -19,7 +19,7 @@
 #define  MIN_DELAY              1.0
 #define  MIN_WAIT               1.0
 #define  MAX_WAIT               60000.0
-#define  MAX_EXPIRYS            10
+#define  MAX_EXPIRIES           10
 
 #define  MAX_FDS                256
 
@@ -103,7 +103,7 @@ static void bubble_last_timer(void) {
 
 static void expire_timers(duk_context *ctx) {
 	ev_timer *t;
-	int sanity = MAX_EXPIRYS;
+	int sanity = MAX_EXPIRIES;
 	double now;
 	int rc;
 
