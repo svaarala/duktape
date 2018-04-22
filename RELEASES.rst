@@ -2893,6 +2893,27 @@ Miscellaneous:
 * Fix incorrect handling of register bound unary operation target for
   unary minus, unary plus, and bitwise NOT (GH-1623, GH-1624)
 
+2.1.2 (2018-04-22)
+------------------
+
+* Improve error message for instanceof and duk_instanceof() when rval has
+  no .prototype property, which is common for Duktape/C functions (GH-1725)
+
+* Fix pointer size detection for MSVC2015 ARM32/ARM64 (GH-1577, GH-1675)
+
+* Fix incorrect pausing by debugger StepOut, StepOver, and StepInto commands
+  when stepping out/over/into a tail call (GH-1684, GH-1685, GH-1726, GH-1734)
+
+* Fix dangling pointer in instanceof/duk_instanceof() when rval .prototype is
+  a virtualized property coming from a getter or a Proxy trap (GH-1725)
+
+* Fix trailing single line comment handling for Function constructor;
+  new Function('return "foo" //') previously failed with SyntaxError
+  (GH-1757)
+
+* Fix potential dangling pointer use in Duktape thread termination handling;
+  the dangling pointer could cause unsafe memory behavior (GH-1845, GH-1868)
+
 2.2.0 (2017-09-23)
 ------------------
 
