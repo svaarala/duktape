@@ -727,6 +727,7 @@ def main():
         'Makefile.eval',
         'Makefile.coffee',
         'Makefile.jxpretty',
+        'Makefile.jsoncbor',
         'Makefile.sandbox',
         'Makefile.codepage',
         'mandel.js'
