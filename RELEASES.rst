@@ -3304,6 +3304,8 @@ Planned
 
 * Minor improvements to examples/eventloop (GH-1879)
 
+* Add Makefile.jsoncbor to the distributable (GH-1885)
+
 * Fix potential dangling pointer use in Duktape thread termination handling;
   the dangling pointer could cause unsafe memory behavior (GH-1845, GH-1868)
 
