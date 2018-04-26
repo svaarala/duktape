@@ -3320,6 +3320,10 @@ Planned
 * Allow undefined timeout in eventloop example setTimeout() and setInterval()
   bindings, minor cleanups and improvements (GH-1866, GH-1879, GH-1884)
 
+* Revise Number.prototype.toFixed() 'this' binding and fractionDigits argument
+  validation order to match ES2015 where the 'this' binding is validated
+  first (GH-1887)
+
 * Add Makefile.jsoncbor to the distributable (GH-1885)
 
 * Fix potential dangling pointer use in Duktape thread termination handling;

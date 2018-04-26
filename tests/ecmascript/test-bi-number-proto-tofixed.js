@@ -648,14 +648,14 @@ RangeError
 fractionDigits valueOf
 string 12345.678901
 frac -1
+TypeError
+TypeError
+TypeError
+TypeError
 RangeError
-RangeError
-RangeError
-RangeError
-RangeError
-RangeError
-RangeError
-RangeError
+TypeError
+TypeError
+TypeError
 RangeError
 frac 0
 TypeError
@@ -678,14 +678,14 @@ TypeError
 TypeError
 string 123.00000000000000000000
 frac 21
+TypeError
+TypeError
+TypeError
+TypeError
 RangeError
-RangeError
-RangeError
-RangeError
-RangeError
-RangeError
-RangeError
-RangeError
+TypeError
+TypeError
+TypeError
 RangeError
 ===*/
 
@@ -732,9 +732,9 @@ function coercionTest() {
         valueOf: function() { print('fractionDigits valueOf'); return 6; },
     } ]);
 
-    // an invalid fractionDigits value is detected (and reported as RangeError)
-    // before an invalid 'this' binding (this differs from some other Number
-    // built-in methods)
+    // In ES2015+ the 'this' binding is validated before any arguments.
+    // In ES5.1 an invalid fractionDigits value is detected (and reported as
+    // RangeError) before an invalid 'this' binding is detected.
 
     var frac_values = [ -1, 0, 20, 21 ];
     for (i = 0; i < frac_values.length; i++) {

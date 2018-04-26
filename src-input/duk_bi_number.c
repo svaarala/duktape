@@ -130,8 +130,11 @@ DUK_INTERNAL duk_ret_t duk_bi_number_prototype_to_fixed(duk_hthread *thr) {
 	duk_small_int_t c;
 	duk_small_uint_t n2s_flags;
 
-	frac_digits = (duk_small_int_t) duk_to_int_check_range(thr, 0, 0, 20);
+	/* In ES5.1 frac_digits is coerced first; in ES2015 the 'this number
+	 * value' check is done first.
+	 */
 	d = duk__push_this_number_plain(thr);
+	frac_digits = (duk_small_int_t) duk_to_int_check_range(thr, 0, 0, 20);
 
 	c = (duk_small_int_t) DUK_FPCLASSIFY(d);
 	if (c == DUK_FP_NAN || c == DUK_FP_INFINITE) {
