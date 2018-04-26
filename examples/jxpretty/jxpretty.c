@@ -23,7 +23,7 @@ static duk_ret_t do_jxpretty(duk_context *ctx, void *udata) {
 
 	for (;;) {
 		if (ferror(f)) {
-			duk_error(ctx, DUK_ERR_ERROR, "ferror() on stdin");
+			(void) duk_error(ctx, DUK_ERR_ERROR, "ferror() on stdin");
 		}
 		if (feof(f)) {
 			break;
