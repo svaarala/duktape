@@ -3317,7 +3317,8 @@ Planned
 * Include <exception> only when compiling as C++ with C++ exception support
   enabled (GH-1838, GH-1839)
 
-* Minor improvements to examples/eventloop (GH-1879)
+* Allow undefined timeout in eventloop example setTimeout() and setInterval()
+  bindings, minor cleanups and improvements (GH-1866, GH-1879, GH-1884)
 
 * Add Makefile.jsoncbor to the distributable (GH-1885)
 
@@ -3354,9 +3355,6 @@ Planned
   build (GH-1773)
 
 * Fix harmless -Wcast-align warnings on armhf (GH-1793)
-
-* Allow undefined timeout in eventloop example setTimeout() and setInterval()
-  bindings (GH-1866)
 
 * Various compiler warning fixes (GH-1788)
 
