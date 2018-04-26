@@ -14,6 +14,7 @@
 #include <poll.h>
 
 #include "duktape.h"
+#include "c_eventloop.h"
 
 #define  TIMERS_SLOT_NAME       "eventTimers"
 #define  MIN_DELAY              1.0
