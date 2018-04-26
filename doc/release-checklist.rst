@@ -281,7 +281,7 @@ Checklist for ordinary releases
     The branch is not pushed to the server.
 
   - The concrete commands are packaged into ``add-unpacked.sh`` in
-    duktape-releases repo.
+    duktape-releases repo.  Add the tar.xz into master first.
 
 * Update website downloads page
 
@@ -346,7 +346,8 @@ Checklist for maintenance releases
   most patch releases.
 
 * Build release.  Compare release to previous release package by diffing the
-  unpacked directories.
+  unpacked directories.  Check out the maintenance branch for the build so
+  that the branch in C defines is that branch instead of "HEAD".
 
 * Build website from master.  Deploy only ``download.html``.
 

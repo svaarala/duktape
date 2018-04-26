@@ -3205,6 +3205,21 @@ Miscellaneous:
   check entry part before array part in property lookup (GH-1634); optimize
   duk_propdesc filling in property lookups (GH-1635)
 
+2.2.1 (2018-04-26)
+------------------
+
+* Fix trailing single line comment handling for Function constructor;
+  new Function('return "foo" //') previously failed with SyntaxError
+  (GH-1757)
+
+* Fix DUK_BOOL_{MIN,MAX} defines for unsigned duk_bool_t (GH-1769)
+
+* Fix debugger StepOver behavior when a tailcall happens in a nested
+  function (not the function where stepping started from) (GH-1786, GH-1787)
+
+* Fix potential dangling pointer use in Duktape thread termination handling;
+  the dangling pointer could cause unsafe memory behavior (GH-1845, GH-1868)
+
 Planned
 =======
 
