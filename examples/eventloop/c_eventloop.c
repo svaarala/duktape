@@ -14,6 +14,11 @@
 #include <poll.h>
 
 #include "duktape.h"
+#include "c_eventloop.h"
+
+#if !defined(DUKTAPE_EVENTLOOP_DEBUG)
+#define DUKTAPE_EVENTLOOP_DEBUG 0       /* set to 1 to debug with printf */
+#endif
 
 #define  TIMERS_SLOT_NAME       "eventTimers"
 #define  MIN_DELAY              1.0
@@ -32,7 +37,7 @@ typedef struct {
 	int removed;      /* timer has been requested for removal */
 
 	/* The callback associated with the timer is held in the "global stash",
-	 * in <stash>.TIMERS_SLOT_NAME[String(id)].  The references must be deleted
+	 * in <stash>.eventTimers[String(id)].  The references must be deleted
 	 * when a timer struct is deleted.
 	 */
 } ev_timer;
@@ -126,7 +131,7 @@ static void expire_timers(duk_context *ctx) {
 		 */
 
 		if (exit_requested) {
-#if 0
+#if DUKTAPE_EVENTLOOP_DEBUG > 0
 			fprintf(stderr, "exit requested, exiting timer expiry loop\n");
 			fflush(stderr);
 #endif
@@ -169,7 +174,7 @@ static void expire_timers(duk_context *ctx) {
 		 *  need to worry about the timer's offset changing on the timer list.
 		 */
 
-#if 0
+#if DUKTAPE_EVENTLOOP_DEBUG > 0
 		fprintf(stderr, "calling user callback for timer id %d\n", (int) t->id);
 		fflush(stderr);
 #endif
@@ -178,7 +183,7 @@ static void expire_timers(duk_context *ctx) {
 		duk_get_prop(ctx, -2);  /* -> [ ... stash eventTimers func ] */
 		rc = duk_pcall(ctx, 0 /*nargs*/);  /* -> [ ... stash eventTimers retval ] */
 		if (rc != 0) {
-#if 0
+#if DUKTAPE_EVENTLOOP_DEBUG > 0
 			fprintf(stderr, "timer callback failed for timer %d: %s\n", (int) t->id, duk_to_string(ctx, -1));
 			fflush(stderr);
 #endif
@@ -187,7 +192,7 @@ static void expire_timers(duk_context *ctx) {
 
 		if (t->removed) {
 			/* One-shot timer (always removed) or removed by user callback. */
-#if 0
+#if DUKTAPE_EVENTLOOP_DEBUG > 0
 			fprintf(stderr, "deleting callback state for timer %d\n", (int) t->id);
 			fflush(stderr);
 #endif
@@ -197,7 +202,7 @@ static void expire_timers(duk_context *ctx) {
 			/* Interval timer, not removed by user callback.  Queue back to
 			 * timer list and bubble to its final sorted position.
 			 */
-#if 0
+#if DUKTAPE_EVENTLOOP_DEBUG > 0
 			fprintf(stderr, "queueing timer %d back into active list\n", (int) t->id);
 			fflush(stderr);
 #endif
@@ -227,7 +232,7 @@ static void compact_poll_list(void) {
 		struct pollfd *pfd = poll_list + i;
 		if (pfd->fd == 0) {
 			/* keep output index the same */
-#if 0
+#if DUKTAPE_EVENTLOOP_DEBUG > 0
 			fprintf(stderr, "remove pollfd (index %d): fd=%d, events=%d, revents=%d\n",
 			        i, pfd->fd, pfd->events, pfd->revents),
 			fflush(stderr);
@@ -235,7 +240,7 @@ static void compact_poll_list(void) {
 
 			continue;
 		}
-#if 0
+#if DUKTAPE_EVENTLOOP_DEBUG > 0
 		fprintf(stderr, "keep pollfd (index %d -> %d): fd=%d, events=%d, revents=%d\n",
 		        i, j, pfd->fd, pfd->events, pfd->revents),
 		fflush(stderr);
@@ -288,7 +293,7 @@ duk_ret_t eventloop_run(duk_context *ctx, void *udata) {
 		 */
 
 		if (exit_requested) {
-#if 0
+#if DUKTAPE_EVENTLOOP_DEBUG > 0
 			fprintf(stderr, "exit requested, exiting event loop\n");
 			fflush(stderr);
 #endif
@@ -318,7 +323,7 @@ duk_ret_t eventloop_run(duk_context *ctx, void *udata) {
 			timeout = (int) diff;  /* clamping ensures that fits */
 		} else {
 			if (poll_count == 0) {
-#if 0
+#if DUKTAPE_EVENTLOOP_DEBUG > 0
 				fprintf(stderr, "no timers and no sockets to poll, exiting\n");
 				fflush(stderr);
 #endif
@@ -331,13 +336,13 @@ duk_ret_t eventloop_run(duk_context *ctx, void *udata) {
 		 *  Poll for activity or timeout.
 		 */
 
-#if 0
+#if DUKTAPE_EVENTLOOP_DEBUG > 0
 		fprintf(stderr, "going to poll, timeout %d ms, pollfd count %d\n", timeout, poll_count);
 		fflush(stderr);
 #endif
 
 		rc = poll(poll_list, poll_count, timeout);
-#if 0
+#if DUKTAPE_EVENTLOOP_DEBUG > 0
 		fprintf(stderr, "poll rc: %d\n", rc);
 		fflush(stderr);
 #endif
@@ -369,7 +374,7 @@ duk_ret_t eventloop_run(duk_context *ctx, void *udata) {
 			}
 
 			if (pfd->revents) {
-#if 0
+#if DUKTAPE_EVENTLOOP_DEBUG > 0
 				fprintf(stderr, "fd %d has revents: %d\n", (int) pfd->fd, (int) pfd->revents);
 				fflush(stderr);
 #endif
@@ -379,7 +384,7 @@ duk_ret_t eventloop_run(duk_context *ctx, void *udata) {
 				duk_push_int(ctx, pfd->revents);
 				rc = duk_pcall_method(ctx, 2 /*nargs*/);
 				if (rc) {
-#if 0
+#if DUKTAPE_EVENTLOOP_DEBUG > 0
 					fprintf(stderr, "fd callback failed for fd %d: %s\n", (int) pfd->fd, duk_to_string(ctx, -1));
 					fflush(stderr);
 #endif
@@ -450,7 +455,7 @@ static int create_timer(duk_context *ctx) {
 	/* Return timer id. */
 
 	duk_push_number(ctx, (double) timer_id);
-#if 0
+#if DUKTAPE_EVENTLOOP_DEBUG > 0
 	fprintf(stderr, "created timer id: %d\n", (int) timer_id);
 	fflush(stderr);
 #endif
@@ -484,7 +489,7 @@ static int delete_timer(duk_context *ctx) {
 	if (t->id == timer_id) {
 		t->removed = 1;
 		duk_push_true(ctx);
-#if 0
+#if DUKTAPE_EVENTLOOP_DEBUG > 0
 		fprintf(stderr, "deleted expiring timer id: %d\n", (int) timer_id);
 		fflush(stderr);
 #endif
@@ -519,7 +524,7 @@ static int delete_timer(duk_context *ctx) {
 			duk_push_number(ctx, (double) timer_id);
 			duk_del_prop(ctx, -2);  /* delete eventTimers[timer_id] */
 
-#if 0
+#if DUKTAPE_EVENTLOOP_DEBUG > 0
 			fprintf(stderr, "deleted timer id: %d\n", (int) timer_id);
 			fflush(stderr);
 #endif
@@ -527,7 +532,7 @@ static int delete_timer(duk_context *ctx) {
 		}
 	}
 
-#if 0
+#if DUKTAPE_EVENTLOOP_DEBUG > 0
 	if (!found) {
 		fprintf(stderr, "trying to delete timer id %d, but not found; ignoring\n", (int) timer_id);
 		fflush(stderr);
@@ -544,7 +549,7 @@ static int listen_fd(duk_context *ctx) {
 	int i, n;
 	struct pollfd *pfd;
 
-#if 0
+#if DUKTAPE_EVENTLOOP_DEBUG > 0
 	fprintf(stderr, "listen_fd: fd=%d, events=%d\n", fd, events);
 	fflush(stderr);
 #endif
@@ -554,7 +559,7 @@ static int listen_fd(duk_context *ctx) {
 	for (i = 0; i < n; i++) {
 		pfd = poll_list + i;
 		if (pfd->fd == fd) {
-#if 0
+#if DUKTAPE_EVENTLOOP_DEBUG > 0
 			fprintf(stderr, "listen_fd: fd found at index %d\n", i);
 			fflush(stderr);
 #endif
@@ -569,7 +574,7 @@ static int listen_fd(duk_context *ctx) {
 	}
 
 	/* not found, append to list */
-#if 0
+#if DUKTAPE_EVENTLOOP_DEBUG > 0
 	fprintf(stderr, "listen_fd: fd not found on list, add new entry\n");
 	fflush(stderr);
 #endif
