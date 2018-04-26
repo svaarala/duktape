@@ -757,3 +757,19 @@ try {
 } catch (e) {
     print(e);
 }
+
+/*===
+1000000000000000100
+1000000000000000128
+===*/
+
+function specNoteTest() {
+    print((1000000000000000128).toString());
+    print((1000000000000000128).toFixed());
+}
+
+try {
+    specNoteTest();
+} catch (e) {
+    print(e);
+}
