@@ -115,7 +115,7 @@ def recursive_bytes_to_strings(doc):
 
     return f(doc)
 
-# Check if string is an "array index" in Ecmascript terms.
+# Check if string is an "array index" in ECMAScript terms.
 def string_is_arridx(v):
     is_arridx = False
     try:

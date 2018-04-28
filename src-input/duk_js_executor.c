@@ -1042,7 +1042,7 @@ DUK_LOCAL void duk__handle_yield(duk_hthread *thr, duk_hthread *resumer, duk_tva
 	act_resumer = resumer->callstack_curr;
 	DUK_ASSERT(act_resumer != NULL);
 	DUK_ASSERT(DUK_ACT_GET_FUNC(act_resumer) != NULL);
-	DUK_ASSERT(DUK_HOBJECT_IS_COMPFUNC(DUK_ACT_GET_FUNC(act_resumer)));  /* resume caller must be an ecmascript func */
+	DUK_ASSERT(DUK_HOBJECT_IS_COMPFUNC(DUK_ACT_GET_FUNC(act_resumer)));  /* resume caller must be an ECMAScript func */
 
 	tv1 = (duk_tval *) (void *) ((duk_uint8_t *) resumer->valstack + act_resumer->retval_byteoff);  /* return value from Duktape.Thread.resume() */
 	DUK_TVAL_SET_TVAL_UPDREF(thr, tv1, tv_val_unstable);  /* side effects */  /* XXX: avoid side effects */
@@ -1601,7 +1601,7 @@ DUK_LOCAL duk_small_uint_t duk__handle_return(duk_hthread *thr, duk_activation *
 
 		DUK_ASSERT(thr->callstack_curr != NULL);
 		DUK_ASSERT(thr->callstack_curr->parent != NULL);
-		DUK_ASSERT(DUK_HOBJECT_IS_COMPFUNC(DUK_ACT_GET_FUNC(thr->callstack_curr->parent)));   /* must be ecmascript */
+		DUK_ASSERT(DUK_HOBJECT_IS_COMPFUNC(DUK_ACT_GET_FUNC(thr->callstack_curr->parent)));   /* must be ECMAScript */
 
 #if defined(DUK_USE_ES6_PROXY)
 		if (thr->callstack_curr->flags & (DUK_ACT_FLAG_CONSTRUCT | DUK_ACT_FLAG_CONSTRUCT_PROXY)) {

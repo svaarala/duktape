@@ -2,13 +2,13 @@
 Duktape
 =======
 
-Duktape is a small and portable Ecmascript E5/E5.1 implementation.  It is
+Duktape is a small and portable ECMAScript E5/E5.1 implementation.  It is
 intended to be easily embeddable into C programs, with a C API similar in
 spirit to Lua's.
 
 Duktape supports the full E5/E5.1 feature set (with some semantics updated
 from ES2015+) including errors, Unicode strings, and regular expressions,
-a subset of Ecmascript 2015 (E6) and Ecmascript 2016 (E7) features (e.g.
+a subset of ECMAScript 2015 (E6) and ECMAScript 2016 (E7) features (e.g.
 computed property names, Proxy objects, exponentiation operator, Reflect),
 ES2015 ArrayBuffer/TypedView, Node.js Buffer, performance.now(), and WHATWG
 Encoding API living standard.

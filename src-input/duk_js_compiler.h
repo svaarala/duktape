@@ -5,7 +5,7 @@
 #if !defined(DUK_JS_COMPILER_H_INCLUDED)
 #define DUK_JS_COMPILER_H_INCLUDED
 
-/* ecmascript compiler limits */
+/* ECMAScript compiler limits */
 #define DUK_COMPILER_TOKEN_LIMIT           100000000L  /* 1e8: protects against deeply nested inner functions */
 
 /* maximum loopcount for peephole optimization */

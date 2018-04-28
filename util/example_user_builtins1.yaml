@@ -23,7 +23,7 @@
 # U+0000...U+00FF are identified with exact bytes in the string (allows
 # invalid UTF-8 so that internal strings can be represented).  Placing
 # strings in ROM avoids interning them if they're encountered at run time;
-# you can e.g. add function and constant names used in custom Ecmascript
+# you can e.g. add function and constant names used in custom ECMAScript
 # bindings.
 #
 # NOTE: You don't need to list any keys of custom built-in objects here

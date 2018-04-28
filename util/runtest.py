@@ -1,6 +1,6 @@
 #!/usr/bin/env python2
 #
-#  Prepare a single Ecmascript testcase for execution and (optionally) execute
+#  Prepare a single ECMAScript testcase for execution and (optionally) execute
 #  it with Duktape or another engine.  Interpret testcase results against the
 #  expect string and known issues.
 #
@@ -81,7 +81,7 @@ args = []
 testcase_filename = None
 
 #
-#  Ecmascript test framework injected into Ecmascript test cases.
+#  ECMAScript test framework injected into ECMAScript test cases.
 #
 
 # Init code to run which allows the testcase to run on multiple engines.
@@ -365,7 +365,7 @@ def read_include_file(filename):
     data = read_file(abs_fn)
     return '/* Included: %r -> %r */ ' % (filename, abs_fn) + data
 
-# Minify Ecmascript code either using an external minifier or a simple built-in
+# Minify ECMAScript code either using an external minifier or a simple built-in
 # minifier which replaces single line comments with /* */ comments and then
 # replaces newlines with space.  This works in most cases, but assumes that
 # semicolons are used in the source and that RegExps don't contain '//'
@@ -724,7 +724,7 @@ def main():
     # Parse options.
     parser = optparse.OptionParser(
         usage='Usage: %prog [options] testcase',
-        description='Prepare an Ecmascript or API testcase for execution and (optionally) execute the testcase, print a summary, and write a JSON result file for further user.  Testcase can be given using a full path or using just the test name in which case it is looked up from ../tests/ecmascript/ relative to the runtest.py script.'
+        description='Prepare an ECMAScript or API testcase for execution and (optionally) execute the testcase, print a summary, and write a JSON result file for further user.  Testcase can be given using a full path or using just the test name in which case it is looked up from ../tests/ecmascript/ relative to the runtest.py script.'
     )
     parser.add_option('--known-issues', dest='known_issues', default=None, help='Path to known issues directory, default is autodetect')
     parser.add_option('--ignore-skip', dest='ignore_skip', default=False, action='store_true', help='Ignore skip=true in metadata')
@@ -780,7 +780,7 @@ def main():
     meta = parse_metadata(data)
     expect = parse_expected_result(data)
 
-    # Prepare runnable testcase by injecting an Ecmascript test framework
+    # Prepare runnable testcase by injecting an ECMAScript test framework
     # and processing @include lines.
     data = prepare_ecmascript_testcase(data, meta)
     if opts.output_prepared is not None:

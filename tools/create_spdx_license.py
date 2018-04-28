@@ -177,7 +177,7 @@ def main():
     g.add((pkg_node, SPDX.licenseDeclared, mit_license))
     g.add((pkg_node, SPDX.licenseComments, Literal('Duktape is copyrighted by its authors and licensed under the MIT license.  MurmurHash2 is used internally, it is also under the MIT license. Duktape module loader is based on the CommonJS module loading specification (without sharing any code), CommonJS is under the MIT license.')))
     g.add((pkg_node, SPDX.copyrightText, duktape_copyright))
-    g.add((pkg_node, SPDX.summary, Literal('Duktape Ecmascript interpreter')))
+    g.add((pkg_node, SPDX.summary, Literal('Duktape ECMAScript interpreter')))
     g.add((pkg_node, SPDX.description, Literal('Duktape is an embeddable Javascript engine, with a focus on portability and compact footprint')))
     # hasFile properties added separately below
 

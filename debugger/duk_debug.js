@@ -417,7 +417,7 @@ RateLimited.prototype.trigger = function () {
 /*
  *  Source file manager
  *
- *  Scan the list of search directories for Ecmascript source files and
+ *  Scan the list of search directories for ECMAScript source files and
  *  build an index of them.  Provides a mechanism to find a source file
  *  based on a raw 'fileName' property provided by the debug target, and
  *  to provide a file list for the web UI.

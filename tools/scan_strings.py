@@ -1,6 +1,6 @@
 #!/usr/bin/env python2
 #
-#  Scan potential external strings from Ecmascript and C files.
+#  Scan potential external strings from ECMAScript and C files.
 #
 #  Very simplistic example with a lot of limitations:
 #
@@ -17,28 +17,28 @@ import json
 
 strmap = {}
 
-# Ecmascript function declaration
+# ECMAScript function declaration
 re_funcname = re.compile(r'function\s+(\w+)', re.UNICODE)
 
-# Ecmascript variable declaration
+# ECMAScript variable declaration
 # XXX: doesn't handle multiple variables
 re_vardecl = re.compile(r'var\s+(\w+)', re.UNICODE)
 
-# Ecmascript variable assignment
+# ECMAScript variable assignment
 re_varassign = re.compile(r'(\w+)\s*=\s*', re.UNICODE)
 
-# Ecmascript dotted property reference (also matches numbers like
+# ECMAScript dotted property reference (also matches numbers like
 # '4.0', which are separately rejected below)
 re_propref = re.compile(r'(\w+(?:\.\w+)+)', re.UNICODE)
 re_digits = re.compile(r'^\d+$', re.UNICODE)
 
-# Ecmascript or C string literal
+# ECMAScript or C string literal
 re_strlit_dquot = re.compile(r'("(?:\\"|\\\\|[^"])*")', re.UNICODE)
 re_strlit_squot = re.compile(r'(\'(?:\\\'|\\\\|[^\'])*\')', re.UNICODE)
 
 def strDecode(x):
     # Need to decode hex, unicode, and other escapes.  Python syntax
-    # is close enough to C and Ecmascript so use eval for now.
+    # is close enough to C and ECMAScript so use eval for now.
 
     try:
         return eval('u' + x)  # interpret as unicode string

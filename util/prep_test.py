@@ -1,8 +1,8 @@
 #!/usr/bin/env python2
 #
-#  Prepare an Ecmascript or API testcase file for execution.
+#  Prepare an ECMAScript or API testcase file for execution.
 #
-#  For Ecmascript testcases:
+#  For ECMAScript testcases:
 #
 #    - Lift a 'use strict' statement to top of file if present
 #    - Add a prologue which handles engine differences
@@ -96,7 +96,7 @@ class TestcasePreparer:
 
     def minifyOneLine(self, fn):
         # Closure is very slow to start so it's not ideal for test case use.
-        # The only thing we really need is to make Ecmascript a one-liner.
+        # The only thing we really need is to make ECMAScript a one-liner.
 
         if self.minify_provider == 'closure':
             return self.minifyClosure(fn)
