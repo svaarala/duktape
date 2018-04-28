@@ -1620,6 +1620,10 @@ objects:
     # which prevents a Number instance's internal value also from being
     # written with standard methods.  The internal code creating Number
     # instances has no such issues.
+    #
+    # Number.prototype is a Number itself in ES5.1 and ES2016+.  It was
+    # briefly made a non-Number in ES2015 but this change was reverted
+    # in ES2016.
       - key:
           type: symbol
           variant: hidden
