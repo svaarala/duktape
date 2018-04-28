@@ -1,7 +1,7 @@
 // prime.js
 
-// Pure Ecmascript version of low level helper
-function primeCheckEcmascript(val, limit) {
+// Pure ECMAScript version of low level helper
+function primeCheckECMAScript(val, limit) {
     for (var i = 2; i <= limit; i++) {
         if ((val % i) == 0) { return false; }
     }
@@ -9,7 +9,7 @@ function primeCheckEcmascript(val, limit) {
 }
 
 // Select available helper at load time
-var primeCheckHelper = (this.primeCheckNative || primeCheckEcmascript);
+var primeCheckHelper = (this.primeCheckNative || primeCheckECMAScript);
 
 // Check 'val' for primality
 function primeCheck(val) {
@@ -23,7 +23,7 @@ function primeCheck(val) {
 function primeTest() {
     var res = [];
 
-    print('Have native helper: ' + (primeCheckHelper !== primeCheckEcmascript));
+    print('Have native helper: ' + (primeCheckHelper !== primeCheckECMAScript));
     for (var i = 1; i < 1000000; i++) {
         if (primeCheck(i) && (i % 10000) == 9999) { res.push(i); }
     } 

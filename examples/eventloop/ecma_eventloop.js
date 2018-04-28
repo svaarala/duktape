@@ -1,5 +1,5 @@
 /*
- *  Pure Ecmascript eventloop example.
+ *  Pure ECMAScript eventloop example.
  *
  *  Timer state handling is inefficient in this trivial example.  Timers are
  *  kept in an array sorted by their expiry time which works well for expiring
