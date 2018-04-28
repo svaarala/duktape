@@ -6,7 +6,7 @@ This document describes the Duktape ``JSON`` built-in implementation which
 provides:
 
 * The standard, very strict JSON encoding and decoding required by the
-  Ecmascript standard.
+  ECMAScript standard.
 
 * An extended custom format (JX) which encodes all value types and is
   optimized for readability.  The custom encodings parse back into proper
@@ -35,7 +35,7 @@ Overview of JSON
 ================
 
 JSON_ (JavaScript Object Notation) is a format originally based on a subset of
-Ecmascript E3, but which is now used by multiple languages and implementations
+ECMAScript E3, but which is now used by multiple languages and implementations
 and defined in `RFC 4627`_.  The E5/E5.1 specification has its own more or
 less compatible definition of JSON.  The syntax and processing requirements in
 Section 15.12 form the basis for implementing the JSON built-in.  Note that
@@ -54,8 +54,8 @@ JSON only supports nulls, booleans, numbers, strings, objects, and arrays.
 Non-finite numbers (i.e. NaN and +/- Infinity) are encoded as "null" values
 while "undefined" values and function objects are skipped entirely.
 
-Ecmascript JSON only supports 16-bit Unicode codepoints because it operates
-on Ecmascript strings (which are sequences of 16-bit codepoints).  Full
+ECMAScript JSON only supports 16-bit Unicode codepoints because it operates
+on ECMAScript strings (which are sequences of 16-bit codepoints).  Full
 transparency for all 16-bit codepoints is required; in particular, even
 invalid surrogate pairs must be supported.  Because Duktape supports codepoints
 above the 16-bit BMP, support for these will necessarily be non-standard.
@@ -63,7 +63,7 @@ Such codepoints are now encoded and decoded "as is", so they pass through
 encoding and decoding without problems.  There is currently no escape syntax
 for expressing them in escaped form.
 
-Duktape also has custom types not supported by Ecmascript: buffers and
+Duktape also has custom types not supported by ECMAScript: buffers and
 pointers.  These are now skipped when encoding (just like function objects).
 There is currently no syntax for expressing them for parsing.
 
@@ -217,7 +217,7 @@ Further complications
 Handling codepoints above U+FFFF
 --------------------------------
 
-Codepoints above U+FFFF don't occur in standard Ecmascript string values,
+Codepoints above U+FFFF don't occur in standard ECMAScript string values,
 so there is no mandatory behavior when they are encountered during JSON
 serialization.  The current solution is to encode them into plain string
 data (this matches JC behavior)::
@@ -227,7 +227,7 @@ data (this matches JC behavior)::
 Handling invalid UTF-8/CESU-8 data
 ----------------------------------
 
-Standard Ecmascript values are always valid CESU-8 data internally, so
+Standard ECMAScript values are always valid CESU-8 data internally, so
 handling invalid UTF-8/CESU-8 data has no mandatory behavior.  The current
 solution is:
 
@@ -280,9 +280,9 @@ Basic approach
 Like stringify(), parse() uses a single context structure (``duk_json_dec_ctx``).
 
 An important question in JSON parsing is how to implement the lexer component.
-One could reuse the Ecmascript lexer (with behavior flags); however, this is
+One could reuse the ECMAScript lexer (with behavior flags); however, this is
 not trivial because the JSON productions, though close, contain many variances
-to similar Ecmascript productions (see below for discussion).  The current
+to similar ECMAScript productions (see below for discussion).  The current
 approach is to use a custom JSON lexer.  It would be nice if some shared code
 could be used in future versions.
 
@@ -298,13 +298,13 @@ performed.
 
 A C recursion limit is imposed for parse(), just like stringify().
 
-Comparison of JSON and Ecmascript syntax
+Comparison of JSON and ECMAScript syntax
 ----------------------------------------
 
 JSONWhiteSpace
 ::::::::::::::
 
-JSONWhiteSpace does not have a direct Ecmascript syntax equivalent.
+JSONWhiteSpace does not have a direct ECMAScript syntax equivalent.
 
 JSONWhiteSpace is defined as::
 
@@ -314,7 +314,7 @@ JSONWhiteSpace is defined as::
       <LF>
       <SP>
 
-whereas Ecmascript WhiteSpace and LineTerminator are::
+whereas ECMAScript WhiteSpace and LineTerminator are::
 
   WhiteSpace::
       <TAB>
@@ -331,7 +331,7 @@ whereas Ecmascript WhiteSpace and LineTerminator are::
       <LS>
       <PS>
 
-Because JSONWhiteSpace includes line terminators, the closest Ecmascript
+Because JSONWhiteSpace includes line terminators, the closest ECMAScript
 equivalent is WhiteSpace + LineTerminator.  However, that includes several
 additional characters.
 
@@ -357,7 +357,7 @@ JSONString is defined as::
   JSONEscapeCharacter :: one of
       " / \ b f n r t
 
-The closest equivalent is Ecmascript StringLiteral with only the double
+The closest equivalent is ECMAScript StringLiteral with only the double
 quote version accepted::
 
   StringLiteral::
@@ -376,30 +376,30 @@ quote version accepted::
 
 Other differences include:
 
-* Ecmascript DoubleStringCharacter accepts source characters between
+* ECMAScript DoubleStringCharacter accepts source characters between
   U+0000 and U+001F (except U+000A and U+000D, which are part of
   LineTerminator).  JSONStringCharacter does not.
 
-* Ecmascript DoubleStringCharacter accepts LineContinuation,
+* ECMAScript DoubleStringCharacter accepts LineContinuation,
   JSONStringCharacter does not.
 
-* Ecmascript DoubleStringCharacter accepts and parses broken escapes
+* ECMAScript DoubleStringCharacter accepts and parses broken escapes
   as single-character identity escapes, e.g. the string "\\u123" is
   parsed as "u123".  This happens because EscapeSequence contains a
   NonEscapeCharacter production which acts as an "escape hatch" for
   such cases.  JSONStringCharacter is strict and will cause a SyntaxError
   for such escapes.
 
-* Ecmascript EscapeSequence accepts single quote escape ("\\'"),
+* ECMAScript EscapeSequence accepts single quote escape ("\\'"),
   JSONEscapeSequence does not.
 
-* Ecmascript EscapeSequence accepts zero escape ("\\0"), JSONEscapeSequence
+* ECMAScript EscapeSequence accepts zero escape ("\\0"), JSONEscapeSequence
   does not.
 
-* Ecmascript EscapeSequence accepts hex escapes ("\\xf7"),
+* ECMAScript EscapeSequence accepts hex escapes ("\\xf7"),
   JSONEscapeSequence does not.
 
-* JSONEscapeSquence accepts forward slash escape ("\\/").  Ecmascript
+* JSONEscapeSquence accepts forward slash escape ("\\/").  ECMAScript
   EscapeSequence has no explicit support for it, but it is accepted through
   the NonEscapeCharacter production.
 
@@ -413,7 +413,7 @@ JSONNumber is defined as::
   JSONNumber::
       -_opt DecimalIntegerLiteral JSONFraction_opt ExponentPart_opt
 
-Ecmascript NumericLiteral and DecimalLiteral::
+ECMAScript NumericLiteral and DecimalLiteral::
 
   NumericLiteral::
       DecimalLiteral | HexIntegerLiteral
@@ -457,11 +457,11 @@ Some differences between JSONNumber and DecimalLiteral:
     not be allowed.
 
   - However, JSONNumber allows a leading minus sign, DecimalLiteral does not.
-    For Ecmascript code, the leading minus sign is an unary minus operator,
+    For ECMAScript code, the leading minus sign is an unary minus operator,
     and it not part of the literal.
 
 * There are no NaN or infinity literals.  There are no such literals for
-  Ecmascript either but they become identifier references and *usually*
+  ECMAScript either but they become identifier references and *usually*
   evaluate to useful constants.
 
 JSONNullLiteral
@@ -514,7 +514,7 @@ equivalent::
 Number values
 -------------
 
-Special numbers are serialized in their natural Ecmascript form::
+Special numbers are serialized in their natural ECMAScript form::
 
   NaN
   Infinity
@@ -564,18 +564,18 @@ an error.
 ASCII only output
 -----------------
 
-The output for JX encoding is always ASCII only.  The standard Ecmascript
+The output for JX encoding is always ASCII only.  The standard ECMAScript
 JSON encoding retains Unicode characters outside the ASCII range as is
 (deviating from this would be non-compliant) which is often awkward in
 embedded environments.
 
-The codepoint U+007F, normally not escaped by Ecmascript JSON functions,
+The codepoint U+007F, normally not escaped by ECMAScript JSON functions,
 is also escaped for better compatibility.
 
 Avoiding key quotes
 -------------------
 
-Key quotes are omitted for keys which are ASCII and match Ecmascript
+Key quotes are omitted for keys which are ASCII and match ECMAScript
 identifier requirements be encoded without quotes, e.g.::
 
   { my_value: 123 }
@@ -590,7 +590,7 @@ quotes (although the encoding would be unambiguous)::
 
   { "": 123 }
 
-The ASCII identifier format (a subset of the Ecmascript identifier
+The ASCII identifier format (a subset of the ECMAScript identifier
 format which also allows non-ASCII characters) is::
 
   [a-zA-Z$_][0-9a-zA-Z$_]*
@@ -606,11 +606,11 @@ Compatible custom encoding (JC)
 
 The compatible custom encoding format (JC, controlled by the define
 ``DUK_USE_JC``) is intended to provide a JSON interface which is more
-useful than the standard Ecmascript one, while producing JSON values
-compatible with the Ecmascript and other JSON parsers.
+useful than the standard ECMAScript one, while producing JSON values
+compatible with the ECMAScript and other JSON parsers.
 
 As a general rule, all values which are not ordinarily handled by standard
-Ecmascript JSON are encoded as object values with a special "marker" key
+ECMAScript JSON are encoded as object values with a special "marker" key
 beginning with underscore.  Such values decode back as objects and don't
 round trip in the strict sense, but are nevertheless detectable and even
 (manually) revivable to some extent.
@@ -630,7 +630,7 @@ Unicode codepoints above U+FFFF are escaped into plain text as follows::
   "U+12345678"
 
 This is not ideal, but retains at least some of the original information
-and is Ecmascript compatible.
+and is ECMAScript compatible.
 
 BMP codepoints are encoded as in standard JSON.
 
@@ -741,7 +741,7 @@ safely parsed with ``eval()``.  When using custom syntax this property may
 be lost.  For instance, if one uses the custom Python encoding of using
 ``NaN`` to represent a NaN, this ``eval()``\ s incorrectly if there is a
 conflicting definition for ``NaN`` in the current scope (note that e.g.
-"NaN" and "undefined" are *not* Ecmascript literals, but rather normal
+"NaN" and "undefined" are *not* ECMAScript literals, but rather normal
 global identifiers).
 
 ASCII only serialization
@@ -752,7 +752,7 @@ as ASCII is a very compatible subset.  Unfortunately there is no standard way
 of guaranteeing an ASCII-only result: the ``Quote()`` algorithm will encode
 all non-ASCII characters as-is.
 
-Further, the standard Ecmascript JSON interface does not escape U+007F, which
+Further, the standard ECMAScript JSON interface does not escape U+007F, which
 is usually considered a "dangerous" character.
 
 Buffer representation
@@ -765,7 +765,7 @@ binary data (which often represents some structured data, such as a C struct).
 Function representation
 -----------------------
 
-It would be possible to serialize a function into actual Ecmascript function
+It would be possible to serialize a function into actual ECMAScript function
 syntax.  This has several problems.  First, sometimes the function source may
 not be available; perhaps the build strips source code from function instances
 to save space, or perhaps the function is a native one.  Second, the result is
@@ -852,7 +852,7 @@ Better control over separators
 ------------------------------
 
 E.g. Python JSON API allows caller to set separators in more detail
-than in the Ecmascript JSON API which only allows setting the "space"
+than in the ECMAScript JSON API which only allows setting the "space"
 string.
 
 RegExp JSON serialization
@@ -874,7 +874,7 @@ Expose encode/decode primitives in a more low level manner
 
 Allow more direct access to encoding/decoding flags and provide more
 extensibility with an argument convention better than the one used
-in Ecmascript JSON API.
+in ECMAScript JSON API.
 
 For instance, arguments could be given in a table::
 

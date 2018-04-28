@@ -5,7 +5,7 @@ Fastint type
 Overview
 ========
 
-Ecmascript has a single number type which is required to be an IEEE double.
+ECMAScript has a single number type which is required to be an IEEE double.
 This is a potential performance issue in some embedded environments where
 hardware floating point numbers (at least IEEE doubles) are not available
 and software floating point emulation performs poorly.
@@ -30,15 +30,15 @@ only applied in specific situations.  Currently:
 * Thread yield/resume values are automatically downgraded to fastints if
   possible.
 
-Fastints don't affect Ecmascript semantics and are completely transparent
-to user C and Ecmascript code: all conversions are automatic.
+Fastints don't affect ECMAScript semantics and are completely transparent
+to user C and ECMAScript code: all conversions are automatic.
 
 To enable fastint support, simply define:
 
 * ``DUK_USE_FASTINT``
 
 You should measure the impact of enabling fastint support for your target
-platform and Ecmascript code base.  Fastint support is not an automatic
+platform and ECMAScript code base.  Fastint support is not an automatic
 performance win: while the fast path is a clear improvement for soft float
 (and even some hard float) platforms, there is a run-time cost of doing
 fastint downgrade checks and other book-keeping.  Very roughly:
@@ -82,7 +82,7 @@ tips for using fastints:
       // internally as a fastint.
       var t = +(Math.PI / Math.PI);
 
-* All function return values from both Ecmascript and Duktape/C functions
+* All function return values from both ECMAScript and Duktape/C functions
   are automatically downgraded to fastints.  So, the following value can be
   trusted to be 3 and represented internally as a fastint::
 
@@ -144,7 +144,7 @@ tips for using fastints:
   until the next explicit downgrade check.  Here unary plus is used to get
   the result back into fastint representation.
 
-* Negative zero cannot be represented as a fastint.  Ordinary Ecmascript
+* Negative zero cannot be represented as a fastint.  Ordinary ECMAScript
   code will very rarely deal with negative zeros.  Negative zero can "taint"
   a fastint, too::
 
@@ -403,7 +403,7 @@ Approaches to integer support
 -----------------------------
 
 * Replace the tagged IEEE double number type with an integer or a fixed point
-  type.  This will necessarily break Ecmascript compliance to some extent, but
+  type.  This will necessarily break ECMAScript compliance to some extent, but
   it would be nice if at least number range was sufficient for 32-bit bit ops
   and to represent e.g. Dates.
 
@@ -414,17 +414,17 @@ Approaches to integer support
 
 * Extend the tagged type to support both an IEEE double and an integer or a
   fixed point type.  Convert between the two either fully transparently (to
-  maintain full Ecmascript semantics) or in selected situations, chosen for
+  maintain full ECMAScript semantics) or in selected situations, chosen for
   either convenience or performance.
 
 * Extend the tagged type to support both an IEEE double and an integer or a
-  fixed point type.  Extend the public API and Ecmascript environment to
+  fixed point type.  Extend the public API and ECMAScript environment to
   expose the new integer type explicitly.  The upside is minimal performance
   cost because there are fewer automatic conversion checks.  The downside is
   a significant API change and introduction of custom language features.
 
 * Same as above, but expose the integer type only for user C code; keep the
-  Ecmascript environment unaware of the change.
+  ECMAScript environment unaware of the change.
 
 Implementation issues
 ---------------------
@@ -484,7 +484,7 @@ for the value.
   only benefit code specifically crafted to use them.
 
 * Double and 32-bit signed or unsigned integer: 32-bit arithmetic is nice
-  but unfortunately not enough to support Ecmascript bit operations which
+  but unfortunately not enough to support ECMAScript bit operations which
   require the range -0x80000000 to 0xffffffff (sign + 32 bits, a 33-bit
   representation).  This would not be a compliance issue as Duktape would
   fall back to the IEEE double for some values, but if fast bit operations
@@ -559,7 +559,7 @@ Specification and Duktape dependencies:
     too, this doesn't solve anything.
 
 * Signed zero semantics (separation of negative and positive zero) are
-  are required and explicitly specified, but Ecmascript itself doesn't
+  are required and explicitly specified, but ECMAScript itself doesn't
   really depend on being able to use a negative zero, and neither does
   Duktape.
 
@@ -570,7 +570,7 @@ Specification and Duktape dependencies:
   (``Number('foo') === NaN``).  If a NaN value is not available, the
   best replacement is probably zero.
 
-* Infinities are used in math functions but Ecmascript itself doesn't
+* Infinities are used in math functions but ECMAScript itself doesn't
   rely on being able to use them, and neither does Duktape.
 
 * Duktape packs some internal values into double representation, this is
@@ -585,7 +585,7 @@ Specification and Duktape dependencies:
 In addition to these, user code may have some practical dependencies, such as:
 
 * Being able to represent at least signed and unsigned 32 bits, so that all
-  Ecmascript bit operations work as expected.
+  ECMAScript bit operations work as expected.
 
 * Being able to represent at least some fractional values.  For instance,
   suppose a custom scheduler used second-based timestamps for timers; it

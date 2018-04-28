@@ -6,12 +6,12 @@ Background
 ==========
 
 Object class membership check is done using the ``instanceof`` operator
-in Ecmascript code, e.g.::
+in ECMAScript code, e.g.::
 
   print(x instanceof Array);
 
 The language semantics of "class membership" are not as clear cut in
-Ecmascript as in some other languages.  But essentially, the ``instanceof``
+ECMAScript as in some other languages.  But essentially, the ``instanceof``
 expression above checks whether ``Array.prototype`` occurs in the internal
 prototype chain of ``x``).
 

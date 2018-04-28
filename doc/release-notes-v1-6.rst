@@ -23,7 +23,7 @@ This release has the following known issues worth noting:
 * Non-compliant behavior for array indices near 2G or 4G elements.
 
 * RegExp parser is strict and won't accept some real world RegExps which
-  are technically not compliant with Ecmascript E5/E5.1 specification.
+  are technically not compliant with ECMAScript E5/E5.1 specification.
 
 * Final mantissa bit rounding issues in the internal number-to-string
   conversion.
@@ -45,7 +45,7 @@ API tests
 
     test-to-number.c: fail; 15 diff lines; known issue: number parsing bug for strings containing NUL characters (e.g. '\u0000')
 
-Ecmascript tests
+ECMAScript tests
 ----------------
 
 ::

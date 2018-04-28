@@ -108,7 +108,7 @@ Arguments
 
 * ``duk_idx_t`` for value stack indices.
 
-* ``duk_uarridx_t`` for Ecmascript array indices.
+* ``duk_uarridx_t`` for ECMAScript array indices.
 
 * ``duk_size_t`` for byte lengths (strings, buffers, etc).
 

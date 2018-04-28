@@ -5,7 +5,7 @@ Buffers
 Overview
 ========
 
-Ecmascript did not originally have a binary array (or binary string) data
+ECMAScript did not originally have a binary array (or binary string) data
 type so various approaches are used:
 
 * Khronos typed array:
@@ -55,7 +55,7 @@ type so various approaches are used:
     a dynamic (resizable) buffer, or an external (user allocated)
     buffer.
 
-  - The plain buffer behaves like Uint8Array for Ecmascript code but maintains
+  - The plain buffer behaves like Uint8Array for ECMAScript code but maintains
     separate typing in the C API.  It object coerces to an actual ``Uint8Array``
     sharing the same underlying storage.
 
@@ -100,7 +100,7 @@ Plain buffers have Uint8Array-like virtual properties for buffer byte indices,
 same semantics as Uint8Array: bytes are written with modulo 256 semantics,
 bytes read back as unsigned 8-bit values.  The plain buffer type is designed
 to be as friendly as possible for low level embedded programming, and has a
-minimal footprint because there's no Ecmascript object associated with it.
+minimal footprint because there's no ECMAScript object associated with it.
 It is mostly intended to be accessed from C code.  Duktape also uses buffer
 values internally.
 
@@ -1293,7 +1293,7 @@ Unsorted future work
 * Duktape C API tests for buffer handling.
 
 * Duktape C API test exercising "underlying buffer doesn't cover logical
-  buffer slice" cases which cannot be exercised with plain Ecmascript code.
+  buffer slice" cases which cannot be exercised with plain ECMAScript code.
 
 * Document Buffer object relationship to JSON, JX, and JC.
 

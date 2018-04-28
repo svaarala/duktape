@@ -28,7 +28,7 @@ Misc notes
   make sense to mark them as non-extensible explicitly.
 
 * Somewhat unintuitively the properties of non-writable ROM objects
-  need to be "writable" from the Ecmascript attributes perspective to
+  need to be "writable" from the ECMAScript attributes perspective to
   ensure it's possible to create objects inheriting from the ROM
   objects and establish overriding properties on the objects created.
 
@@ -223,7 +223,7 @@ Avoiding writes on read-only objects
 
 * Compact, seal, freeze
 
-* ``setPrototypeOf``: from Ecmascript code this is prevented because
+* ``setPrototypeOf``: from ECMAScript code this is prevented because
   the ROM built-ins are not extensible and setPrototypeOf() fails if
   the target is not extensible.
 

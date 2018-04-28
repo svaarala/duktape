@@ -5,11 +5,11 @@ PUTPROP: exposed property put algorithm
 Background
 ==========
 
-Properties are written in Ecmascript code in many contexts, e.g.::
+Properties are written in ECMAScript code in many contexts, e.g.::
 
   foo.bar = "quux";
 
-A property put expression in Ecmascript code involves:
+A property put expression in ECMAScript code involves:
 
 * A property accessor reference (E5 Section 11.2.1)
 

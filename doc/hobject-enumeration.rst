@@ -8,7 +8,7 @@ enumeration.
 Key order during enumeration
 ============================
 
-Ecmascript E3 or E5 do not require a specific key order during enumeration.
+ECMAScript E3 or E5 do not require a specific key order during enumeration.
 However, some existing code apparently relies on some ordering behavior:
 
 * http://code.google.com/p/chromium/issues/detail?id=2605

@@ -34,7 +34,7 @@ the call stack of a certain Duktape thread.  The value stack has:
     call stack.
 
 * Current "top" of the value stack.  Value stack entries above top are not
-  currently in use, and are always set to Ecmascript ``undefined`` as part
+  currently in use, and are always set to ECMAScript ``undefined`` as part
   of the value stack initialization policy.
 
   - Calling code is allowed to push values at the "top" index up to the

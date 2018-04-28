@@ -76,7 +76,7 @@ This leads to externally visible behavior, illustrated in the following::
   var s = new String("foo");
   s.test;      // prints 'object'
 
-Behavior in Ecmascript implementations seems to vary:
+Behavior in ECMAScript implementations seems to vary:
 
 * NodeJS / V8: prints 'string' and 'object' as expected
 

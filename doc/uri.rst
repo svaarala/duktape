@@ -19,7 +19,7 @@ Changes from RFC 2396 to RFC 3986 are summarized in RFC 3986:
 
 * http://tools.ietf.org/html/rfc3986#appendix-D
 
-Changes relevant to Ecmascript include:
+Changes relevant to ECMAScript include:
 
 * Additional characters in "reserved" set.
 
@@ -45,7 +45,7 @@ Changes relevant to Ecmascript include:
 
 Effect on decoding: don't decode hex escapes into reserved characters.
 However, RFC 3986 additional characters should be decoded normally
-because they're not supported in Ecmascript.  Thus::
+because they're not supported in ECMAScript.  Thus::
 
   decodeURI("%23%5B%5D%21%27%28%29%2A") -> "%23[]!'()*"
 
@@ -62,7 +62,7 @@ The '#' character is explicitly added to the reserved set by the
 decodeURI() algorithm in E5.1 Section 15.1.3.1.  The characters
 ``!'()*`` are already part of the uriMark production which goes into
 uriUnescaped.  Brackets are not included so they get escaped in
-Ecmascript.
+ECMAScript.
 
 Reserved set / unescaped set
 ----------------------------

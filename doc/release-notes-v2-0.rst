@@ -25,7 +25,7 @@ Main changes in this release (see RELEASES.rst for full details):
 * More configuration flexibility in dropping Duktape specific functionality
   from build, e.g. coroutines and finalization.
 
-* Disabled Ecmascript bindings are no longer present (instead of being present
+* Disabled ECMAScript bindings are no longer present (instead of being present
   but throwing a TypeError).
 
 * Built-in functionality moved to optional extras: print/alert bindings,
@@ -70,7 +70,7 @@ is set to 19999 so that you can use::
     rc = duk_safe_call(ctx, my_safe_call, 1 /*nargs*/, 1 /*nrets*/);
     #endif
 
-Similarly for Ecmascript code you can::
+Similarly for ECMAScript code you can::
 
     var plainBuffer;
     if (Duktape.version >= 19999) {
@@ -146,7 +146,7 @@ Built-ins disabled in configuration are now absent
 --------------------------------------------------
 
 If a built-in is disabled when running ``configure.py``, it won't be present
-in the Ecmascript environment.  For example, with ``-UDUK_USE_ES6_PROXY``::
+in the ECMAScript environment.  For example, with ``-UDUK_USE_ES6_PROXY``::
 
     duk> new Proxy()
     ReferenceError: identifier 'Proxy' undefined
@@ -273,21 +273,21 @@ changes below and in RELEASES.rst.  Here's a summary of changes:
   inherited getters to match ES2015.  The ``.length`` property remains a virtual
   own property, however (it is a getter in ES2015).
 
-* Default Ecmascript built-ins no longer provide the ability to do a 1:1
+* Default ECMAScript built-ins no longer provide the ability to do a 1:1
   buffer-to-string coercion where the buffer bytes are used directly as the
   internal string bytes.  Instead, an encoding (usually UTF-8) is always
   involved, and U+FFFD replacement characters are used when invalid inputs
   are encountered.  See https://github.com/svaarala/duktape/issues/1005.
   C code can still do 1:1 conversions using ``duk_buffer_to_string()`` or
   by pushing a raw string directly, and can expose such a binding to
-  Ecmascript code.
+  ECMAScript code.
 
 * Node.js Buffer binding has been aligned more with Node.js v6.9.1 (from
   Node.js v0.12.1) and some (but not all) behavior differences to actual
   Node.js have been fixed.
 
 * Disabling ``DUK_USE_BUFFEROBJECT_SUPPORT`` allows use of plain buffers in
-  the C API, and allows manipulation of plain buffers in Ecmascript code via
+  the C API, and allows manipulation of plain buffers in ECMAScript code via
   their virtual properties (index properties, ``.length``, etc).  Plain buffers
   still inherit from ``Uint8Array.prototype``, but won't Object coerce.  All
   ArrayBuffer, typed array, and Node.js Buffer methods will be missing, including
@@ -314,7 +314,7 @@ To upgrade:
   - Review Buffer code for Node.js Buffer changes between Node.js versions
     v0.12.1 and v6.9.1 in general.
 
-* If you're using plain buffers, review their usage especially in Ecmascript
+* If you're using plain buffers, review their usage especially in ECMAScript
   code, in particular:
 
   - Because plain buffers now mimic Uint8Array (a view), they are treated as
@@ -330,7 +330,7 @@ To upgrade:
   - One important change is that ``String(plainBuffer)`` and ``duk_to_string()``
     for a buffer does not work as before, use new ``duk_buffer_to_string()``
     C API call instead.  There's no equivalent function for the default
-    Ecmascript built-ins.
+    ECMAScript built-ins.
 
   - Another important change is that plain buffers, like Uint8Array objects,
     boolean coerce to ``true`` regardless of buffer size (zero or larger) and
@@ -370,7 +370,7 @@ Some detailed changes, not exhaustive; see ``RELEASES.rst`` and
 
 * A new ``duk_buffer_to_string()`` API call converts any buffer value to a
   string with the same underlying bytes as in the buffer (like
-  ``duk_to_string()`` did in Duktape 1.x).  Ecmascript built-ins no longer
+  ``duk_to_string()`` did in Duktape 1.x).  ECMAScript built-ins no longer
   have this ability directly.
 
 * ``duk_to_boolean()`` for a plain buffer: always true, even if the buffer
@@ -449,7 +449,7 @@ There are very minor changes to pointer value behavior:
 
 To upgrade:
 
-* If you're using pointer values in Ecmascript code, check pointer handling.
+* If you're using pointer values in ECMAScript code, check pointer handling.
 
 Lightfunc behavior changes
 --------------------------
@@ -457,7 +457,7 @@ Lightfunc behavior changes
 There are very minor changes to lightfunc value behavior:
 
 * ``duk_is_primitive()`` now returns false for lightfuncs; this is more in
-  line with how lightfuncs behave in Ecmascript ToPrimitive() coercion and
+  line with how lightfuncs behave in ECMAScript ToPrimitive() coercion and
   matches how plain buffers work in Duktape 2.x.
 
 * ``[[DefaultValue]]`` coercion now considers lightfuncs non-primitive
@@ -605,7 +605,7 @@ Duktape specific error codes removed from API
 
 Duktape specific error codes were removed from the public API and from
 internals.  These error codes were not very widely used, and they didn't
-have an Ecmascript counterpart (for example, a ``DUK_ERR_API_ERROR`` mapped
+have an ECMAScript counterpart (for example, a ``DUK_ERR_API_ERROR`` mapped
 to a plain ``Error`` object) which was confusing.  The removed error codes
 and defines are:
 
@@ -879,7 +879,7 @@ Internal duk_harray affects debugger array inspection
 Duktape 2.x introduces an internal ``duk_harray`` type to represent arrays.
 The array ``.length`` property is no longer stored in the property table of
 the array but is a C struct field in ``duk_harray`` and the property visible
-to Ecmascript code is virtual.
+to ECMAScript code is virtual.
 
 As a result, array ``.length`` is not visible when inspecting ordinary array
 properties using e.g. GetObjPropDesc or GetObjPropDescRange.  Instead, array
@@ -1079,7 +1079,7 @@ Small changes related to adding symbol support:
 * Internal properties are now called "hidden symbols" and adopt some ES2015 Symbol
   behaviors, e.g. ``typeof internalKey === 'symbol`` and ``"" + internalKey``
   is now a TypeError.  Internal keys are different from normal ES2015 Symbols in
-  that they can't be enumerated from Ecmascript code even with
+  that they can't be enumerated from ECMAScript code even with
   ``Object.getOwnPropertySymbols()``.
 
 * The ``DUK_ENUM_INCLUDE_INTERNAL`` C API flag has been renamed
@@ -1107,7 +1107,7 @@ Incompatible changes (not exhaustive, also see RELEASES.rst):
 * ``duk_char_code_at()`` and ``String.charCodeAt()`` now return 0xFFFD (Unicode
   replacement character) if the string cannot be decoded as extended UTF-8,
   previously an error was thrown.  This situation never occurs for standard
-  Ecmascript strings or valid UTF-8 strings.
+  ECMAScript strings or valid UTF-8 strings.
 
 * ``duk_get_length()`` now allows the ``size_t`` rather than the unsigned 32-bit
   integer range for the target value's ``.length``.
@@ -1180,7 +1180,7 @@ Known issues
 * Some non-compliant behavior for array indices near 2G or 4G elements.
 
 * RegExp parser is strict and won't accept some real world RegExps which
-  are technically not compliant with Ecmascript E5/E5.1 specification
+  are technically not compliant with ECMAScript E5/E5.1 specification
   but allowed in ES2015 Annex B.
 
 * Final mantissa bit rounding issues in the internal number-to-string
@@ -1196,7 +1196,7 @@ API tests
 
     test-to-number.c: fail; 15 diff lines; known issue: number parsing bug for strings containing NUL characters (e.g. '\u0000')
 
-Ecmascript tests
+ECMAScript tests
 ----------------
 
 ::

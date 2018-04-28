@@ -5,7 +5,7 @@ Status of test262 testcases
 Overview
 ========
 
-Test262 provides testcases for various Ecmascript features.  It also includes
+Test262 provides testcases for various ECMAScript features.  It also includes
 features and behavior beyond E5/E5.1 standard (for instance the tests related
 to the ``Intl`` module and E6).
 

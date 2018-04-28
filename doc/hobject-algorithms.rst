@@ -20,7 +20,7 @@ for implementation, without actually going into implementation level details.
 Only complicated core algorithms and built-in methods are covered.
 
 One important question is to identify the *exposed interface* of operations
-invoked from concrete object-related expressions of Ecmascript code.  These
+invoked from concrete object-related expressions of ECMAScript code.  These
 primitives are also in almost 1:1 relationship with the internal bytecode
 operations.
 
@@ -78,7 +78,7 @@ For other algorithms:
 Algorithm overview
 ------------------
 
-Ecmascript object property access behavior is described by internal property
+ECMAScript object property access behavior is described by internal property
 handling algorithms.  The default algorithms are described in E5 Section 8.12.
 There are some objects with exotic behaviors; these have variants of the
 default property handling algorithms.  See ``hobject-design.rst`` for a
@@ -149,13 +149,13 @@ exotic behavior variants)::
                     [[GetOwnProperty]]
 
 However, these algorithms are only the "raw" property handling algorithms.
-Actual property access operations in Ecmascript code are "wrapped" by e.g.:
+Actual property access operations in ECMAScript code are "wrapped" by e.g.:
 
 * The evaluation rules for the specific expression (e.g. property read).
   These usually contain type checks, some coercions, etc.
 
 * ``GetValue()`` and ``PutValue()`` (E5 Section 8.7) are used for property
-  property read/write operations in Ecmascript code.  The algorithms are
+  property read/write operations in ECMAScript code.  The algorithms are
   wrappers for ``[[Get]]`` and ``[[Put]]`` which allow the base reference
   to be a non-object, coercing it to a (temporary) object first.  This allows
   expressions like::
@@ -231,7 +231,7 @@ What is an exposed interface?
 -----------------------------
 
 The relevant *exposed interface* is the set of object related operations
-which can be invoked from Ecmascript code, e.g.::
+which can be invoked from ECMAScript code, e.g.::
 
   // property write
   o.foo = "bar";
@@ -491,7 +491,7 @@ Future work
 ===========
 
 * Add ES2015 Proxy object or a Lua metatable-like mechanism and integrate it
-  into the Ecmascript algorithms in a natural way (``[[Get]]``, ``[[GetOwnProperty]]``,
+  into the ECMAScript algorithms in a natural way (``[[Get]]``, ``[[GetOwnProperty]]``,
   ``[[HasProperty]]``, and ``[[DefineOwnProperty]]`` most likely).
 
 * Integrate other ES2015 features into the basic object representation, with

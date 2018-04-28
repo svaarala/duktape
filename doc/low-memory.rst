@@ -10,7 +10,7 @@ memory usage for memory-constrained environments, which are one important
 portability target for Duktape.
 
 The default Duktape options are quite memory conservative, and significant
-Ecmascript programs can be executed with e.g. 1MB of memory.  Currently
+ECMAScript programs can be executed with e.g. 1MB of memory.  Currently
 realistic memory targets are roughly:
 
 * 256-384kB system flash memory (code) and 256kB system RAM
@@ -69,7 +69,7 @@ There are four basic goals for low memory optimization:
 3. Minimize the growth of the Duktape heap relative to the scope and
    complexity of user code, so that as large programs as possible can be
    compiled and executed in a given space.  Important contributing factors
-   include the footprint of user-defined Ecmascript and Duktape/C functions,
+   include the footprint of user-defined ECMAScript and Duktape/C functions,
    the size of compiled bytecode, etc.  Techniques include reducing object
    and property count for e.g. function objects.
 
@@ -221,7 +221,7 @@ NOTE: This list is not exhaustive, see ``config/examples/low_memory.yaml``.
 
   - ``#undef DUK_USE_JC``
 
-* Features borrowed from Ecmascript ES2015 can usually be disabled
+* Features borrowed from ECMAScript ES2015 can usually be disabled
   (not exhaustive):
 
   - ``#undef DUK_USE_ES6_OBJECT_SETPROTOTYPEOF``
@@ -465,9 +465,9 @@ The Duktape built-in strings are available from prepared source metadata:
   ``builtin_strings_base64`` contains the byte exact strings used, encoded
   with base-64.
 
-Strings used by application C and Ecmascript code can be extracted with
+Strings used by application C and ECMAScript code can be extracted with
 various methods.  The Duktape main repo contains an example script for
-scraping strings from C and Ecmascript code using regexps:
+scraping strings from C and ECMAScript code using regexps:
 
 * ``util/scan_strings.py``
 
@@ -492,7 +492,7 @@ The memory allocations needed by Duktape fall into two basic categories:
   freed) even when memory usage is nearly constant.
 
 * Much fewer larger allocations with much less activity are needed for
-  Ecmascript function bytecode, large strings and buffers, value stacks,
+  ECMAScript function bytecode, large strings and buffers, value stacks,
   the global string table, and the Duktape heap object.
 
 The ``examples/alloc-logging`` memory allocator can be used to write out
@@ -919,12 +919,12 @@ Duktape/C function footprint
 
 * Compressed pointers
 
-Ecmascript function footprint
+ECMAScript function footprint
 -----------------------------
 
 * Motivation
 
-  - Small lexically nested callbacks are often used in Ecmascript code,
+  - Small lexically nested callbacks are often used in ECMAScript code,
     so it's important to keep their size small
 
 * Reduce property count:
@@ -966,7 +966,7 @@ are at least the following sources for these:
   a full rework of the Duktape C programming model (which assumes string and
   buffer data is available as plain ``const char *``).
 
-* Bytecode/const buffer for long Ecmascript functions:
+* Bytecode/const buffer for long ECMAScript functions:
 
   - Bytecode and constants can be placed in separate buffers.
 
@@ -995,7 +995,7 @@ Normal function representation
 In Duktape 1.0.0 functions are represented as:
 
 * A ``duk_hcompfuncn`` (a superset of ``duk_hobject``): represents an
-  Ecmascript function which may have a set of properties, and points to
+  ECMAScript function which may have a set of properties, and points to
   the function's data area (bytecode, constants, inner function refs).
 
 * A ``duk_hnatfunc`` (a superset of ``duk_hobject``): represents a
@@ -1009,10 +1009,10 @@ In Duktape 1.1.0 a lightfunc type is available:
 
 RAM footprints for each type are discussed below.
 
-Ecmascript functions
+ECMAScript functions
 --------------------
 
-An ordinary Ecmascript function takes around 300-500 bytes of RAM.  There are
+An ordinary ECMAScript function takes around 300-500 bytes of RAM.  There are
 three objects involved:
 
 - a function template
@@ -1034,7 +1034,7 @@ from having an automatic prototype.
 Duktape/C functions
 -------------------
 
-A Duktape/C function takes about 70-80 bytes of RAM.  Unlike Ecmascript
+A Duktape/C function takes about 70-80 bytes of RAM.  Unlike ECMAScript
 functions, Duktape/C function are already stripped of unnecessary properties
 and don't have an automatic prototype object.
 

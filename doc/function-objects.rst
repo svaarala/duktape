@@ -5,7 +5,7 @@ Function template and instance objects
 Difference between a template and an instance
 =============================================
 
-A *function template* is a Duktape internal Ecmascript Function object.
+A *function template* is a Duktape internal ECMAScript Function object.
 Function templates are not exposed to user code, and represent a compiled
 function without a concrete surrounding environment.  Function templates
 are created by the compiler for every function and inner function.  Because
@@ -235,7 +235,7 @@ user documentation for the exposed parts):
 | Property      | Description                                             |
 +===============+=========================================================+
 | ``length``    | Set to the number of formal parameters.  For normal     |
-|               | functions parsed from Ecmascript source code, this is   |
+|               | functions parsed from ECMAScript source code, this is   |
 |               | set to ``_Formals.length``.  Built-in functions may be  |
 |               | special.                                                |
 +---------------+---------------------------------------------------------+
@@ -273,7 +273,7 @@ properties built-in functions get.
 Duktape/C functions
 ===================
 
-Duktape/C functions are also represented by an Ecmascript Function object.
+Duktape/C functions are also represented by an ECMAScript Function object.
 The properties of such functions are extremely minimal; for instance, they
 are missing the ``length`` property.  This is done to keep the object size
 as small as possible.  This means, however, that the Function objects are

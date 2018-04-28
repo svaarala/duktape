@@ -31,7 +31,7 @@ The compiler converts source code containing global code, eval code, or
 function code into an executable form.  The most important parts of that
 form are bytecode, constants, function metadata, and inner function
 templates.  Compilation can also end in a ``SyntaxError``, which are
-mandated to be "early errors" in Ecmascript, or some internal error, such
+mandated to be "early errors" in ECMAScript, or some internal error, such
 as out of memory error.
 
 The end result of compilation is more specifically a *function template*.
@@ -93,7 +93,7 @@ Compiler
 --------
 
 The compiler component uses a hand crafted recursive descent statement parser,
-with somewhat tricky handling of a few Ecmascript constructs (like the
+with somewhat tricky handling of a few ECMAScript constructs (like the
 "for/for-in" statement).  In contrast, top-down operator parsing is used for
 parsing expressions (see http://javascript.crockford.com/tdop/tdop.html)
 which is nice in that it allows single pass parsing while generating mostly
@@ -477,7 +477,7 @@ code to be decoded in UTF-8.  Changing the supported encoding(s) would be
 easy because of the codepoint decoding window approach, but it's preferred
 that calling code transcode non-UTF-8 inputs into UTF-8.
 
-Source code may contain non-BMP characters but Ecmascript does not
+Source code may contain non-BMP characters but ECMAScript does not
 support such characters directly.  For instance, if codepoint U+12345 would
 appear (without escaping) inside a string constant, it would need to be
 interpreted as two 16-bit codepoint surrogate codepoints (surrogate pair),
@@ -674,7 +674,7 @@ larger IR.
 Dynamic lexical contexts
 ------------------------
 
-Ecmascript lexical contexts can be dynamically altered even after a function
+ECMAScript lexical contexts can be dynamically altered even after a function
 call exits.  For example, if a function makes a direct ``eval()`` call with
 a variable argument, it is possible to declare new variables when the function
 is called::
@@ -710,7 +710,7 @@ Compilation may trigger a GC or recursive compilation
 At first glance it might seem that the compiler cannot be invoked recursively.
 This is not the case however: the compiler may trigger a garbage collection
 or a refzero, which triggers a finalizer execution, which in turn can use e.g.
-``eval()`` to cause a recursive Ecmascript compilation.  Compiler recursion is
+``eval()`` to cause a recursive ECMAScript compilation.  Compiler recursion is
 not a problem as such, as it is a normal recursive C call which respects value
 stack policy.
 
@@ -733,7 +733,7 @@ Unary minus and plus
 --------------------
 
 Quite interestingly, the minus sign in ``-123`` is **not** a part of the
-number token in Ecmascript syntax.  Instead, ``-123`` is parsed as a unary
+number token in ECMAScript syntax.  Instead, ``-123`` is parsed as a unary
 minus followed by a number literal.
 
 The current compiler follows this required syntax, but constant folding
@@ -1653,7 +1653,7 @@ There are also tricky control flow issues related to each variant.
 Because code is generated while parsing, control flow often needs to
 be implemented rather awkwardly.
 
-Note that the ``in`` token serves two independent roles in Ecmascript:
+Note that the ``in`` token serves two independent roles in ECMAScript:
 (1) as a membership test in ``"foo" in y`` and (2) as part of the for-in
 iterator syntax.  These two uses have entirely different semantics and
 compile entirely different code.
@@ -1666,7 +1666,7 @@ Nothing special.
 Semantics notes on variant 2
 ----------------------------
 
-Like all Ecmascript variable declarations, the declaration is "hoisted" to
+Like all ECMAScript variable declarations, the declaration is "hoisted" to
 the top of the function while a possible initializer assignment only happens
 when related code is executed.
 
@@ -2058,14 +2058,14 @@ process them.
 Compiling logical expressions
 =============================
 
-Ecmascript has three logical operators: binary operators ``&&`` and ``||``,
+ECMAScript has three logical operators: binary operators ``&&`` and ``||``,
 and a unary operator ``!``.  The unary logical NOT operator coerces its
 argument to a boolean value and negates the result (E5.1 Section 11.4.9).
 The binary AND and OR operator employ ordered, short circuit evaluation
 semantics, and the result of a binary operation is one of its arguments,
 which is **not** coerced to a boolean value (E5.1 Section 11.11).
 
-The Ecmascript ``ToBoolean()`` specification function is used to coerce
+The ECMAScript ``ToBoolean()`` specification function is used to coerce
 values into booleans (E5.1 Section 9.2) for comparison purposes.  The
 following values are coerced to ``false``: ``undefined``, ``null``,
 ``false``, ``+0``, ``-0``, ``NaN``, ``""``.  All other values are coerced
@@ -2097,7 +2097,7 @@ latter AND expression is ``NaN``, which also becomes the final value of the
 outer OR expression.
 
 Code generation must respect the ordering and short circuiting semantics of
-Ecmascript boolean expressions.  In particular, short circuiting means that
+ECMAScript boolean expressions.  In particular, short circuiting means that
 binary logical operations are not simply operations on values, but must rather
 be control flow instructions.  Code generation must emit "skip jumps" when
 generating expression code, and these jumps must be back-patched later.  It
@@ -2289,7 +2289,7 @@ flow instructions rather than logical ones.
 Compiling function calls; direct eval
 =====================================
 
-Ecmascript E5.1 handles **direct** ``eval`` calls differently from other
+ECMAScript E5.1 handles **direct** ``eval`` calls differently from other
 ``eval`` calls.  For instance, direct ``eval`` calls may declare new
 variables in the calling lexical scope, while variable declarations in
 non-direct ``eval`` calls will go into the global object.  See:
@@ -2400,7 +2400,7 @@ safe to access the identifier with a direct register reference which is called
 a "fast path" access.  This is safe because only non-deletable bindings are
 register mapped, so there's no way that the binding would later be removed e.g.
 by uncontrolled eval() calls.  There's also nothing that could come in the way
-to capture the reference.  For example, the Ecmascript statement::
+to capture the reference.  For example, the ECMAScript statement::
 
   a += 1;
 
@@ -2409,7 +2409,7 @@ could be compiled to the following when "a" is in the varmap and mapped to R2::
   INC R2
 
 When the identifier is not in the varmap, the compiler uses the "slow path"
-which means addressing identifers by name.  For example, the Ecmascript
+which means addressing identifers by name.  For example, the ECMAScript
 statement::
 
   b += 1;
@@ -2628,7 +2628,7 @@ a codepoint window anyway, hiding the streaming process would be relatively
 straightforward.
 
 Adding support for streaming would involve using a callback (perhaps a pure
-C callback or even an actual Duktape/C or Ecmascript callback) for providing
+C callback or even an actual Duktape/C or ECMAScript callback) for providing
 a chunk of source code for Duktape to decode from.  Another callback would be
 needed to rewind to a specified position.  Another approach is to provide a
 callback to provide at most N bytes starting from a specified offset, and let
@@ -2783,7 +2783,7 @@ walk is capped to ensure reasonable compilation times even for functions
 with a large number of constants.
 
 A better solution would be to use a faster search structure for detecting
-shared constants, e.g. a hash map with more flexible keys than in Ecmascript
+shared constants, e.g. a hash map with more flexible keys than in ECMAScript
 objects (perhaps one of the ES2015 maps).
 
 Better switch-case handling

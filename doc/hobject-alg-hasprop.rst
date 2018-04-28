@@ -5,7 +5,7 @@ HASPROP: Exposed property existence check ("in" operator)
 Background
 ==========
 
-Property existence check is done using the ``in`` operator in Ecmascript
+Property existence check is done using the ``in`` operator in ECMAScript
 code, e.g.::
 
   print('foo' in bar);  // check whether foo.bar exists

@@ -67,7 +67,7 @@ Heap element
   The term "heap-allocated element" or "heap element" is used to refer broadly
   to all memory allocations which are automatically tracked.  The term
   "heap-allocated object" or "heap object" is not used because it is easy to
-  confuse with other notions of an "object".  In particular, all Ecmascript
+  confuse with other notions of an "object".  In particular, all ECMAScript
   objects are heap elements, but there are other heap element types too.
   Heap-allocated elements subject to memory management are:
 
@@ -201,7 +201,7 @@ when not strictly out of memory):
 * ``DUK_FREE``
 
 Triggering a garbage collection has a wide set of possible side effects.
-If a finalizer is executed, arbitrary Ecmascript or even native code
+If a finalizer is executed, arbitrary ECMAScript or even native code
 may run.  Garbage collection side effects are discussed in detail in a
 separate section below.
 
@@ -619,7 +619,7 @@ But, there are downsides as well:
 * Using string values as "data buffers" which are continuously manipulated
   (appended or predended to, sliced, etc) is very inefficient and causes a
   lot of garbage collection churn.  Buffer objects should be used instead,
-  but these are not part of the Ecmascript standard.
+  but these are not part of the ECMAScript standard.
 
 Memory management of strings
 ----------------------------
@@ -746,7 +746,7 @@ Notes on macro semantics:
   + ``DECREF`` may free the target object and an arbitrary number of other
     objects whose reference count drops to zero as a result.
 
-  + If a finalizer is invoked, arbitrary C or Ecmascript code is
+  + If a finalizer is invoked, arbitrary C or ECMAScript code is
     executed which may have essentially arbitrary side effects,
     including triggering the mark-and-sweep garbage collector.
 
@@ -868,7 +868,7 @@ Background on the refzero algorithm, limiting C recursion depth
 ---------------------------------------------------------------
 
 When a reference count drops to zero, the heap element will be freed.  If the
-heap element contains references (like an Ecmascript object does), all target
+heap element contains references (like an ECMAScript object does), all target
 elements need to be ``DECREF``'d before the element is freed.  These ``DECREF``
 calls may cause the reference count of further elements to drop to zero; this
 "cascade" of zero reference counts may be arbitrarily long.  Since we need to
@@ -1332,7 +1332,7 @@ Misc notes
 Garbage collection of value stacks
 ----------------------------------
 
-While an Ecmascript function is running, the value stack frame allocated
+While an ECMAScript function is running, the value stack frame allocated
 for it has a minimum size matching the "register count" of the function.
 All of these registers are reachable from a mark-and-sweep viewpoint, even
 if the values held by the registers are never referenced by the bytecode

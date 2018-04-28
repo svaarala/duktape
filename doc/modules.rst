@@ -8,7 +8,7 @@ Introduction
 This document discusses the barebone CommonJS-based module framework
 built into Duktape 1.x (moved into an optional extra in Duktape 2.x):
 
-* Ecmascript modules are defined using the CommonJS module format:
+* ECMAScript modules are defined using the CommonJS module format:
 
   - http://wiki.commonjs.org/wiki/Modules/1.1.1
 
@@ -27,7 +27,7 @@ built into Duktape 1.x (moved into an optional extra in Duktape 2.x):
   However, there is a recommended convention which works on most platforms
   and allows both static and DLL loading, see ``c-module-convention.rst``.
 
-Using modules from Ecmascript code (require)
+Using modules from ECMAScript code (require)
 ============================================
 
 Duktape provides a global ``require()`` function which allows a module to be
@@ -74,7 +74,7 @@ absolute identifier.
 If the search function cannot locate a module based on its identifier, it is
 expected to throw an error.  If a module is found, the search function can
 register symbols directly to 'exports' (this is used to implement C modules),
-and can also return a string to be used as the module Ecmascript source code::
+and can also return a string to be used as the module ECMAScript source code::
 
   /* An actual implementation would usually scan and return module sources
    * e.g. from the filesystem or a compressed source pack.  This example
@@ -86,15 +86,15 @@ and can also return a string to be used as the module Ecmascript source code::
       /* 'foo' is a native module, register symbols to 'exports' in a
        * platform specific way.
        */
-      return;  // undefined: no Ecmascript source
+      return;  // undefined: no ECMAScript source
     }
     if (id === 'bar') {
-      /* 'bar' is a pure Ecmascript module. */
+      /* 'bar' is a pure ECMAScript module. */
       return 'exports.hello = function () { print("Hello world from bar!"); };';
     }
     if (id === 'quux') {
-      /* 'quux' is a mixed C/Ecmascript module.  C code provides the
-       * exports.rawFunc() binding while Ecmascript code implements
+      /* 'quux' is a mixed C/ECMAScript module.  C code provides the
+       * exports.rawFunc() binding while ECMAScript code implements
        * a safe variant on top of that.
        */
       return 'exports.func = function () {\n' +
@@ -108,7 +108,7 @@ and can also return a string to be used as the module Ecmascript source code::
 
 The ``module`` value is registered to ``Duktape.modLoaded`` before the
 module search function is called (this was changed in Duktape 1.3), so
-that circular requires are properly supported for both Ecmascript and C
+that circular requires are properly supported for both ECMAScript and C
 modules.
 
 The user ``Duktape.modSearch()`` function encapsulates functionality such as
@@ -118,7 +118,7 @@ loading, while keeping the user callback unaware of almost every other
 aspect of module loading.  Using stub module search functions is also easy,
 which is good for testing.
 
-Ecmascript modules follow the CommonJS format, e.g. ``package/lib`` could
+ECMAScript modules follow the CommonJS format, e.g. ``package/lib`` could
 be represented by the source file::
 
   exports.add = function (a, b) {
@@ -298,9 +298,9 @@ Simply load the DLL based on the module identifier, and call some kind of init
 function in the DLL to register module symbols into the 'exports' table given
 to the module loader.
 
-Mixed C/Ecmascript modules are also possible by first registering symbols
-provided by C code into the 'exports' table, and then returning the Ecmascript
-part of the module.  The Ecmascript part can access the symbols provided by C
+Mixed C/ECMAScript modules are also possible by first registering symbols
+provided by C code into the 'exports' table, and then returning the ECMAScript
+part of the module.  The ECMAScript part can access the symbols provided by C
 code through the shared 'exports' table.
 
 As of Duktape 1.3, the ``module`` table is registered to ``Duktape.modLoaded``
@@ -320,12 +320,12 @@ Background
 Module frameworks
 -----------------
 
-Ecmascript has not traditionally had a module mechanism.  In browser
+ECMAScript has not traditionally had a module mechanism.  In browser
 environments a web page can load multiple script files in a specific
 order, each of them introducing more global symbols.  This is not very
 elegant because the order of loading must be correct in case any code
 runs during loading.  Several module mechanisms have since been created
-for the browser environment to make writing modular Ecmascript easier.
+for the browser environment to make writing modular ECMAScript easier.
 Similar needs also exist in non-browser environments and several mechanisms
 have been defined.
 

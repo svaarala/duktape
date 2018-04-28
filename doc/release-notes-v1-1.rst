@@ -24,13 +24,13 @@ Known issues
 
 This release has the following known issues worth noting.
 
-Ecmascript features
+ECMAScript features
 -------------------
 
 * Non-compliant behavior for array indices near 2G or 4G elements.
 
 * RegExp parser is strict and won't accept some real world RegExps which
-  are technically not compliant with Ecmascript E5/E5.1 specification.
+  are technically not compliant with ECMAScript E5/E5.1 specification.
 
 * Final mantissa bit rounding issues in the internal number-to-string
   conversion.
@@ -78,7 +78,7 @@ See ``testcase-known-issues.yaml``::
 
     test-to-number.c: fail; 15 diff lines; known issue: number parsing bug for strings containing NUL characters (e.g. '\u0000')
 
-Ecmascript tests
+ECMAScript tests
 ----------------
 
 See ``testcase-known-issues.yaml``::
@@ -120,7 +120,7 @@ See ``testcase-known-issues.yaml``::
 test262
 -------
 
-See ``test262-status.rst`` and ``test262-known-issues.yaml``.  With Ecmascript 6 and Intl module tests removed::
+See ``test262-status.rst`` and ``test262-known-issues.yaml``.  With ECMAScript 6 and Intl module tests removed::
 
   annexB/B.RegExp.prototype.compile in non-strict mode   // KNOWN: RegExp.prototype.compile() not part of E5.1
   ch07/7.8/7.8.5/S7.8.5_A1.4_T1 in non-strict mode   // KNOWN: uses invalid RegExp formats, e.g. '/\1/' and '/\a/'

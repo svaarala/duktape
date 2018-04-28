@@ -66,7 +66,7 @@ the property cannot be written or deleted -- the property is thus perfect for
 implementation as a virtual property backed to an immutable internal string
 value.
 
-.. note:: Ecmascript 5.1 no longer requires the numbered index to be a valid
+.. note:: ECMAScript 5.1 no longer requires the numbered index to be a valid
           array index, any number-like value will do.  This allows strings
           longer than 4G.  The algorithms here don't reflect this correctly.
 

@@ -8,7 +8,7 @@ Introduction
 Duktape 1.x contains a built-in very minimal logging framework which has
 a small footprint (around 1kB), reasonably high performance, and makes it
 easy to change both the frontend and the backend of logging.  It is easy
-to write log entries from both C and Ecmascript, and then redirect all
+to write log entries from both C and ECMAScript, and then redirect all
 the log output to a custom backend.  Lazy formatting is also possible.
 
 In Duktape 2.x the logging framework was moved into an optional extra
@@ -26,14 +26,14 @@ basic feature set in a transparent manner.
 
 The logging framework also provides API calls to write log entries from C
 code.  This is very convenient, as these log entries will then nicely
-interleave with log entries written from Ecmascript code.
+interleave with log entries written from ECMAScript code.
 
 The logger object API is close to log4javascript except that there is no
 special handling for an error object as the last call argument.  See:
 
 * http://log4javascript.org/docs/quickstart.html
 
-Writing log entries from Ecmascript
+Writing log entries from ECMAScript
 ===================================
 
 A logger object is first created::
@@ -104,7 +104,7 @@ Writing log entries from C
 ==========================
 
 The Duktape API provides a snprintf-like log call which allows C code to log
-to the same backend as Ecmascript code::
+to the same backend as ECMAScript code::
 
   duk_log(ctx, DUK_LOG_INFO, "return value: %d", rc);
 

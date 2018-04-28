@@ -75,15 +75,15 @@ have the form::
 
 This should minimize platform issues.
 
-Mixed Ecmascript / C modules
+Mixed ECMAScript / C modules
 ============================
 
 When a module is being initialized by a CommonJS aware module loader, the
-loader can support mixed modules containing both C and Ecmascript code.
+loader can support mixed modules containing both C and ECMAScript code.
 For example::
 
     my_module.so   # C module
-    my_module.js   # Ecmascript module (CommonJS)
+    my_module.js   # ECMAScript module (CommonJS)
 
 To support mixed modules, a Duktape 1.x ``modSearch()`` function should:
 
@@ -91,10 +91,10 @@ To support mixed modules, a Duktape 1.x ``modSearch()`` function should:
 
 * If RET is an object, copy the own properties of RET into the ``exports``
   value created by Duktape.  It should then return the source code of the
-  Ecmascript module; when executed, further symbols get added to the same
+  ECMAScript module; when executed, further symbols get added to the same
   ``exports`` value.
 
-* If RET is not an object, ignore it and load the Ecmascript module normally.
+* If RET is not an object, ignore it and load the ECMAScript module normally.
   (Alternatively, write RET to a fixed export name to make it accessible,
   e.g. ``exports.value``.)
 
@@ -103,11 +103,11 @@ The algorithm for Duktape 2.0 is still under design, but at a high level:
 * First load the C module normally, yielding a return value RET.
 
 * If RET is an object, use it to initialize the CommonJS ``exports`` value
-  before loading the Ecmascript module.  The Ecmascript module can then
+  before loading the ECMAScript module.  The ECMAScript module can then
   use whatever symbols the C modules registered, and add further symbols to
   the same ``exports`` value.
 
-* If RET is not an object, ignore it and load the Ecmascript module normally.
+* If RET is not an object, ignore it and load the ECMAScript module normally.
   (Alternatively, expose RET with a fixed name, e.g. initialize ``exports``
   as ``{ value: RET }``.)
 

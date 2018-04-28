@@ -23,13 +23,13 @@ Known issues
 
 This release has the following known issues worth noting.
 
-Ecmascript features
+ECMAScript features
 -------------------
 
 * Non-compliant behavior for array indices near 2G or 4G elements.
 
 * RegExp parser is strict and won't accept some real world RegExps which
-  are technically not compliant with Ecmascript E5/E5.1 specification.
+  are technically not compliant with ECMAScript E5/E5.1 specification.
 
 * Final mantissa bit rounding issues in the internal number-to-string
   conversion.
@@ -77,7 +77,7 @@ See ``testcase-known-issues.yaml``::
 
     test-to-number.c: fail; 15 diff lines; known issue: number parsing bug for strings containing NUL characters (e.g. '\u0000')
 
-Ecmascript tests
+ECMAScript tests
 ----------------
 
 See ``testcase-known-issues.yaml``::
@@ -119,7 +119,7 @@ See ``testcase-known-issues.yaml``::
 test262
 -------
 
-See ``test262-status.rst`` and ``test262-known-issues.yaml``.  With Ecmascript 6 and Intl module tests removed::
+See ``test262-status.rst`` and ``test262-known-issues.yaml``.  With ECMAScript 6 and Intl module tests removed::
 
     ch12/12.6/12.6.4/12.6.4-2 in non-strict mode   // diagnosed: enumeration corner case issue, see test-bug-enum-shadow-nonenumerable.js
     ch15/15.10/15.10.2/15.10.2.5/S15.10.2.5_A1_T5 in non-strict mode   // diagnosed: Duktape bug, matching /(a*)b\1+/ against 'baaaac' causes first capture to match the empty string; the '\1+' part will then use the '+' quantifier over the empty string.  As there is no handling to empty quantified now, Duktape bails out with a RangeError.

@@ -2,10 +2,10 @@
 Error objects
 =============
 
-Standard Ecmascript ``Error`` instances are quite barebones: they only contain
-a ``name`` and a ``message``.  Most Ecmascript implementations, including
+Standard ECMAScript ``Error`` instances are quite barebones: they only contain
+a ``name`` and a ``message``.  Most ECMAScript implementations, including
 Duktape, provide additional error properties like file name, line number, and
-traceback.  Ecmascript allows throwing of arbitrary values, although most user
+traceback.  ECMAScript allows throwing of arbitrary values, although most user
 code throws objects inheriting from the ``Error`` constructor.
 
 This document describes how Duktape creates and throws ``Error`` objects,
@@ -87,7 +87,7 @@ Error object creation
 
 Errors can be created in multiple ways:
 
-* From Ecmascript code by creating an error, usually (but not always) tied
+* From ECMAScript code by creating an error, usually (but not always) tied
   to a ``throw`` statement, e.g.::
 
     throw new Error('my error');
@@ -122,7 +122,7 @@ implementation, the value thrown is always an instance of ``Error`` and
 is therefore augmented.  Error creation and throwing happens at the same
 time.
 
-When errors are thrown from Ecmascript code the situation is different.
+When errors are thrown from ECMAScript code the situation is different.
 There is nothing preventing user code from separating the error creation
 and error throwing from each other::
 
@@ -282,7 +282,7 @@ Current approach
 The current create/throw error handlers are stored in ``Duktape.errCreate``
 and ``Duktape.errThrow``.  This has several advantages:
 
-* The ``Duktape`` object is easy to access from both C and Ecmascript code
+* The ``Duktape`` object is easy to access from both C and ECMAScript code
   without additional API bindings.
 
 * It works relatively well with sandboxing: the ``Duktape`` object can be
@@ -433,8 +433,8 @@ The relevant file/line pairs are:
   other errors too).
 
 * **Actual callstack entries (activations) leading up to the error**.  These
-  may be Duktape/C and Ecmascript functions.  The functions have a varying set
-  of properties: for example, Ecmascript functions have both a ``.name`` and a
+  may be Duktape/C and ECMAScript functions.  The functions have a varying set
+  of properties: for example, ECMAScript functions have both a ``.name`` and a
   ``.fileName`` property by default, while Duktape/C functions don't.  It's
   possible to add and remove properties after function creation.
 
@@ -452,13 +452,13 @@ From the application point of view the most relevant file/line is usually the
 closest "user function", as opposed to "infrastructure function", in the
 callstack.  The following are often not useful for blaming:
 
-* Any Duktape/C or Ecmascript functions which are considered infrastructure
+* Any Duktape/C or ECMAScript functions which are considered infrastructure
   functions, such as errors checkers, one-to-one system call wrappers, etc.
 
 * C call sites inside Duktape; these are essentially always infrastructure
   functions.
 
-* Any Duktape/C or Ecmascript functions missing a ``.fileName`` property.
+* Any Duktape/C or ECMAScript functions missing a ``.fileName`` property.
   Such functions should be ignored even if they're user functions because
   the resulting file/line information would be pointless.
 
@@ -621,7 +621,7 @@ by adding a flag to the compilation API calls.
 Control error blaming of functions
 ::::::::::::::::::::::::::::::::::
 
-Allow Duktape/C and Ecmascript functions to provide a flag indicating if
+Allow Duktape/C and ECMAScript functions to provide a flag indicating if
 the function should be considered relevant for file/line blaming.
 
 For Duktape 1.4.0 the ``.fileName`` property of a function serves this
@@ -643,7 +643,7 @@ file/line.
 Cause chains
 ============
 
-There is currently no support for cause chains: Ecmascript doesn't have a
+There is currently no support for cause chains: ECMAScript doesn't have a
 cause chain concept nor does there seem to be an unofficial standard for
 them either.
 
@@ -683,7 +683,7 @@ use, but would have more potential to interfere with standard semantics::
 
 Using a setter method inherited from ``Error.prototype`` would be a very bad
 idea as any such calls would be non-portable and cause errors to be thrown
-when used in other Ecmascript engines::
+when used in other ECMAScript engines::
 
   try {
       f();
