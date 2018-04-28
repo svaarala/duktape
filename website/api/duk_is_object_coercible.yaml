@@ -11,7 +11,7 @@ summary: |
   <a href="http://www.ecma-international.org/ecma-262/5.1/#sec-9.10">CheckObjectCoercible</a>,
   otherwise returns 0.  If <code>idx</code> is invalid, also returns 0.</p>
 
-  <p>All Ecmascript types are object coercible except <code>undefined</code> and
+  <p>All ECMAScript types are object coercible except <code>undefined</code> and
   <code>null</code>.  The custom buffer and pointer types are object coercible.</p>
 
 example: |

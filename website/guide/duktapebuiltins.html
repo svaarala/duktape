@@ -1,6 +1,6 @@
 <h1 id="duktapebuiltins">Duktape built-ins</h1>
 
-<p>This section summarizes Duktape-specific and non-Ecmascript built-in
+<p>This section summarizes Duktape-specific and non-ECMAScript built-in
 objects, methods, and values.</p>
 
 <h2>Additional global object properties</h2>
@@ -308,7 +308,7 @@ integer flags field, see <code>duktape.h</code> for constants.</p>
 <h3 id="builtin-duktape-compact">compact()</h3>
 
 <p>Minimize the memory allocated for a target object.  Same as the C API call
-<code>duk_compact()</code> but accessible from Ecmascript code.  If called with
+<code>duk_compact()</code> but accessible from ECMAScript code.  If called with
 a non-object argument, this call is a no-op.  The argument value is returned by
 the function, which allows code such as:</p>
 <pre class="ecmascript-code">
@@ -400,7 +400,7 @@ ordinary function and as a constructor.  The behavior is the same in both
 cases:</p>
 <ul>
 <li>The first argument is checked to be a function (if not, a <code>TypeError</code>
-    is thrown).  The function must be an Ecmascript function (bound or non-bound).
+    is thrown).  The function must be an ECMAScript function (bound or non-bound).
     The return value is a new thread whose initial function is recorded to be the
     argument function (this function will start executing when the new thread is
     first resumed).  The internal prototype of the newly created Thread will be the

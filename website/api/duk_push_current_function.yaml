@@ -9,7 +9,7 @@ stack: |
 
 summary: |
   <p>Push the currently running function to the stack.  The value pushed is
-  an Ecmascript Function object.  If there is no current function,
+  an ECMAScript Function object.  If there is no current function,
   <code>undefined</code> is pushed instead.</p>
 
   <p>If the current function was called via one or more bound functions or a

@@ -2,7 +2,7 @@
 
 <p>Duktape allocates memory on demand and doesn't require a pre-allocated heap.
 When you create a heap on a 32-bit system, Duktape needs about 70kB for the
-built-in Ecmascript objects.  With specific
+built-in ECMAScript objects.  With specific
 <a href="#memory-constrained-options">low memory options</a> initial memory
 usage is about 27kB.  This can be further reduced to about 3kB when moving
 built-in objects and strings to ROM (read-only data section).  It's also
@@ -16,7 +16,7 @@ participate in reference loops; these are collected eventually by mark-and-sweep
 <p>The memory allocations needed by Duktape fall into two basic categories.
 First, there are a lot of small allocations between roughly 16 to 128 bytes
 which are needed for strings, buffers, objects, object property tables, etc.
-Second, there are much fewer larger allocations needed for e.g. Ecmascript
+Second, there are much fewer larger allocations needed for e.g. ECMAScript
 function bytecode, large strings and buffers, value stacks, the global string
 table, and the Duktape heap object.</p>
 

@@ -22,12 +22,12 @@ summary: |
   <li>If <code>obj_idx</code> is invalid, throws an error.</li>
   </ul>
 
-  <p>The property deletion is equivalent to the Ecmascript expression
+  <p>The property deletion is equivalent to the ECMAScript expression
   <code>res = delete obj[key]</code>.  For precise semantics, see
   <a href="http://www.ecma-international.org/ecma-262/5.1/#sec-11.2.1">Property Accessors</a>,
   <a href="http://www.ecma-international.org/ecma-262/5.1/#sec-11.4.1">The delete operator</a>
   and <a href="http://www.ecma-international.org/ecma-262/5.1/#sec-8.12.7">[[Delete]] (P, Throw)</a>.
-  The return value and error throwing behavior mirrors the Ecmascript
+  The return value and error throwing behavior mirrors the ECMAScript
   <code>delete</code> operator behavior.
   Both the target value and the <code>key</code> are coerced:</p>
   <ul>
@@ -44,7 +44,7 @@ summary: |
 
   <div class="note">
   This API call returns <code>1</code> when the target property does not exist.
-  This is not very intuitive, but follows Ecmascript semantics:
+  This is not very intuitive, but follows ECMAScript semantics:
   <code>delete obj.nonexistent</code> also evaluates to <code>true</code>.
   </div>
 

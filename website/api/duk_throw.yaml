@@ -19,7 +19,7 @@ summary: |
   </pre>
 
 example: |
-  /* Throw a string value; equivalent to the Ecmascript code:
+  /* Throw a string value; equivalent to the ECMAScript code:
    *
    *   throw "this string is thrown";
    */

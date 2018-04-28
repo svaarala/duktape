@@ -119,7 +119,7 @@ indicate that a value does not exist, a stack index is invalid, etc.</p>
 
 <h2 id="type-undefined">Undefined</h2>
 
-<p>The <b>undefined</b> type maps to Ecmascript <code>undefined</code>, which is
+<p>The <b>undefined</b> type maps to ECMAScript <code>undefined</code>, which is
 distinguished from a <code>null</code>.</p>
 
 <p>Values read from outside the active value stack range read back as
@@ -127,7 +127,7 @@ distinguished from a <code>null</code>.</p>
 
 <h2 id="type-null">Null</h2>
 
-<p>The <b>null</b> type maps to Ecmascript <code>null</code>.</p>
+<p>The <b>null</b> type maps to ECMAScript <code>null</code>.</p>
 
 <h2 id="type-boolean">Boolean</h2>
 
@@ -190,11 +190,11 @@ for efficiency: only a single copy of a certain string ever exists at a time.
 Strings are immutable and must NEVER be changed by calling C code.  Doing so will
 lead to very mysterious issues which are hard to diagnose.</p>
 
-<p>Calling code most often deals with Ecmascript strings, which may contain
+<p>Calling code most often deals with ECMAScript strings, which may contain
 arbitrary 16-bit codepoints in the range U+0000 to U+FFFF but cannot represent
 non-<a href="http://en.wikipedia.org/wiki/Basic_Multilingual_Plane#Basic_Multilingual_Plane">BMP</a>
-codepoints.  This is how strings are defined in the Ecmascript standard.
-In Duktape, Ecmascript strings are encoded with
+codepoints.  This is how strings are defined in the ECMAScript standard.
+In Duktape, ECMAScript strings are encoded with
 <a href="http://en.wikipedia.org/wiki/CESU-8">CESU-8</a> encoding.  CESU-8
 matches <a href="http://en.wikipedia.org/wiki/UTF-8">UTF-8</a> except that it
 allows codepoints in the surrogate pair range (U+D800 to U+DFFF) to be encoded
@@ -238,16 +238,16 @@ marker encoding.  This is not a practical concern in Duktape's internal use.</p>
 
 <p>Finally, invalid extended UTF-8 byte sequences are used for special purposes
 such as representing Symbol values.  Invalid extened UTF-8/CESU-8 byte sequences
-never conflict with standard Ecmascript strings (which are CESU-8) and will remain
+never conflict with standard ECMAScript strings (which are CESU-8) and will remain
 cleanly separated within object property tables.  For more information see
 <a href="#symbols">Symbols</a> and
 <a href="https://github.com/svaarala/duktape/blob/master/doc/symbols.rst">symbols.rst</a>.</p>
 
 <p>Strings with invalid extended UTF-8 sequences can be pushed on the value stack
-from C code and also passed to Ecmascript functions, with two caveats:</p>
+from C code and also passed to ECMAScript functions, with two caveats:</p>
 <ul>
 <li>If the invalid byte sequence matches the internal format used to represent
-    Symbols, the value will appear as a Symbol rather than a string for Ecmascript
+    Symbols, the value will appear as a Symbol rather than a string for ECMAScript
     code.  For example, <code>typeof val</code> will be <code>symbol</code>.</li>
 <li>Behavior of string operations on invalid byte sequences if not well defined
     and results may vary, and change even in minor Duktape version updates.</li>
@@ -255,7 +255,7 @@ from C code and also passed to Ecmascript functions, with two caveats:</p>
 
 <h2 id="type-object">Object</h2>
 
-<p>The <b>object</b> type includes Ecmascript objects and arrays, functions,
+<p>The <b>object</b> type includes ECMAScript objects and arrays, functions,
 threads (coroutines), and buffer objects.  In other words, anything with
 properties is an object.  Properties are key-value pairs with a string key
 and an arbitrary value (including <b>undefined</b>).</p>
@@ -362,7 +362,7 @@ varargs), (2) virtual <code>length</code> property value (0 to 15), and
 (3) a magic value (-128 to 127).</p>
 
 <p>Lightfuncs are a separate tagged type in the Duktape C API, but behave mostly
-like Function objects for Ecmascript code.  They have significant limitations
+like Function objects for ECMAScript code.  They have significant limitations
 compared to ordinary Function objects, the most important being:</p>
 
 <ul>

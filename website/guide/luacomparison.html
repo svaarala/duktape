@@ -18,7 +18,7 @@ In Lua, slices are indicated with inclusive indices (i.e. [start,end]).</p>
 <h2>Object type represents functions and threads</h2>
 
 <p>In Lua functions and threads are a separate type from objects.
-In Duktape the object type is used for plain objects, Ecmascript and
+In Duktape the object type is used for plain objects, ECMAScript and
 native functions, and threads (coroutines).  As a result, all of these
 have a mutable and extensible set of properties.</p>
 
@@ -75,8 +75,8 @@ similar to Lua <code>lua_dump()</code>. See
 
 <h2>Metatables</h2>
 
-<p>There is no equivalent of Lua metatables in Ecmascript E5/E5.1, but
-<a href="http://www.ecma-international.org/ecma-262/6.0/index.html#sec-proxy-objects">Ecmascript ES2015 Proxy objects</a>
+<p>There is no equivalent of Lua metatables in ECMAScript E5/E5.1, but
+<a href="http://www.ecma-international.org/ecma-262/6.0/index.html#sec-proxy-objects">ECMAScript ES2015 Proxy objects</a>
 provide similar functionality.  To allow property virtualization better than available in
 E5/E5.1, Duktape implements an <a href="#es6-proxy">ES2015 Proxy subset</a>.</p>
 
@@ -89,7 +89,7 @@ key and/or value.</p>
 <h2>Raw accessors</h2>
 
 <p>There is no equivalent to Lua raw table access functions like
-<code>lua_rawget</code>.  One can use the following Ecmascript built-ins
+<code>lua_rawget</code>.  One can use the following ECMAScript built-ins
 for a similar effect (though not with respect to performance):
 <a href="http://www.ecma-international.org/ecma-262/5.1/#sec-15.2.3.3">Object.getOwnPropertyDescriptor ( O, P )</a>,
 <a href="http://www.ecma-international.org/ecma-262/5.1/#sec-15.2.3.6">Object.defineProperty ( O, P, Attributes )</a>.</p>
@@ -104,8 +104,8 @@ coroutines cannot yield from inside constructor calls or getter/setter calls.</p
 
 <h2>Multiple return values</h2>
 
-<p>Lua supports multiple return values, Duktape (or Ecmascript) currently
-doesn't.  This may change with Ecmascript ES2015, which has a syntax for
+<p>Lua supports multiple return values, Duktape (or ECMAScript) currently
+doesn't.  This may change with ECMAScript ES2015, which has a syntax for
 multiple value returns.  The Duktape/C API reserves return values above 1
 so that they may be later used for multiple return values.</p>
 
@@ -116,7 +116,7 @@ so that they may be later used for multiple return values.</p>
 <h2>Unicode</h2>
 
 <p>Lua has no built-in Unicode support (strings are byte strings), while
-Duktape has support for 16-bit Unicode as part of Ecmascript compliance.</p>
+Duktape has support for 16-bit Unicode as part of ECMAScript compliance.</p>
 
 <h2>Streaming compilation</h2>
 

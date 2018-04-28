@@ -50,7 +50,7 @@ by editing the Makefile:
 </ul>
 </div>
 
-<p>You can now run Ecmascript code interactively:</p>
+<p>You can now run ECMAScript code interactively:</p>
 <pre>
 $ ./duk
 ((o) Duktape 2.2.0 (v2.2.0)
@@ -59,7 +59,7 @@ Hello world!
 = undefined
 </pre>
 
-<p>You can also run Ecmascript code from a file which is useful for playing with
+<p>You can also run ECMAScript code from a file which is useful for playing with
 features and algorithms.  As an example, create <code>fib.js</code>:</p>
 <pre class="ecmascript-code" include="fib.js"></pre>
 
@@ -101,13 +101,13 @@ $ gcc -std=c99 -o hello -Isrc src/duktape.c examples/hello/hello.c -lm
 <p>To customize Duktape configuration use <code>configure.py</code>:</p>
 <pre>
 $ cd /tmp/duktape-&lt;version&gt;/
-# Here we disable Ecmascript 6 Proxy object support
+# Here we disable ECMAScript 6 Proxy object support
 $ python2 tools/configure.py --output-directory duktape-src -UDUK_USE_ES6_PROXY
 $ gcc -std=c99 -o hello -Iduktape-src duktape-src/duktape.c examples/hello/hello.c -lm
 </pre>
 
 <p>The test program creates a Duktape context and uses it to run some
-Ecmascript code:</p>
+ECMAScript code:</p>
 <pre>
 $ ./hello
 Hello world!
@@ -137,11 +137,11 @@ with native code; for example:</p>
 <ul>
 <li>Run the main application in C/C++ code but call into Duktape for
     extending base functionality (e.g. plugins or configuration).</li>
-<li>Run the main application in Ecmascript code, and call into simple
+<li>Run the main application in ECMAScript code, and call into simple
     C/C++ native bindings for I/O, performance intensive operations, etc.
     The native bindings are often kept stateless so that state logic
     remains in view of script code.</li>
-<li>Run the main application in Ecmascript code, but use more complex,
+<li>Run the main application in ECMAScript code, but use more complex,
     stateful C/C++ native bindings for performance intensive operations.
     For example, a graphics engine can be implemented as a native object.</li>
 </ul>

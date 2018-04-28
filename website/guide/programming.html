@@ -9,14 +9,14 @@
     to your build.</li>
 <li>Create a Duktape <b>heap</b> (a garbage collection region) and an initial
     <b>context</b> (essentially a thread handle) in your program.</li>
-<li>Load the necessary Ecmascript script files, and register your Duktape/C
+<li>Load the necessary ECMAScript script files, and register your Duktape/C
     functions.  Duktape/C functions are C functions you can call from
-    Ecmascript code for better performance, bindings to native libraries, etc.</li>
-<li>Use the Duktape API to call Ecmascript functions whenever appropriate.
+    ECMAScript code for better performance, bindings to native libraries, etc.</li>
+<li>Use the Duktape API to call ECMAScript functions whenever appropriate.
     Duktape API is used to pass values to and from functions.  Values are
     converted between their C representation and the Duktape internal
-    (Ecmascript compatible) representation.</li>
-<li>Duktape API is also used by Duktape/C functions (called from Ecmascript)
+    (ECMAScript compatible) representation.</li>
+<li>Duktape API is also used by Duktape/C functions (called from ECMAScript)
     to access call arguments and to provide return values.</li>
 </ul>
 
@@ -25,17 +25,17 @@
 <h2>Heap and context</h2>
 
 <p>A Duktape <b>heap</b> is a single region for garbage collection.  A heap
-is used to allocate storage for strings, Ecmascript objects, and other
+is used to allocate storage for strings, ECMAScript objects, and other
 variable size, garbage collected data.  Objects in the heap have an internal
 heap header which provides the necessary information for reference counting,
 mark-and-sweep garbage collection, object finalization, etc.
 Heap objects can reference each other, creating a reachability graph from
-a garbage collection perspective.  For instance, the properties of an Ecmascript
+a garbage collection perspective.  For instance, the properties of an ECMAScript
 object reference both the keys and values of the object's property set.  You can
 have multiple heaps, but objects in different heaps cannot reference each other
 directly; you need to use serialization to pass values between heaps.</p>
 
-<p>A Duktape <b>context</b> is an Ecmascript "thread of execution" which lives
+<p>A Duktape <b>context</b> is an ECMAScript "thread of execution" which lives
 in a certain Duktape heap.  A context is represented by a <code>duk_context *</code>
 in the Duktape API, and is associated with an internal Duktape coroutine (a form
 of a co-operative thread).  Each context is also associated with an environment
@@ -46,8 +46,8 @@ the Duktape coroutine: values can be inserted and queries, functions can be call
 and so on.</p>
 
 <p>Each coroutine has a <b>call stack</b> which controls execution, keeping
-track of function calls, native or Ecmascript, within the Ecmascript engine.
-Each coroutine also has a <b>value stack</b> which stores all the Ecmascript
+track of function calls, native or ECMAScript, within the ECMAScript engine.
+Each coroutine also has a <b>value stack</b> which stores all the ECMAScript
 values of the coroutine's active call stack.  The value stack always has an
 active <b>stack frame</b> for the most recent function call (when no function
 calls have been made, the active stack frame is the value stack as is).
@@ -124,7 +124,7 @@ the heap destruction call returns.</p>
 <h2>Call stack and catch stack (of a context)</h2>
 
 <p>The call stack of a context is not directly visible to the caller.
-It keeps track of the chain of function calls, either C or Ecmascript,
+It keeps track of the chain of function calls, either C or ECMAScript,
 currently executing in a context.  The main purpose of this book-keeping is
 to facilitate the passing of arguments and results between function callers
 and callees, and to keep track of how the value stack is divided between
@@ -273,14 +273,14 @@ the internal number of value stack elements available beyond the caller
 specified extra varies considerably.  The caller does not need to take this
 into account and should never rely on any additional elements being available.</p>
 
-<h2>Ecmascript array index</h2>
+<h2>ECMAScript array index</h2>
 
-<p>Ecmascript object and array keys can only be strings.  Array indices
+<p>ECMAScript object and array keys can only be strings.  Array indices
 (e.g. 0, 1, 2) are represented as canonical string representations of the
 respective numbers.  More technically, all canonical string representations
 of the integers in the range [0, 2**32-1] are valid array indices.</p>
 
-<p>To illustrate the Ecmascript array index handling, consider the following
+<p>To illustrate the ECMAScript array index handling, consider the following
 example:</p>
 
 <pre class="ecmascript-code">
@@ -293,16 +293,16 @@ print(arr[1.0]);   // refers to 'bar', canonical encoding is "1"
 print(arr["1.0"]); // undefined, not an array index
 </pre>
 
-<p>Some API calls operating on Ecmascript arrays accept numeric array index
+<p>Some API calls operating on ECMAScript arrays accept numeric array index
 arguments.  This is really just a short hand for denoting a string conversion
 of that number.  For instance, if the API is given the integer 123, this
 really refers to the property name "123".</p>
 
 <p>Internally, Duktape tries to avoid converting numeric indices to actual
 strings whenever possible, so it is preferable to use array index API calls
-when they are relevant.  Similarly, when writing Ecmascript code it is
+when they are relevant.  Similarly, when writing ECMAScript code it is
 preferable to use numeric rather than string indices, as the same fast path
-applies for Ecmascript code.</p>
+applies for ECMAScript code.</p>
 
 <h2 id="duktape-api">Duktape API</h2>
 
@@ -335,7 +335,7 @@ the following guarantees for macros:</p>
 <h2>Duktape/C function</h2>
 
 <p>A C function with a Duktape/C API signature can be associated with an
-Ecmascript function object, and gets called when the Ecmascript function
+ECMAScript function object, and gets called when the ECMAScript function
 object is called.  A Duktape/C API function looks as follows:</p>
 <pre class="c-code">
 duk_ret_t my_func(duk_context *ctx) {
@@ -344,14 +344,14 @@ duk_ret_t my_func(duk_context *ctx) {
 }
 </pre>
 
-<p>The function gets Ecmascript call argument in the value stack of
+<p>The function gets ECMAScript call argument in the value stack of
 <code>ctx</code>, with
 <code><a href="api.html#duk_get_top">duk_get_top()</a></code>
 indicating the number of
 arguments present on the value stack.  The <code>this</code> binding is not
 automatically pushed to the value stack; use
 <code><a href="api.html#duk_push_this">duk_push_this()</a></code>
-to access it.  When creating an Ecmascript function object associated with a
+to access it.  When creating an ECMAScript function object associated with a
 Duktape/C function, one can select the desired number of arguments.  Extra
 arguments are dropped and missing arguments are replaced with
 <code>undefined</code>.  A function can also be registered as a vararg
@@ -368,9 +368,9 @@ which case call arguments are not modified prior to C function entry.</p>
     thrown.  Error codes named <code>DUK_RET_xxx</code> map to specific kinds
     of errors (do not confuse these with <code>DUK_ERR_xxx</code> which are
     positive values).</li>
-<li>A return value higher than 1 is currently undefined, as Ecmascript
+<li>A return value higher than 1 is currently undefined, as ECMAScript
     doesn't support multiple return values in Edition 5.1.  (Values higher
-    than 1 may be taken into to support multiple return values in Ecmascript
+    than 1 may be taken into to support multiple return values in ECMAScript
     Edition 6.)</li>
 </ul>
 
@@ -390,12 +390,12 @@ duk_ret_t my_func(duk_context *ctx) {
 </pre>
 
 <p>All Duktape/C functions are considered <b>strict</b> in the
-<a href="http://www.ecma-international.org/ecma-262/5.1/#sec-4.2.2">Ecmascript sense</a>.
-Duktape API calls always obey Ecmascript strict mode semantics, even when the API calls
+<a href="http://www.ecma-international.org/ecma-262/5.1/#sec-4.2.2">ECMAScript sense</a>.
+Duktape API calls always obey ECMAScript strict mode semantics, even when the API calls
 are made outside of any Duktape/C function, i.e. with an empty call stack.
 For instance, attempt to delete a non-configurable property using
 <code><a href="api.html#duk_del_prop">duk_del_prop()</a></code>
-will cause an error to be thrown.  This is the case with a strict Ecmascript function too:</p>
+will cause an error to be thrown.  This is the case with a strict ECMAScript function too:</p>
 
 <pre class="ecmascript-code">
 function f() {
@@ -410,7 +410,7 @@ print(f());  // this throws an error because f() is strict
 <p>Another consequence of Duktape/C function strictness is that the <code>this</code>
 binding given to Duktape/C functions is not
 <a href="http://www.ecma-international.org/ecma-262/5.1/#sec-10.4.3">coerced</a>.
-This is also the case for strict Ecmascript code:</p>
+This is also the case for strict ECMAScript code:</p>
 <pre class="ecmascript-code">
 function strictFunc() { 'use strict'; print(typeof this); }
 function nonStrictFunc() { print(typeof this); }
@@ -437,7 +437,7 @@ property by default, so the default object instance (given to the constructor
 as <code>this</code>) inherits from <code>Object.prototype</code>.  To use a
 custom prototype you can define <code>prototype</code> for the Duktape/C
 function explicitly.  Another approach is to ignore the default object instance
-and construct one manually within the Duktape/C call: as with Ecmascript
+and construct one manually within the Duktape/C call: as with ECMAScript
 functions, if a constructor returns an object value, that value replaces the
 default object instance and becomes the value of the <code>new</code>
 expression.</p>
@@ -459,14 +459,14 @@ There are several ways to achieve this.</p>
 
 <p>First, a Duktape/C function can use its Function object to store state
 or parameters.  A certain Duktape/C function (the actual C function)
-is always represented by an Ecmascript Function object which is
+is always represented by an ECMAScript Function object which is
 internally associated with the underlying C function.   The Function
 object can be used to store properties related to that particular
 instance of the function.  Note that a certain Duktape/C function can
 be associated with multiple independent Function objects and thus
 independent states.</p>
 
-<p>Accessing the Ecmascript Function object related to a Duktape/C function
+<p>Accessing the ECMAScript Function object related to a Duktape/C function
 is easy:</p>
 <pre class="c-code">
 duk_push_current_function(ctx);
@@ -495,9 +495,9 @@ duk_get_prop_string(ctx, -1, "my_state_variable");
 
 <h3 id="hidden-symbol-properties">Hidden Symbol properties</h3>
 
-<p>If data needs to be associated with an object, but hidden from Ecmascript
+<p>If data needs to be associated with an object, but hidden from ECMAScript
 code, hidden <a href="#symbols">Symbols</a> can be used as a property key. The
-key is only accessible via the C API, unless passed to Ecmascript code from the
+key is only accessible via the C API, unless passed to ECMAScript code from the
 C API. A common use case is to associated backing pointers/data to C memory.
 Symbols are created as a string, but are differentiated with macros that mark
 them as Symbols.</p>
@@ -552,7 +552,7 @@ more stable alternative.
 
 <p>The heap stash is an object visible only from C code.  It is associated
 with the Duktape heap, and allows Duktape/C code to store "under the hood"
-state data which is not exposed to Ecmascript code.  It is accessed with the
+state data which is not exposed to ECMAScript code.  It is accessed with the
 <code><a href="api.html#duk_push_heap_stash">duk_push_heap_stash()</a></code>
 API call.</p>
 
@@ -575,7 +575,7 @@ API call.</p>
 
 <p>The Duktape version is available through the <code>DUK_VERSION</code> define,
 with the numeric value <code>(major * 10000) + (minor * 100) + patch</code>.
-The same value is available to Ecmascript code through <code>Duktape.version</code>.
+The same value is available to ECMAScript code through <code>Duktape.version</code>.
 Calling code can use this define for Duktape version specific code.</p>
 
 <p>For C code:</p>
@@ -589,7 +589,7 @@ Calling code can use this define for Duktape version specific code.</p>
 #endif
 </pre>
 
-<p>For Ecmascript code (also see <a href="#duktapebuiltins">Duktape built-ins</a>):</p>
+<p>For ECMAScript code (also see <a href="#duktapebuiltins">Duktape built-ins</a>):</p>
 <pre class="ecmascript-code">
 if (typeof Duktape !== 'object') {
     print('not Duktape');
@@ -616,7 +616,7 @@ shorthand to automatically throw an error.</p>
 
 <h2 id="error-handling">Error handling</h2>
 
-<p>Error handling in the Duktape API is similar to how Ecmascript handles
+<p>Error handling in the Duktape API is similar to how ECMAScript handles
 errors: errors are thrown either explicitly or implicitly, then caught and
 handled.  However, instead of a try-catch statement application code uses
 <code><a href="api.html#taglist-protected">protected</a></code>
@@ -718,7 +718,7 @@ e.g. write fatal error information to <code>stderr</code> before process exit.</
 <p>An <b>ordinary error</b> is caused by a <code>throw</code> statement, a
 <code><a href="api.html#duk_throw">duk_throw()</a></code>
 API call (or similar), or by an internal, recoverable Duktape error.
-Ordinary errors can be caught with a <code>try-catch</code> in Ecmascript
+Ordinary errors can be caught with a <code>try-catch</code> in ECMAScript
 code or e.g. <code><a href="api.html#duk_pcall">duk_pcall()</a></code>
 (see API calls tagged
 <code><a href="api.html#taglist-protected">protected</a></code>)

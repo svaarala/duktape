@@ -105,7 +105,7 @@ purpose:</p>
 
 <h2>Function temporaries may be live for garbage collection longer than expected</h2>
 
-<p>Ecmascript functions are compiled into bytecode with a fixed set of
+<p>ECMAScript functions are compiled into bytecode with a fixed set of
 registers.  Some registers are reserved for arguments and variable
 bindings while others are used as temporaries.  All registers are
 considered live from a garbage collection perspective, even temporary
@@ -134,7 +134,7 @@ function foreverLoop() {
 
 <h2>Function instances are garbage collected only by mark-and-sweep</h2>
 
-<p>Every Ecmascript function instance is, by default, in a reference loop with
+<p>Every ECMAScript function instance is, by default, in a reference loop with
 an automatic prototype object created for the function.  The function instance's
 <code>prototype</code> property points to the prototype object, and the prototype's
 <code>constructor</code> property points back to the function instance.  Only

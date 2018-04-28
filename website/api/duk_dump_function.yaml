@@ -7,7 +7,7 @@ stack: |
   [ ... function! ] -> [ ... bytecode! ]
 
 summary: |
-  <p>Dump an Ecmascript function at stack top into
+  <p>Dump an ECMAScript function at stack top into
   <a href="https://github.com/svaarala/duktape/blob/master/doc/bytecode.rst">bytecode</a>,
   replacing the function with a buffer containing the bytecode data.
   The bytecode can be loaded back using

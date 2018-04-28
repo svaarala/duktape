@@ -7,7 +7,7 @@ stack: |
   [ ... val! ... ] -> [ ... ToUint32(val)! ... ]
 
 summary: |
-  <p>Replace the value at <code>idx</code> with an Ecmascript
+  <p>Replace the value at <code>idx</code> with an ECMAScript
   <a href="http://www.ecma-international.org/ecma-262/5.1/#sec-9.6">ToUint32()</a>
   coerced value.  Returns the coerced value.  If <code>idx</code> is invalid, throws
   an error.</p>

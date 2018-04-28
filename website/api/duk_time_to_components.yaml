@@ -5,10 +5,10 @@ proto: |
 
 summary: |
   <p>Convert a time value to components (year, month, day, etc) interpreted
-  in UTC.  If the time value is invalid, e.g. beyond the valid Ecmascript
+  in UTC.  If the time value is invalid, e.g. beyond the valid ECMAScript
   time range, an error is thrown.</p>
 
-  <p>There are some differences to the Ecmascript <code>Date</code> UTC
+  <p>There are some differences to the ECMAScript <code>Date</code> UTC
   accessors like <code>Date.prototype.getUTCMinutes()</code>:</p>
   <ul>
   <li>The time value is allowed to have fractions (sub-millisecond
@@ -24,9 +24,9 @@ example: |
     "Thursday", "Friday", "Saturday"
   };
 
-  /* Note that month is zero-based to match the Ecmascript API, so for
+  /* Note that month is zero-based to match the ECMAScript API, so for
    * human readable printing add 1 to the month.  Time components are
-   * IEEE doubles to match Ecmascript Date behavior.
+   * IEEE doubles to match ECMAScript Date behavior.
    */
   duk_time_to_components(ctx, time, &comp);
   printf("Datetime: %04d-%02d-%02d %02d:%02d:%02d.%03dZ\n",

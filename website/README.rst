@@ -37,7 +37,7 @@ A custom templating model is used to generate the HTML files, see
 * The resulting HTML document is parsed with BeautifulSoup into a parse tree.
 
 * Transformation passes are applied to the parse tree.  For instance, C and
-  Ecmascript code is colorized with ``source-highlight``.
+  ECMAScript code is colorized with ``source-highlight``.
 
 * Finally, the parse tree is converted into an ASCII HTML document with
   BeautifulSoup.

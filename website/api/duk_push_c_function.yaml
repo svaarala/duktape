@@ -8,7 +8,7 @@ stack: |
 
 summary: |
   <p>Push a new function object, associated with a C function, to the stack.
-  The function object is an Ecmascript function object; when called, <code>func</code>
+  The function object is an ECMAScript function object; when called, <code>func</code>
   will be called using the Duktape/C function interface.  Returns non-negative index
   (relative to stack bottom) of the pushed function.</p>
 
@@ -29,7 +29,7 @@ summary: |
   and as a constructor (<code>new func()</code>).  You can differentiate between the two
   call styles using <code><a href="#duk_is_constructor_call">duk_is_constructor_call()</a></code>.
   Although the function can be used as a constructor, it doesn't have an automatic
-  <code>prototype</code> property like Ecmascript functions.</p>
+  <code>prototype</code> property like ECMAScript functions.</p>
 
   <div class="note">
   If you intend to use the pushed function as a constructor, you should usually

@@ -26,7 +26,7 @@ summary: |
 
 example: |
   /* Assume target function is already on stack at func_idx.
-   * Equivalent to Ecmascript 'new func("foo", 123)'.
+   * Equivalent to ECMAScript 'new func("foo", 123)'.
    */
   duk_idx_t func_idx = /* ... */;
 

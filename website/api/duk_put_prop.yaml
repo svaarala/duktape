@@ -20,9 +20,9 @@ summary: |
   <li>If <code>obj_idx</code> is invalid, throws an error.</li>
   </ul>
 
-  <p>The property write is equivalent to the Ecmascript expression
+  <p>The property write is equivalent to the ECMAScript expression
   <code>obj[key] = val</code>.  The exact rules of when a property write
-  succeeds or fails are the same as for Ecmascript code making the
+  succeeds or fails are the same as for ECMAScript code making the
   equivalent assignment.  For precise semantics, see
   <a href="http://www.ecma-international.org/ecma-262/5.1/#sec-11.2.1">Property Accessors</a>,
   <a href="http://www.ecma-international.org/ecma-262/5.1/#sec-8.7.2">PutValue (V, W)</a>,
@@ -31,7 +31,7 @@ summary: |
   <ul>
   <li>The target value is automatically coerced to an object.  However, the object
       is transitory so writing its properties is not very useful.  Moreover,
-      Ecmascript semantics prevent new properties from being created for such
+      ECMAScript semantics prevent new properties from being created for such
       transitory objects (see
       <a href="http://www.ecma-international.org/ecma-262/5.1/#sec-8.7.2">PutValue (V, W)</a>,
       step 7 of the special [[Put]] variant).</li>
@@ -45,10 +45,10 @@ summary: |
   the trap is invoked and the API call return value matches the trap return value.</p>
 
   <div class="note">
-  In Ecmascript an assignment expression has the value of the right-hand-side
+  In ECMAScript an assignment expression has the value of the right-hand-side
   expression, regardless of whether or not the assignment succeeds.  The return
-  value for this API call is not specified by Ecmascript or available to
-  Ecmascript code: the API call returns <code>0</code> or <code>1</code>
+  value for this API call is not specified by ECMAScript or available to
+  ECMAScript code: the API call returns <code>0</code> or <code>1</code>
   depending on whether the assignment succeeded or not (with the <code>0</code>
   return value promoted to an error in strict code).
   </div>

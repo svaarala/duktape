@@ -7,7 +7,7 @@ stack: |
   [ ... val! ... ] -> [ ... ToBoolean(val)! ... ]
 
 summary: |
-  <p>Replace the value at <code>idx</code> with an Ecmascript
+  <p>Replace the value at <code>idx</code> with an ECMAScript
   <a href="http://www.ecma-international.org/ecma-262/5.1/#sec-9.2">ToBoolean()</a>
   coerced value.  Returns 1 if the result of the coercion <code>true</code>, 0 otherwise.
   If <code>idx</code> is invalid, throws an error.</p>

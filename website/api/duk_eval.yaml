@@ -7,7 +7,7 @@ stack: |
   [ ... source! ] -> [ ... result! ]
 
 summary: |
-  <p>Evaluate the Ecmascript source code at the top of the stack, and leave a single
+  <p>Evaluate the ECMAScript source code at the top of the stack, and leave a single
   return value on top of the stack.  May throw an error, errors are not caught
   automatically.  The filename associated with the temporary eval function is
   <code>"eval"</code>.</p>
@@ -30,7 +30,7 @@ summary: |
   <code><a href="#duk_eval_string">duk_eval_string()</a></code>.</p>
 
 example: |
-  /* Eval result in Ecmascript is the last non-empty statement; here, the
+  /* Eval result in ECMAScript is the last non-empty statement; here, the
    * result of the eval is the number 123.
    */
 

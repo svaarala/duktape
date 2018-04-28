@@ -8,7 +8,7 @@ stack: |
 
 summary: |
   <p>Compare values at <code>idx1</code> and <code>idx2</code> using the
-  Ecmascript <a href="https://www.ecma-international.org/ecma-262/6.0/#sec-instanceofoperator">instanceof</a>
+  ECMAScript <a href="https://www.ecma-international.org/ecma-262/6.0/#sec-instanceofoperator">instanceof</a>
   operator.  Returns 1 if <code>val1 instanceof val2</code>, 0 if not.  Throws an error
   if either index is invalid; <code>instanceof</code> itself also throws errors for
   invalid argument types.</p>

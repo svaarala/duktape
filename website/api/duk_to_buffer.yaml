@@ -16,7 +16,7 @@ summary: |
   <ul>
   <li>Buffer: no change, dynamic/fixed/external nature not changed</li>
   <li>String: coerces into a fixed size buffer, byte-for-byte</li>
-  <li>Other types: first apply Ecmascript
+  <li>Other types: first apply ECMAScript
   <a href="http://www.ecma-international.org/ecma-262/5.1/#sec-9.8">ToString()</a>,
   then coerce into a fixed size buffer, byte-for-byte</li>
   </ul>

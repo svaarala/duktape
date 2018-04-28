@@ -8,7 +8,7 @@ stack: |
 
 summary: |
   <p>Like <code><a href="#duk_get_c_function">duk_get_c_function()</a></code>, but
-  throws an error if the value at <code>idx</code> is not an Ecmascript function
+  throws an error if the value at <code>idx</code> is not an ECMAScript function
   associated with a Duktape/C function or if the index is invalid.</p>
 
 example: |

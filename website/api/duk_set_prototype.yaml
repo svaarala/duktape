@@ -13,7 +13,7 @@ summary: |
   <code>undefined</code>, an error is thrown.</p>
 
   <div class="note">
-  Unlike Ecmascript prototype manipulation primitives, this API call allows
+  Unlike ECMAScript prototype manipulation primitives, this API call allows
   creation of a prototype loop.  Calling code should always avoid creating a
   prototype loop: although Duktape detects long or looped prototype chains
   and throws an error when it encounters one, such behavior is only intended

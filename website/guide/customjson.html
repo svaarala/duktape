@@ -1,9 +1,9 @@
 <h1 id="customjson">Custom JSON formats</h1>
 
-<h2>Ecmascript JSON shortcomings</h2>
+<h2>ECMAScript JSON shortcomings</h2>
 
 <p>The standard JSON format has a number of shortcomings when used with
-Ecmascript:</p>
+ECMAScript:</p>
 <ul>
 <li><code>undefined</code> and function values are not supported</li>
 <li>NaN and infinity values are not supported</li>
@@ -13,7 +13,7 @@ Ecmascript:</p>
 <li>The output is not printable ASCII which is often inconvenient</li>
 </ul>
 
-<p>These limitations are part of the Ecmascript specification which
+<p>These limitations are part of the ECMAScript specification which
 explicitly prohibits more lenient behavior.  Duktape provides two more
 programmer friendly custom JSON format variants: <b>JX</b> and <b>JC</b>,
 described below.</p>
@@ -67,12 +67,12 @@ instead.</p>
 
 <h2>Codepoints above U+FFFF and invalid UTF-8 data</h2>
 
-<p>All standard Ecmascript strings are valid CESU-8 data internally, so
+<p>All standard ECMAScript strings are valid CESU-8 data internally, so
 behavior for codepoints above U+FFFF never poses compliance issues.  However,
 Duktape strings may contain <a href="#extended-utf8">extended UTF-8</a>
 codepoints and may even contain invalid UTF-8 data.</p>
 
-<p>The Duktape JSON implementation, including the standard Ecmascript JSON API,
+<p>The Duktape JSON implementation, including the standard ECMAScript JSON API,
 use replacement characters to deal with invalid UTF-8 data.  The resulting
 string may look a bit odd, but this behavior is preferable to throwing an
 error.</p>
@@ -191,7 +191,7 @@ encoding:</p>
 <td><code>"U+1234abcd"</code></td>
 <td><code>"\U1234abcd"</code></td>
 <td><code>"U+1234abcd"</code></td>
-<td>Non-BMP characters are not standard Ecmascript, JX format borrowed from Python</td>
+<td>Non-BMP characters are not standard ECMAScript, JX format borrowed from Python</td>
 </tr>
 <tr>
 <td>object</td>

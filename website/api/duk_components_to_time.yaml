@@ -8,7 +8,7 @@ summary: |
   time value.  The <code>comp-&gt;weekday</code> argument is ignored in the
   conversion.  If the component values are invalid, an error is thrown.</p>
 
-  <p>There are some differences to the Ecmascript <code>Date.UTC()</code>
+  <p>There are some differences to the ECMAScript <code>Date.UTC()</code>
   built-in:</p>
   <ul>
   <li>There's no special handling of two-digit years.  For example,
@@ -18,7 +18,7 @@ summary: |
       resolution) so that the resulting time value may have fractions.</li>
   </ul>
 
-  <p>Like the Ecmascript primitives, the components can exceed their natural
+  <p>Like the ECMAScript primitives, the components can exceed their natural
   range and are normalized.  For example, specifying <code>comp-&gt;minutes</code>
   as 120 is interpreted as adding 2 hours to the time value.  The components are
   expressed as IEEE doubles to allow large and negative values to be used.</p>

@@ -13,7 +13,7 @@ contexts.</p>
 <h2>Call stack (of a context)</h2>
 
 <p>Book-keeping of the active function call chain of a context.
-Includes both Ecmascript and Duktape/C function calls.</p>
+Includes both ECMAScript and Duktape/C function calls.</p>
 
 <h2>Value stack (of a context)</h2>
 
@@ -110,7 +110,7 @@ if (duk_check_type_mask(ctx, -3, DUK_TYPE_MASK_NUMBER |
 
 <h2>Array index</h2>
 
-<p>Ecmascript object and array keys can only be strings; this includes
+<p>ECMAScript object and array keys can only be strings; this includes
 array indices (0, 1, 2, ...) which are expressed as canonical string
 representations ("0", "1", "2", ...) of the respective numbers for all
 integers in the range [0, 2**32-1].  Conceptually any key used in a
@@ -119,13 +119,13 @@ is really just a shorthand for <code>obj["123"]</code>.</p>
 
 <p>Duktape tries to avoid explicit number-to-string conversions for array
 accesses whenever possible, so it is preferable to use numeric array
-indices in both Ecmascript code and C code using the Duktape API.</p>
+indices in both ECMAScript code and C code using the Duktape API.</p>
 
 <h2>Duktape/C function</h2>
 
 <p>A C function with a Duktape/C API signature can be associated with an
-Ecmascript function object or a lightfunc value, and gets called when
-the associated value is called from Ecmascript code.  Example:</p>
+ECMAScript function object or a lightfunc value, and gets called when
+the associated value is called from ECMAScript code.  Example:</p>
 <pre class="c-code">
 int my_func(duk_context *ctx) {
     duk_push_int(ctx, 123);
@@ -134,7 +134,7 @@ int my_func(duk_context *ctx) {
 </pre>
 
 <p>Argument count given in value stack is specified when the corresponding
-Ecmascript function object is created: either a fixed number of arguments
+ECMAScript function object is created: either a fixed number of arguments
 of <code>DUK_VARARGS</code> for getting arguments "as is".  Extra arguments
 are dropped and missing arguments padded with <code>undefined</code> as necessary.
 Use <code><a href="#duk_get_top">duk_get_top()</a></code> to determine number of
@@ -164,8 +164,8 @@ int my_func(duk_context *ctx) {
 <h2>Stashes</h2>
 
 <p>A stash is an object reachable from C code using the Duktape/C API, but
-which is unreachable from Ecmascript code.  Stashes allow C code to store
-internal state which can be safely isolated from Ecmascript code.  There are
+which is unreachable from ECMAScript code.  Stashes allow C code to store
+internal state which can be safely isolated from ECMAScript code.  There are
 three stashes:</p>
 <ul>
 <li>Heap stash: shared by all threads in the same heap.</li>

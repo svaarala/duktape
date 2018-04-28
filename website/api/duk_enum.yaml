@@ -60,7 +60,7 @@ summary: |
   <p>Without any flags the enumeration behaves like <code>for-in</code>:
   own and inherited enumerable properties are included, and enumeration
   order follows the
-  <a href="http://www.ecma-international.org/ecma-262/6.0/#sec-ordinary-object-internal-methods-and-internal-slots-ownpropertykeys">Ecmascript ES2015 [[OwnPropertyKeys]]</a>
+  <a href="http://www.ecma-international.org/ecma-262/6.0/#sec-ordinary-object-internal-methods-and-internal-slots-ownpropertykeys">ECMAScript ES2015 [[OwnPropertyKeys]]</a>
   enumeration order, applied for each inheritance level.</p>
 
   <p>Once the enumerator has been created, use
