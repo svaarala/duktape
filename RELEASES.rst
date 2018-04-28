@@ -3326,6 +3326,10 @@ Planned
 
 * Add Makefile.jsoncbor to the distributable (GH-1885)
 
+* Change spelling from Ecmascript to ECMAScript throughout the internal source
+  code; as far as external behavior is concerned this only affects a few
+  debug prints (GH-1894)
+
 * Fix potential dangling pointer use in Duktape thread termination handling;
   the dangling pointer could cause unsafe memory behavior (GH-1845, GH-1868)
 
