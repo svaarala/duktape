@@ -14,7 +14,7 @@
  *
  *  Error augmentation may throw an internal error (e.g. alloc error).
  *
- *  Ecmascript allows throwing any values, so all values cannot be
+ *  ECMAScript allows throwing any values, so all values cannot be
  *  augmented.  Currently, the built-in augmentation at error creation
  *  only augments error values which are Error instances (= have the
  *  built-in Error.prototype in their prototype chain) and are also

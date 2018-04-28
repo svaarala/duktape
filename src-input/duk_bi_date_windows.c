@@ -99,7 +99,7 @@ DUK_INTERNAL duk_int_t duk_bi_date_get_local_tzoffset_windows(duk_double_t d) {
 
 	/* XXX: handling of timestamps outside Windows supported range.
 	 * How does Windows deal with dates before 1600?  Does windows
-	 * support all Ecmascript years (like -200000 and +200000)?
+	 * support all ECMAScript years (like -200000 and +200000)?
 	 * Should equivalent year mapping be used here too?  If so, use
 	 * a shared helper (currently integrated into timeval-to-parts).
 	 */

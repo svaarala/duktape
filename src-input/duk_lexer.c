@@ -2,7 +2,7 @@
  *  Lexer for source files, ToNumber() string conversions, RegExp expressions,
  *  and JSON.
  *
- *  Provides a stream of Ecmascript tokens from an UTF-8/CESU-8 buffer.  The
+ *  Provides a stream of ECMAScript tokens from an UTF-8/CESU-8 buffer.  The
  *  caller can also rewind the token stream into a certain position which is
  *  needed by the compiler part for multi-pass scanning.  Tokens are
  *  represented as duk_token structures, and contain line number information.
@@ -25,14 +25,14 @@
  *
  *  Token parsing supports the full range of Unicode characters as described
  *  in the E5 specification.  Parsing has been optimized for ASCII characters
- *  because ordinary Ecmascript code consists almost entirely of ASCII
+ *  because ordinary ECMAScript code consists almost entirely of ASCII
  *  characters.  Matching of complex Unicode codepoint sets (such as in the
  *  IdentifierStart and IdentifierPart productions) is optimized for size,
  *  and is done using a linear scan of a bit-packed list of ranges.  This is
  *  very slow, but should never be entered unless the source code actually
  *  contains Unicode characters.
  *
- *  Ecmascript tokenization is partially context sensitive.  First,
+ *  ECMAScript tokenization is partially context sensitive.  First,
  *  additional future reserved words are recognized in strict mode (see E5
  *  Section 7.6.1.2).  Second, a forward slash character ('/') can be
  *  recognized either as starting a RegExp literal or as a division operator,
@@ -129,7 +129,7 @@
  *
  *    * In particular, surrogate pairs are allowed and not combined, which
  *      allows source files to represent all SourceCharacters with CESU-8.
- *      Broken surrogate pairs are allowed, as Ecmascript does not mandate
+ *      Broken surrogate pairs are allowed, as ECMAScript does not mandate
  *      their validation.
  *
  *    * Allow non-shortest UTF-8 encodings.
@@ -137,20 +137,20 @@
  *  Leniency here causes few security concerns because all character data is
  *  decoded into Unicode codepoints before lexer processing, and is then
  *  re-encoded into CESU-8.  The source can be parsed as strict UTF-8 with
- *  a compiler option.  However, Ecmascript source characters include -all-
+ *  a compiler option.  However, ECMAScript source characters include -all-
  *  16-bit unsigned integer codepoints, so leniency seems to be appropriate.
  *
  *  Note that codepoints above the BMP are not strictly SourceCharacters,
  *  but the lexer still accepts them as such.  Before ending up in a string
  *  or an identifier name, codepoints above BMP are converted into surrogate
  *  pairs and then CESU-8 encoded, resulting in 16-bit Unicode data as
- *  expected by Ecmascript.
+ *  expected by ECMAScript.
  *
  *  An alternative approach to dealing with invalid or partial sequences
  *  would be to skip them and replace them with e.g. the Unicode replacement
  *  character U+FFFD.  This has limited utility because a replacement character
  *  will most likely cause a parse error, unless it occurs inside a string.
- *  Further, Ecmascript source is typically pure ASCII.
+ *  Further, ECMAScript source is typically pure ASCII.
  *
  *  See:
  *
@@ -959,7 +959,7 @@ DUK_LOCAL void duk__lexer_skip_to_endofline(duk_lexer_ctx *lex_ctx) {
 }
 
 /*
- *  Parse Ecmascript source InputElementDiv or InputElementRegExp
+ *  Parse ECMAScript source InputElementDiv or InputElementRegExp
  *  (E5 Section 7), skipping whitespace, comments, and line terminators.
  *
  *  Possible results are:
@@ -986,13 +986,13 @@ DUK_LOCAL void duk__lexer_skip_to_endofline(duk_lexer_ctx *lex_ctx) {
  *  lookup window to quickly determine which production is the -longest-
  *  matching one, and then parse that.  The top-level if-else clauses
  *  match the first character, and the code blocks for each clause
- *  handle -all- alternatives for that first character.  Ecmascript
+ *  handle -all- alternatives for that first character.  ECMAScript
  *  specification uses the "longest match wins" semantics, so the order
  *  of the if-clauses matters.
  *
  *  Misc notes:
  *
- *    * Ecmascript numeric literals do not accept a sign character.
+ *    * ECMAScript numeric literals do not accept a sign character.
  *      Consequently e.g. "-1.0" is parsed as two tokens: a negative
  *      sign and a positive numeric literal.  The compiler performs
  *      the negation during compilation, so this has no adverse impact.
@@ -1502,7 +1502,7 @@ void duk_lexer_parse_js_input_element(duk_lexer_ctx *lex_ctx,
 		 *  (the tokens DUK_TOK_GET and DUK_TOK_SET are actually not
 		 *  used now).  The compiler needs to work around this.
 		 *
-		 *  Strictly speaking, following Ecmascript longest match
+		 *  Strictly speaking, following ECMAScript longest match
 		 *  specification, an invalid escape for the first character
 		 *  should cause a syntax error.  However, an invalid escape
 		 *  for IdentifierParts should just terminate the identifier

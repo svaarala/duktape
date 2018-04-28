@@ -51,7 +51,7 @@ DUK_LOCAL duk_ret_t duk__math_minmax(duk_hthread *thr, duk_double_t initial, duk
 
 DUK_LOCAL double duk__fmin_fixed(double x, double y) {
 	/* fmin() with args -0 and +0 is not guaranteed to return
-	 * -0 as Ecmascript requires.
+	 * -0 as ECMAScript requires.
 	 */
 	if (x == 0 && y == 0) {
 		duk_double_union du1, du2;
@@ -78,7 +78,7 @@ DUK_LOCAL double duk__fmin_fixed(double x, double y) {
 
 DUK_LOCAL double duk__fmax_fixed(double x, double y) {
 	/* fmax() with args -0 and +0 is not guaranteed to return
-	 * +0 as Ecmascript requires.
+	 * +0 as ECMAScript requires.
 	 */
 	if (x == 0 && y == 0) {
 		if (DUK_SIGNBIT(x) == 0 || DUK_SIGNBIT(y) == 0) {

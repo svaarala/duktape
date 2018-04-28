@@ -8,7 +8,7 @@
  *  strings used as internal property names and raw buffers converted to
  *  strings.  In such cases the 'clen' field contains an inaccurate value.
  *
- *  Ecmascript requires support for 32-bit long strings.  However, since each
+ *  ECMAScript requires support for 32-bit long strings.  However, since each
  *  16-bit codepoint can take 3 bytes in CESU-8, this representation can only
  *  support about 1.4G codepoint long strings in extreme cases.  This is not
  *  really a practical issue.
@@ -32,7 +32,7 @@
 #define DUK_HSTRING_MAX_BYTELEN                     (0x7fffffffUL)
 #endif
 
-/* XXX: could add flags for "is valid CESU-8" (Ecmascript compatible strings),
+/* XXX: could add flags for "is valid CESU-8" (ECMAScript compatible strings),
  * "is valid UTF-8", "is valid extended UTF-8" (internal strings are not,
  * regexp bytecode is), and "contains non-BMP characters".  These are not
  * needed right now.

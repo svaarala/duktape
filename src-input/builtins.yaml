@@ -57,10 +57,10 @@
 #
 # Property value format:
 #
-#    - Ecmascript undefined:
+#    - ECMAScript undefined:
 #      - type: undefined
 #    - Plain YAML/JSON null (parses as Python None)
-#      - treated as Ecmascript null
+#      - treated as ECMAScript null
 #    - Plain string:
 #      - treated as plain string, string data as with keys
 #    - Plain symbol:

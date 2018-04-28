@@ -1,5 +1,5 @@
 /*
- *  Ecmascript compiler.
+ *  ECMAScript compiler.
  *
  *  Parses an input string and generates a function template result.
  *  Compilation may happen in multiple contexts (global code, eval
@@ -2317,7 +2317,7 @@ DUK_LOCAL void duk__ivalue_toplain_raw(duk_compiler_ctx *comp_ctx, duk_ivalue *x
 				}
 			} else if (x->op == DUK_OP_ADD && DUK_TVAL_IS_STRING(tv1) && DUK_TVAL_IS_STRING(tv2)) {
 				/* Inline string concatenation.  No need to check for
-				 * symbols, as all inputs are valid Ecmascript strings.
+				 * symbols, as all inputs are valid ECMAScript strings.
 				 */
 				duk_dup(thr, x->x1.valstack_idx);
 				duk_dup(thr, x->x2.valstack_idx);
@@ -7829,7 +7829,7 @@ DUK_LOCAL duk_int_t duk__parse_func_like_fnum(duk_compiler_ctx *comp_ctx, duk_sm
  *  Compile input string into an executable function template without
  *  arguments.
  *
- *  The string is parsed as the "Program" production of Ecmascript E5.
+ *  The string is parsed as the "Program" production of ECMAScript E5.
  *  Compilation context can be either global code or eval code (see E5
  *  Sections 14 and 15.1.2.1).
  *

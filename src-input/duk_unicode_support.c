@@ -141,7 +141,7 @@ DUK_INTERNAL duk_small_int_t duk_unicode_encode_cesu8(duk_ucodepoint_t cp, duk_u
 		/*
 		 *  Unicode codepoints above U+FFFF are encoded as surrogate
 		 *  pairs here.  This ensures that all CESU-8 codepoints are
-		 *  16-bit values as expected in Ecmascript.  The surrogate
+		 *  16-bit values as expected in ECMAScript.  The surrogate
 		 *  pairs always get a 3-byte encoding (each) in CESU-8.
 		 *  See: http://en.wikipedia.org/wiki/Surrogate_pair
 		 *

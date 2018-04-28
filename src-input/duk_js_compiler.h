@@ -1,5 +1,5 @@
 /*
- *  Ecmascript compiler.
+ *  ECMAScript compiler.
  */
 
 #if !defined(DUK_JS_COMPILER_H_INCLUDED)

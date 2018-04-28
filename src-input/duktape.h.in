@@ -34,7 +34,7 @@
 
 /* Duktape version, (major * 10000) + (minor * 100) + patch.  Allows C code
  * to #if (DUK_VERSION >= NNN) against Duktape API version.  The same value
- * is also available to Ecmascript code in Duktape.version.  Unofficial
+ * is also available to ECMAScript code in Duktape.version.  Unofficial
  * development snapshots have 99 for patch level (e.g. 0.10.99 would be a
  * development version after 0.10.0 but before the next official release).
  */
@@ -42,7 +42,7 @@
 
 /* Git commit, describe, and branch for Duktape build.  Useful for
  * non-official snapshot builds so that application code can easily log
- * which Duktape snapshot was used.  Not available in the Ecmascript
+ * which Duktape snapshot was used.  Not available in the ECMAScript
  * environment.
  */
 #define DUK_GIT_COMMIT                    @GIT_COMMIT_CSTRING@
@@ -142,7 +142,7 @@ struct duk_number_list_entry {
 };
 
 struct duk_time_components {
-	duk_double_t year;          /* year, e.g. 2016, Ecmascript year range */
+	duk_double_t year;          /* year, e.g. 2016, ECMAScript year range */
 	duk_double_t month;         /* month: 1-12 */
 	duk_double_t day;           /* day: 1-31 */
 	duk_double_t hours;         /* hour: 0-59 */
@@ -178,12 +178,12 @@ struct duk_time_components {
 /* Value types, used by e.g. duk_get_type() */
 #define DUK_TYPE_MIN                      0U
 #define DUK_TYPE_NONE                     0U    /* no value, e.g. invalid index */
-#define DUK_TYPE_UNDEFINED                1U    /* Ecmascript undefined */
-#define DUK_TYPE_NULL                     2U    /* Ecmascript null */
-#define DUK_TYPE_BOOLEAN                  3U    /* Ecmascript boolean: 0 or 1 */
-#define DUK_TYPE_NUMBER                   4U    /* Ecmascript number: double */
-#define DUK_TYPE_STRING                   5U    /* Ecmascript string: CESU-8 / extended UTF-8 encoded */
-#define DUK_TYPE_OBJECT                   6U    /* Ecmascript object: includes objects, arrays, functions, threads */
+#define DUK_TYPE_UNDEFINED                1U    /* ECMAScript undefined */
+#define DUK_TYPE_NULL                     2U    /* ECMAScript null */
+#define DUK_TYPE_BOOLEAN                  3U    /* ECMAScript boolean: 0 or 1 */
+#define DUK_TYPE_NUMBER                   4U    /* ECMAScript number: double */
+#define DUK_TYPE_STRING                   5U    /* ECMAScript string: CESU-8 / extended UTF-8 encoded */
+#define DUK_TYPE_OBJECT                   6U    /* ECMAScript object: includes objects, arrays, functions, threads */
 #define DUK_TYPE_BUFFER                   7U    /* fixed or dynamic, garbage collected byte buffer */
 #define DUK_TYPE_POINTER                  8U    /* raw void pointer */
 #define DUK_TYPE_LIGHTFUNC                9U    /* lightweight function pointer */
@@ -1037,7 +1037,7 @@ DUK_EXTERNAL_DECL void duk_trim(duk_context *ctx, duk_idx_t idx);
 DUK_EXTERNAL_DECL duk_codepoint_t duk_char_code_at(duk_context *ctx, duk_idx_t idx, duk_size_t char_offset);
 
 /*
- *  Ecmascript operators
+ *  ECMAScript operators
  */
 
 DUK_EXTERNAL_DECL duk_bool_t duk_equals(duk_context *ctx, duk_idx_t idx1, duk_idx_t idx2);
@@ -1201,7 +1201,7 @@ DUK_EXTERNAL_DECL duk_double_t duk_components_to_time(duk_context *ctx, duk_time
 #define DUK_DATE_MSEC_HOUR            (60L * 60L * 1000L)
 #define DUK_DATE_MSEC_DAY             (24L * 60L * 60L * 1000L)
 
-/* Ecmascript date range is 100 million days from Epoch:
+/* ECMAScript date range is 100 million days from Epoch:
  * > 100e6 * 24 * 60 * 60 * 1000  // 100M days in millisecs
  * 8640000000000000
  * (= 8.64e15)
@@ -1209,7 +1209,7 @@ DUK_EXTERNAL_DECL duk_double_t duk_components_to_time(duk_context *ctx, duk_time
 #define DUK_DATE_MSEC_100M_DAYS         (8.64e15)
 #define DUK_DATE_MSEC_100M_DAYS_LEEWAY  (8.64e15 + 24 * 3600e3)
 
-/* Ecmascript year range:
+/* ECMAScript year range:
  * > new Date(100e6 * 24 * 3600e3).toISOString()
  * '+275760-09-13T00:00:00.000Z'
  * > new Date(-100e6 * 24 * 3600e3).toISOString()
@@ -1219,7 +1219,7 @@ DUK_EXTERNAL_DECL duk_double_t duk_components_to_time(duk_context *ctx, duk_time
 #define DUK_DATE_MAX_ECMA_YEAR     275760L
 
 /* Part indices for internal breakdowns.  Part order from DUK_DATE_IDX_YEAR
- * to DUK_DATE_IDX_MILLISECOND matches argument ordering of Ecmascript API
+ * to DUK_DATE_IDX_MILLISECOND matches argument ordering of ECMAScript API
  * calls (like Date constructor call).  Some functions in duk_bi_date.c
  * depend on the specific ordering, so change with care.  16 bits are not
  * enough for all parts (year, specifically).

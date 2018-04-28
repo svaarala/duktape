@@ -1,7 +1,7 @@
 /*
  *  Regexp executor.
  *
- *  Safety: the Ecmascript executor should prevent user from reading and
+ *  Safety: the ECMAScript executor should prevent user from reading and
  *  replacing regexp bytecode.  Even so, the executor must validate all
  *  memory accesses etc.  When an invalid access is detected (e.g. a 'save'
  *  opcode to invalid, unallocated index) it should fail with an internal
@@ -855,7 +855,7 @@ DUK_LOCAL void duk__regexp_match_helper(duk_hthread *thr, duk_small_int_t force_
 		 *      internal/limit error occurs (which causes a longjmp())
 		 *
 		 *    - If we supported anchored matches, we would break out here
-		 *      unconditionally; however, Ecmascript regexps don't have anchored
+		 *      unconditionally; however, ECMAScript regexps don't have anchored
 		 *      matches.  It might make sense to implement a fast bail-out if
 		 *      the regexp begins with '^' and sp is not 0: currently we'll just
 		 *      run through the entire input string, trivially failing the match

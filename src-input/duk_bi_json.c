@@ -1298,9 +1298,9 @@ DUK_LOCAL void duk__enc_quote_string(duk_json_enc_ctx *js_ctx, duk_hstring *h_st
 				/* If XUTF-8 decoding fails, treat the offending byte as a codepoint directly
 				 * and go forward one byte.  This is of course very lossy, but allows some kind
 				 * of output to be produced even for internal strings which don't conform to
-				 * XUTF-8.  All standard Ecmascript strings are always CESU-8, so this behavior
-				 * does not violate the Ecmascript specification.  The behavior is applied to
-				 * all modes, including Ecmascript standard JSON.  Because the current XUTF-8
+				 * XUTF-8.  All standard ECMAScript strings are always CESU-8, so this behavior
+				 * does not violate the ECMAScript specification.  The behavior is applied to
+				 * all modes, including ECMAScript standard JSON.  Because the current XUTF-8
 				 * decoding is not very strict, this behavior only really affects initial bytes
 				 * and truncated codepoints.
 				 *

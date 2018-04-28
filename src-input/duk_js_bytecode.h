@@ -1,5 +1,5 @@
 /*
- *  Ecmascript bytecode
+ *  ECMAScript bytecode
  */
 
 #if !defined(DUK_JS_BYTECODE_H_INCLUDED)

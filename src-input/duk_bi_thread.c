@@ -40,7 +40,7 @@ DUK_INTERNAL duk_ret_t duk_bi_thread_constructor(duk_hthread *thr) {
  *
  *  The thread must be in resumable state, either (a) new thread which hasn't
  *  yet started, or (b) a thread which has previously yielded.  This method
- *  must be called from an Ecmascript function.
+ *  must be called from an ECMAScript function.
  *
  *  Args:
  *    - thread
@@ -88,7 +88,7 @@ DUK_INTERNAL duk_ret_t duk_bi_thread_resume(duk_hthread *ctx) {
 
 	caller_func = DUK_ACT_GET_FUNC(thr->callstack_curr->parent);
 	if (!DUK_HOBJECT_IS_COMPFUNC(caller_func)) {
-		DUK_DD(DUK_DDPRINT("resume state invalid: caller must be Ecmascript code"));
+		DUK_DD(DUK_DDPRINT("resume state invalid: caller must be ECMAScript code"));
 		goto state_error;
 	}
 
@@ -116,7 +116,7 @@ DUK_INTERNAL duk_ret_t duk_bi_thread_resume(duk_hthread *ctx) {
 
 		DUK_ASSERT(thr_resume->state == DUK_HTHREAD_STATE_INACTIVE);
 
-		/* The initial function must be an Ecmascript function (but
+		/* The initial function must be an ECMAScript function (but
 		 * can be bound).  We must make sure of that before we longjmp
 		 * because an error in the RESUME handler call processing will
 		 * not be handled very cleanly.
@@ -195,7 +195,7 @@ DUK_INTERNAL duk_ret_t duk_bi_thread_resume(duk_hthread *ctx) {
  *  The thread must be in yieldable state: it must have a resumer, and there
  *  must not be any yield-preventing calls (native calls and constructor calls,
  *  currently) in the thread's call stack (otherwise a resume would not be
- *  possible later).  This method must be called from an Ecmascript function.
+ *  possible later).  This method must be called from an ECMAScript function.
  *
  *  Args:
  *    - value
@@ -244,7 +244,7 @@ DUK_INTERNAL duk_ret_t duk_bi_thread_yield(duk_hthread *thr) {
 
 	caller_func = DUK_ACT_GET_FUNC(thr->callstack_curr->parent);
 	if (!DUK_HOBJECT_IS_COMPFUNC(caller_func)) {
-		DUK_DD(DUK_DDPRINT("yield state invalid: caller must be Ecmascript code"));
+		DUK_DD(DUK_DDPRINT("yield state invalid: caller must be ECMAScript code"));
 		goto state_error;
 	}
 

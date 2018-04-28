@@ -1,8 +1,8 @@
 /*
- *  Create and throw an Ecmascript error object based on a code and a message.
+ *  Create and throw an ECMAScript error object based on a code and a message.
  *
- *  Used when we throw errors internally.  Ecmascript generated error objects
- *  are created by Ecmascript code, and the throwing is handled by the bytecode
+ *  Used when we throw errors internally.  ECMAScript generated error objects
+ *  are created by ECMAScript code, and the throwing is handled by the bytecode
  *  executor.
  */
 

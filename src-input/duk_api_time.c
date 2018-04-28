@@ -5,7 +5,7 @@
 #include "duk_internal.h"
 
 DUK_INTERNAL duk_double_t duk_time_get_ecmascript_time(duk_hthread *thr) {
-	/* Ecmascript time, with millisecond fractions.  Exposed via
+	/* ECMAScript time, with millisecond fractions.  Exposed via
 	 * duk_get_now() for example.
 	 */
 	DUK_UNREF(thr);
@@ -13,7 +13,7 @@ DUK_INTERNAL duk_double_t duk_time_get_ecmascript_time(duk_hthread *thr) {
 }
 
 DUK_INTERNAL duk_double_t duk_time_get_ecmascript_time_nofrac(duk_hthread *thr) {
-	/* Ecmascript time without millisecond fractions.  Exposed via
+	/* ECMAScript time without millisecond fractions.  Exposed via
 	 * the Date built-in which doesn't allow fractions.
 	 */
 	DUK_UNREF(thr);
@@ -56,7 +56,7 @@ DUK_EXTERNAL void duk_time_to_components(duk_hthread *thr, duk_double_t timeval,
 	DUK_UNREF(thr);
 
 	/* Convert as one-based, but change month to zero-based to match the
-	 * Ecmascript Date built-in behavior 1:1.
+	 * ECMAScript Date built-in behavior 1:1.
 	 */
 	flags = DUK_DATE_FLAG_ONEBASED | DUK_DATE_FLAG_NAN_TO_ZERO;
 

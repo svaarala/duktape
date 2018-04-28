@@ -6,7 +6,7 @@
  *  be used for most identifier accesses.  Consequently, these slow path
  *  primitives should be optimized for maximum compactness.
  *
- *  Ecmascript environment records (declarative and object) are represented
+ *  ECMAScript environment records (declarative and object) are represented
  *  as internal objects with control keys.  Environment records have a
  *  parent record ("outer environment reference") which is represented by
  *  the implicit prototype for technical reasons (in other words, it is a
@@ -48,7 +48,7 @@ typedef struct {
  *  Create a new function object based on a "template function" which contains
  *  compiled bytecode, constants, etc, but lacks a lexical environment.
  *
- *  Ecmascript requires that each created closure is a separate object, with
+ *  ECMAScript requires that each created closure is a separate object, with
  *  its own set of editable properties.  However, structured property values
  *  (such as the formal arguments list and the variable map) are shared.
  *  Also the bytecode, constants, and inner functions are shared.

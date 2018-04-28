@@ -392,14 +392,14 @@ DUK_INTERNAL duk_ret_t duk_bi_textencoder_prototype_encode(duk_hthread *thr) {
 		DUK_ASSERT(duk_is_string(thr, 0));  /* True if len > 0. */
 
 		/* XXX: duk_decode_string() is used to process the input
-		 * string.  For standard Ecmascript strings, represented
+		 * string.  For standard ECMAScript strings, represented
 		 * internally as CESU-8, this is fine.  However, behavior
 		 * beyond CESU-8 is not very strict: codepoints using an
 		 * extended form of UTF-8 are also accepted, and invalid
 		 * codepoint sequences (which are allowed in Duktape strings)
 		 * are not handled as well as they could (e.g. invalid
 		 * continuation bytes may mask following codepoints).
-		 * This is how Ecmascript code would also see such strings.
+		 * This is how ECMAScript code would also see such strings.
 		 * Maybe replace duk_decode_string() with an explicit strict
 		 * CESU-8 decoder here?
 		 */
@@ -427,7 +427,7 @@ DUK_INTERNAL duk_ret_t duk_bi_textencoder_prototype_encode(duk_hthread *thr) {
 
 	/* Standard WHATWG output is a Uint8Array.  Here the Uint8Array will
 	 * be backed by a dynamic buffer which differs from e.g. Uint8Arrays
-	 * created as 'new Uint8Array(N)'.  Ecmascript code won't see the
+	 * created as 'new Uint8Array(N)'.  ECMAScript code won't see the
 	 * difference but C code will.  When bufferobjects are not supported,
 	 * returns a plain dynamic buffer.
 	 */

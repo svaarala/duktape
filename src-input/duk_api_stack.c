@@ -5438,7 +5438,7 @@ DUK_EXTERNAL duk_idx_t duk_push_error_object_va_raw(duk_hthread *thr, duk_errcod
 		duk_xdef_prop_stridx_short(thr, -2, DUK_STRIDX_MESSAGE, DUK_PROPDESC_FLAGS_WC);
 	} else {
 		/* If no explicit message given, put error code into message field
-		 * (as a number).  This is not fully in keeping with the Ecmascript
+		 * (as a number).  This is not fully in keeping with the ECMAScript
 		 * error model because messages are supposed to be strings (Error
 		 * constructors use ToString() on their argument).  However, it's
 		 * probably more useful than having a separate 'code' property.

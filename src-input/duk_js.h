@@ -1,5 +1,5 @@
 /*
- *  Ecmascript execution, support primitives.
+ *  ECMAScript execution, support primitives.
  */
 
 #if !defined(DUK_JS_H_INCLUDED)

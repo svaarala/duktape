@@ -53,7 +53,7 @@
 #define DUK__HASH_DELETED               DUK_HOBJECT_HASHIDX_DELETED
 
 /* Valstack space that suffices for all local calls, excluding any recursion
- * into Ecmascript or Duktape/C calls (Proxy, getters, etc).
+ * into ECMAScript or Duktape/C calls (Proxy, getters, etc).
  */
 #define DUK__VALSTACK_SPACE             10
 
@@ -1615,7 +1615,7 @@ DUK_LOCAL void duk__check_arguments_map_for_delete(duk_hthread *thr, duk_hobject
 }
 
 /*
- *  Ecmascript compliant [[GetOwnProperty]](P), for internal use only.
+ *  ECMAScript compliant [[GetOwnProperty]](P), for internal use only.
  *
  *  If property is found:
  *    - Fills descriptor fields to 'out_desc'
@@ -1990,7 +1990,7 @@ DUK_INTERNAL duk_bool_t duk_hobject_get_own_propdesc(duk_hthread *thr, duk_hobje
 }
 
 /*
- *  Ecmascript compliant [[GetProperty]](P), for internal use only.
+ *  ECMAScript compliant [[GetProperty]](P), for internal use only.
  *
  *  If property is found:
  *    - Fills descriptor fields to 'out_desc'
@@ -2329,7 +2329,7 @@ DUK_LOCAL duk_bool_t duk__putprop_fastpath_bufobj_tval(duk_hthread *thr, duk_hob
 #endif  /* DUK_USE_BUFFEROBJECT_SUPPORT */
 
 /*
- *  GETPROP: Ecmascript property read.
+ *  GETPROP: ECMAScript property read.
  */
 
 DUK_INTERNAL duk_bool_t duk_hobject_getprop(duk_hthread *thr, duk_tval *tv_obj, duk_tval *tv_key) {
@@ -2816,7 +2816,7 @@ DUK_INTERNAL duk_bool_t duk_hobject_getprop(duk_hthread *thr, duk_tval *tv_obj, 
 }
 
 /*
- *  HASPROP: Ecmascript property existence check ("in" operator).
+ *  HASPROP: ECMAScript property existence check ("in" operator).
  *
  *  Interestingly, the 'in' operator does not do any coercion of
  *  the target object.
@@ -3301,9 +3301,9 @@ DUK_LOCAL duk_bool_t duk__handle_put_array_length(duk_hthread *thr, duk_hobject 
 }
 
 /*
- *  PUTPROP: Ecmascript property write.
+ *  PUTPROP: ECMAScript property write.
  *
- *  Unlike Ecmascript primitive which returns nothing, returns 1 to indicate
+ *  Unlike ECMAScript primitive which returns nothing, returns 1 to indicate
  *  success and 0 to indicate failure (assuming throw is not set).
  *
  *  This is an extremely tricky function.  Some examples:
@@ -4254,7 +4254,7 @@ DUK_INTERNAL duk_bool_t duk_hobject_putprop(duk_hthread *thr, duk_tval *tv_obj, 
 }
 
 /*
- *  Ecmascript compliant [[Delete]](P, Throw).
+ *  ECMAScript compliant [[Delete]](P, Throw).
  */
 
 DUK_INTERNAL duk_bool_t duk_hobject_delprop_raw(duk_hthread *thr, duk_hobject *obj, duk_hstring *key, duk_small_uint_t flags) {
@@ -4414,7 +4414,7 @@ DUK_INTERNAL duk_bool_t duk_hobject_delprop_raw(duk_hthread *thr, duk_hobject *o
 }
 
 /*
- *  DELPROP: Ecmascript property deletion.
+ *  DELPROP: ECMAScript property deletion.
  */
 
 DUK_INTERNAL duk_bool_t duk_hobject_delprop(duk_hthread *thr, duk_tval *tv_obj, duk_tval *tv_key, duk_bool_t throw_flag) {
@@ -4813,7 +4813,7 @@ DUK_INTERNAL duk_size_t duk_hobject_get_length(duk_hthread *thr, duk_hobject *ob
 	val = duk_to_number_m1(thr);
 	duk_pop_3_unsafe(thr);
 
-	/* This isn't part of Ecmascript semantics; return a value within
+	/* This isn't part of ECMAScript semantics; return a value within
 	 * duk_size_t range, or 0 otherwise.
 	 */
 	if (val >= 0.0 && val <= (duk_double_t) DUK_SIZE_MAX) {
@@ -4924,7 +4924,7 @@ DUK_INTERNAL void duk_hobject_object_get_own_property_descriptor(duk_hthread *th
  *  NormalizePropertyDescriptor() related helper.
  *
  *  Internal helper which validates and normalizes a property descriptor
- *  represented as an Ecmascript object (e.g. argument to defineProperty()).
+ *  represented as an ECMAScript object (e.g. argument to defineProperty()).
  *  The output of this conversion is a set of defprop_flags and possibly
  *  some values pushed on the value stack to (1) ensure borrowed pointers
  *  remain valid, and (2) avoid unnecessary pops for footprint reasons.
@@ -5064,7 +5064,7 @@ void duk_hobject_prepare_property_descriptor(duk_hthread *thr,
  *
  *  Inlines all [[DefineOwnProperty]] exotic behaviors.
  *
- *  Note: Ecmascript compliant [[DefineOwnProperty]](P, Desc, Throw) is not
+ *  Note: ECMAScript compliant [[DefineOwnProperty]](P, Desc, Throw) is not
  *  implemented directly, but Object.defineProperty() serves its purpose.
  *  We don't need the [[DefineOwnProperty]] internally and we don't have a
  *  property descriptor with 'missing values' so it's easier to avoid it

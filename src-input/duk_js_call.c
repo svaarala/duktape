@@ -3,7 +3,7 @@
  *
  *  duk_handle_call_unprotected():
  *
- *    - Unprotected call to Ecmascript or Duktape/C function, from native
+ *    - Unprotected call to ECMAScript or Duktape/C function, from native
  *      code or bytecode executor.
  *
  *    - Also handles Ecma-to-Ecma calls which reuses a currently running
@@ -1682,10 +1682,10 @@ DUK_LOCAL void duk__call_setup_act_not_tailcall(duk_hthread *thr,
 		 *  Update return value stack index of current activation (if any).
 		 *
 		 *  Although it might seem this is not necessary (bytecode executor
-		 *  does this for Ecmascript-to-Ecmascript calls; other calls are
+		 *  does this for ECMAScript-to-ECMAScript calls; other calls are
 		 *  handled here), this turns out to be necessary for handling yield
-		 *  and resume.  For them, an Ecmascript-to-native call happens, and
-		 *  the Ecmascript call's retval_byteoff must be set for things to work.
+		 *  and resume.  For them, an ECMAScript-to-native call happens, and
+		 *  the ECMAScript call's retval_byteoff must be set for things to work.
 		 */
 
 		act->retval_byteoff = entry_valstack_bottom_byteoff + (duk_size_t) idx_func * sizeof(duk_tval);
@@ -1898,10 +1898,10 @@ DUK_LOCAL void duk__call_thread_state_update(duk_hthread *thr) {
 /*
  *  Main unprotected call handler, handles:
  *
- *    - All combinations of native/Ecmascript caller and native/Ecmascript
+ *    - All combinations of native/ECMAScript caller and native/ECMAScript
  *      target.
  *
- *    - Optimized Ecmascript-to-Ecmascript call where call handling only
+ *    - Optimized ECMAScript-to-ECMAScript call where call handling only
  *      sets up a new duk_activation but reuses an existing bytecode executor
  *      (the caller) without native recursion.
  *
@@ -1950,7 +1950,7 @@ DUK_LOCAL duk_int_t duk__handle_call_raw(duk_hthread *thr,
 	DUK_STATS_INC(thr->heap, stats_call_all);
 
 	/* If a tail call:
-	 *   - an Ecmascript activation must be on top of the callstack
+	 *   - an ECMAScript activation must be on top of the callstack
 	 *   - there cannot be any catch stack entries that would catch
 	 *     a return
 	 */
@@ -2102,7 +2102,7 @@ DUK_LOCAL duk_int_t duk__handle_call_raw(duk_hthread *thr,
 	 *  compiler; the compiled function's parent env will contain
 	 *  the (immutable) binding already.
 	 *
-	 *  This handling is now identical for C and Ecmascript functions.
+	 *  This handling is now identical for C and ECMAScript functions.
 	 *  C functions always have the 'NEWENV' flag set, so their
 	 *  environment record initialization is delayed (which is good).
 	 *
@@ -2149,7 +2149,7 @@ DUK_LOCAL duk_int_t duk__handle_call_raw(duk_hthread *thr,
 
 	if (func != NULL && DUK_HOBJECT_IS_COMPFUNC(func)) {
 		/*
-		 *  Ecmascript call.
+		 *  ECMAScript call.
 		 */
 
 		DUK_ASSERT(func != NULL);
@@ -2334,7 +2334,7 @@ DUK_LOCAL duk_int_t duk__handle_call_raw(duk_hthread *thr,
 	 * calls caused by side effects (e.g. when doing a DUK_OP_GETPROP), see
 	 * GH-303.  Only needed for success path, error path always causes a
 	 * breakpoint recheck in the executor.  It would be enough to set this
-	 * only when returning to an Ecmascript activation, but setting the flag
+	 * only when returning to an ECMAScript activation, but setting the flag
 	 * on every return should have no ill effect.
 	 */
 #if defined(DUK_USE_DEBUGGER_SUPPORT)
@@ -2817,7 +2817,7 @@ DUK_INTERNAL duk_int_t duk_handle_safe_call(duk_hthread *thr,
 /*
  *  Property-based call (foo.noSuch()) error setup: replace target function
  *  on stack top with a specially tagged (hidden Symbol) error which gets
- *  thrown in call handling at the proper spot to follow Ecmascript semantics.
+ *  thrown in call handling at the proper spot to follow ECMAScript semantics.
  */
 
 #if defined(DUK_USE_VERBOSE_ERRORS)
