@@ -1,6 +1,6 @@
 /*
  *  Number-to-string conversion.  The semantics of these is very tightly
- *  bound with the Ecmascript semantics required for call sites.
+ *  bound with the ECMAScript semantics required for call sites.
  */
 
 #if !defined(DUK_NUMCONV_H_INCLUDED)

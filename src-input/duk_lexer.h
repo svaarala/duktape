@@ -388,7 +388,7 @@ struct duk_lexer_codepoint {
 	duk_int_t line;
 };
 
-/* Lexer context.  Same context is used for Ecmascript and Regexp parsing. */
+/* Lexer context.  Same context is used for ECMAScript and Regexp parsing. */
 struct duk_lexer_ctx {
 #if defined(DUK_USE_LEXER_SLIDING_WINDOW)
 	duk_lexer_codepoint *window; /* unicode code points, window[0] is always next, points to 'buffer' */

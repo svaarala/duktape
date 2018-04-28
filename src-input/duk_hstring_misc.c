@@ -33,7 +33,7 @@ DUK_INTERNAL duk_ucodepoint_t duk_hstring_char_code_at_raw(duk_hthread *thr, duk
 	                     (const void *) p_start, (const void *) p_end,
 	                     (const void *) p));
 
-	/* For invalid UTF-8 (never happens for standard Ecmascript strings)
+	/* For invalid UTF-8 (never happens for standard ECMAScript strings)
 	 * return U+FFFD replacement character.
 	 */
 	if (duk_unicode_decode_xutf8(thr, &p, p_start, p_end, &cp1)) {

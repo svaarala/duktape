@@ -222,14 +222,14 @@ struct duk_activation {
 	duk_instr_t *curr_pc;   /* next instruction to execute (points to 'func' bytecode, stable pointer), NULL for native calls */
 
 	/* bottom_byteoff and retval_byteoff are only used for book-keeping
-	 * of Ecmascript-initiated calls, to allow returning to an Ecmascript
+	 * of ECMAScript-initiated calls, to allow returning to an ECMAScript
 	 * function properly.
 	 */
 
 	/* Bottom of valstack for this activation, used to reset
 	 * valstack_bottom on return; offset is absolute.  There's
 	 * no need to track 'top' because native call handling deals
-	 * with that using locals, and for Ecmascript returns 'nregs'
+	 * with that using locals, and for ECMAScript returns 'nregs'
 	 * indicates the necessary top.
 	 */
 	duk_size_t bottom_byteoff;

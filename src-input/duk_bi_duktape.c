@@ -3,7 +3,7 @@
  *
  *  Size optimization note: it might seem that vararg multipurpose functions
  *  like fin(), enc(), and dec() are not very size optimal, but using a single
- *  user-visible Ecmascript function saves a lot of run-time footprint; each
+ *  user-visible ECMAScript function saves a lot of run-time footprint; each
  *  Function instance takes >100 bytes.  Using a shared native helper and a
  *  'magic' value won't save much if there are multiple Function instances
  *  anyway.

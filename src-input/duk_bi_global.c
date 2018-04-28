@@ -413,7 +413,7 @@ DUK_LOCAL void duk__transform_callback_unescape(duk__transform_context *tfm_ctx,
  *  Eval needs to handle both a "direct eval" and an "indirect eval".
  *  Direct eval handling needs access to the caller's activation so that its
  *  lexical environment can be accessed.  A direct eval is only possible from
- *  Ecmascript code; an indirect eval call is possible also from C code.
+ *  ECMAScript code; an indirect eval call is possible also from C code.
  *  When an indirect eval call is made from C code, there may not be a
  *  calling activation at all which needs careful handling.
  */
@@ -452,7 +452,7 @@ DUK_INTERNAL duk_ret_t duk_bi_global_object_eval(duk_hthread *thr) {
 
 #if defined(DUK_USE_DEBUGGER_SUPPORT)
 	/* NOTE: level is used only by the debugger and should never be present
-	 * for an Ecmascript eval().
+	 * for an ECMAScript eval().
 	 */
 	DUK_ASSERT(level == -2);  /* by default, use caller's environment */
 	if (duk_get_top(thr) >= 2 && duk_is_number(thr, 1)) {

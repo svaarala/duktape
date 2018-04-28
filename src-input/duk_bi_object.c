@@ -514,7 +514,7 @@ DUK_INTERNAL duk_ret_t duk_bi_object_constructor_define_property(duk_hthread *th
 	DUK_ASSERT(duk_get_hobject(thr, 2) != NULL);
 
 	/*
-	 *  Validate and convert argument property descriptor (an Ecmascript
+	 *  Validate and convert argument property descriptor (an ECMAScript
 	 *  object) into a set of defprop_flags and possibly property value,
 	 *  getter, and/or setter values on the value stack.
 	 *

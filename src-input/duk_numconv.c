@@ -1209,7 +1209,7 @@ DUK_LOCAL void duk__dragon4_convert_and_push(duk__numconv_stringify_ctx *nc_ctx,
 	duk_uint8_t *buf;
 
 	/*
-	 *  The string conversion here incorporates all the necessary Ecmascript
+	 *  The string conversion here incorporates all the necessary ECMAScript
 	 *  semantics without attempting to be generic.  nc_ctx->digits contains
 	 *  nc_ctx->count digits (>= 1), with the topmost digit's 'position'
 	 *  indicated by nc_ctx->k as follows:
@@ -1220,11 +1220,11 @@ DUK_LOCAL void duk__dragon4_convert_and_push(duk__numconv_stringify_ctx *nc_ctx,
 	 *    digits="123" count=3 k=-1  -->   0.0123
 	 *
 	 *  Note that the identifier names used for format selection are different
-	 *  in Burger-Dybvig paper and Ecmascript specification (quite confusingly
+	 *  in Burger-Dybvig paper and ECMAScript specification (quite confusingly
 	 *  so, because e.g. 'k' has a totally different meaning in each).  See
 	 *  documentation for discussion.
 	 *
-	 *  Ecmascript doesn't specify any specific behavior for format selection
+	 *  ECMAScript doesn't specify any specific behavior for format selection
 	 *  (e.g. when to use exponent notation) for non-base-10 numbers.
 	 *
 	 *  The bigint space in the context is reused for string output, as there
@@ -1308,7 +1308,7 @@ DUK_LOCAL void duk__dragon4_convert_and_push(duk__numconv_stringify_ctx *nc_ctx,
 	/* Exponent */
 	if (expt != DUK__NO_EXP) {
 		/*
-		 *  Exponent notation for non-base-10 numbers isn't specified in Ecmascript
+		 *  Exponent notation for non-base-10 numbers isn't specified in ECMAScript
 		 *  specification, as it never explicitly turns up: non-decimal numbers can
 		 *  only be formatted with Number.prototype.toString([radix]) and for that,
 		 *  behavior is not explicitly specified.
@@ -1882,7 +1882,7 @@ DUK_INTERNAL void duk_numconv_parse(duk_hthread *thr, duk_small_int_t radix, duk
 	 *  accuracy, so that Dragon4 will generate enough binary output digits.
 	 *  For decimal numbers, this means generating a 20-digit significand,
 	 *  which should yield enough practical accuracy to parse IEEE doubles.
-	 *  In fact, the Ecmascript specification explicitly allows an
+	 *  In fact, the ECMAScript specification explicitly allows an
 	 *  implementation to treat digits beyond 20 as zeroes (and even
 	 *  to round the 20th digit upwards).  For non-decimal numbers, the
 	 *  appropriate number of digits has been precomputed for comparable

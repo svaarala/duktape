@@ -1,9 +1,9 @@
 /*
  *  Array built-ins
  *
- *  Most Array built-ins are intentionally generic in Ecmascript, and are
+ *  Most Array built-ins are intentionally generic in ECMAScript, and are
  *  intended to work even when the 'this' binding is not an Array instance.
- *  This Ecmascript feature is also used by much real world code.  For this
+ *  This ECMAScript feature is also used by much real world code.  For this
  *  reason the implementations here don't assume exotic Array behavior or
  *  e.g. presence of a .length property.  However, some algorithms have a
  *  fast path for duk_harray backed actual Array instances, enabled when

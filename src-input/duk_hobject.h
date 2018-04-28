@@ -1,12 +1,12 @@
 /*
  *  Heap object representation.
  *
- *  Heap objects are used for Ecmascript objects, arrays, and functions,
+ *  Heap objects are used for ECMAScript objects, arrays, and functions,
  *  but also for internal control like declarative and object environment
  *  records.  Compiled functions, native functions, and threads are also
  *  objects but with an extended C struct.
  *
- *  Objects provide the required Ecmascript semantics and exotic behaviors
+ *  Objects provide the required ECMAScript semantics and exotic behaviors
  *  especially for property access.
  *
  *  Properties are stored in three conceptual parts:
@@ -635,7 +635,7 @@
 #define DUK_HOBJECT_PROTOTYPE_CHAIN_SANITY      10000L
 
 /*
- *  Ecmascript [[Class]]
+ *  ECMAScript [[Class]]
  */
 
 /* range check not necessary because all 4-bit values are mapped */

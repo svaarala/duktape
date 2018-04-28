@@ -8,7 +8,7 @@
  *  Property handling
  *
  *  The API exposes only the most common property handling functions.
- *  The caller can invoke Ecmascript built-ins for full control (e.g.
+ *  The caller can invoke ECMAScript built-ins for full control (e.g.
  *  defineProperty, getOwnPropertyDescriptor).
  */
 
@@ -566,7 +566,7 @@ DUK_EXTERNAL void duk_def_prop(duk_hthread *thr, duk_idx_t obj_idx, duk_uint_t f
 /*
  *  Object related
  *
- *  Note: seal() and freeze() are accessible through Ecmascript bindings,
+ *  Note: seal() and freeze() are accessible through ECMAScript bindings,
  *  and are not exposed through the API.
  */
 

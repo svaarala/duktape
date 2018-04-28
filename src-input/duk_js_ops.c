@@ -1,7 +1,7 @@
 /*
- *  Ecmascript specification algorithm and conversion helpers.
+ *  ECMAScript specification algorithm and conversion helpers.
  *
- *  These helpers encapsulate the primitive Ecmascript operation semantics,
+ *  These helpers encapsulate the primitive ECMAScript operation semantics,
  *  and are used by the bytecode executor and the API (among other places).
  *  Some primitives are only implemented as part of the API and have no
  *  "internal" helper.  This is the case when an internal helper would not
@@ -433,7 +433,7 @@ DUK_LOCAL duk_bool_t duk__js_equals_number(duk_double_t x, duk_double_t y) {
 	return 0;
 #else  /* DUK_USE_PARANOID_MATH */
 	/* Better equivalent algorithm.  If the compiler is compliant, C and
-	 * Ecmascript semantics are identical for this particular comparison.
+	 * ECMAScript semantics are identical for this particular comparison.
 	 * In particular, NaNs must never compare equal and zeroes must compare
 	 * equal regardless of sign.  Could also use a macro, but this inlines
 	 * already nicely (no difference on gcc, for instance).
@@ -1061,7 +1061,7 @@ DUK_LOCAL duk_bool_t duk__js_instanceof_helper(duk_hthread *thr, duk_tval *tv_x,
 
 	if (!DUK_HOBJECT_IS_CALLABLE(func)) {
 		/*
-		 *  Note: of native Ecmascript objects, only Function instances
+		 *  Note: of native ECMAScript objects, only Function instances
 		 *  have a [[HasInstance]] internal property.  Custom objects might
 		 *  also have it, but not in current implementation.
 		 *

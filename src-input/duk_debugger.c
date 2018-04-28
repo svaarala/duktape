@@ -1593,7 +1593,7 @@ DUK_LOCAL void duk__debug_handle_eval(duk_hthread *thr, duk_heap *heap) {
 			fun = DUK_ACT_GET_FUNC(act);
 			if (fun != NULL && DUK_HOBJECT_IS_COMPFUNC(fun)) {
 				/* Direct eval requires that there's a current
-				 * activation and it is an Ecmascript function.
+				 * activation and it is an ECMAScript function.
 				 * When Eval is executed from e.g. cooperate API
 				 * call we'll need to do an indirect eval instead.
 				 */
@@ -2736,7 +2736,7 @@ DUK_INTERNAL void duk_debug_halt_execution(duk_hthread *thr, duk_bool_t use_prev
 		fun = (duk_hcompfunc *) DUK_ACT_GET_FUNC(act);
 
 		/* Short circuit if is safe: if act->curr_pc != NULL, 'fun' is
-		 * guaranteed to be a non-NULL Ecmascript function.
+		 * guaranteed to be a non-NULL ECMAScript function.
 		 */
 		DUK_ASSERT(act->curr_pc == NULL ||
 		           (fun != NULL && DUK_HOBJECT_IS_COMPFUNC((duk_hobject *) fun)));

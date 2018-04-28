@@ -427,13 +427,13 @@ DUK_LOCAL duk_uint8_t duk__days_in_month[12] = {
 };
 
 /* Maximum iteration count for computing UTC-to-local time offset when
- * creating an Ecmascript time value from local parts.
+ * creating an ECMAScript time value from local parts.
  */
 #define DUK__LOCAL_TZOFFSET_MAXITER   4
 
 /* Because 'day since epoch' can be negative and is used to compute weekday
  * using a modulo operation, add this multiple of 7 to avoid negative values
- * when year is below 1970 epoch.  Ecmascript time values are restricted to
+ * when year is below 1970 epoch.  ECMAScript time values are restricted to
  * +/- 100 million days from epoch, so this adder fits nicely into 32 bits.
  * Round to a multiple of 7 (= floor(100000000 / 7) * 7) and add margin.
  */
@@ -624,10 +624,10 @@ DUK_INTERNAL void duk_bi_date_timeval_to_parts(duk_double_t d, duk_int_t *parts,
 	d = DUK_FLOOR(d);  /* remove fractions if present */
 	DUK_ASSERT(DUK_FLOOR(d) == d);
 
-	/* The timevalue must be in valid Ecmascript range, but since a local
+	/* The timevalue must be in valid ECMAScript range, but since a local
 	 * time offset can be applied, we need to allow a +/- 24h leeway to
 	 * the value.  In other words, although the UTC time is within the
-	 * Ecmascript range, the local part values can be just outside of it.
+	 * ECMAScript range, the local part values can be just outside of it.
 	 */
 	DUK_UNREF(duk_bi_date_timeval_in_leeway_range);
 	DUK_ASSERT(duk_bi_date_timeval_in_leeway_range(d));
@@ -670,7 +670,7 @@ DUK_INTERNAL void duk_bi_date_timeval_to_parts(duk_double_t d, duk_int_t *parts,
 	                     (long) parts[DUK_DATE_IDX_MILLISECOND]));
 
 	/* This assert depends on the input parts representing time inside
-	 * the Ecmascript range.
+	 * the ECMAScript range.
 	 */
 	DUK_ASSERT(t2 + DUK__WEEKDAY_MOD_ADDER >= 0);
 	parts[DUK_DATE_IDX_WEEKDAY] = (t2 + 4 + DUK__WEEKDAY_MOD_ADDER) % 7;  /* E5.1 Section 15.9.1.6 */
@@ -790,7 +790,7 @@ DUK_INTERNAL duk_double_t duk_bi_date_get_timeval_from_dparts(duk_double_t *dpar
 	 * computation happens with intermediate results coerced to
 	 * double values (instead of using something more accurate).
 	 * E.g. E5.1 Section 15.9.1.11 requires use of IEEE 754
-	 * rules (= Ecmascript '+' and '*' operators).
+	 * rules (= ECMAScript '+' and '*' operators).
 	 *
 	 * Without 'volatile' even this approach fails on some platform
 	 * and compiler combinations.  For instance, gcc 4.8.1 on Ubuntu
@@ -1527,7 +1527,7 @@ DUK_INTERNAL duk_ret_t duk_bi_date_constructor_now(duk_hthread *thr) {
  *  Notes:
  *
  *    - Date.prototype.toGMTString() and Date.prototype.toUTCString() are
- *      required to be the same Ecmascript function object (!), so it is
+ *      required to be the same ECMAScript function object (!), so it is
  *      omitted from here.
  *
  *    - Date.prototype.toUTCString(): E5.1 specification does not require a

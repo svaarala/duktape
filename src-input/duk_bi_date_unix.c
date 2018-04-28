@@ -15,7 +15,7 @@
 #define DUK__STRFTIME_BUF_SIZE  64
 
 #if defined(DUK_USE_DATE_NOW_GETTIMEOFDAY)
-/* Get current Ecmascript time (= UNIX/Posix time, but in milliseconds). */
+/* Get current ECMAScript time (= UNIX/Posix time, but in milliseconds). */
 DUK_INTERNAL duk_double_t duk_bi_date_get_now_gettimeofday(void) {
 	struct timeval tv;
 	duk_double_t d;
@@ -63,7 +63,7 @@ DUK_INTERNAL duk_int_t duk_bi_date_get_local_tzoffset_gmtime(duk_double_t d) {
 		return 0;
 	}
 
-	/* If not within Ecmascript range, some integer time calculations
+	/* If not within ECMAScript range, some integer time calculations
 	 * won't work correctly (and some asserts will fail), so bail out
 	 * if so.  This fixes test-bug-date-insane-setyear.js.  There is
 	 * a +/- 24h leeway in this range check to avoid a test262 corner
@@ -114,10 +114,10 @@ DUK_INTERNAL duk_int_t duk_bi_date_get_local_tzoffset_gmtime(duk_double_t d) {
 	 *  Since we rely on the platform APIs for conversions between local
 	 *  time and UTC, we can't guarantee the above.  Rather, if the platform
 	 *  has historical DST rules they will be applied.  This seems to be the
-	 *  general preferred direction in Ecmascript standardization (or at least
+	 *  general preferred direction in ECMAScript standardization (or at least
 	 *  implementations) anyway, and even the equivalent year mapping should
 	 *  be disabled if the platform is known to handle DST properly for the
-	 *  full Ecmascript range.
+	 *  full ECMAScript range.
 	 *
 	 *  The following has useful discussion and links:
 	 *
@@ -267,16 +267,16 @@ DUK_INTERNAL duk_bool_t duk_bi_date_format_parts_strftime(duk_hthread *thr, duk_
 
 	DUK_UNREF(tzoffset);
 
-	/* If the platform doesn't support the entire Ecmascript range, we need
+	/* If the platform doesn't support the entire ECMAScript range, we need
 	 * to return 0 so that the caller can fall back to the default formatter.
 	 *
-	 * For now, assume that if time_t is 8 bytes or more, the whole Ecmascript
+	 * For now, assume that if time_t is 8 bytes or more, the whole ECMAScript
 	 * range is supported.  For smaller time_t values (4 bytes in practice),
 	 * assumes that the signed 32-bit range is supported.
 	 *
 	 * XXX: detect this more correctly per platform.  The size of time_t is
 	 * probably not an accurate guarantee of strftime() supporting or not
-	 * supporting a large time range (the full Ecmascript range).
+	 * supporting a large time range (the full ECMAScript range).
 	 */
 	if (sizeof(time_t) < 8 &&
 	    (parts[DUK_DATE_IDX_YEAR] < 1970 || parts[DUK_DATE_IDX_YEAR] > 2037)) {

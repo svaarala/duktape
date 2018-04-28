@@ -4,7 +4,7 @@
 
 #include "duk_internal.h"
 
-/* Ecmascript modulus ('%') does not match IEEE 754 "remainder" operation
+/* ECMAScript modulus ('%') does not match IEEE 754 "remainder" operation
  * (implemented by remainder() in C99) but does seem to match ANSI C fmod().
  * Compare E5 Section 11.5.3 and "man fmod".
  */
@@ -58,9 +58,9 @@ DUK_INTERNAL double duk_js_arith_mod(double d1, double d2) {
 
 /* Shared helper for Math.pow() and exponentiation operator. */
 DUK_INTERNAL double duk_js_arith_pow(double x, double y) {
-	/* The ANSI C pow() semantics differ from Ecmascript.
+	/* The ANSI C pow() semantics differ from ECMAScript.
 	 *
-	 * E.g. when x==1 and y is +/- infinite, the Ecmascript required
+	 * E.g. when x==1 and y is +/- infinite, the ECMAScript required
 	 * result is NaN, while at least Linux pow() returns 1.
 	 */
 

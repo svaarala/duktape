@@ -643,7 +643,7 @@ DUK_INTERNAL duk_bool_t duk_hobject_enumerator_next(duk_hthread *thr, duk_bool_t
 }
 
 /*
- *  Get enumerated keys in an Ecmascript array.  Matches Object.keys() behavior
+ *  Get enumerated keys in an ECMAScript array.  Matches Object.keys() behavior
  *  described in E5 Section 15.2.3.14.
  */
 

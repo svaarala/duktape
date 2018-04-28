@@ -159,7 +159,7 @@ DUK_LOCAL duk_ret_t duk__error_getter_helper(duk_hthread *thr, duk_small_int_t o
 
 			if (t == DUK_TYPE_OBJECT || t == DUK_TYPE_LIGHTFUNC) {
 				/*
-				 *  Ecmascript/native function call or lightfunc call
+				 *  ECMAScript/native function call or lightfunc call
 				 */
 
 				count_func++;

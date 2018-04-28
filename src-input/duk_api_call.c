@@ -400,7 +400,7 @@ DUK_EXTERNAL duk_bool_t duk_is_strict_call(duk_hthread *thr) {
 	 * because all Duktape/C functions are considered strict,
 	 * and strict is also the default when nothing is running.
 	 * However, Duktape may call this function internally when
-	 * the current activation is an Ecmascript function, so
+	 * the current activation is an ECMAScript function, so
 	 * this cannot be replaced by a 'return 1' without fixing
 	 * the internal call sites.
 	 */

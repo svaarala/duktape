@@ -75,7 +75,7 @@ DUK_LOCAL duk_int_t duk__str_search_shared(duk_hthread *thr, duk_hstring *h_this
 	while (p <= p_end && p >= p_start) {
 		t = *p;
 
-		/* For Ecmascript strings, this check can only match for
+		/* For ECMAScript strings, this check can only match for
 		 * initial UTF-8 bytes (not continuation bytes).  For other
 		 * strings all bets are off.
 		 */

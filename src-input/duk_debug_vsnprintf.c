@@ -35,7 +35,7 @@
  *      (excluding the null terminator).  If retval == buffer size,
  *      output was truncated (except for corner cases).
  *
- *    * Output format is intentionally different from Ecmascript
+ *    * Output format is intentionally different from ECMAScript
  *      formatting requirements, as formatting here serves debugging
  *      of internals.
  *

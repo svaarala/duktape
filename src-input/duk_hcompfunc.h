@@ -1,7 +1,7 @@
 /*
- *  Heap compiled function (Ecmascript function) representation.
+ *  Heap compiled function (ECMAScript function) representation.
  *
- *  There is a single data buffer containing the Ecmascript function's
+ *  There is a single data buffer containing the ECMAScript function's
  *  bytecode, constants, and inner functions.
  */
 

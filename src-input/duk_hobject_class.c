@@ -1,5 +1,5 @@
 /*
- *  Hobject Ecmascript [[Class]].
+ *  Hobject ECMAScript [[Class]].
  */
 
 #include "duk_internal.h"
