@@ -29,9 +29,9 @@ def eqyear(weekday, isleap):
 
     # some assertions
     #
-    # Note that Ecmascript internal weekday (0=Sunday) matches neither
+    # Note that ECMAScript internal weekday (0=Sunday) matches neither
     # Python weekday() (0=Monday) nor isoweekday() (1=Monday, 7=Sunday).
-    # Python isoweekday() % 7 matches the Ecmascript weekday.
+    # Python isoweekday() % 7 matches the ECMAScript weekday.
     # https://docs.python.org/2/library/datetime.html#datetime.date.isoweekday
 
     dt = datetime.datetime(year, 1, 1, 0, 0, 0, 0, pytz.UTC)  # Jan 1 00:00:00.000 UTC

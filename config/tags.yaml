@@ -4,19 +4,19 @@
 #
 
 ecmascript:
-  title: Ecmascript Edition 5 (ES5) options
+  title: ECMAScript Edition 5 (ES5) options
 
 ecmascript2015:
-  title: Ecmascript 2015 (ES6) options
+  title: ECMAScript 2015 (ES6) options
 
 ecmascript2016:
-  title: Ecmascript 2016 (ES7) options
+  title: ECMAScript 2016 (ES7) options
 
 ecmascript2017:
-  title: Ecmascript 2017 (ES8) options
+  title: ECMAScript 2017 (ES8) options
 
 ecmascript2018:
-  title: Ecmascript 2018 (ES9) options
+  title: ECMAScript 2018 (ES9) options
 
 duktape:
   title: Duktape specific options

@@ -638,7 +638,7 @@ releasetest: xmldoctest closuretest bluebirdtest luajstest jsinterpretertest lod
 	@echo ""
 	@echo "### Release tests successful!"  # These tests now have output checks.
 
-# Runtests-based Ecmascript and API tests.
+# Runtests-based ECMAScript and API tests.
 .PHONY:	runtestsdeps
 runtestsdeps:	runtests/node_modules UglifyJS2
 runtests/node_modules:

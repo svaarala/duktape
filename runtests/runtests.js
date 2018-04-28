@@ -1,5 +1,5 @@
 /*
- *  Test case runner.  Supports both Ecmascript tests and Duktape API
+ *  Test case runner.  Supports both ECMAScript tests and Duktape API
  *  C tests.  Duktape API C tests are compiled on-the-fly against a
  *  dynamic or static library.
  *

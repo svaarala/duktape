@@ -26,7 +26,7 @@ To make a code contribution to Duktape
 * Test your changes as thoroughly as possible.  At the very minimum:
 
   - Travis test run must pass, which covers both a code policy check, and
-    runs basic API and Ecmascript test case set.
+    runs basic API and ECMAScript test case set.
 
   - If some test cases are invalidated by the changes, fix the test cases as
     part of the branch.  If you add new functionality, you should add test

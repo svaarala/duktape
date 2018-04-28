@@ -1,20 +1,20 @@
 #!/usr/bin/env python2
 #
 #  Extract rules for Unicode case conversion, specifically the behavior
-#  required by Ecmascript E5 in Sections 15.5.4.16 to 15.5.4.19.  The
+#  required by ECMAScript E5 in Sections 15.5.4.16 to 15.5.4.19.  The
 #  bitstream encoded rules are used for the slow path at run time, so
 #  compactness is favored over speed.
 #
 #  There is no support for context or locale sensitive rules, as they
 #  are handled directly in C code before consulting tables generated
-#  here.  Ecmascript requires case conversion both with and without
+#  here.  ECMAScript requires case conversion both with and without
 #  locale/language specific rules (e.g. String.prototype.toLowerCase()
 #  and String.prototype.toLocaleLowerCase()), so they are best handled
 #  in C anyway.
 #
 #  Case conversion rules for ASCII are also excluded as they are handled
 #  by the C fast path.  Rules for non-BMP characters (codepoints above
-#  U+FFFF) are omitted as they're not required for standard Ecmascript.
+#  U+FFFF) are omitted as they're not required for standard ECMAScript.
 #
 
 import os
