@@ -2,7 +2,7 @@
  *  If array length is 0xffffffff, Array.prototype.push() appends all the
  *  requested items and then sets the final 'length'.
  *
- *  For Ecmascript arrays (objects with array special behavior), the item
+ *  For ECMAScript arrays (objects with array special behavior), the item
  *  writes will succeed, and the modified [[DefineOwnProperty]] algorithm
  *  in Section 15.4.5.1 triggers an automatic 'length' update for items
  *  whose index is in the range [0,0xfffffffe].  Outside this range the
@@ -11,7 +11,7 @@
  *  would be above 0xffffffff.  In error cases -all items- get written and
  *  length may be updated (up to 0xffffffff).
  *
- *  When the argument is not an Ecmascript array, the length is updated to
+ *  When the argument is not an ECMAScript array, the length is updated to
  *  0x100000000.
  */
 

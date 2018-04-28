@@ -1,6 +1,6 @@
 /*
  *  Demonstrate 'this' binding behavior for "direct calls to eval" made
- *  from Ecmascript code.  The behavior for both strict and non-strict is
+ *  from ECMAScript code.  The behavior for both strict and non-strict is
  *  the same: the 'this' binding is inherited from the calling context,
  *  see E5.1 Section 10.4.2:
  *

@@ -120,7 +120,7 @@ static duk_ret_t my_modsearch(duk_context *ctx) {
 	/* [ id require exports module c_module ] */
 	duk_put_prop_string(ctx, 3 /*module*/, "exports");  /* module.exports = c_module; */
 
-	return 0;  /* return undefined, no Ecmascript source code */
+	return 0;  /* return undefined, no ECMAScript source code */
 }
 
 static duk_ret_t test_modsearch_module(duk_context *ignored_ctx, void *udata) {

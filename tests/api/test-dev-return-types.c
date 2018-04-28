@@ -1,6 +1,6 @@
 /*
  *  Supporting testcase for test-dev-return-types.js: cover return types
- *  which can't be exercised from Ecmascript code.
+ *  which can't be exercised from ECMAScript code.
  */
 
 /*===
@@ -67,7 +67,7 @@ static duk_ret_t test_basic_explicit(duk_context *ctx, void *udata) {
 	return 0;
 }
 
-/* Ecmascript finally captures return and the return is propagated
+/* ECMAScript finally captures return and the return is propagated
  * onwards after finally finishes.
  */
 static duk_ret_t test_endfin_return(duk_context *ctx, void *udata) {

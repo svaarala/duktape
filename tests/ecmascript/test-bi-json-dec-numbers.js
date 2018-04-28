@@ -1,7 +1,7 @@
 /*
  *  Testcase for JSON parsing of numbers.
  *
- *  The number syntax for JSON differs a bit from Ecmascript syntax.
+ *  The number syntax for JSON differs a bit from ECMAScript syntax.
  */
 
 /*===

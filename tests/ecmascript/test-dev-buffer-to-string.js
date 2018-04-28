@@ -67,7 +67,7 @@ function test() {
     print(s.length, Duktape.enc('jx', s));
     print(Duktape.enc('jx', stringToBuffer(s)));
 
-    // In Duktape 2.x there's no default Ecmascript built-in for doing a
+    // In Duktape 2.x there's no default ECMAScript built-in for doing a
     // 1:1 string conversion, but "duk" command fills in String.fromBufferRaw().
     // The active slice of any buffer or buffer object argumented is
     // interpreted as bytes (even for e.g. Uint32Array) and copied 1:1 into

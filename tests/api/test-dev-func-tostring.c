@@ -1,7 +1,7 @@
 /*
  *  Test the current Function .toString() format.
  *
- *  Cover a few cases which cannot be exercised using Ecmascript code alone.
+ *  Cover a few cases which cannot be exercised using ECMAScript code alone.
  */
 
 /*===

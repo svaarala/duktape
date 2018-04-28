@@ -1,5 +1,5 @@
 /*
- *  Testcases for error handler behavior from Ecmascript code point of view.
+ *  Testcases for error handler behavior from ECMAScript code point of view.
  *  Checks both Duktape.errCreate and Duktape.errThrow.
  */
 
@@ -80,7 +80,7 @@ function errCreateTest() {
         }
     }
 
-    // Error created from Ecmascript
+    // Error created from ECMAScript
     function errTest2() {
         var e = new URIError('fake uri error');
         errPrint(e);
@@ -166,7 +166,7 @@ function errCreateTest() {
      *  There is some inconsistent behavior here now.  If the original error
      *  is thrown by Duktape itself (referencing 'aiee') the second error
      *  causes the error to be replaced with a DoubleError.  However, if the
-     *  original error is thrown by Ecmascript code (throw X) the error from
+     *  original error is thrown by ECMAScript code (throw X) the error from
      *  errCreate will replace the original error as is (here it will be
      *  a ReferenceError caused by referencing 'zork').
      */
@@ -359,7 +359,7 @@ function errThrowTest() {
         }
     }
 
-    // Error thrown from Ecmascript
+    // Error thrown from ECMAScript
     function errTest2() {
         try {
             throw new URIError('fake uri error');
@@ -441,7 +441,7 @@ function errThrowTest() {
      *  There is some inconsistent behavior here now.  If the original error
      *  is thrown by Duktape itself (referencing 'aiee') the second error
      *  causes the error to be replaced with a DoubleError.  However, if the
-     *  original error is thrown by Ecmascript code (throw X) the error from
+     *  original error is thrown by ECMAScript code (throw X) the error from
      *  errThrow will replace the original error as is (here it will be
      *  a ReferenceError caused by referencing 'zork').
      */
@@ -550,7 +550,7 @@ function errThrowTest() {
     }
 
     /*
-     *  In addition to Duktape internal errors and explicit Ecmascript
+     *  In addition to Duktape internal errors and explicit ECMAScript
      *  throws, coroutine yield() / resume() errors are processed with
      *  the errThrow.
      */

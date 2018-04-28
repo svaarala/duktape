@@ -145,7 +145,7 @@ function test() {
     var func;
     var F, G, H, I;
 
-    // Final function is an Ecmascript function.
+    // Final function is an ECMAScript function.
 
     func = function foo(a, b, c, d) {
         print(typeof this, this);

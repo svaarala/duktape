@@ -1,5 +1,5 @@
 /*
- *  Duktape 0.11.0 had a bug where setting a year outside the Ecmascript
+ *  Duktape 0.11.0 had a bug where setting a year outside the ECMAScript
  *  range could overflow in integer arithmetic, resulting in an incorrect
  *  year being set.  The test would print:
  *

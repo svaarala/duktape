@@ -3,7 +3,7 @@
  *  ordinary bound function handling slightly.  The "this" binding value
  *  provided by the bound functions is essentially ignored when making a
  *  constructor call.  That is, the final function gets as its 'this'
- *  binding the fresh Ecmascript object as usual for constructors.
+ *  binding the fresh ECMAScript object as usual for constructors.
  */
 
 function func1(v1, v2, v3) {
@@ -44,7 +44,7 @@ res.value2 bar
 res.value3 quux
 ===*/
 
-// Constructor call causes the fresh Ecmascript object (created in E5.1
+// Constructor call causes the fresh ECMAScript object (created in E5.1
 // Section 13.2.2 step 1) to the effective this binding.
 try {
     print('constructor call to func3');

@@ -4,7 +4,7 @@
  *  Source: print('hello world!')
  */
 
-// Jsfuck uses String.prototype.italics() which is not part of standard Ecmascript
+// Jsfuck uses String.prototype.italics() which is not part of standard ECMAScript
 String.prototype.italics = function (x) {
     return '<i>' + x + '</i>';
 };

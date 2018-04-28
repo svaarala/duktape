@@ -189,7 +189,7 @@ function formattingTest() {
     logger = new Duktape.Logger('myLogger');
 
     // Formatting test, all standard types except function (function coerces
-    // a string with Ecmascript comments which interferes with the expect string)
+    // a string with ECMAScript comments which interferes with the expect string)
 
     print('types');
     logger.info('type:', undefined);

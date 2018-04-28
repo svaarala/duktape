@@ -21,7 +21,7 @@
  *  non-writable or accessor Array.prototype["7"] would capture a write to
  *  "7").
  *
- *  For Ecmascript code is difficult to predict when the fast path is active
+ *  For ECMAScript code is difficult to predict when the fast path is active
  *  because some of the conditions are related to internal state.  However,
  *  there's no reason to do that: as long as there are no conflicting numeric
  *  properties in Array.prototype there is no outward difference in behavior

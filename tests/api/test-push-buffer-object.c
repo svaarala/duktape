@@ -189,7 +189,7 @@ static duk_ret_t test_arraybuffer_base_for_u32array(duk_context *ctx, void *udat
 	 *  fields in duk_hbufobj; since there's only one, the external
 	 *  .byteOffset will currently return the internal offset.
 	 *
-	 *  If Ecmascript code calls new Uint32Array() for an ArrayBuffer
+	 *  If ECMAScript code calls new Uint32Array() for an ArrayBuffer
 	 *  with a non-zero offset (which can only be created from C code),
 	 *  the result is the same (see separate test below).
 	 *
@@ -241,11 +241,11 @@ static duk_ret_t test_arraybuffer_base_for_u32array_ecma(duk_context *ctx, void 
 	(void) udata;
 
 	/* Same as above, but replace the second duk_push_buffer_object()
-	 * with a new Uint32Array() call from Ecmascript.  As above, the
+	 * with a new Uint32Array() call from ECMAScript.  As above, the
 	 * view's .byteOffset will still be odd when the base ArrayBuffer
 	 * has a non-zero offset.  This test is just here to demonstrate
 	 * that given the same ArrayBuffer base object, the view constructed
-	 * over it via the C API or Ecmascript API behaves the same.
+	 * over it via the C API or ECMAScript API behaves the same.
 	 */
 
 	buf = duk_push_fixed_buffer(ctx, 32);

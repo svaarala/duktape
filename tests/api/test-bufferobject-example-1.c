@@ -3,7 +3,7 @@
  */
 
 /*
- *  Example 1: Buffer objects are created by Ecmascript code and then handed
+ *  Example 1: Buffer objects are created by ECMAScript code and then handed
  *  over to a Duktape/C function which accesses the raw bytes from C code.
  */
 
@@ -40,7 +40,7 @@ static duk_ret_t draw_pixels(duk_context *ctx) {
 	 *
 	 * The returned pointer is stable if the underlying buffer is a
 	 * fixed buffer (this is always the case when a buffer object is
-	 * created from Ecmascript code e.g. as "new ArrayBuffer()").
+	 * created from ECMAScript code e.g. as "new ArrayBuffer()").
 	 * For dynamic and external buffers the pointer is stable unless
 	 * the buffer is resized or reconfigured.  Caller is responsible
 	 * for avoiding the use of stale pointers in such cases.  When in
@@ -49,7 +49,7 @@ static duk_ret_t draw_pixels(duk_context *ctx) {
 	 * The duk_{get,require}_buffer_data() calls take into account
 	 * "slices" so that the returned ptr/size is always to the active
 	 * slice as one would expect compared to how buffers behave in
-	 * Ecmascript code.
+	 * ECMAScript code.
 	 */
 	ptr = duk_require_buffer_data(ctx, 0, &sz);
 
@@ -139,7 +139,7 @@ static duk_ret_t test_1(duk_context *ctx, void *udata) {
 
 /*
  *  Example 2: buffer object is created from C code and used in
- *  Ecmascript code.
+ *  ECMAScript code.
  */
 
 /*===

@@ -30,7 +30,7 @@ static duk_ret_t test_1(duk_context *ctx, void *udata) {
 
 	(void) udata;
 
-	/* Ecmascript time-to-components (UTC):
+	/* ECMAScript time-to-components (UTC):
 	 *
 	 *   - d.getUTCMonth() is zero-based.
 	 *   - d.getUTCDate() (day in month) is one-based.
@@ -83,7 +83,7 @@ static duk_ret_t test_2(duk_context *ctx, void *udata) {
 
 	(void) udata;
 
-	/* Ecmascript components-to-time (UTC):
+	/* ECMAScript components-to-time (UTC):
 	 *
 	 *   - Year argument has a hack for two-digit years (e.g. Date.UTC(99, ...)
 	 *     creates a time value for year 1999.

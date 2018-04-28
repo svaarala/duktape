@@ -7,11 +7,11 @@
  *
  *    - Add symbols directly to the 'exports' table.
  *
- *    - Return a string which is interpreted as Ecmascript source
+ *    - Return a string which is interpreted as ECMAScript source
  *      of the module.
  *
  *    - Return a non-string which is interpreted to mean that the
- *      module has been found, but has no Ecmascript source.  In other
+ *      module has been found, but has no ECMAScript source.  In other
  *      words, the module is a "pure C" one, and all necessary symbols
  *      have been added to the exports table.
  */
@@ -137,7 +137,7 @@ function moduleSearchTest() {
 
     /*
      *  Mixed modules are also possible.  This test simulates the case where
-     *  a C module provides funcRaw() and Ecmascript module provides a safe
+     *  a C module provides funcRaw() and ECMAScript module provides a safe
      *  wrapper around it.
      */
 

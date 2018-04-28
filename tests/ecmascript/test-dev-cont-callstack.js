@@ -14,7 +14,7 @@ still here
 ===*/
 
 function test() {
-    // Use an Ecmascript-to-Ecmascript call to hit the call stack limit
+    // Use an ECMAScript-to-ECMAScript call to hit the call stack limit
     // without hitting the native call limit.  Avoid tail recursion which
     // would cause an infinite loop.
 

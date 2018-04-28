@@ -58,7 +58,7 @@ function getNormalFunc() {
 }
 
 function sanitizeLfunc(x) {
-    /* Escape Ecmascript comments which appear e.g. when coercing function
+    /* Escape ECMAScript comments which appear e.g. when coercing function
      * values to string.  Hide lightfunc pointer which is variable data.
      */
     x = String(x);
@@ -334,7 +334,7 @@ function instanceofTest() {
     /*
      *  The same happens for an ordinary function which doesn't have a
      *  'prototype' property.  To demonstrate this we need a function
-     *  without a 'prototype' property: normal Ecmascript functions
+     *  without a 'prototype' property: normal ECMAScript functions
      *  always have the property and it's not configurable so we can't
      *  delete it.  Luckily many non-constructor built-ins don't have
      *  the property so we can use one of them.
@@ -513,7 +513,7 @@ function toStringTest() {
     /* String coercion of functions is not strictly defined - so here the
      * coercion output can identify the function as a lightweight function.
      *
-     * Because the string coercion output includes Ecmascript comment chars
+     * Because the string coercion output includes ECMAScript comment chars
      * and a variable pointer, we need sanitization before printing.
      */
 
@@ -2931,7 +2931,7 @@ function duktapeThreadBuiltinTest() {
     var thr;
 
     // Lightfunc should be accepted as an initial function for a thread, but
-    // as of Duktape 1.0 only non-bound Ecmascript functions are allowed.
+    // as of Duktape 1.0 only non-bound ECMAScript functions are allowed.
     try {
         thr = new Duktape.Thread(lfunc);
         print(Duktape.Thread.resume(thr, 1.23));

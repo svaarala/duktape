@@ -964,7 +964,7 @@ static duk_ret_t test_to_buffer(duk_context *ctx, void *udata) {
 		printf("%ld: ", (long) sz);
 #endif
 
-		/* Sanitize with Ecmascript because it's easier... */
+		/* Sanitize with ECMAScript because it's easier... */
 		duk_eval_string(ctx, "(function (x) { return String(x)"
 		                     ".replace(/\\/\\*/g, '(*').replace(/\\*\\//g, '*)')"
 		                     ".replace(/light_[0-9a-fA-F]+_/g, 'light_PTR_'); })");

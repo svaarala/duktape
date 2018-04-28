@@ -1,6 +1,6 @@
 /*
- *  Ecmascript regexp pattern character production does not allow literal
- *  curly braces in any position, but many Ecmascript regexp engines allow
+ *  ECMAScript regexp pattern character production does not allow literal
+ *  curly braces in any position, but many ECMAScript regexp engines allow
  *  them when the meaning is unambiguous.  Since Duktape 1.5.0 Duktape also
  *  allows literal curly braces in regexps.
  */

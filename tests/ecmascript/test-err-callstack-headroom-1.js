@@ -1,7 +1,7 @@
 /*
  *  Error handling callstack headroom (GH-191)
  *
- *  When a RangeError is thrown due to the Ecmascript callstack limit being
+ *  When a RangeError is thrown due to the ECMAScript callstack limit being
  *  reached, there should be enough headroom for at least 10 further recursions.
  *  Prior to Duktape 1.3, this wasn't the case and a DoubleError would be
  *  generated if the callstack limit was reached and, e.g. Duktape.errCreate

@@ -2,7 +2,7 @@
  *  Test setting and getting the Duktape/C function magic value.
  *
  *  The magic value is useful in sharing a single native helper
- *  with multiple Ecmascript bindings, with the helper's behavior
+ *  with multiple ECMAScript bindings, with the helper's behavior
  *  being controlled by flags or other values in the magic value.
  *  The magic value is stored cheaply without needing a property
  *  slot.

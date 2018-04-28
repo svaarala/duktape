@@ -28,7 +28,7 @@ function test() {
     print(t.test('fooFOO'));
     print(t.test('foobar'));
 
-    // Ecmascript constructor function, bound arguments.
+    // ECMAScript constructor function, bound arguments.
     bound = MyConstructor.bind({ foo: 123, ignored: true }, 'foo', 'bar', 'quux');
     t = new bound('baz', 'quuux');
     print(typeof t);

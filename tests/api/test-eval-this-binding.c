@@ -22,7 +22,7 @@ static duk_ret_t test_1(duk_context *ctx, void *udata) {
 	/* For non-strict eval code the 'this' binding was effectively
 	 * the global object even before fixing GH-164: an undefined
 	 * 'this' binding gets promoted to the global object by the
-	 * usual Ecmascript call handling semantics.
+	 * usual ECMAScript call handling semantics.
 	 */
 	duk_eval_string(ctx,
 		"print('non-strict eval from C');\n"
@@ -34,7 +34,7 @@ static duk_ret_t test_1(duk_context *ctx, void *udata) {
 
 	/* For strict eval code the 'this' binding was undefined when
 	 * eval was being done from C code (but was the global object
-	 * when done from Ecmascript code).  With GH-164 fixed the
+	 * when done from ECMAScript code).  With GH-164 fixed the
 	 * 'this' binding is global object for strict eval code too.
 	 */
 

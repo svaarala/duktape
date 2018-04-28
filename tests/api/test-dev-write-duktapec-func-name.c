@@ -12,7 +12,7 @@ static duk_ret_t test_basic(duk_context *ctx, void *udata) {
 	/* User Duktape/C function .name is inherited from
 	 * %NativeFunctionPrototype% and is not writable so
 	 * a direct write fails.  This matches ES2015 .name
-	 * property of Ecmascript functions which is non-writable
+	 * property of ECMAScript functions which is non-writable
 	 * but configurable.
 	 */
 	duk_push_c_function(ctx, dummy_func, 3);

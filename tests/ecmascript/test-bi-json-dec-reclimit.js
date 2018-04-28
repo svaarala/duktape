@@ -21,7 +21,7 @@ RangeError
  *
  * Note: we don't check the parse result now; using JSON.stringify()
  * to print the result would hit stringify()'s recursion limit.  So
- * if printing is added, do it with Ecmascript and avoid Ecmascript
+ * if printing is added, do it with ECMAScript and avoid ECMAScript
  * recursion limit.
  *
  * To ensure recursion limit is reached for even a deep stack configuration,

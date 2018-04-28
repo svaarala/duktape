@@ -16,7 +16,7 @@ void test(duk_context *ctx) {
 	duk_put_prop_index(ctx, arr_idx, 1);
 
 	/* array is now: [ "foo", "bar" ], and array.length is 2 (automatically
-	 * updated for Ecmascript arrays).
+	 * updated for ECMAScript arrays).
 	 */
 
 	printf("duk_is_array(%ld) = %d\n", (long) arr_idx, (int) duk_is_array(ctx, arr_idx));

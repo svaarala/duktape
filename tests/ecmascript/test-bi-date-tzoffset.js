@@ -9,7 +9,7 @@ no output expected
  * timestamp range (1970-2038).
  *
  * (Of course, some UNIX systems provide a 64-bit timestamp and have no
- * issues covering the Ecmascript date range.)
+ * issues covering the ECMAScript date range.)
  */
 
 function test(tv) {

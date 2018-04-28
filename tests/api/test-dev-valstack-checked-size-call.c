@@ -3,7 +3,7 @@
  *  stack to contain space for at least N elements, this reserve should
  *  not be reduced without warning.
  *
- *  In Duktape 0.11.0 function calls (Ecmascript or Duktape/C) would
+ *  In Duktape 0.11.0 function calls (ECMAScript or Duktape/C) would
  *  essentially reset the "checked" stack size.  This testcase demonstrates
  *  the issue and documents the desired behavior.
  */

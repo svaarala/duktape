@@ -1,5 +1,5 @@
 /*
- *  Making a copy of a plain buffer with Ecmascript code.
+ *  Making a copy of a plain buffer with ECMAScript code.
  */
 
 /*@include util-buffer.js@*/

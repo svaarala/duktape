@@ -11,7 +11,7 @@
  *  Fixed in Duktape 1.1 so that Function.prototype.name is writable.
  *  The best fix would actually be to have the property non-writable
  *  while simultaneously allowing a Function instance's 'name' property
- *  to be set - but Ecmascript cannot express such an access control
+ *  to be set - but ECMAScript cannot express such an access control
  *  policy.
  *
  *  Duktape 2.x follows ES2015 where .name is again non-writable, but is

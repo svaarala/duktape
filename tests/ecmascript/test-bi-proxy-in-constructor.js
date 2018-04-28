@@ -1,5 +1,5 @@
 /*
- *  If an Ecmascript constructor returns an object value, the value replaces
+ *  If an ECMAScript constructor returns an object value, the value replaces
  *  the default instance created (the 'this' value that a constructor gets).
  *  This can be used to wrap the 'this' value behind a Proxy.
  */

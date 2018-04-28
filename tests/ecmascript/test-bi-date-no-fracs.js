@@ -8,7 +8,7 @@
 -123
 ===*/
 
-/* The internal time value of an Ecmascript Date has no fractions.
+/* The internal time value of an ECMAScript Date has no fractions.
  * For instance, TimeClip() applies ToInteger() for all finite
  * values.
  *

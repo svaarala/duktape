@@ -10,7 +10,7 @@
 // indirect eval -> this is bound to the global object, E5 Section 10.4.2, step 1.a.
 var g = (function () { var e = eval; return e('this'); } )();
 
-/* Pure Ecmascript helper to URI encode a codepoint into URI escaped form.
+/* Pure ECMAScript helper to URI encode a codepoint into URI escaped form.
  * Allows surrogate pairs to be encoded into invalid UTF-8 on purpose.
  */
 function encCodePoint(x, forced_len) {
@@ -194,7 +194,7 @@ decode non-bmp
 
 /* Decode non-BMP characters and check that surrogate pairs are decoded
  * correctly.  In other words, a single UTF-8 encoded codepoint becomes
- * two Ecmascript codepoints.
+ * two ECMAScript codepoints.
  *
  * Decoding of non-BMP characters above U+10FFFF is required to result
  * in URIError, and is tested separately below in invalid UTF-8 tests.
@@ -235,7 +235,7 @@ combine surrogate pairs in encode
 %F4%8F%BF%BF
 ===*/
 
-/* When encoding, surrogate pairs found in Ecmascript strings must be combined,
+/* When encoding, surrogate pairs found in ECMAScript strings must be combined,
  * and encoded into UTF-8 (as a single codepoint).
  */
 
@@ -337,7 +337,7 @@ invalid utf-8 decode
  *
  *   - Non-shortest UTF-8 encodings, e.g. URIError is required for C0 80.
  *
- *   - U+10FFFF decodes correctly to an Ecmascript string with a surrogate pair
+ *   - U+10FFFF decodes correctly to an ECMAScript string with a surrogate pair
  *
  *   - U+110000 causes an URIError
  *
