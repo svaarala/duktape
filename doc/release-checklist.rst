@@ -111,7 +111,7 @@ Checklist for ordinary releases
         $ make duk-sanitize-clang
         $ for i in tests/ecmascript/test-*.js; do python util/runtest.py --duk ./duk-sanitize-clang --timeout 30 $i; done
 
-* Ecmascript testcases
+* ECMAScript testcases
 
   - On x86-64 (exercise 16-byte duk_tval):
 

@@ -23,7 +23,7 @@ There are three conceptual execution states for a Duktape heap:
 
 * Executing a Duktape/C function
 
-* Executing an Ecmascript function
+* Executing an ECMAScript function
 
 This conceptual model ignores details like heap initialization and
 transitions from one state to another by "call handling".
@@ -50,7 +50,7 @@ may also call ``duk_debugger_cooperate()`` for integrating debugger into the
 application event loop (or equivalent).
 
 Eventually user code makes a call into either a Duktape/C function or an
-Ecmascript function.  Such a call may be caused by an obvious API call like
+ECMAScript function.  Such a call may be caused by an obvious API call like
 ``duk_pcall()``.  It may also be caused by a less obvious API call such as
 ``duk_get_prop()``, which may invoke a getter, or ``duk_to_string()`` which
 may invoke a ``toString()`` coercion method.
@@ -91,7 +91,7 @@ is looked up and called.  The C function now has access to a fresh value stack
 frame it can operate on using the Duktape API.  It can make further calls which
 get handled by ``duk_handle_call_unprotected()``.
 
-If the target function is an Ecmascript function, the value stack is resized
+If the target function is an ECMAScript function, the value stack is resized
 for the function register count (nregs) established by the compiler during
 function compilation; unlike Duktape/C functions the value stack is mostly
 static for the duration of bytecode execution.  Opcode handling may push
@@ -103,7 +103,7 @@ call into a Duktape/C function it is handled normally using
 ``duk_handle_call_unprotected()``; such calls may happen also when the
 bytecode executor uses the value stack API for various coercions etc.
 
-If bytecode makes a function call into an Ecmascript function it is flagged
+If bytecode makes a function call into an ECMAScript function it is flagged
 and handled specially by ``duk_handle_call_unprotected()``.  Instead of doing
 a recursive call into the bytecode executor it returns to the bytecode executor
 which restarts execution and starts executing the call target without
@@ -185,7 +185,7 @@ executor.  The dispatch loop:
   used opcodes are "extra" opcodes and need a double dispatch.
 
 * Usually loops back to execute further opcodes.  May also (1) call another
-  Duktape/C or Ecmascript function, (2) cause a longjmp, or (3) use
+  Duktape/C or ECMAScript function, (2) cause a longjmp, or (3) use
   ``goto restart_execution`` to restart the executor e.g. after call stack
   has been changed.
 
@@ -260,7 +260,7 @@ To prepare the stack frame for the called function,
   - For Duktape/C target functions the top is set to ``nargs`` (or
     ``num_stack_args`` for vararg functions).
 
-  - For Ecmascript target functions the top is first set to ``nargs``, wiping
+  - For ECMAScript target functions the top is first set to ``nargs``, wiping
     any values above that, and then extended to ``nregs``.  Values above
     ``nargs`` are filled with ``undefined``.  At the end the value stack frame
     has ``nregs`` allocated and initialized entries, with ``[0, nargs-1]``
@@ -274,7 +274,7 @@ To prepare the stack frame for the called function,
   argument.
 
 The value stack looks as follows after call setup is complete and the new
-function is ready to execute (the example is for an Ecmascript target
+function is ready to execute (the example is for an ECMAScript target
 function)::
 
      (-1)     0      1          nargs-1                   nregs - 1
@@ -318,7 +318,7 @@ To clean up after a call:
   is moved into its expected position (same as ``func`` on the input stack).
   Value stack top is configured so that the return value is at the stack top
   (for Duktape/C callers) or so that the stack top is at ``nregs`` (for
-  Ecmascript callers).  A value stack shrink (or grow) check is done; shrink
+  ECMAScript callers).  A value stack shrink (or grow) check is done; shrink
   errors should be ignored silently.
 
 * For constructor calls the return value needs special post-processing: if
@@ -434,7 +434,7 @@ policy is based on concrete performance measurements, and is as follows:
 Overlap between activations
 ---------------------------
 
-Example of value stack overlap for two Ecmascript activations during a
+Example of value stack overlap for two ECMAScript activations during a
 function call::
 
   size ->    _
@@ -484,11 +484,11 @@ guarantees provided by e.g. ``duk_require_stack()``.
 Note that there is nothing in the value stack model or the execution model
 in general which requires activations to share registers for parameter
 passing.  It is just a convenient thing to do especially for
-Ecmascript-to-Ecmascript calls: it minimizes value stack growth, minimizes
+ECMAScript-to-ECMAScript calls: it minimizes value stack growth, minimizes
 unnecessary copying of arguments (which is pointless because the caller will
 never rely on the argument values after a call anyway).
 
-When an Ecmascript function with a very large value stack frame calls
+When an ECMAScript function with a very large value stack frame calls
 a function with a very small value stack frame, a lot of value stack
 resize / wipe mechanics will happen.  It might be useful to avoid the
 register overlap in such cases to improve performance.
@@ -516,10 +516,10 @@ for the GC and will prevent garbage collection.  This is easy to do e.g.
 when a function call returns (just wipe the entire range of registers used
 by the function) but is more difficult for a function which runs forever.
 
-When Ecmascript functions are compiled, the compiler keeps track of how many
+When ECMAScript functions are compiled, the compiler keeps track of how many
 registers are needed by the opcodes comprising the compiled bytecode, and
 this value is stored in the ``nregs`` entry of a compiled function.  While
-the Ecmascript function is executing, we know that *all* register accesses
+the ECMAScript function is executing, we know that *all* register accesses
 will be to valid and initialized parts of the value stack, so no grow/shrink
 or other sanity checks are necessary while the function is executing.  This
 does not mean that all the ``nregs`` will always be used, and any unused

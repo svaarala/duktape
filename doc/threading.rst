@@ -20,7 +20,7 @@ objects, the results are unpredictable and memory unsafe behavior may happen.
 The simplest way to use multiple threads is for only one native thread to call
 into Duktape API at a time.  If a call is made, e.g. using ``duk_call()``,
 control flow is transferred to Duktape for the duration of the call.  Within
-that call further Ecmascript and Duktape/C function calls can be made, and
+that call further ECMAScript and Duktape/C function calls can be made, and
 multiple Duktape threads (coroutines, not to be confused with native
 threads) can execute.  Once the initial call returns it's safe to call into
 the Duktape API from another native thread, as long as there's some

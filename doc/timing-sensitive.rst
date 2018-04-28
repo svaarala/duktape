@@ -21,5 +21,5 @@ Suggested feature options
 * Use the default memory management settings (reference counting and
   mark-and-sweep) but disable ``DUK_USE_VOLUNTARY_GC`` to eliminate
   mark-and-sweep pauses.  Use explicit GC calls (either ``duk_gc()``
-  from C or ``Duktape.gc()`` from Ecmascript) when possible to collect
+  from C or ``Duktape.gc()`` from ECMAScript) when possible to collect
   circular references.

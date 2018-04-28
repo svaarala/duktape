@@ -2,7 +2,7 @@
 Using UTF-8 as internal representation
 ======================================
 
-Some notes on using UTF-8 as internal representation for Ecmascript strings
+Some notes on using UTF-8 as internal representation for ECMAScript strings
 when surrogate pairs can be combined.
 
 Current representation
@@ -28,7 +28,7 @@ C API problem with current representation
 One concrete problem with this arrangement is that non-BMP strings are
 internally represented as CESU-8:
 
-* If source code contains a non-BMP character, the Ecmascript specification
+* If source code contains a non-BMP character, the ECMAScript specification
   requires that such a character is decoded into surrogates, from
   https://www.ecma-international.org/ecma-262/5.1/#sec-6:
 
@@ -54,10 +54,10 @@ internally represented as CESU-8:
 * Applications dealing natively with UTF-8 would often prefer to see UTF-8
   rather than CESU-8, thus avoiding the need to transcode CESU-8 to UTF-8.
 
-The Ecmascript specification doesn't (and cannot) mandate any specific
+The ECMAScript specification doesn't (and cannot) mandate any specific
 internal representation, nor does it provide any requirements on how a
 C API must represent strings.  The current convention of using CESU-8
-for standard Ecmascript strings is thus not really mandatory.  However,
+for standard ECMAScript strings is thus not really mandatory.  However,
 if an alternative representation is used, it MUST behave identically as
 far as script code is concerned.
 
@@ -68,14 +68,14 @@ One alternative to the current internal representation is to:
 
 * Keep the current CESU-8 + UTF-8 + extended UTF-8 as the base representation.
 
-* When conceptual Ecmascript strings contain correctly paired surrogates,
+* When conceptual ECMAScript strings contain correctly paired surrogates,
   combine the surrogates into the actual non-BMP codepoint.  The resulting
   codepoint is then valid UTF-8 and not CESU-8.
 
 * When a non-paired surrogate is found, encode it as CESU-8 as before.
 
 * This process must be applied to all inputs, both script code and C code,
-  so that a certain conceptual Ecmascript string has a unique duk_hstring
+  so that a certain conceptual ECMAScript string has a unique duk_hstring
   representation.  (If this is not the case, string comparison using an
   interned string pointer would no longer be valid which leads to a lot of
   complications.)
@@ -87,7 +87,7 @@ This would have the upside that:
   in the C API.
 
 * Pushing UTF-8 strings would produce strings that behaved like standard
-  Ecmascript strings, i.e. they would conceptually have surrogate pairs in
+  ECMAScript strings, i.e. they would conceptually have surrogate pairs in
   place of non-BMP.
 
 And a few downsides:

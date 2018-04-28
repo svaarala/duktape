@@ -58,7 +58,7 @@ Specification notes
 Key parts
 ---------
 
-Key parts of Ecmascript E5 discussion identifier handling include Section 10
+Key parts of ECMAScript E5 discussion identifier handling include Section 10
 (Executable Code and Execution Contexts):
 
 * Sections 10.2.2.1 and 10.3.1 cover identifier lookup
@@ -109,7 +109,7 @@ Environment record
   Declarative environment records hold variable bindings in an internal map
   not accessible from user code.
 
-  Object environment records hold variable bindings in an Ecmascript object.
+  Object environment records hold variable bindings in an ECMAScript object.
   They are used for handling global program execution for ``with`` statements.
 
 Execution context
@@ -338,7 +338,7 @@ Specification
 -------------
 
 Environment records are described in E5 Section 10.2.1.  They define how
-identifiers are bound to values in an Ecmascript execution context.
+identifiers are bound to values in an ECMAScript execution context.
 Bindings can be established in several ways:
 
 #. variable and function declarations in the global scope
@@ -359,17 +359,17 @@ There are two types of environment records:
 
 #. *declarative environment record*: binds identifiers to values directly
 
-#. *object environment record*: refers to an external Ecmascript object
+#. *object environment record*: refers to an external ECMAScript object
    which contains the variable bindings
 
 Declarative environment records are the ordinary way of binding identifiers.
 The underlying map of identifiers to values is only visible to the program
 through variable accesses.  For object environment records, the identifiers
-are bound through an ordinary Ecmascript object (referred to by the object
+are bound through an ordinary ECMAScript object (referred to by the object
 environment record); object environment records are used e.g. in the global
 propgram scope and in the ``with`` statement.
 
-An Ecmascript E5 execution environment maintains two environment record
+An ECMAScript E5 execution environment maintains two environment record
 references (E5 Section 10.3):
 
 * A *variable environment* refers to an environment record which is used
@@ -459,7 +459,7 @@ record object.
 Object environment record
 -------------------------
 
-An *object environment record* refers to an external Ecmascript object
+An *object environment record* refers to an external ECMAScript object
 (visible to the program) "backing" the identifier bindings.  The target
 object is identified with an internal control property.
 
@@ -619,7 +619,7 @@ Notes:
   lookup.  The flag is cleared for global code and eval code; or rather
   functions compiled from global code and eval code.
 
-* Unlike Duktape, Ecmascript does not separate the compilation and
+* Unlike Duktape, ECMAScript does not separate the compilation and
   execution of global code and eval code.  Hence the handling is
   seemingly a bit different although the outcome should be the same.
 
@@ -932,7 +932,7 @@ HASVAR: check existence of identifier
 =====================================
 
 Unlike e.g. GETVAR, HASVAR does not traverse the environment record outer
-reference chain.  HASVAR is also not really an exposed primitive; Ecmascript
+reference chain.  HASVAR is also not really an exposed primitive; ECMAScript
 code cannot access it directly.  It is used internally for function call
 handling, and can also be used from the C API.
 

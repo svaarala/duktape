@@ -1562,7 +1562,7 @@ For these, too, there are fast variants:
 
 * ``duk_small_uint_fast_t``: same but unsigned.
 
-Exact 32-bit types are needed in some cases e.g. for Ecmascript semantics and
+Exact 32-bit types are needed in some cases e.g. for ECMAScript semantics and
 or guaranteeing portable overflow / underflow handling.  Also, 64-bit
 arithmetic emulation (implemented on 32 bit types) relies on exact unsigned
 overflows / underflows.  The wrapped C99 types are used in these cases.
@@ -1952,7 +1952,7 @@ character constants (``DUK_ASC_xxx``) defined in Duktape internal headers.
 String literals
 ---------------
 
-C strings which end up visible to user code (either through Ecmascript
+C strings which end up visible to user code (either through ECMAScript
 or through the C API) must be converted to UTF-8 at some point.
 
 Ideally the strings would be written directly in UTF-8 (ASCII in practice)

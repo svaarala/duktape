@@ -74,7 +74,7 @@ This works but still has issues:
     Object.defineProperties(o, { foo: { value: 'bar' }});
 
 A way around creating an internal representation for partially populated
-descriptors is to use an internal Ecmascript object representing a
+descriptors is to use an internal ECMAScript object representing a
 validated and normalized descriptor with all property values already
 coerced and checked; any getter calls would be done during coercion
 and the final value would be a plain one.  In the pathological example
@@ -90,7 +90,7 @@ above, the internal descriptors could be::
   }
 
 The coercions could then be executed first, and the coerced descriptors
-then given one at a time (as Ecmascript objects) to
+then given one at a time (as ECMAScript objects) to
 ``Object.defineProperty()``.
 
 This would eliminate any side effects of the coercion and would allow

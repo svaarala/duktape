@@ -30,7 +30,7 @@ The algorithm returns the object, which allows chaining; for instance::
 
 ``ToPropertyDescriptor()`` is a helper called only from
 ``Object.defineProperty()`` and ``Object.defineProperties()``.  It
-converts a property descriptor expressed as an Ecmascript object into
+converts a property descriptor expressed as an ECMAScript object into
 a "specification descriptor", doing boolean coercions and cross checking
 the descriptor.  For instance, ``ToPropertyDescriptor()`` will reject
 any property descriptor which contains fields indicating it is both

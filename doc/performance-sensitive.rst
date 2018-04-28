@@ -79,7 +79,7 @@ Suggested feature options
 
   Fastints are often useful on platforms with soft floats, but they can also
   speed up execution on some hard float platforms (even on x64).  The benefit
-  (or penalty) depends on the kind of Ecmascript code executed, e.g. code
+  (or penalty) depends on the kind of ECMAScript code executed, e.g. code
   heavy on integer loops benefits.
 
 * Enable specific fast paths:

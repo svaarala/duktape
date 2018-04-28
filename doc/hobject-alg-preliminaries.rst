@@ -139,7 +139,7 @@ be non-null in the first loop):
 
 .. note:: A maximum prototype chain depth should be imposed as a safeguard
           against loops.  Note that while it should be impossible to create
-          prototype loops with Ecmascript code alone, creating them from C
+          prototype loops with ECMAScript code alone, creating them from C
           code *is* possible.
 
 GetProperty with default GetOwnProperty inlined
@@ -410,7 +410,7 @@ exotic behaviors:
     strict mode function.)
 
 .. note:: The step 5.c gives the object as the ``this`` binding for the
-          getter call.  When properties are actually accessed from Ecmascript
+          getter call.  When properties are actually accessed from ECMAScript
           code, the wrappers (property accessor evaluation, ``GetValue()``)
           have a different behavior: the primitive (uncoerced) object is
           given as the ``this`` binding.
@@ -1284,13 +1284,13 @@ A property descriptor may not be both a data descriptor and access descriptor
 ``"value"`` keys.  In this case:
 
 * ``defineProperty()`` uses ``ToPropertyDescriptor()`` to convert the
-  Ecmascript object into an internal property descriptor
+  ECMAScript object into an internal property descriptor
 
 * ``ToPropertyDescriptor()`` creates a property descriptor and throws a
   ``TypeError`` if the descriptor contains conflicting fields
 
 ``ToPropertyDescriptor()`` also coerces the values in its argument
-Ecmascript object (e.g. it uses ``ToBoolean()`` for the flags).
+ECMAScript object (e.g. it uses ``ToBoolean()`` for the flags).
 The behavior of ``ToPropertyDescriptor()`` is probably easiest to "inline"
 into wherever it is needed.  The E5 specification refers to
 ``ToPropertyDescriptor`` only in ``Object.defineProperty()`` and
@@ -1441,9 +1441,9 @@ internal helper for implementing ``Object.defineProperties()`` and
 ``Object.defineProperty()``.
 
 The algorithm is a variant of ``ToPropertyDescriptor()`` which, instead of
-an internal descriptor, outputs an equivalent Ecmascript property descriptor
+an internal descriptor, outputs an equivalent ECMAScript property descriptor
 which has been fully validated, and contains only "own" data properties.
-If the resulting Ecmascript object, ``desc``, is later given to
+If the resulting ECMAScript object, ``desc``, is later given to
 ``ToPropertyDescriptor()``:
 
 * The call cannot fail.

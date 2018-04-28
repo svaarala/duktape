@@ -24,7 +24,7 @@ API and internals.  What's missing from the table:
 * The C APIs for creating a value of each type are not listed.
 
 +----------------------------+---------------------+------------------------+-----------------------+-------------------------+-------------------------------------+-------------------+-------------------------------+-------------------------------------+
-| Ecmascript code            | API type            | API type check(s)      | Internal duk_tval tag | Internal struct(s)      | duk_hobject class number            | Ecmascript typeof | Ecmascript Object .toString() | Notes                               |
+| ECMAScript code            | API type            | API type check(s)      | Internal duk_tval tag | Internal struct(s)      | duk_hobject class number            | ECMAScript typeof | ECMAScript Object .toString() | Notes                               |
 +============================+=====================+========================+=======================+=========================+=====================================+===================+===============================+=====================================+
 | n/a                        | DUK_TYPE_NONE       | duk_is_valid_index()   | DUK_TAG_UNUSED        | n/a                     | n/a                                 | n/a               | n/a                           | Marker for "no value" when doing    |
 |                            |                     |                        |                       |                         |                                     |                   |                               | a valus stack type lookup.          |
@@ -151,12 +151,12 @@ There are four basic alternatives to representing a value:
 * **A heap allocated object**.  A tagged value points to a ``duk_hobject``.
   Because a ``duk_hobject`` has a property table, type specific values can
   be easily added to the property table, but properties have a relatively
-  high cost.  Example: plain Ecmascript object.
+  high cost.  Example: plain ECMAScript object.
 
 * **A heap allocated extended object**.  A tagged value points to a struct
   extending ``duk_hobject``.  Flags in the shared ``duk_hobject`` header
   allow Duktape internals to detect the extended type and to access further
   fields in an extended C struct.  The extended values may only be available
   internally, but may also be accessible via property reads if the properties
-  are virtualized.  Example: Ecmascript function, Duktape/C function, thread,
+  are virtualized.  Example: ECMAScript function, Duktape/C function, thread,
   buffer object.

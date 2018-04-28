@@ -1,4 +1,4 @@
-# Ecmascript testcase (tests/ecmascript/) known issues
+# ECMAScript testcase (tests/ecmascript/) known issues
 
 -
   test: "test-bi-date-tzoffset-brute-fi.js"
@@ -127,7 +127,7 @@
   test: "test-bi-proxy-construct-newtarget.js"
   knownissue: "for Proxy without 'construct' trap, new.target evaluates to Proxy target rather than Proxy in target constructor"
 
-# Ecmascript testcases that need special options or environment to work
+# ECMAScript testcases that need special options or environment to work
 
 -
   test: "test-bi-date-local-parts-fi.js"

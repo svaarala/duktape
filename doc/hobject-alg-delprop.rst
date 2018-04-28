@@ -5,7 +5,7 @@ DELPROP: exposed property deletion algorithm ("delete" operator)
 Background
 ==========
 
-Properties are deleted in Ecmascript code with the ``delete`` operator, e.g.::
+Properties are deleted in ECMAScript code with the ``delete`` operator, e.g.::
 
   delete foo.bar;
 

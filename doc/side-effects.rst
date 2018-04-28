@@ -449,7 +449,7 @@ Error throw
   sandboxing reasons: the error handling path of a protected call is assumed
   to never throw.
 
-* Ecmascript try-catch handling isn't currently fully protected against out of
+* ECMAScript try-catch handling isn't currently fully protected against out of
   memory: if setting up the catch execution fails, an out-of-memory error is
   propagated from the try-catch block.  Try-catch isn't as safe as protected
   calls for sandboxing.  Even if catch execution setup didn't allocate memory,

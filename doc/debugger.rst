@@ -334,7 +334,7 @@ blocking), you can also use it like this::
 duk_debugger_pause()
 --------------------
 
-The target may call this at any time to request Ecmascript execution to be
+The target may call this at any time to request ECMAScript execution to be
 paused, and control to be turned over to an attached debug client::
 
     duk_debugger_pause(ctx);
@@ -346,7 +346,7 @@ See the API documentation for more details.
 A common use case for this call is to bind it to a hotkey, which allows the
 user to break out of and debug infinite loops.  However, like all Duktape API
 calls, the call is not thread safe and must be called from the same thread used
-to run the Ecmascript code being debugged.
+to run the ECMAScript code being debugged.
 
 duk_debugger_notify()
 ---------------------
@@ -527,7 +527,7 @@ Duktape marks a transport broken if:
 
 When the debug transport has been marked broken:
 
-* Debugger is automatically detached so that normal Ecmascript execution
+* Debugger is automatically detached so that normal ECMAScript execution
   will resume immediately.  If a detached callback exists, it will be called.
 
 * Duktape won't make any more calls to user callbacks for the stream.
@@ -710,7 +710,7 @@ Dvalue
 
 After the version identification handshake, the debug stream consists of typed
 values called *dvalues* sent in each direction.  Dvalues represent message
-framing markers, integers, strings, tagged Ecmascript values, etc.  They can
+framing markers, integers, strings, tagged ECMAScript values, etc.  They can
 be parsed without context which is useful for dumping and also allows dvalues
 (and debug messages) to be skipped without context.  Debug *messages* are then
 constructed as a sequence of dvalues: a start marker, zero or more dvalues,
@@ -759,13 +759,13 @@ some cases:
 |                       |           | entries and in the debugger protocol  |
 |                       |           | to indicate a "none" result           |
 +-----------------------+-----------+---------------------------------------+
-| 0x16                  | undefined | Ecmascript "undefined"                |
+| 0x16                  | undefined | ECMAScript "undefined"                |
 +-----------------------+-----------+---------------------------------------+
-| 0x17                  | null      | Ecmascript "null"                     |
+| 0x17                  | null      | ECMAScript "null"                     |
 +-----------------------+-----------+---------------------------------------+
-| 0x18                  | true      | Ecmascript "true"                     |
+| 0x18                  | true      | ECMAScript "true"                     |
 +-----------------------+-----------+---------------------------------------+
-| 0x19                  | false     | Ecmascript "false"                    |
+| 0x19                  | false     | ECMAScript "false"                    |
 +-----------------------+-----------+---------------------------------------+
 | 0x1a <8 bytes>        | number    | IEEE double (network endian)          |
 +-----------------------+-----------+---------------------------------------+
@@ -830,7 +830,7 @@ These additional notations are used::
     # Repetition, e.g. 1-N values, each string or integer:
     [<str: foo> | <int: bar>]+
 
-When a field does not relate to an Ecmascript value exactly, e.g. the field
+When a field does not relate to an ECMAScript value exactly, e.g. the field
 is a debugger control field, typing can be loose.  For example, a boolean
 field can be represented sometimes as integer dvalue and an arbitrary binary
 string as a string dvalue.  The specific types used for each command are
@@ -1456,7 +1456,7 @@ Fatal is one of:
 * 0x01: fatal (uncaught)
 
 Duktape sends a Throw notification whenever an error is thrown, either by
-Duktape due to a runtime error or directly by Ecmascript code.
+Duktape due to a runtime error or directly by ECMAScript code.
 
 msg is the string-coerced value being thrown.  Filename and line number are
 taken directly from the thrown object if it is an Error instance (after
@@ -1826,7 +1826,7 @@ so that the Eval statement would:
   be shown in the debug client UI.
 
 When Eval is requested from outside any Duktape activation, e.g. while doing
-a duk_debugger_cooperate() call, there is no active Ecmascript activation so
+a duk_debugger_cooperate() call, there is no active ECMAScript activation so
 that a "direct" Eval is not possible.  Eval will then be executed as an
 indirect Eval instead.  As noted above, you can request an indirect Eval
 explicitly by sending null for the callstack level.
@@ -1902,7 +1902,7 @@ level counting from callstack top::
     REQ 33 -3 EOM
     REP 2 "foo" "bar" 0  "...bytecode..." EOM
 
-An explicit Ecmascript function object can also be given using an "object" or
+An explicit ECMAScript function object can also be given using an "object" or
 "heapptr" dvalue::
 
     REQ 33 {"type":"object","class":6,"pointer":"00000000014839e0"} EOM
@@ -1911,9 +1911,9 @@ An explicit Ecmascript function object can also be given using an "object" or
 An error reply is returned if:
 
 * The argument exists but has an invalid type or points to a target value
-  which is not an Ecmascript function.
+  which is not an ECMAScript function.
 
-* Callstack entry doesn't exist or isn't an Ecmascript activation.
+* Callstack entry doesn't exist or isn't an ECMAScript activation.
 
 Notes:
 
@@ -2018,7 +2018,7 @@ Example::
     REQ 36 { "type": "object", "class": 10, "pointer": "deadbeef" } "message" EOM
     REP 7 "message" "Hello there!" EOM
 
-Inspect a property of an Ecmascript object using a specific string key
+Inspect a property of an ECMAScript object using a specific string key
 without causing side effects such as getter calls or Proxy traps.  The
 result is either:
 
@@ -2080,7 +2080,7 @@ The flags field is an unsigned integer bitmask with the following bits:
 | 0x100   | Property key is a Symbol.                                       |
 +---------+-----------------------------------------------------------------+
 | 0x200   | Property is a hidden Symbol which is not visible to ordinary    |
-|         | Ecmascript code.                                                |
+|         | ECMAScript code.                                                |
 +---------+-----------------------------------------------------------------+
 
 For artificial properties (returned by GetHeapObjInfo) the property attributes
@@ -2099,7 +2099,7 @@ Example::
     REQ 37 { "type": "object", "class": 10, "pointer": "deadbeef" } 0 2 EOM
     REP 7 "name" "Example object" 7 "message" "Hello there!" EOM
 
-Inspect a range ``[idx_start,idx_end[`` of an Ecmascript object's "own"
+Inspect a range ``[idx_start,idx_end[`` of an ECMAScript object's "own"
 properties.  Result contains properties found; if the start/end index is
 larger than available property count those values will be missing from the
 result entirely.  For example, if the object has 3 properties and the range
@@ -2157,7 +2157,7 @@ properties, without side effects:
   carefully avoid failing on a prototype loop.
 
 * Some properties which are implemented in a fully virtualized fashion are
-  visible in Ecmascript enumeration but may not be visible in the inspection.
+  visible in ECMAScript enumeration but may not be visible in the inspection.
   For example, String object has virtual index properties (0, 1, 2, ...) for
   string characters, and these are not included in the inspection result at
   the moment.  They can be read using GetObjPropDesc, however.
@@ -2194,7 +2194,7 @@ pushed.  Each value pushed will be sent as a dvalue in the message.  So if you
 push two strings, "foo" and "bar", the client will see ``NFY 7 "foo" "bar" EOM``.
 
 AppRequest is used to make requests to the target which are not directly
-related to Ecmascript execution and may be implementation-dependent.  For
+related to ECMAScript execution and may be implementation-dependent.  For
 example, an AppRequest might be used to:
 
 * Download source files directly from the debug target file system
@@ -2444,7 +2444,7 @@ The following list describes artificial keys included in Duktape 1.5.0, see
 +---------------------------------+---------------------------+---------------------------------------------------------+
 | ``varargs``                     | ``duk_hnatfunc``          | True if function has variable arguments.                |
 +---------------------------------+---------------------------+---------------------------------------------------------+
-| (not present yet)               | ``duk_hcompfunc``         | Ecmascript function data area, including bytecode.      |
+| (not present yet)               | ``duk_hcompfunc``         | ECMAScript function data area, including bytecode.      |
 +---------------------------------+---------------------------+---------------------------------------------------------+
 | ``lex_env``                     | ``duk_hcompfunc``         | Function lexical environment.                           |
 +---------------------------------+---------------------------+---------------------------------------------------------+
@@ -2528,7 +2528,7 @@ These are disabled (``if #0``'d out) in code, and may be added back if useful:
 "debugger" statement
 ====================
 
-Ecmascript has a debugger statement::
+ECMAScript has a debugger statement::
 
     a = 123;
     debugger;
@@ -2540,7 +2540,7 @@ The E5 specification states that:
     to cause a breakpoint when run under a debugger.  If a debugger is not
     present or active this statement has no observable effect.
 
-Other Ecmascript engines typically treat a debugger statement as a breakpoint:
+Other ECMAScript engines typically treat a debugger statement as a breakpoint:
 
 * https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Statements/debugger
 * http://msdn.microsoft.com/en-us/library/ie/0bwt76sk%28v=vs.94%29.aspx
@@ -2853,9 +2853,9 @@ There are many design alternatives to defining a breakpoint using a file/line
 pair.  The current file/line approach is intuitive but means that:
 
 * There's no way to break in the middle of a single line, e.g. for one-line
-  functions.  This also affects minified Ecmascript code.
+  functions.  This also affects minified ECMAScript code.
 
-* There are potentially multiple Ecmascript function instance (i.e.
+* There are potentially multiple ECMAScript function instance (i.e.
   ``duk_hcompfunc`` objects) that have been created from the same spot.
   The breakpoint will match all of them.
 
@@ -3141,7 +3141,7 @@ It would be nice for the protocol to be human readable, e.g. plain text.
 * A binary protocol is used at the moment because it is more compact and
   has a smaller code footprint than parsing a text-based protocol.  Note
   that such parsing would need to be done without GC impact or other side
-  effects so existing Ecmascript mechanisms (like number parsing) cannot
+  effects so existing ECMAScript mechanisms (like number parsing) cannot
   necessarily be used as is.
 
 Code footprint
@@ -3445,7 +3445,7 @@ There are several ways to make this faster:
 Improve compiler line number accuracy
 -------------------------------------
 
-The Ecmascript compiler assigns line numbers to bytecode opcodes emitted, and
+The ECMAScript compiler assigns line numbers to bytecode opcodes emitted, and
 doesn't always do a perfect job in doing so.  There are a few cases where the
 line number for a statement can be off by one (matching a previous statement)
 which looks funny in the debugger UI.

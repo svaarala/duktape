@@ -10,7 +10,7 @@ problem.  Duktape incorporates built-in algorithms for these operations to
 avoid dependence on platform primitives.  This is important for several
 reasons, including: (1) platform primitives may not behave consistently
 across platforms; (2) they almost never provide enough functionality to
-fulfill Ecmascript requirements which include, for instance, formatting
+fulfill ECMAScript requirements which include, for instance, formatting
 fractional values in arbitrary radix in the range 2 to 36; (3) and they
 may have a large code or memory footprint which is a specific concern in
 Duktape.
@@ -21,7 +21,7 @@ constants.  The script ``gennumdigits.py`` is used to generate some tables
 needed by the implementation.
 
 The implementation is based on the Dragon4 number-to-string algorithm, with
-some modifications for handling Ecmascript requirements.  Dragon4 requires
+some modifications for handling ECMAScript requirements.  Dragon4 requires
 the use of big integers, so a limited functionality bigint implementation
 is included in ``duk_numconv.c``; the bignum implementation uses fixed size
 stack buffers to avoid dynamic memory allocation.  Dragon4 is also currently
@@ -32,10 +32,10 @@ The current number-to-string approach should produce optimal shortest form
 parsing may not produce optimal results either.  These limitations should be
 fixed later.  Known bugs are documented in failing bug testcases.
 
-Ecmascript number conversions
+ECMAScript number conversions
 =============================
 
-Ecmascript requires number-to-string conversion (or more specifically, IEEE
+ECMAScript requires number-to-string conversion (or more specifically, IEEE
 double to string conversion) in the following places:
 
 * ``ToString()`` coercion of numbers, E5.1 Section 9.8.1.  ToString() only
@@ -64,7 +64,7 @@ double to string conversion) in the following places:
 String-to-number conversion (or more specifically, string to IEEE double
 conversion) is required in the following places:
 
-* Ecmascript compilation uses a ``NumericLiteral`` production, whose parsing
+* ECMAScript compilation uses a ``NumericLiteral`` production, whose parsing
   semantics are given in E5.1 Section 7.8.3.  Radix 10 only.
 
 * ``ToNumber()`` coercion of strings, E5.1 Section 9.3.1.  Radix 10 only.
@@ -75,7 +75,7 @@ conversion) is required in the following places:
 
 * Global object ``parseFloat(string)``, E5.1 Section 15.1.2.3.  Radix 10 only.
 
-* ``JSON.parse()`` parses JSON data as a restricted form of Ecmascript syntax.
+* ``JSON.parse()`` parses JSON data as a restricted form of ECMAScript syntax.
   JSON number literals match the production ``JSONNumber`` which is a subset
   of ``NumericLiteral``.  Notably, ``JSONNumber`` does not allow hex literals,
   does not allow fractions without a leading integer part (e.g. ".123" is
@@ -117,7 +117,7 @@ For string-to-number conversion, the high level functionality includes:
 * Conversion of an arbitrary integer in any radix in the range 2 to 36 into
   an IEEE double.
 
-* Supporting a variety of small lexical differences in the Ecmascript "call
+* Supporting a variety of small lexical differences in the ECMAScript "call
   sites": recognizing "0x"/"0X" hex notation and leading zero octal notation,
   allowing or rejecting leading and trailing whitespace, allowing or rejecting
   trailing garbage, treating the empty string as zero (vs. NaN), etc.
@@ -131,7 +131,7 @@ Note that although it is possible to format an arbitrary number into any
 radix in the range 2 to 36 (even fractions), there is no primitive to parse
 non-integer numbers back in any other radix than 10.
 
-Notes on Ecmascript number-to-string conversion
+Notes on ECMAScript number-to-string conversion
 ===============================================
 
 ToString() and Number.prototype.toString()
@@ -263,7 +263,7 @@ toPrecision() uses an exponent notation.  Examples:
 Note that leading fractional zeroes are prepended if necessary.  Trailing
 zeroes are not appended to reach the decimal point from above.
 
-Notes on Ecmascript string-to-number conversion
+Notes on ECMAScript string-to-number conversion
 ===============================================
 
 Lexical trivia differences in call sites
@@ -386,7 +386,7 @@ White space
 * parseInt() and parseFloat() strip using StrWhiteSpaceChar.
 
 * NumericLiteral and JSONNumber do not accept white space (it's not
-  necessary because the Ecmascript/JSON parser will deal with whitespace
+  necessary because the ECMAScript/JSON parser will deal with whitespace
   on its own)
 
 Infinity
@@ -736,5 +736,5 @@ Future work
 * In very constrained environments it may be a reasonable tradeoff to use
   ANSI C number formatting and parsing (and drop a bunch of features, such
   as arbitrary radix support, some of the precision modes etc), even if it
-  is not fully compatible with Ecmascript semantics.  The impact of custom
+  is not fully compatible with ECMAScript semantics.  The impact of custom
   number formatting is about 8-9 kilobytes of code footprint at the moment.

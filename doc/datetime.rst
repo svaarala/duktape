@@ -9,13 +9,13 @@ how to implement an external Date provider and configure Duktape to use it
 through the ``duk_config.h`` header.  An external Date provider allows Duktape
 to be compiled on exotic platforms without change to Duktape internals.
 
-Overview of Ecmascript date/time concepts
+Overview of ECMAScript date/time concepts
 =========================================
 
-Ecmascript time value
+ECMAScript time value
 ---------------------
 
-An Ecmascript time value is essentially a UNIX/Posix (UTC) time value
+An ECMAScript time value is essentially a UNIX/Posix (UTC) time value
 measured in milliseconds without fractions:
 
 * http://www.ecma-international.org/ecma-262/5.1/#sec-15.9.1.1
@@ -23,11 +23,11 @@ measured in milliseconds without fractions:
 
 A time value has a simple arithmetic relationship with UTC datetime (calendar)
 values; leap years are taken into account but leap seconds are not (as a side
-effect, when a leap second is inserted the Ecmascript time value conceptually
+effect, when a leap second is inserted the ECMAScript time value conceptually
 jumps backwards by one second).  This simple relationship allows easy, platform
 independent conversion between the two representations.
 
-The definition for a valid Ecmascript time value is very strict, and an
+The definition for a valid ECMAScript time value is very strict, and an
 implementation is required to treat anything outside that range as an invalid
 time value (NaN / "Invalid Date").  The valid time range is 100 million days
 backwards and forwards from Jan 1, 1970.  The minimum and maximum values are::
@@ -62,7 +62,7 @@ in additional platform specific formats.
 
 To simplify, the parsing/formatting requirements are:
 
-* The implementation is required to parse the Ecmascript ISO 8601 subset but
+* The implementation is required to parse the ECMAScript ISO 8601 subset but
   may parse any other formats as well, including a larger ISO 8601 subset.
 
 * The implementation is allowed to serialize time values into arbitrary
@@ -71,7 +71,7 @@ To simplify, the parsing/formatting requirements are:
   implementation will still, of course, guarantee that other components
   are parsed back correctly.)
 
-* ``toISOString()`` is required to use the Ecmascript ISO 8601 subset exactly,
+* ``toISOString()`` is required to use the ECMAScript ISO 8601 subset exactly,
   and the resulting string must parse back to the same time value (again, only
   technically required if milliseconds is zero).  This is the platform neutral
   string format which is guaranteed to work even across implementations.
@@ -103,16 +103,16 @@ Implementing an external Date provider
 To implement an external Date provider you must use the ``duk_config.h``
 configuration model and provide the following config options:
 
-* ``DUK_USE_DATE_GET_NOW``: mandatory, provides current Ecmascript time.
+* ``DUK_USE_DATE_GET_NOW``: mandatory, provides current ECMAScript time.
 
 * ``DUK_USE_DATE_GET_LOCAL_TZOFFSET``: mandatory, provides offset between
   UTC and local time for a given timestamp.  Can always map to zero, i.e.
   pretend that local time matches UTC time.
 
 * ``DUK_USE_DATE_PARSE_STRING``: optional, parse a platform specific string
-  into Ecmascript time.
+  into ECMAScript time.
 
-* ``DUK_USE_DATE_FORMAT_STRING``: optional, format Ecmascript time into a
+* ``DUK_USE_DATE_FORMAT_STRING``: optional, format ECMAScript time into a
   platform specific string.
 
 You also need to make sure ``duk_config.h`` won't use any of the Duktape
@@ -139,16 +139,16 @@ Porting requirements
 The minimum requirement for porting the Date implementation to a new
 platform is:
 
-* A function to get the current (UTC) time as an Ecmascript time value,
+* A function to get the current (UTC) time as an ECMAScript time value,
   preferably with a millisecond precision.
 
   - In many cases the current time can be obtained directly, as is the
     case with ``gettimeofday()`` for instance.
 
   - An implementation can also get a broken down datetime for the current
-    UTC instant, and then use the Ecmascript timevalue conversion functions
-    to convert it to an Ecmascript time value.  The conversion is entirely
-    platform neutral, because the Ecmascript time model enforces a simple
+    UTC instant, and then use the ECMAScript timevalue conversion functions
+    to convert it to an ECMAScript time value.  The conversion is entirely
+    platform neutral, because the ECMAScript time model enforces a simple
     relationship between time values and calendar dates.
 
 Without additional porting effort, string formatting and parsing will be
@@ -158,7 +158,7 @@ The following is thus very nice:
 * A function to get the time offset between local time and UTC on a certain
   UTC instant.  The E5.1 specification has separate concepts for the local
   time zone adjustment (LocalTZA) and daylight saving time adjustment
-  (DaylightSavingTA(t)).  The Ecmascript conversion semantics, especially
+  (DaylightSavingTA(t)).  The ECMAScript conversion semantics, especially
   with respect to handling of daylight savings, must be followed.
 
 Finally, these are nice-to-have to provide support for Date string formats
@@ -181,12 +181,12 @@ as follows:
   and/or DST information is available.
 
 * Platform specific local time and locale mechanisms can be used, as long as
-  they don't restrict the Ecmascript time range.  For instance, if the valid
-  platform datetime range is smaller than Ecmascript's, the implementation
+  they don't restrict the ECMAScript time range.  For instance, if the valid
+  platform datetime range is smaller than ECMAScript's, the implementation
   must either fall back to default handling if the range is exceeded, or
   extrapolate in a reasonable manner.
 
-The Ecmascript valid datetime range is huge, and may be larger than what the
+The ECMAScript valid datetime range is huge, and may be larger than what the
 underlying platform supports.  This poses challenges to detect e.g. daylight
 savings time reliably.  For instance, if the platform has a Y2038 limit, how
 does one query for daylight savings time for the year 200000?
@@ -339,7 +339,7 @@ is the current implementation approach:
 
 5. If accepted, subtract timezone hours and minutes from the hours and
    minutes part (to convert to UTC), and then convert the (possibly
-   unnormalized) components into an Ecmascript time value.
+   unnormalized) components into an ECMAScript time value.
 
 The parser will produce the following "parts":
 
@@ -365,7 +365,7 @@ Misc notes
 * The internal time value always exists for a Date instance, and is
   always a number.  The number value is either NaN, or a finite number
   in the valid E5 range, with no millisecond fractions.  The internal
-  component representation uses zero-based day and month, while Ecmascript
+  component representation uses zero-based day and month, while ECMAScript
   API uses one-based day and zero-based month.
 
 * When the internal time value is broken into components, each

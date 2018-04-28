@@ -20,7 +20,7 @@ the executed code may be potentially hostile, which is of course much more
 challenging to secure against.
 
 Duktape provides mechanisms to allow these goals to be achieved for running
-untrusted Ecmascript code.  All C code is expected to be trusted and must be
+untrusted ECMAScript code.  All C code is expected to be trusted and must be
 carefully written with these sandboxing goals in mind.
 
 This document describes best practices for Duktape sandboxing.
@@ -39,7 +39,7 @@ Suggested measures
 Isolation approaches
 --------------------
 
-There are two basic alternatives to sandboxing Ecmascript code with Duktape:
+There are two basic alternatives to sandboxing ECMAScript code with Duktape:
 
 * Use a separate Duktape heap for each sandbox.
 
@@ -80,7 +80,7 @@ Pros and cons of using a Duktape thread for sandboxing:
 * All threads in a certain heap share the same memory pool which means that
   one sandbox can starve other sandboxes of memory.
 
-* Only a single native thread can execute Ecmascript code at a time.
+* Only a single native thread can execute ECMAScript code at a time.
 
 These two approaches can of course be mixed: you can have multiple heaps,
 each with one or more sandboxed threads.
@@ -148,11 +148,11 @@ properties" in objects.  The mechanism currently relies on "hidden Symbols"
 (called "internal keys" or "internal strings" in Duktape 1.x).  These are
 strings whose internal representation contains invalid UTF-8/CESU-8 data
 (see ``doc/symbols.rst`` for description of the current formats).  Because
-all standard Ecmascript strings are represented as CESU-8, such strings cannot
-normally be created by Ecmascript code.  The properties are also never
-enumerated or otherwise exposed to Ecmascript code (not even by
+all standard ECMAScript strings are represented as CESU-8, such strings cannot
+normally be created by ECMAScript code.  The properties are also never
+enumerated or otherwise exposed to ECMAScript code (not even by
 ``Object.getOwnPropertySymbols()``) so that the only way to access them from
-Ecmascript code is to have access to a hidden Symbol acting as the property key.
+ECMAScript code is to have access to a hidden Symbol acting as the property key.
 
 C code can create hidden Symbols very easily, which can provide a way to access
 internal properties.  For example::
@@ -172,8 +172,8 @@ be modified, concrete security issues may arise.  For instance, if an internal
 property stores a raw pointer to a native handle (such as a ``FILE *``),
 changing its value can lead to a potentially exploitable segfault.
 
-Since Duktape 2.x Ecmascript code cannot create hidden Symbols using standard
-Ecmascript code and the built-in bindings alone.  To prevent access to hidden
+Since Duktape 2.x ECMAScript code cannot create hidden Symbols using standard
+ECMAScript code and the built-in bindings alone.  To prevent access to hidden
 Symbols, ensure that no native bindings provided by the sandboxing environment
 accidentally return such strings.  The easiest way to ensure this is to make
 sure all strings pushed on the value stack are properly CESU-8 encoded.
@@ -182,7 +182,7 @@ It's also good practice to ensure that sandboxed code has minimal access to
 objects with potentially dangerous properties like raw pointers.
 
 .. note:: There's a future work issue, potentially included in Duktape 3.x,
-          for preventing access to internal properties from Ecmascript code
+          for preventing access to internal properties from ECMAScript code
           even when using the correct hidden Symbol as a lookup key.
 
 Restrict access to function instances
@@ -381,9 +381,9 @@ vulnerabilities.  To avoid such issues:
   ensure an attacker cannot cause crafted bytecode to be loaded.
 
 Bytecode dump/load is only available through the C API, so there are
-no direct sandboxing considerations for executing Ecmascript code.
+no direct sandboxing considerations for executing ECMAScript code.
 However, if a Duktape/C function uses bytecode dump/load, ensure that
-it doesn't accidentally expose the facility to Ecmascript code.
+it doesn't accidentally expose the facility to ECMAScript code.
 
 See ``bytecode.rst`` for more discussion on bytecode limitations and
 best practices.
@@ -410,24 +410,24 @@ Current implementation
 * When the user callback indicates a timeout the bytecode executor throws
   a ``RangeError``.  This error is propagated like any other error.
 
-* Ecmascript code (try-catch-finally) may catch the error, but before a
+* ECMAScript code (try-catch-finally) may catch the error, but before a
   catch/finally clause actually executes, another ``RangeError`` is thrown
   by the bytecode executor.  The executor makes sure an execution interrupt
-  happens before the catch/finally (or any other Ecmascript code) executes.
+  happens before the catch/finally (or any other ECMAScript code) executes.
   For this approach to work, it's important that the user callback keeps
   indicating a timeout until the ``RangeError`` has fully bubbled through
   to the original protected call.
 
 * Duktape/C functions can catch the error by using a protected call.
   They have a chance to clean up any native resources, with the limitation
-  that if they make any Ecmascript calls, they will immediatelly throw
+  that if they make any ECMAScript calls, they will immediatelly throw
   a new ``RangeError``.  When a Duktape/C function returns control to Duktape,
-  a ``RangeError`` is thrown as soon as Ecmascript code would be executed.
+  a ``RangeError`` is thrown as soon as ECMAScript code would be executed.
 
-* Ecmascript finalizers are triggered but will always immediately throw a
+* ECMAScript finalizers are triggered but will always immediately throw a
   ``RangeError`` so they cannot be reliably used in case of execution timeouts.
   Duktape/C finalizers work normally; however, if they invoke the bytecode
-  executor by running Ecmascript code, a ``RangeError`` is immediately thrown.
+  executor by running ECMAScript code, a ``RangeError`` is immediately thrown.
 
 Using the mechanism from application code
 -----------------------------------------
@@ -461,7 +461,7 @@ The timeout mechanism allows C code to clean up resources, e.g.::
 
 This is a useful feature to allow C code to reliably free non-memory resources
 not tracked by finalizers.  Finalizers can only be used, but are only executed
-if they're Duktape/C functions: Ecmascript finalizers will immediately throw a
+if they're Duktape/C functions: ECMAScript finalizers will immediately throw a
 ``RangeError`` because of the execution timeout.
 
 C code must be careful to avoid entering an infinite loop (or blocking for an
@@ -476,11 +476,11 @@ unreasonable amount of time) to avoid subverting the timeout mechanism::
 This limitation is not easy to fix because allowing C code to clean up is a
 basic guarantee offered at the moment.
 
-Limitation: timeout checks are only made when executing Ecmascript code
+Limitation: timeout checks are only made when executing ECMAScript code
 -----------------------------------------------------------------------
 
 Execution timeout checks are only made by the bytecode executor, i.e. when
-executing Ecmascript code.  No timeout checks are made when executing C code.
+executing ECMAScript code.  No timeout checks are made when executing C code.
 Any C code that goes into an infinite loop or blocks for an unreasonable
 amount of time will essentially subvert the timeout mechanism.
 
@@ -491,7 +491,7 @@ Relevant C code includes:
 * Duktape internals, such as built-in functions, regexp compiler and executor,
   etc.
 
-As an example, the following Ecmascript code would cause a Duktape internal
+As an example, the following ECMAScript code would cause a Duktape internal
 to run for a very long time::
 
     var a = []; a[1e9] = 'x';
@@ -534,7 +534,7 @@ Future work
 * Allow stacking of timeouts, so that some internal operation may apply a
   local timeout.
 
-* Allow Ecmascript code to execute a function with a timeout.
+* Allow ECMAScript code to execute a function with a timeout.
 
 * Better finalizer support, e.g. execute finalizers normally or avoid
   executing finalizers at all until the timeout error has been handled.

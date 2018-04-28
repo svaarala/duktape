@@ -23,19 +23,19 @@ This document discusses the ``duk_hobject`` object in detail, including:
 
 * Requirements overview
 
-* Features of Ecmascript E5 objects
+* Features of ECMAScript E5 objects
 
 * Internal data structure and algorithms
 
 * Enumeration guarantees
 
-* Ecmascript property behavior (default and exotic)
+* ECMAScript property behavior (default and exotic)
 * Design notes, future work
 
 The details of property-related algorithms in E5 are pretty intricate
 and are described separately in ``hobject-algorithms.rst``.
 
-The following parts of Ecmascript E5 are useful background:
+The following parts of ECMAScript E5 are useful background:
 
 +-----------+-------------------------------------------------------------+
 | Section   | Description                                                 |
@@ -66,7 +66,7 @@ See also the following documentation:
 Requirements overview
 =====================
 
-Ecmascript object compatibility requires:
+ECMAScript object compatibility requires:
 
 * Properties with a string key and a value that is either a plain data
   value or an accessor (getter/setter)
@@ -127,7 +127,7 @@ Object features
 Named and internal properties
 -----------------------------
 
-An Ecmascript object consists of:
+An ECMAScript object consists of:
 
 * A set of externally visible *named properties*
 
@@ -143,7 +143,7 @@ The externally visible named properties are characterized by:
 
 * A property value which may be:
 
-  + A *data property*, a plain Ecmascript value
+  + A *data property*, a plain ECMAScript value
 
   + An *accessor property*, a setter/getter function pair invoked
     for property accesses
@@ -217,7 +217,7 @@ specification with the following notation::
 
   { ``[[Value]]``: 42, ``[[Writable]]``: true }
 
-The same property descriptor would be represented as an external Ecmascript
+The same property descriptor would be represented as an external ECMAScript
 value::
 
   { "value": 42, "writable": true }
@@ -397,7 +397,7 @@ terminate in a null reference (again, in E5 Section 8.6.2):
   property must eventually lead to a null value).
 
 The current implementation makes no specific effort to ensure this because
-plain Ecmascript code cannot create prototype loops (though C code can
+plain ECMAScript code cannot create prototype loops (though C code can
 easily do so).  To see why this is the case, assume that the current set of
 objects have no prototype loops and a new object is created.  The internal
 prototype of the created object is either set to ``null`` or one of the
@@ -425,7 +425,7 @@ embedding Duktape.
 Array index
 :::::::::::
 
-Ecmascript E5 Section 15.4 states:
+ECMAScript E5 Section 15.4 states:
 
   A property name ``P`` (in the form of a String value) is an *array index*
   if and only if ``ToString(ToUint32(P))`` is equal to ``P`` and
@@ -439,7 +439,7 @@ as a convenient "no array index" marker (``DUK_HSTRING_NO_ARRAY_INDEX``).
 For instance, a coercion call can return the marker to indicate that an input
 was not a valid array index.
 
-Because Ecmascript object property keys are strings, all array indices
+Because ECMAScript object property keys are strings, all array indices
 encountered in property access expressions are conceptually first coerced
 to a string form using ``ToString()`` and then checked whether they are
 valid array indexes (this is unlike array ``length`` values, which can
@@ -624,7 +624,7 @@ internally into the following parts:
 
 Internal properties are stored in the entry part, and are only distinguished
 from normal properties in that their keys are invalid UTF-8 sequences which
-cannot be generated (and thus not accessed) from Ecmascript code.  Internal
+cannot be generated (and thus not accessed) from ECMAScript code.  Internal
 properties should never be enumerable or visible in other ways.  See separate
 discussion of internal properties later in the document.
 
@@ -680,7 +680,7 @@ Notes:
 Entry and hash part
 ===================
 
-The entry part contains ordered key-value pairs, and supports full Ecmascript
+The entry part contains ordered key-value pairs, and supports full ECMAScript
 E5 semantics: property values can be plain *data properties* or *accessor
 properties*, and can have any property attributes, stored in property flags.
 Internal properties, identified with a special key prefix, can also be stored.
@@ -801,7 +801,7 @@ Notes:
 
 * Objects in dynamic languages often don't guarantee a key enumeration
   order, which allows objects to be implemented with easy and efficient
-  "pure" hash tables.  Although Ecmascript E5 does not require a particular
+  "pure" hash tables.  Although ECMAScript E5 does not require a particular
   key ordering for enumeration, a practical implementation must provide
   some ordering guarantees to be compatible with existing code base.  Such
   guarantees include enumerating keys in their insertion order; see the
@@ -944,7 +944,7 @@ Notes:
 
 * The array part is an optimized structure for reading and writing
   array indexed properties efficiently.  It can be used for *any* object,
-  not just the Ecmascript ``Array`` object, and Ecmascript ``Array``
+  not just the ECMAScript ``Array`` object, and ECMAScript ``Array``
   exotic behaviors are unrelated to the array part's existence.
 
 * A non-\ ``Array`` object with an array part does not get the ``Array``
@@ -1018,9 +1018,9 @@ This implementation specific behavior is illustrated below::
   print(Object.keys(a));   // -> 0,1,2,foo,4,3
   print(Object.keys(b));   // -> 0,1,2,3,4,foo
 
-Note that Ecmascript implementation behavior differs greatly when it comes
+Note that ECMAScript implementation behavior differs greatly when it comes
 to "sparse arrays".  For instance, the above example has varying results
-with existing Ecmascript implementations::
+with existing ECMAScript implementations::
 
   // Rhino (Rhino 1.7 release 3 2012 02 13)
   // (behavior matches example above)
@@ -1056,7 +1056,7 @@ The reason why a separate array part exists is to:
 
 * Avoid string interning of array index keys for numeric indices
 
-Ecmascript array indices are always strings, so conceptually arrays
+ECMAScript array indices are always strings, so conceptually arrays
 map string indices of the form "0", "1", etc to arbitrary values.
 Non-string keys for property accesses are coerced to strings at run time.
 For instance::
@@ -1171,7 +1171,7 @@ Some complications:
 Enumeration
 ===========
 
-Enumeration poses a lot of problems for implementing the Ecmascript
+Enumeration poses a lot of problems for implementing the ECMAScript
 object/array semantics efficiently.
 
 Below, the relevant parts of the specification are first discussed
@@ -1182,7 +1182,7 @@ in some detail.
 
 The current implementation can be found in ``duk_hobject_enum.c``.
 
-Ecmascript specification requirements
+ECMAScript specification requirements
 -------------------------------------
 
 E5 Section 12.6.4: "The for-in statement" contains the main requirements
@@ -1270,7 +1270,7 @@ We impose the following additional requirements for compatibility:
   ascending order, and before non-array-index keys.
 
   + This is currently provided for all objects with an array part.
-    Ecmascript ``Array`` instances should thus always have an array
+    ECMAScript ``Array`` instances should thus always have an array
     part (at least when they are created).
 
   + If an object has an array part which is abandoned, e.g. because
@@ -1510,7 +1510,7 @@ The current approach for storing internal properties which are not visible
 to ordinary program code and never overlap with externally visible named
 properties is simple: since all standard keys encode into valid UTF-8
 sequences (valid CESU-8 sequences to be exact) in memory, internal properties
-are prefixed with an invalid UTF-8 sequence which standard Ecmascript code
+are prefixed with an invalid UTF-8 sequence which standard ECMAScript code
 cannot generate and thus cannot access.  The current prefix is a single
 ``0x82`` byte.  The prefix is denoted with an underscore in this document;
 e.g. ``_Map`` would be represented as the byte sequence: ``0x82`` ``'M'``
@@ -1533,10 +1533,10 @@ To avoid complications:
 
   - Duktape prevents this in each relevant built-in function.
 
-* User Ecmascript code should not be given references to internal strings,
+* User ECMAScript code should not be given references to internal strings,
   i.e. strings other than valid UTF-8/CESU-8 encodings
 
-* Untrusted Ecmascript code should have no access to buffer values or
+* Untrusted ECMAScript code should have no access to buffer values or
   buffer constructors because it's easy to create an internal property
   name with buffers
 
@@ -1621,7 +1621,7 @@ double brackets are omitted from the specification property names
 | FormalParameters  | Internal property ``_Formals``.                      |
 |                   |                                                      |
 +-------------------+------------------------------------------------------+
-| Code              | An Ecmascript function (``duk_hcompfunc``) has       |
+| Code              | An ECMAScript function (``duk_hcompfunc``) has       |
 |                   | a pointer to compiled bytecode and associated        |
 |                   | data (such as constants), see ``duk_hcompfunc.h``.   |
 |                   | A C function (``duk_hnatfunc``) has a pointer to a   |
@@ -1728,7 +1728,7 @@ Exotic behavior for ``[[GetOwnProperty]]``:
     Section 15.4, i.e. P for which ``ToString(ToUint32(P)) == P`` and
     ``ToUint32(P) != 0xffffffff``.
 
-  + Ecmascript E5.1 extended behavior to all number-like properties,
+  + ECMAScript E5.1 extended behavior to all number-like properties,
     and thus allows strings longer than 4G characters.
 
 * ``Array`` ``length`` property: E5 Section 15.4.5
@@ -1983,7 +1983,7 @@ The following internal objects are currently used:
 
 * Function variable map
 
-Internal objects don't always need Ecmascript properties like:
+Internal objects don't always need ECMAScript properties like:
 
 * Enumeration order
 
@@ -1992,7 +1992,7 @@ Internal objects don't always need Ecmascript properties like:
 * Prototype chain
 
 The current implementation does not take advantage of these: internal
-objects are handled just like Ecmascript objects.
+objects are handled just like ECMAScript objects.
 
 Function instances
 ==================
@@ -2121,7 +2121,7 @@ ES2015 Proxy objects or Lua-like metatables
 It would be nice to have a Lua metatable like mechanism for creating
 custom object behavior extensions and full object virtualization,
 see http://www.lua.org/pil/13.html for a description of Lua metatables.
-There is a similar mechanism in Ecmascript 6 called "Proxy object":
+There is a similar mechanism in ECMAScript 6 called "Proxy object":
 
 * http://www.ecma-international.org/ecma-262/6.0/index.html#sec-proxy-object-internal-methods-and-internal-slots
 
@@ -2175,8 +2175,8 @@ For instance, there are keyed collections:
 * http://www.ecma-international.org/ecma-262/6.0/index.html#sec-keyed-collection
 
 The ``Map`` object provides an arbitrary collection of key/value pairs,
-where keys and values can be arbitrary Ecmascript objects.  This is very
-useful compared to the standard Ecmascript object whose keys can only be
+where keys and values can be arbitrary ECMAScript objects.  This is very
+useful compared to the standard ECMAScript object whose keys can only be
 strings.
 
 How to implement this?  One could extend the basic model to provide enough
@@ -2216,7 +2216,7 @@ capturing accesses, and some way to introspect the current caller or
 call chain to check script origin.
 
 It would be nice to be able to determine an origin for every function,
-mapped to an Ecmascript object with a bunch of propeties like URI,
+mapped to an ECMAScript object with a bunch of propeties like URI,
 load time.
 
 Alternatives to current entry part
@@ -2411,7 +2411,7 @@ in practice.  Their prototype chain is::
 The exotic flag based approach would work if the object and array prototypes
 have no array indexed keys.
 
-Existing Ecmascript implementations do not seem to implement the
+Existing ECMAScript implementations do not seem to implement the
 official ``[[Put]]`` algorithm accurately, especially for checking the
 ancestor properties for protection.  For instance, NodeJS / V8::
 

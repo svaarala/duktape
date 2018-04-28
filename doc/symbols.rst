@@ -7,13 +7,13 @@ Overview
 
 Duktape 2.x adds ES2015 Symbol support.  Duktape 1.x internal keys are unified
 with the Symbol concept, and are considered a custom "hidden symbol" type
-which is not normally visible to Ecmascript code.  C code can access hidden
+which is not normally visible to ECMAScript code.  C code can access hidden
 symbols, however.
 
 The internal implementation is similar to existing internal keys.  Symbols
 are represented as ``duk_hstring`` heap objects, with the string data
 containing a byte prefix which is invalid (extended) UTF-8 so that it can
-never occur for normal Ecmascript strings, or even strings with non-BMP
+never occur for normal ECMAScript strings, or even strings with non-BMP
 codepoints.  Object coerced strings have a special object class and the
 underlying symbol is stored in ``_Value`` similarly to e.g. Number object.
 
@@ -29,7 +29,7 @@ Representation basics:
 
 Behavior basics:
 
-* Symbols are visible to Ecmascript code as required by ES2015 and later.
+* Symbols are visible to ECMAScript code as required by ES2015 and later.
   Hidden symbols are not visible through e.g.
   ``Object.getOwnPropertySymbols()``.  They can only be accessed if a
   reference to the hidden symbol string is somehow available, e.g. via a
@@ -41,7 +41,7 @@ Behavior basics:
   C strings with a specific format, see below.
 
 * While symbols are strings in the C API, coercion semantics are based on
-  the Ecmascript behavior.  For example, ``duk_to_string()`` applied to a
+  the ECMAScript behavior.  For example, ``duk_to_string()`` applied to a
   symbol throws a ``TypeError``.
 
 See:
@@ -205,7 +205,7 @@ Best naming for Duktape internal keys
 -------------------------------------
 
 With https://github.com/svaarala/duktape/pull/979 Duktape internal properties
-would become unreachable from Ecmascript code, even if you construct the
+would become unreachable from ECMAScript code, even if you construct the
 internal string using a buffer and then try to use it as an object key.
 This offers more protection for sandboxing than ES2015 Symbols which can be
 enumerated.

@@ -71,7 +71,7 @@ from Duktape v2.1.x.  Note the following:
 * Function.prototype.call(), Function.prototype.apply(), Reflect.apply(),
   new Xyz(), duk_new(), and Reflect.construct() are now handled inline in call
   handling.  As a result, they are not part of the call stack, are absent in
-  tracebacks, don't consume native stack for Ecmascript-to-Ecmascript calls,
+  tracebacks, don't consume native stack for ECMAScript-to-ECMAScript calls,
   no longer prevent a coroutine yield, and can be used in tail call positions
   (e.g. 'return func.call(null, 1, 2);').
 
@@ -96,7 +96,7 @@ from Duktape v2.1.x.  Note the following:
 
 * DUK_USE_DATE_GET_NOW() is now allowed to return fractions.  The fractions
   won't be available through the Date built-in (this is forbidden by the
-  Ecmascript specification) but are available through the duk_get_now() C
+  ECMAScript specification) but are available through the duk_get_now() C
   API call.  The default POSIX and Windows Date providers now return fractions,
   so duk_get_now() call sites may now get fractional millisecond timestamps
   even in default configuration.

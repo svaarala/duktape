@@ -7,14 +7,14 @@ Overview
 
 A lightweight function (or a "lightfunc") is a plain duk_tval value type
 which refers to a Duktape/C function without needing a representative
-Ecmascript Function object.  The duk_tval tagged type encapsulates a
+ECMAScript Function object.  The duk_tval tagged type encapsulates a
 reference to the native function, as well as a small set of control bits,
 without needing any heap allocations.  This is useful in especially low
 memory environments, where the memory footprint of typical Duktape/C
 bindings can be reduced.
 
 A lightfunc has a separate API type (``DUK_TYPE_LIGHTFUNC``) so it is
-a clearly distinguished type for C code.  However, for Ecmascript code
+a clearly distinguished type for C code.  However, for ECMAScript code
 a lightfunc behaves as closely as possible like an ordinary Function
 instance.  Various techniques (such as virtual properties) are used to
 achieve this goal as well as possible.
@@ -158,7 +158,7 @@ This list is not exhaustive:
 
   - 4-bit ``length`` property value
 
-* Regarding Ecmascript semantics, the lightweight function type should
+* Regarding ECMAScript semantics, the lightweight function type should
   behave like a Function object as much as possible.
 
   - This means, for example, that operators and built-in functions which
@@ -259,7 +259,7 @@ instance::
     {_cfunc:true}   C function
     {_lfunc:true}   lightweight C function
 
-On the other hand C/Ecmascript functions are not distinguished in JX/JC now.
+On the other hand C/ECMAScript functions are not distinguished in JX/JC now.
 
 ToLightFunc()
 -------------
@@ -327,7 +327,7 @@ Current ToObject() coercion has two logical but confusing issues:
 * The result is extensible while the input lightfunc is not.  This is
   useful because it's quite likely the user wants to extend the resulting
   function if the lightfunc is explicitly object coerced.  It also matches
-  the standard Ecmascript behavior for strings: ``new String('foo')``
+  the standard ECMAScript behavior for strings: ``new String('foo')``
   returns an extensible String object.
 
   Another alternative would be to make the result non-extensible.

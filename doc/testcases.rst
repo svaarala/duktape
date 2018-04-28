@@ -4,23 +4,23 @@ Testcases
 
 There are two main testcase sets for Duktape:
 
-* Ecmascript testcases (``tests/ecmascript``) for testing Ecmascript
+* ECMAScript testcases (``tests/ecmascript``) for testing ECMAScript
   compliance, "real world" behavior, and Duktape specific behavior.
 
 * API testcases (``tests/api``) for testing the Duktape specific C API.
 
 Testcases are written using an "expected string" approach: a testcase file
 describes the expected output using a custom markup (described below) and also
-contains the Ecmascript or C code that is intended to produce that output.
+contains the ECMAScript or C code that is intended to produce that output.
 A test runner compares actual output to expected; known issue files are used
 to document "known bad" outputs.
 
 This document describes the testcase formats and current test tools.
 
-Ecmascript testcase format
+ECMAScript testcase format
 ==========================
 
-Testcases are plain Ecmascript (``.js``) files with custom markup inside
+Testcases are plain ECMAScript (``.js``) files with custom markup inside
 comments for providing test metadata, expected output, and include files.
 A testcase is "prepared" before execution using ``util/runtest.py``:
 
@@ -111,7 +111,7 @@ Full testcase example::
   /* Shorthand can also be used. */
   print("shorthand");  //>shorthand
 
-Ecmascript testcase metadata keys
+ECMAScript testcase metadata keys
 =================================
 
 Metadata keys are added and removed as necessary so this list may be
@@ -131,11 +131,11 @@ optional:
 |                      | that need to be executed manually.                   |
 +----------------------+------------------------------------------------------+
 | custom               | If true, some implementation dependent behavior      |
-|                      | is expected and comparison to other Ecmascript       |
+|                      | is expected and comparison to other ECMAScript       |
 |                      | engines is not relevant.  The behavior may either    |
 |                      | be entirely Duktape specific (e.g. relying on JX     |
 |                      | format) or specific behavior not required by the     |
-|                      | Ecmascript specification (e.g. additional enumeration|
+|                      | ECMAScript specification (e.g. additional enumeration|
 |                      | guarantees).                                         |
 +----------------------+------------------------------------------------------+
 | nonstandard          | If true, expected behavior is not standards          |
@@ -155,7 +155,7 @@ optional:
 |                      | needed to test some program level behavior.          |
 +----------------------+------------------------------------------------------+
 
-Ecmascript testcase known issues
+ECMAScript testcase known issues
 ================================
 
 Sometimes testcases fail due to known bugs or environment specific differences
@@ -187,7 +187,7 @@ naming convention is just a numbered sequence based on the testcase name::
   test-dev-hello-world-3.txt
   ...
 
-Ecmascript testcase best practices
+ECMAScript testcase best practices
 ==================================
 
 Indentation
@@ -198,9 +198,9 @@ Indent with 4 spaces, no tabs.
 Verifying exception type
 ------------------------
 
-Since Ecmascript doesn't require specific error messages for errors
+Since ECMAScript doesn't require specific error messages for errors
 thrown, the messages should not be inspected or printed out in test
-cases.  Ecmascript does require specific error types though (such as
+cases.  ECMAScript does require specific error types though (such as
 ``TypeError``.  These can be verified by printing the ``name``
 property of an error object.
 
@@ -253,19 +253,19 @@ like ``stdio.h`` have been included.  There are also some predefined macros
 (like ``TEST_SAFE_CALL()`` and ``TEST_PCALL()``) to minimize duplication in
 testcase code.
 
-Expected output and metadata is defined as for Ecmascript testcases.  However,
+Expected output and metadata is defined as for ECMAScript testcases.  However,
 the expected output shorthand syntax (``//>output``) cannot be used because
 it's not portable C89.
 
 Example::
 
   /*===
-  Hello world from Ecmascript!
+  Hello world from ECMAScript!
   Hello world from C!
   ===*/
 
   void test(duk_context *ctx) {
-      duk_push_string("print('Hello world from Ecmascript!');");
+      duk_push_string("print('Hello world from ECMAScript!');");
       duk_eval(ctx);
       printf("Hello world from C!\n");
   }
@@ -273,9 +273,9 @@ Example::
 API testcase known issues
 =========================
 
-As for Ecmascript testcases, known issues are documented using known issue
+As for ECMAScript testcases, known issues are documented using known issue
 files providing the "known bad" output.  The format is the same as for
-Ecmascript tests.
+ECMAScript tests.
 
 Test tools
 ==========

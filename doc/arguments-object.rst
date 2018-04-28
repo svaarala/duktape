@@ -5,7 +5,7 @@ Arguments object
 Overview
 ========
 
-The *arguments object* is a very special kind of object in Ecmascript E5
+The *arguments object* is a very special kind of object in ECMAScript E5
 from an implementation perspective.
 
 The arguments object is created during function entry, as part of declaration
