@@ -63,7 +63,7 @@ The application needs only to provide the module resolution and loading logic:
   when the global ``require()`` is called, the parent ID is an empty string.
 
 * The load callback is a Duktape/C function which takes the resolved module ID
-  and: (1) returns the Ecmascript source code for the module or ``undefined``
+  and: (1) returns the ECMAScript source code for the module or ``undefined``
   if there's no source code, e.g. for pure C modules, (2) can populate
   ``module.exports`` itself, and (3) can replace ``module.exports``::
 
