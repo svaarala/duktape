@@ -1,7 +1,7 @@
 /*
  *  Math object ToNumber side effects (ES5 15.8.2)
  *
- *  Ecmascript 5.1 requires that all Math object methods coerce all arguments
+ *  ECMAScript 5.1 requires that all Math object methods coerce all arguments
  *  with ToNumber from left to right.  This ensures that all side effects
  *  caused by ToNumber coercion have a chance to be evaluated.
  */

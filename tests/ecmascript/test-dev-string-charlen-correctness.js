@@ -33,7 +33,7 @@ function testOne(blen) {
         if ((buf[i] & 0xc0) == 0x80) { buf[i] = 0xfe; }
     }
 
-    // Expected character length computed using Ecmascript:
+    // Expected character length computed using ECMAScript:
     // all bytes outside of [0x80,0xbf] (UTF-8 continuation
     // bytes) contribute +1 to character length.
     clen = 0;

@@ -259,7 +259,7 @@ static duk_ret_t test_noeval(duk_context *ctx_root, void *udata) {
 
 	/*
 	 *  Build a global environment with no eval - check that we can't
-	 *  eval stuff anymore from Ecmascript code.  The C eval APIs still
+	 *  eval stuff anymore from ECMAScript code.  The C eval APIs still
 	 *  work.
 	 */
 
@@ -283,10 +283,10 @@ static duk_ret_t test_noeval(duk_context *ctx_root, void *udata) {
 	duk_pop(ctx);
 
 	/*
-	 *  Eval with Ecmascript.
+	 *  Eval with ECMAScript.
 	 */
 	(void) duk_peval_string(ctx,
-		"eval('print(\"hello from Ecmascript eval\")')\n"
+		"eval('print(\"hello from ECMAScript eval\")')\n"
 	);
 	printf("result: %s\n", duk_safe_to_string(ctx, -1));
 	duk_pop(ctx);

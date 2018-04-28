@@ -28,7 +28,7 @@ index 18, ToString(result): '0xdeadbeef', type: 8 -> 8
 ===*/
 
 /* XXX: coverage is pretty poor, e.g. different hints are not tested.
- * They are indirectly covered by Ecmascript tests to some extent, though.
+ * They are indirectly covered by ECMAScript tests to some extent, though.
  */
 
 static duk_ret_t test_1(duk_context *ctx, void *udata) {

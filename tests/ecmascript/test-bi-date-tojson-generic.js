@@ -145,7 +145,7 @@ try {
     obj = {
         valueOf: function() {
             // Note: returning a finite number which is still outside
-            // Ecmascript range should NOT cause a 'null' return!
+            // ECMAScript range should NOT cause a 'null' return!
             print('valueOf()');
             return (100e6 * 86400e3) + 1e10;
         },

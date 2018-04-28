@@ -1711,7 +1711,7 @@ return value downgrade test
 ===*/
 
 function retvalDowngradeTest() {
-    // All function return values (both Ecmascript and C) are automatically
+    // All function return values (both ECMAScript and C) are automatically
     // double-to-fastint downgraded.
 
     function myfunc() {

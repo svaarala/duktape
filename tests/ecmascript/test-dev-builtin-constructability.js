@@ -1,5 +1,5 @@
 /*
- *  Normal Ecmascript functions declared by user code (and all Duktape/C)
+ *  Normal ECMAScript functions declared by user code (and all Duktape/C)
  *  functions are constructable.  Also built-in top level functions like
  *  Number, String, etc. are constructable.  The rest of the built-in
  *  functions apparently must not be.  Test a few here (not comprehensive).

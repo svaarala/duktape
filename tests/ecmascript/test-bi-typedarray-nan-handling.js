@@ -68,7 +68,7 @@ function nanHandlingTest() {
     }
 
     /*
-     *  Then writing NaN explicitly, reading it into an Ecmascript value,
+     *  Then writing NaN explicitly, reading it into an ECMAScript value,
      *  writing it back, and checking through DataView.
      */
 

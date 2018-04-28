@@ -75,7 +75,7 @@ SyntaxError
 SyntaxError
 ===*/
 
-/* JSONNumber does not accept NaN, Infinity, -Infinity.  Ecmascript also
+/* JSONNumber does not accept NaN, Infinity, -Infinity.  ECMAScript also
  * does not but they parse as identifier references (and unary minus for
  * -Infinity) and usually evaluate to something useful.
  *
@@ -139,7 +139,7 @@ leading plus
 SyntaxError
 ===*/
 
-/* JSONNumber does not allow a plus sign.  Actually Ecmascript doesn't either,
+/* JSONNumber does not allow a plus sign.  Actually ECMAScript doesn't either,
  * a leading plus sign is an unary plus operator.
  */
 
@@ -198,7 +198,7 @@ SyntaxError
 ===*/
 
 /* JSONNumber does not allow additional leading zeroes.  This is probably a
- * good thing even if Ecmascript parsing allows octal literals.
+ * good thing even if ECMAScript parsing allows octal literals.
  */
 
 print('leading zeroes');
@@ -233,7 +233,7 @@ foo
 SyntaxError
 ===*/
 
-/* JSONString does not allow single quotes, Ecmascript does. */
+/* JSONString does not allow single quotes, ECMAScript does. */
 
 print('single quotes');
 
@@ -344,7 +344,7 @@ eval 1 31
 json SyntaxError
 ===*/
 
-/* JSONString does not accept codepoints U+0000 to U+001F (Ecmascript does). */
+/* JSONString does not accept codepoints U+0000 to U+001F (ECMAScript does). */
 
 print('string codepoints');
 
@@ -497,7 +497,7 @@ json SyntaxError
 ===*/
 
 /* JSONString does not allow "unknown" backslash escapes.  These are handled
- * by the Ecmascript grammar as "no-ops", e.g. "\d" === "d" but must be rejected
+ * by the ECMAScript grammar as "no-ops", e.g. "\d" === "d" but must be rejected
  * by JSON parsing.
  */
 
@@ -549,7 +549,7 @@ zero escape
 SyntaxError
 ===*/
 
-/* Ecmascript strings accept a zero escape, JSONString does not. */
+/* ECMAScript strings accept a zero escape, JSONString does not. */
 
 print('zero escape');
 
@@ -588,7 +588,7 @@ A
 SyntaxError
 ===*/
 
-/* JSONString does not accept hex escapes, Ecmascript strings do. */
+/* JSONString does not accept hex escapes, ECMAScript strings do. */
 
 print('hex escape');
 

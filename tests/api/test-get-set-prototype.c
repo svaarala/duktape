@@ -1,7 +1,7 @@
 /*
  *  Testcase for object prototype manipulation
  *
- *  Test also prototype loops.  The Ecmascript primitives like Object.create()
+ *  Test also prototype loops.  The ECMAScript primitives like Object.create()
  *  and Object.setPrototypeOf() guard against creating a prototype loop (as
  *  required by the specification) but no such safeguard is used for the C API.
  *  A prototype loop is expected to be terminated by a sanity limit inside

@@ -1,7 +1,7 @@
 /*
- *  Ecmascript specification requires that U+2028 and U+2029 are not escaped
+ *  ECMAScript specification requires that U+2028 and U+2029 are not escaped
  *  by JSON.stringify().  Because these characters are considered line breaks
- *  by Ecmascript, the resulting JSON won't work when pasted e.g. into a web
+ *  by ECMAScript, the resulting JSON won't work when pasted e.g. into a web
  *  page.
  *
  *  Duktape escapes these codepoints to work better with e.g. web templating.

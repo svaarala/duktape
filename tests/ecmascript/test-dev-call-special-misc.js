@@ -26,7 +26,7 @@ function test() {
         print(e);
     }
 
-    // Same test, argArray is an Ecmascript function (this makes no sense,
+    // Same test, argArray is an ECMAScript function (this makes no sense,
     // but covers a development time bug).
     try {
         print(Reflect.construct(foo.call, foo));

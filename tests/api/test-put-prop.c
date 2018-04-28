@@ -143,8 +143,8 @@ final top: 1
 
 /* Test property writing API call.
  *
- * Property write behavior is quite complex in Ecmascript and there
- * are many Ecmascript testcases to cover the behavior.  The purpose
+ * Property write behavior is quite complex in ECMAScript and there
+ * are many ECMAScript testcases to cover the behavior.  The purpose
  * of this testcase is to ensure the exposed API behavior is as
  * expected without covering every specification case.  In particular,
  * different throwing / return code combinations need to be covered.

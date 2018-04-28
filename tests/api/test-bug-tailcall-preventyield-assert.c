@@ -6,15 +6,15 @@
  *
  *  This happened when:
  *
- *    - A C function called an Ecmascript function
- *    - That Ecmascript function tailcalled another Ecmascript function
+ *    - A C function called an ECMAScript function
+ *    - That ECMAScript function tailcalled another ECMAScript function
  *
  *  What happens under the hood:
  *
- *   - The first C-to-Ecmascript call establishes an activation which has
+ *   - The first C-to-ECMAScript call establishes an activation which has
  *     DUK_ACT_FLAG_PREVENT_YIELD set.
  *
- *   - The Ecmascript-to-Ecmascript call is in principle an allowed tail
+ *   - The ECMAScript-to-ECMAScript call is in principle an allowed tail
  *     call.  However, the current call handling code assumes that the
  *     reused activation cannot have DUK_ACT_FLAG_PREVENT_YIELD set.
  *
@@ -27,7 +27,7 @@
  *
  *  A simple fix is to convert the tailcall to a normal call if the
  *  current activation has incompatible flags.  This would then prevent
- *  a tailcall even in an Ecmascript-to-Ecmascript case if the current
+ *  a tailcall even in an ECMAScript-to-ECMAScript case if the current
  *  frame was called from C.
  *
  *  NOTE: test_1() only fails with asserts enabled.

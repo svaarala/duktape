@@ -741,8 +741,8 @@ jc "\u0000"
 ===*/
 
 /* Test invalid XUTF-8 handling in all modes, including standard JSON.  This
- * behavior is always outside the scope of Ecmascript because all valid
- * Ecmascript strings are valid CESU-8.
+ * behavior is always outside the scope of ECMAScript because all valid
+ * ECMAScript strings are valid CESU-8.
  *
  * Because the XUTF-8 decoding is now lenient (it does not, for instance,
  * check continuation bytes at all), this test is now focused on testing

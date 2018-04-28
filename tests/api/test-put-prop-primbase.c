@@ -8,7 +8,7 @@
 static duk_ret_t test_put(duk_context *ctx) {
 	duk_ret_t rc;
 
-	/* In Ecmascript, '(0).foo = "bar"' should work and evaluate to "bar"
+	/* In ECMAScript, '(0).foo = "bar"' should work and evaluate to "bar"
 	 * in non-strict mode, but cause an error to be thrown in strict mode
 	 * (E5.1, Section 8.7.2, exotic [[Put]] variant, step 7.
 	 */

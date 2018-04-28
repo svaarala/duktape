@@ -94,7 +94,7 @@ static duk_ret_t test_recursive_finalizer(duk_context *ctx, void *udata) {
 	duk_push_int(ctx, 123);
 	duk_put_prop_string(ctx, -2, "foo");
 
-	/* Ecmascript finalizer */
+	/* ECMAScript finalizer */
 	duk_eval_string(ctx, "(function (obj) { print('finalizing obj, obj.foo:', obj.foo); })");
 	duk_push_int(ctx, 321);
 	duk_put_prop_string(ctx, -2, "bar");
@@ -102,7 +102,7 @@ static duk_ret_t test_recursive_finalizer(duk_context *ctx, void *udata) {
 	/* [ target finalizer ] */
 
 	/* Break the function <-> prototype reference loop so that the
-	 * Ecmascript finalizer is not in a reference loop and gets
+	 * ECMAScript finalizer is not in a reference loop and gets
 	 * collected by refcounting.
 	 *
 	 * (Note that 'prototype' is not configurable so we can't
@@ -111,7 +111,7 @@ static duk_ret_t test_recursive_finalizer(duk_context *ctx, void *udata) {
 	duk_push_string(ctx, "dummy");
 	duk_put_prop_string(ctx, -2, "prototype");
 
-	/* Add a Duktape/C finalizer for the Ecmascript finalizer to
+	/* Add a Duktape/C finalizer for the ECMAScript finalizer to
 	 * exercise both Duktape/C finalizers and recursive finalization
 	 */
 	duk_push_c_function(ctx, c_finalizer, 1);
@@ -121,7 +121,7 @@ static duk_ret_t test_recursive_finalizer(duk_context *ctx, void *udata) {
 
 	/* [ target(foo:123) finalizer(bar:321) ] */
 
-	/* Set Ecmascript finalizer to original object */
+	/* Set ECMAScript finalizer to original object */
 	duk_set_finalizer(ctx, -2);
 
 	/* [ target(foo:123) ] */

@@ -7,7 +7,7 @@
  *  This non-standard behavior is available in Duktape with a special
  *  feature option (not by default).  The behavior is modelled after
  *  V8 behavior.  Note: when testing with NodeJS, the program does not
- *  execute in a genuine Ecmascript global/program context, so some
+ *  execute in a genuine ECMAScript global/program context, so some
  *  V8/NodeJS behavior is not as expected.  This is an artifact of the
  *  NodeJS wrapper.
  */
@@ -86,7 +86,7 @@ function basicTest() {
     pd = Object.getOwnPropertyDescriptor(f1_nonstrict, 'caller');
     print(pd.value, pd.writable, pd.enumerable, pd.configurable, typeof pd.get, typeof pd.set);
 
-    // Strict function: obeys Ecmascript specification, and is an accessor
+    // Strict function: obeys ECMAScript specification, and is an accessor
     // with a thrower.
     pd = Object.getOwnPropertyDescriptor(f1_strict, 'caller');
     print(pd.value, pd.writable, pd.enumerable, pd.configurable, typeof pd.get, typeof pd.set);
@@ -151,20 +151,20 @@ TypeError
  */
 
 function callTypeTest() {
-    // Global-to-Ecmascript call (same as native-to-Ecmascript with slight
+    // Global-to-ECMAScript call (same as native-to-ECMAScript with slight
     // handling differences because 'caller' will be null).  NOTE: NodeJS
     // prints 'anon' here because the test case executes from a function, not
     // an actual global context.
     print('entry', summarizeCaller(callTypeTest));
 
-    // Ecmascript-to-Ecmascript call, no tail recursion
+    // ECMAScript-to-ECMAScript call, no tail recursion
     function ecmaNoTail() {
         print('in ecmaNoTail', summarizeCaller(ecmaNoTail));
     }
     ecmaNoTail();
     print('after ecmaNoTail', summarizeCaller(ecmaNoTail));
 
-    // Ecmascript-to-Ecmascript call, with tail recursion
+    // ECMAScript-to-ECMAScript call, with tail recursion
     function ecmaTail1(idx) {
         print(idx, 'in ecmaTail1, ecmaTail1', summarizeCaller(ecmaTail1));
         print(idx, 'in ecmaTail1, ecmaTail2', summarizeCaller(ecmaTail2));
@@ -181,7 +181,7 @@ function callTypeTest() {
     print('after ecmaNoTail, ecmaTail1', summarizeCaller(ecmaTail1));
     print('after ecmaNoTail, ecmaTail2', summarizeCaller(ecmaTail2));
 
-    // Native-to-Ecmascript call
+    // Native-to-ECMAScript call
     function nativeCall() {
         print('in nativeCall', summarizeCaller(nativeCall));
     }

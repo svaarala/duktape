@@ -267,7 +267,7 @@ function printBuffer(b) {
 
 function bufferToStringRaw(buf) {
     // Prefer the cleaner, explicit custom method.  This is provided by "duk"
-    // and is NOT a part of the default Ecmascript built-ins!
+    // and is NOT a part of the default ECMAScript built-ins!
     return String.fromBufferRaw(buf);
 }
 

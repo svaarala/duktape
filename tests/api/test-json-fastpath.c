@@ -1,5 +1,5 @@
 /*
- *  JSON fast path tests which cannot be covered from pure Ecmascript code.
+ *  JSON fast path tests which cannot be covered from pure ECMAScript code.
  */
 
 /*===

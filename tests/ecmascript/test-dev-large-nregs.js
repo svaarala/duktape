@@ -66,7 +66,7 @@ function test() {
     var src, fn;
     var i;
 
-    // Max nregs/nargs for an Ecmascript function is now limited to 16 bits
+    // Max nregs/nargs for an ECMAScript function is now limited to 16 bits
     // i.e. 65535.  Take shuffle regs into account.
 
     for (i = 8; i <= 65536; i *= 2) {

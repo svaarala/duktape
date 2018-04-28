@@ -278,7 +278,7 @@ try {
 /* Functions (anything callable) serialize as 'null' */
 
 try {
-    // anonymous Ecmascript function
+    // anonymous ECMAScript function
     t = JSON.stringify([1,2,function(){},4]);
     print(t);
 

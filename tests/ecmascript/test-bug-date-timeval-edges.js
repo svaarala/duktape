@@ -1,7 +1,7 @@
 /*
  *  Date corner case bugs found through test262
  *
- *  Ecmascript E5.1 Section 15.9.1.1
+ *  ECMAScript E5.1 Section 15.9.1.1
  *
  *      The actual range of times supported by ECMAScript Date objects
  *      is slightly smaller: exactly -100,000,000 days to 100,000,000
@@ -34,7 +34,7 @@ test3
  *
  * This test used to fail because tzoffset computation was avoided (with
  * result replaced with zero) when a temporary timevalue was outside the
- * strict Ecmascript range.  This was fixed by adding a 24h leeway to that
+ * strict ECMAScript range.  This was fixed by adding a 24h leeway to that
  * range check in duk__get_local_tzoffset().
  */
 function test1() {
@@ -46,7 +46,7 @@ function test1() {
 
     d = new Date(1970,            // year
                  0,               // month (Jan)
-                 100000001,       // days: 100M + 1 (one day over Ecmascript maximum)
+                 100000001,       // days: 100M + 1 (one day over ECMAScript maximum)
                  0,               // hour
                  0 + tzMin - 60,  // minutes: one hour backwards from day 101M UTC
                  0,               // seconds
@@ -66,7 +66,7 @@ function test2() {
 
     d = new Date(1970,            // year
                  0,               // month (Jan)
-                 100000001,       // days: 100M + 1 (one day over Ecmascript maximum)
+                 100000001,       // days: 100M + 1 (one day over ECMAScript maximum)
                  0,               // hour
                  0 + tzMin - 60,  // minutes: one hour backwards from day 101M UTC
                  0,               // seconds
@@ -79,9 +79,9 @@ function test2() {
 function test3() {
     /* toString(), which coerces to local time, caused an assert failure for
      * similar reasons as with test1() and test2().  When converting an
-     * Ecmascript time value to local time, the implementation adds a local
+     * ECMAScript time value to local time, the implementation adds a local
      * time offset before generating the parts (year, month, etc).  This
-     * temporary time value can be just outside Ecmascript range even if the
+     * temporary time value can be just outside ECMAScript range even if the
      * original UTC time value is within the range.  A +/- 24h leeway was
      * added to the assert in duk__timeval_to_parts() to fix the assert error.
      */

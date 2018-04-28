@@ -1,5 +1,5 @@
 /*
- *  Ecmascript compiler recursion limits.  These are quite arbitrary, so here
+ *  ECMAScript compiler recursion limits.  These are quite arbitrary, so here
  *  we test against the current limits, ensuring that reasonable expressions
  *  get parsed while "unreasonable" ones cause a recursion error.
  *

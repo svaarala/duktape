@@ -51,7 +51,7 @@ static duk_ret_t test_basic(duk_context *ctx, void *udata) {
 	duk_pop(ctx);  /* eval result */
 	duk_pop_2(ctx);  /* fixed buffer, buffer object */
 
-	/* Ecmascript equivalent. */
+	/* ECMAScript equivalent. */
 
 	duk_eval_string_noresult(ctx,
 		"(function (buf) {\n"

@@ -338,7 +338,7 @@ function coercionTest() {
     test([], [ null ]);
 
     // return value of callback is ToBoolean() coerced; this has no
-    // side effects, but test each Ecmascript type
+    // side effects, but test each ECMAScript type
 
     var testvalues = [ undefined, null, true, false, 0, 123, '', 'foo', [1,2], { foo: 1, bar: 2 } ];
     test([1,2,3,4,5,6,7,8,9,10,11,12,13,14,15], [ function (val, key, obj) {

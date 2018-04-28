@@ -46,7 +46,7 @@ static duk_ret_t test_1(duk_context *ctx, void *udata) {
 	return 0;
 }
 
-/* duk_instanceof() inherits the Ecmascript type requirements for lval and rval.
+/* duk_instanceof() inherits the ECMAScript type requirements for lval and rval.
  * In particular, rval must be a -callable- object.  Here, for example, trying
  * to do the equivalent of: "new Error() instanceof new Error()" is a TypeError
  * because the rval is a non-callable object.

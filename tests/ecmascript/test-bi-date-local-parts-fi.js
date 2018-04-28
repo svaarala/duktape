@@ -1,10 +1,10 @@
 /*
  *  When parsing a timestamp from local time parts (year, month, etc) the
  *  implementation needs to figure out the UTC time corresponding to the
- *  local parts and then convert the UTC time to an Ecmascript time value.
+ *  local parts and then convert the UTC time to an ECMAScript time value.
  *
  *  The concrete conversion algorithm tries to figure out the UTC-to-local
- *  offset so that it can be taken into account in the Ecmascript time value.
+ *  offset so that it can be taken into account in the ECMAScript time value.
  *  There's a practical problem in this conversion: DUK__GET_LOCAL_TZOFFSET()
  *  provides a UTC-to-local-time offset for an input time value which is
  *  essentially a *UTC* timestamp.  However, we don't know the UTC time yet

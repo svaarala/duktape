@@ -1,5 +1,5 @@
 /*
- *  Test the include mechanism - not an actual Ecmascript testcase.
+ *  Test the include mechanism - not an actual ECMAScript testcase.
  */
 
 /*===

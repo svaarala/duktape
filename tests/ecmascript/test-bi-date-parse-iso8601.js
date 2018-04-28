@@ -109,7 +109,7 @@ function iso8601ParseTest() {
           Date.parse('+287396-10-12T08:59:00.992Z'));  // out of valid E5 range
 
     // Note that the first and last extended year examples are out of
-    // Ecmascript valid range:
+    // ECMAScript valid range:
     print(new Date(0 + 100e6*24*3600*1000).getUTCFullYear(),
           new Date(0 + 100e6*24*3600*1000 + 1).getUTCFullYear(),
           new Date(0 - 100e6*24*3600*1000).getUTCFullYear(),

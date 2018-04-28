@@ -214,7 +214,7 @@ try {
  * that cannot occur.
  *
  * (The URI syntax changes between RFC 2396 and RFC 3986 don't affect URI
- * decoding in Ecmascript, but e.g. reserved character set has changed.  See
+ * decoding in ECMAScript, but e.g. reserved character set has changed.  See
  * doc/uri.txt for discussion.)
  */
 

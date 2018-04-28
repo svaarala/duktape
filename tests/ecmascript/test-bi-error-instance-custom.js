@@ -1,7 +1,7 @@
 /*
  *  Custom Error properties.
  *
- *  Ecmascript engines vary a lot in what Error properties exist and how they
+ *  ECMAScript engines vary a lot in what Error properties exist and how they
  *  are implemented (e.g. as own properties, inherited properties, accessors,
  *  enumerability).
  *
@@ -59,7 +59,7 @@ function test() {
 
     // Only 'message' is an own property.  Stack trace etc are accessors
     // and back into an internal _tracedata property which cannot normally
-    // be accessed from Ecmascript code.
+    // be accessed from ECMAScript code.
 
     print('own properties');
     Object.getOwnPropertyNames(err).forEach(function (k) {

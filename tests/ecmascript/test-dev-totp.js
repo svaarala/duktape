@@ -1,5 +1,5 @@
 /*
- *  Standalone TOTP implementation in Ecmascript.
+ *  Standalone TOTP implementation in ECMAScript.
  *
  *  http://tools.ietf.org/html/rfc6238
  *  http://tools.ietf.org/html/rfc4226
