@@ -29,7 +29,7 @@ summary: |
   <div class="note">
   The coercion is different from a basic C cast from <code>double</code> to
   integer, which may have counterintuitive (and non-portable) behavior like coercing
-  NaN to <code>DUK_INT_MIN</code>.  The coercion is also different from Ecmascript
+  NaN to <code>DUK_INT_MIN</code>.  The coercion is also different from ECMAScript
   <code>ToInt32()</code> coercion because the full range of the native
   <code>duk_int_t</code> is allowed (which may be more than 32 bits).
   </div>

@@ -8,7 +8,7 @@ stack: |
 
 summary: |
   <p>Compare values at <code>idx1</code> and <code>idx2</code> for equality.
-  Returns 1 if values are considered equal using Ecmascript
+  Returns 1 if values are considered equal using ECMAScript
   <a href="http://www.ecma-international.org/ecma-262/5.1/#sec-11.9.4">Strict Equals</a>
   operator (<code>===</code>) semantics, otherwise returns 0.  Also returns 0 if either index
   is invalid.</p>

@@ -1,8 +1,8 @@
 <h1 id="functionobjects">Function objects</h1>
 
-<h2 id="ecmascript-function-properties">Ecmascript functions</h2>
+<h2 id="ecmascript-function-properties">ECMAScript functions</h2>
 
-<p>Duktape Function objects add a few properties to standard Ecmascript
+<p>Duktape Function objects add a few properties to standard ECMAScript
 properties.  The table below summarizes properties assigned to newly
 created function instances (properties can of course be added or removed
 afterwards):</p>
@@ -41,7 +41,7 @@ var bar = function () {
 </pre>
 
 <div class="note">
-Several Ecmascript built-in functions have properties different from user
+Several ECMAScript built-in functions have properties different from user
 created Functions.
 </div>
 
@@ -72,7 +72,7 @@ is useful because it affects how a function appears in tracebacks.</p>
 <h2 id="duktapec-lightfunc-properties">Lightweight Duktape/C functions</h2>
 
 <p>Lightweight Duktape/C functions (lightfuncs) are a very memory efficient way
-of representing a native function in the Ecmascript environment.  Lightfuncs
+of representing a native function in the ECMAScript environment.  Lightfuncs
 don't have a property table so they can't hold properties.  However, they inherit
 from <code>Function.prototype</code> and have the following virtual properties
 (which are non-configurable and non-writable):</p>

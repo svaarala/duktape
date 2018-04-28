@@ -31,12 +31,12 @@ summary: |
   </tr>
   <tr>
   <td class="propname">pc</td>
-  <td>Program counter for Ecmascript functions.  Zero if executing a native
+  <td>Program counter for ECMAScript functions.  Zero if executing a native
       function.</td>
   </tr>
   <tr>
   <td class="propname">lineNumber</td>
-  <td>Line number for Ecmascript functions.  Zero if executing a native
+  <td>Line number for ECMAScript functions.  Zero if executing a native
       function or if pc-to-line translation data is not available.</td>
   </tr>
   </tbody>

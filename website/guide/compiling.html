@@ -59,14 +59,14 @@ a few variants:</p>
 <p>These preconfigured sources provide automatic platform, compiler, and
 architecture detection and use the Duktape default configuration:</p>
 <ul>
-<li>Full Ecmascript E5/E5.1 compliance
+<li>Full ECMAScript E5/E5.1 compliance
     (including the optional
     <a href="http://www.ecma-international.org/ecma-262/5.1/#sec-B">Annex B</a>
     features), except for intentional real world compatibility deviations
     (see <a href="#custombehavior">Custom behavior</a>)</li>
 <li>ES2015 typed array and Node.js Buffer support</li>
-<li>Some features from <a href="#es6features">Ecmascript 2015 (E6)</a> and
-    <a href="#es7features">Ecmascript 2016 (E7)</a></li>
+<li>Some features from <a href="#es6features">ECMAScript 2015 (E6)</a> and
+    <a href="#es7features">ECMAScript 2016 (E7)</a></li>
 <li>Packed value representation (8 bytes per value) when available,
     unpacked value representation (usually 16 bytes per value) when not</li>
 <li>Reference counting and mark-and-sweep garbage collection</li>
@@ -85,7 +85,7 @@ Run <code>configure.py</code> with the <code>--dll</code> option to do that.
 <p>The <code>configure.py</code> utility prepares Duktape source and header
 files for a specific configuration described using command line options.
 For example, to prepare Duktape sources for a DLL build with fastint
-support enabled and Ecmascript 6 <code>Proxy</code> object support disabled:</p>
+support enabled and ECMAScript 6 <code>Proxy</code> object support disabled:</p>
 <pre>
 # Default output format is single source file (--separate-sources for separate
 # sources) and no #line directives (--line-directives to enable them).
@@ -197,7 +197,7 @@ for more practical details.</p>
 </ul>
 
 <p>Reference counting relies on mark-and-sweep to handle reference cycles.
-For example, every Ecmascript function instance is required to be in a
+For example, every ECMAScript function instance is required to be in a
 reference loop with an automatic prototype object created for the function.
 You can break this loop manually if you wish.  For internal technical reasons,
 named function expressions are also in a reference loop; this loop cannot be

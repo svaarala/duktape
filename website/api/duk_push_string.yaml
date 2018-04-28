@@ -13,7 +13,7 @@ summary: |
   A pointer to the interned string data is returned.  If the operation fails,
   throws an error.</p>
 
-  <p>If <code>str</code> is <code>NULL</code>, an Ecmascript <code>null</code> is pushed
+  <p>If <code>str</code> is <code>NULL</code>, an ECMAScript <code>null</code> is pushed
   to the stack and <code>NULL</code> is returned.  This behavior differs from
   <code><a href="#duk_push_lstring">duk_push_lstring</a></code> on purpose.</p>
 
@@ -22,7 +22,7 @@ summary: |
   Some invalid CESU-8/UTF-8 byte sequences are reserved for special
   uses such as representing Symbol values.  When you push such an invalid
   byte sequence, the value on the value stack will behave like a string for
-  C code but will appear as a <code>Symbol</code> for Ecmascript code.
+  C code but will appear as a <code>Symbol</code> for ECMAScript code.
   See <a href="guide.html#symbols">Symbols</a> for more discussion.
   </div>
 

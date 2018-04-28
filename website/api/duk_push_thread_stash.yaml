@@ -11,7 +11,7 @@ summary: |
   <code>ctx</code> and <code>target_ctx</code> arguments may refer to the same
   thread).  The thread stash is an internal object which can be used to store
   key/value pairs from C code so that they are reachable for garbage collection,
-  but are not accessible from Ecmascript code.  The stash is only accessible
+  but are not accessible from ECMAScript code.  The stash is only accessible
   from C code with a matching <code>target_ctx</code> argument.</p>
 
   <p>If <code>target_ctx</code> is <code>NULL</code>, throws an error.</p>

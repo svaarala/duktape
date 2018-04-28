@@ -2,8 +2,8 @@
 
 <h2>Property summary</h2>
 
-<p>Ecmascript Error objects have very few standard properties, so many
-Ecmascript implementations have added quite a few custom properties.
+<p>ECMAScript Error objects have very few standard properties, so many
+ECMAScript implementations have added quite a few custom properties.
 Duktape uses standard Error properties but also borrows the most useful
 properties used by other implementations.  The number of "own" properties
 of error objects is minimized to keep error objects as small as possible.</p>
@@ -40,7 +40,7 @@ somewhat complicated.  The related issues and current behavior are described in:
     match other engines.</li>
 <li>The raw traceback data needed by the accessor properties is stored in an internal
     property (<code>\x82Tracedata</code>) which is not normally accessible from
-    Ecmascript code.</li>
+    ECMAScript code.</li>
 </ul>
 
 <p>If Duktape is compiled without traceback support:</p>
@@ -175,7 +175,7 @@ delete Duktape.errCreate;
 
 <p>Similarly, if <code>Duktape.errThrow</code> has been set, it is called
 right before an error is thrown, and can process or replace the error value.
-Because Ecmascript allows any value type to be thrown, the error handler
+Because ECMAScript allows any value type to be thrown, the error handler
 may get called with arbitrary input values (not just <code>Error</code>
 instances).  It may also be called more than once for the same value because
 an error can be re-thrown multiple times.</p>
@@ -211,7 +211,7 @@ delete Duktape.errThrow;
 
 <ul>
 <li>There is no cause chain support.  Cause chains would be useful but there
-    are no cause chains in Ecmascript, nor does there seem to be a de facto
+    are no cause chains in ECMAScript, nor does there seem to be a de facto
     standard for them.</li>
 <li>These is currently no way to access traceback elements programmatically in
     a version compatible manner.  However, you can access the <code>_Tracedata</code>

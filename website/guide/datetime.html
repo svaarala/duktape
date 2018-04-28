@@ -11,14 +11,14 @@ for more exotic environments.  An external Date provider can also be used e.g.
 when a time offset needs to be applied to the platform time, or when using
 time virtualization.</p>
 
-<p>Ecmascript code interacts with date/time through the standard
+<p>ECMAScript code interacts with date/time through the standard
 <code>Date</code> built-in which is, by specification, limited to millisecond
-resolution.  There are currently no Duktape specific Ecmascript date/time APIs.
+resolution.  There are currently no Duktape specific ECMAScript date/time APIs.
 (A custom API may be added later to deal with sub-millisecond resolution.)</p>
 
 <p>C code can of course use platform date/time APIs directly, but the Duktape
 C API also provides date/time API calls.  These calls see the same time values
-as Ecmascript code which may matter when e.g. time virtualization is used.
+as ECMAScript code which may matter when e.g. time virtualization is used.
 Using these calls makes your code platform neutral and thus more portable.
 The Duktape C API allows sub-millisecond resolution for time values.  See
 <a href="http://wiki.duktape.org/HowtoTimeValues.html">How to work with time values</a>

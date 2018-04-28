@@ -14,7 +14,7 @@ summary: |
   <code><a href="#duk_config_buffer">duk_config_buffer()</a></code>
   to update the external buffer pointer and size.</p>
 
-  <p>External buffers are useful to allow Ecmascript code access externally
+  <p>External buffers are useful to allow ECMAScript code access externally
   allocated data structures.  You can use it to e.g. write bytes to an
   externally allocated frame buffer.  The external buffer has no alignment
   requirements (Duktape makes no alignment assumptions when accessing it).</p>
@@ -33,12 +33,12 @@ example: |
   duk_push_external_buffer(ctx);
   duk_config_buffer(ctx, -1, p, len);
 
-  /* Ecmascript code with access to the buffer object could now do
+  /* ECMAScript code with access to the buffer object could now do
    * something like:
    *
    *    buf[100] = 123;
    *
-   * Calling code must make sure Ecmascript never reads/writes an
+   * Calling code must make sure ECMAScript never reads/writes an
    * external buffer whose backing buffer is no longer valid.
    */
 

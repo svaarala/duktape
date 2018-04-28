@@ -5,8 +5,8 @@
 <p>Duktape supports object finalization as a custom feature.  A finalizer
 is called when an object is about to be freed, so that application code
 can e.g. free native resources associated with the object.  The finalizer
-can be either an Ecmascript function or a Duktape/C function.  However,
-Ecmascript finalizers may interact badly with script timeouts, see below.</p>
+can be either an ECMAScript function or a Duktape/C function.  However,
+ECMAScript finalizers may interact badly with script timeouts, see below.</p>
 
 <p>See <a href="http://wiki.duktape.org/HowtoFinalization.html">How to use finalization</a>
 for examples.</p>
@@ -18,10 +18,10 @@ prototype chain (or in the object itself) is subject to finalization before
 being freed.  The internal property should not be accessed directly, but can
 be read/written using the following:</p>
 <ul>
-<li><code>Duktape.fin(obj)</code> (Ecmascript) or
+<li><code>Duktape.fin(obj)</code> (ECMAScript) or
     <code>duk_get_finalizer()</code> (C)
     gets the current finalizer.</li>
-<li><code>Duktape.fin(obj, fn)</code> (Ecmascript) or
+<li><code>Duktape.fin(obj, fn)</code> (ECMAScript) or
     <code>duk_set_finalizer()</code> (C)
     sets the current finalizer.</li>
 </ul>
@@ -84,7 +84,7 @@ see below for more discussion:</p>
 <li>Heap destruction finalizer sanity limit may cause a finalizer not to
     be executed.</li>
 <li>When a script timeout is being propagated out of the current callstack,
-    Ecmascript finalizers will immediately rethrow the script timeout error.
+    ECMAScript finalizers will immediately rethrow the script timeout error.
     Duktape/C finalizers will execute normally.</li>
 <li>If Duktape runs out of memory (despite emergency GC) when trying to call a
     finalizer, the call error is silently ignored and the finalizer will be
@@ -119,7 +119,7 @@ finalizer behavior:</p>
 <ul>
 <li>When script execution timeout
 (<code>DUK_USE_EXEC_TIMEOUT_CHECK</code>)
-is used and a timeout occurs, it's possible for an Ecmascript finalizer to start
+is used and a timeout occurs, it's possible for an ECMAScript finalizer to start
 running but immediately fail due to a script timeout.  If this is a concrete
 concern, use a Duktape/C native finalizer instead which will run normally even
 when propagating a timeout.</li>

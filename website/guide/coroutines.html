@@ -34,7 +34,7 @@ finished can no longer be resumed; attempt to do so will cause a TypeError.</p>
 
 <p>There are currently strict limitations on when a yield is possible.
 In short, a coroutine can only yield if its entire active call stack consists
-of plain Ecmascript-to-Ecmascript calls.  The following prevent a yield if
+of plain ECMAScript-to-ECMAScript calls.  The following prevent a yield if
 they are present anywhere in the yielding coroutine's call stack:</p>
 <ul>
 <li>a Duktape/C function call</li>

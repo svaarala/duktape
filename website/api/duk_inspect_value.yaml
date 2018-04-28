@@ -61,7 +61,7 @@ summary: |
   </tr>
   <tr>
   <td class="propname">bcbytes</td>
-  <td>Byte size of Ecmascript function bytecode (instructions, constants).
+  <td>Byte size of ECMAScript function bytecode (instructions, constants).
       Shared between all instances (closures) of a certain function template.</td>
   </tr>
   <tr>

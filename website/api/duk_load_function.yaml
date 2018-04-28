@@ -9,7 +9,7 @@ stack: |
 summary: |
   <p>Load a buffer containing
   <a href="https://github.com/svaarala/duktape/blob/master/doc/bytecode.rst">bytecode</a>,
-  recreating the original Ecmascript function (with some limitations).  You <b>must</b>
+  recreating the original ECMAScript function (with some limitations).  You <b>must</b>
   ensure that the bytecode has been dumped with a compatible Duktape version and that the
   bytecode has not been modified since.  <b>Loading bytecode from an untrusted source is
   memory unsafe and may load to exploitable vulnerabilities.</b></p>

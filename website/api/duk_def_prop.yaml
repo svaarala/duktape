@@ -24,7 +24,7 @@ summary: |
   and enumerable attributes are given in the flags field, while property value,
   getter, and setter are given as value stack arguments.  When creating a new
   property, missing attribute values cause
-  <a href="http://www.ecma-international.org/ecma-262/5.1/#sec-8.6.1">Ecmascript defaults</a>
+  <a href="http://www.ecma-international.org/ecma-262/5.1/#sec-8.6.1">ECMAScript defaults</a>
   to be used (false for all boolean attributes, undefined for value, getter, setter);
   when modifying an existing property missing attribute values mean that existing
   attribute values are not touched.</p>
@@ -46,7 +46,7 @@ summary: |
 
   <p>With the <code>DUK_DEFPROP_FORCE</code> flag property changes can be forced
   even when an operation would normally fail due to a non-extensible target object
-  or a non-configurable property.  This cannot be done from Ecmascript code with
+  or a non-configurable property.  This cannot be done from ECMAScript code with
   <code>Object.defineProperty()</code> and is useful for e.g. sandboxing setup.
   In some cases even a forced change is not possible and will cause an error to be
   thrown.  For instance, properties implemented internally as virtual properties
@@ -263,7 +263,7 @@ example: |
   duk_def_prop(ctx, obj_idx, DUK_DEFPROP_CLEAR_CONFIGURABLE);
 
   /* Create an accessor property which is non-configurable and non-enumerable.
-   * Attribute flags are not given so they default to Ecmascript defaults
+   * Attribute flags are not given so they default to ECMAScript defaults
    * (false) automatically.  Equivalent to:
    *
    *   object.defineproperty(obj, 'my_accessor_1', {
@@ -281,7 +281,7 @@ example: |
 
   /* Create an accessor property which is non-configurable but enumerable.
    * Attribute flags are given explicitly which is easier to read without
-   * knowing about Ecmascript attribute default values.  Equivalent to:
+   * knowing about ECMAScript attribute default values.  Equivalent to:
    *
    *   Object.defineProperty(obj, 'my_accessor_2', {
    *      get: my_getter, set: my_setter, enumerable: true, configurable: false
@@ -311,7 +311,7 @@ example: |
                DUK_DEFPROP_HAVE_SET_ENUMERABLE);
 
   /* Change the value of a non-configurable property by force.
-   * No Ecmascript equivalent.
+   * No ECMAScript equivalent.
    */
 
   duk_push_string(ctx, "my_nonconfigurable_prop");

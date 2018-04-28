@@ -4,7 +4,7 @@
 <p>Duktape supports ES2015 Symbols and also provides a Duktape specific
 <b>hidden Symbol</b> variant similar to internal strings in Duktape 1.x.
 Hidden Symbols differ from ES2015 Symbols in that they're hidden from
-ordinary Ecmascript code: they can't be created from Ecmascript code,
+ordinary ECMAScript code: they can't be created from ECMAScript code,
 won't be enumerated or JSON-serialized, and won't be returned from
 <code>Object.getOwnPropertyNames()</code> or even
 <code>Object.getOwnPropertySymbols()</code>.  Properties with hidden Symbol
@@ -28,17 +28,17 @@ access Duktape's hidden Symbol keyed properties: the set of such properties can
 change arbitrarily between versions.</p>
 
 <div class="note">
-Note that the internal UTF-8 byte sequences cannot be created from Ecmascript
-code as a valid Ecmascript string.  For example, a hidden Symbol might be
+Note that the internal UTF-8 byte sequences cannot be created from ECMAScript
+code as a valid ECMAScript string.  For example, a hidden Symbol might be
 represented using <code>\xFFxyz</code>, i.e. the byte sequence
-<code>ff 78 79 7a</code>, while the Ecmascript string <code>"\u00ffxyz"</code>
+<code>ff 78 79 7a</code>, while the ECMAScript string <code>"\u00ffxyz"</code>
 would be represented as the CESU-8 bytes <code>c3 bf 78 79 7a</code> in memory.
 </div>
 
 <p>Creating a Symbol is straightforward from C code:</p>
 <pre class="c-code">
 /* Create a hidden Symbol which can then be used to read/write properties.
- * The Symbol can be passed on to Ecmascript code like any other string or
+ * The Symbol can be passed on to ECMAScript code like any other string or
  * Symbol.
  */
 duk_push_string(ctx, DUK_HIDDEN_SYMBOL("mySymbol"));
@@ -55,7 +55,7 @@ used directly:</p>
 duk_push_string(ctx, "\xff" "mySymbol");
 </pre>
 
-<p>Hidden Symbols cannot be created from Ecmascript code using the default
+<p>Hidden Symbols cannot be created from ECMAScript code using the default
 built-ins alone.  Standard ES2015 Symbols can be created using the
 <code>Symbol</code> built-in, e.g. as <code>Symbol.for('foo')</code>.
 When sandboxing, ensure that application C bindings don't accidentally provide
@@ -65,5 +65,5 @@ to a string without applying an encoding.</p>
 <p>There's currently no special access control for properties with hidden
 Symbol keys: if user code has access to the Symbol, it can read/write the
 property value.  This will most likely change in future major versions so
-that Ecmascript code cannot access a property with a hidden Symbol key,
+that ECMAScript code cannot access a property with a hidden Symbol key,
 even when holding a reference to the hidden Symbol value.</p>

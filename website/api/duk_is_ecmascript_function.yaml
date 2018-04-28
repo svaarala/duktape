@@ -8,11 +8,11 @@ stack: |
 
 summary: |
   <p>Returns 1 if value at <code>idx</code> is a Function object which has
-  been compiled from Ecmascript source code, otherwise returns 0.
+  been compiled from ECMAScript source code, otherwise returns 0.
   If <code>idx</code> is invalid, also returns 0.</p>
 
-  <p>Internally Ecmascript functions are compiled into bytecode and executed
-  with the Ecmascript bytecode interpreter.</p>
+  <p>Internally ECMAScript functions are compiled into bytecode and executed
+  with the ECMAScript bytecode interpreter.</p>
 
 example: |
   if (duk_is_ecmascript_function(ctx, -3)) {

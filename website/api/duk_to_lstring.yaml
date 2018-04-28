@@ -7,7 +7,7 @@ stack: |
   [ ... val! ... ] -> [ ... ToString(val)! ... ]
 
 summary: |
-  <p>Replace the value at <code>idx</code> with an Ecmascript
+  <p>Replace the value at <code>idx</code> with an ECMAScript
   <a href="http://www.ecma-international.org/ecma-262/5.1/#sec-9.8">ToString()</a>
   coerced value.  Returns a non-<code>NULL</code> pointer to the read-only,
   NUL-terminated string data, and writes the string byte length to <code>*out_len</code>

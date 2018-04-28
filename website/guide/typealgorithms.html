@@ -1,6 +1,6 @@
 <h1 id="typealgorithms">Type algorithms</h1>
 
-<p>This section describes how type-related Ecmascript algorithms
+<p>This section describes how type-related ECMAScript algorithms
 like comparisons and coercions are extended to Duktape custom types.
 Duktape specific type algorithms (<code>ToBuffer()</code> and <code>ToPointer()</code>)
 are also discussed.</p>
@@ -139,7 +139,7 @@ for standard types.  Custom type behavior is as follows:</p>
 
 <h2 id="type-conversion-and-testing">Type conversion and testing</h2>
 
-<p>The custom types behave as follows for Ecmascript coercions described
+<p>The custom types behave as follows for ECMAScript coercions described
 <a href="http://www.ecma-international.org/ecma-262/5.1/#sec-9">Type Conversion and Testing</a>
 (except SameValue which was already covered above):</p>
 
@@ -236,7 +236,7 @@ using the Duktape C API.
 
 <h2>Addition</h2>
 
-<p>The Ecmascript addition operator is specified in
+<p>The ECMAScript addition operator is specified in
 <a href="http://www.ecma-international.org/ecma-262/5.1/#sec-11.6.1">The Addition operator (+)</a>.
 Addition behaves specially if either argument is a string: the other argument
 is coerced to a string and the strings are then concatenated.  This behavior

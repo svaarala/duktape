@@ -29,7 +29,7 @@ summary: |
   <div class="note">
   The coercion is different from a basic C cast from <code>double</code> to
   unsigned integer, which may have counterintuitive (and non-portable) behavior
-  for e.g. NaN values.  The coercion is also different from Ecmascript
+  for e.g. NaN values.  The coercion is also different from ECMAScript
   <code>ToUint32()</code> coercion because the full range of the native
   <code>duk_uint_t</code> is allowed (which may be more than 32 bits).
   </div>

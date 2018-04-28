@@ -17,10 +17,10 @@ if you wish to tinker with them.</p>
 
 <h2>What is Duktape?</h2>
 
-<p>Duktape is an embeddable Ecmascript engine with a focus on portability
+<p>Duktape is an embeddable ECMAScript engine with a focus on portability
 and compact footprint.  By integrating Duktape into your C/C++ program you
 can easily extend its functionality through scripting.  You can also build
-the main control flow of your program in Ecmascript and use fast C code
+the main control flow of your program in ECMAScript and use fast C code
 functions to do heavy lifting.</p>
 
 <p>Embeddability means that Duktape makes minimal assumptions about the
@@ -31,12 +31,12 @@ text to the console or to interact with the file system.  Duktape
 distributable package includes example providers which you can easily
 integrate if they suit your needs.</p>
 
-<p>The terms Ecmascript and Javascript are often considered more or less
+<p>The terms ECMAScript and Javascript are often considered more or less
 equivalent, although Javascript and its variants are technically just one
-environment where the Ecmascript language is used.  The line between the
-two is not very clear in practice: even non-browser Ecmascript environments
+environment where the ECMAScript language is used.  The line between the
+two is not very clear in practice: even non-browser ECMAScript environments
 often provide some browser-specific built-ins.  Even so, we use the term
-Ecmascript throughout to refer to the language implemented by Duktape.</p>
+ECMAScript throughout to refer to the language implemented by Duktape.</p>
 
 <h2>Conformance</h2>
 
@@ -47,7 +47,7 @@ later where appropriate:</p>
 <li><a href="http://www.ecma-international.org/ecma-262/5.1/">ECMAScript&#x00ae; Language Specification 5.1 Edition</a></li>
 </ul>
 
-<p>Duktape tracks the latest Ecmascript specification for semantics and
+<p>Duktape tracks the latest ECMAScript specification for semantics and
 built-ins (however support for ES2015 and later is still incomplete), see:</p>
 <ul>
 <li><a href="http://www.ecma-international.org/ecma-262/6.0/">ECMAScript&#x00ae; 2015 Language Specification</a></li>
@@ -83,22 +83,22 @@ was based on Khronos TypedArray specification:</p>
 
 <h2>Features</h2>
 
-<p>Besides standard Ecmascript features, Duktape has the following additional
+<p>Besides standard ECMAScript features, Duktape has the following additional
 features (some are visible to applications, while others are internal):</p>
 <ul>
 <li>ES2015 <a href="https://www.khronos.org/registry/typedarray/specs/latest/">TypedArray</a>
     and <a href="https://nodejs.org/docs/v6.9.1/api/buffer.html">Node.js Buffer</a> bindings,
     plain buffer type (lightweight Uint8Array)</li>
-<li>From Ecmascript 2015 (ES6): <code>setPrototypeOf</code>/<code>__proto__</code>,
+<li>From ECMAScript 2015 (ES6): <code>setPrototypeOf</code>/<code>__proto__</code>,
     a subset of <code>Proxy</code> objects, <code>Reflect</code>, computed property names,
     and minimal <code>const</code> support</li>
-<li>From Ecmascript 2016 (ES7): exponentiation operator (<code>**</code>, <code>**=</code>)</li>
+<li>From ECMAScript 2016 (ES7): exponentiation operator (<code>**</code>, <code>**=</code>)</li>
 <li><a href="https://encoding.spec.whatwg.org/#api">Encoding API</a> bindings based on the WHATWG Encoding Living Standard</li>
 <li>Duktape specific built-ins: provided by the <code>Duktape</code> global object</li>
 <li>Extended types: custom "buffer" and "pointer" types, extended string type
     which supports arbitary binary strings and
     non-<a href="http://en.wikipedia.org/wiki/Plane_(Unicode)#Basic_Multilingual_Plane">BMP</a>
-    strings (standard Ecmascript only supports 16-bit codepoints)</li>
+    strings (standard ECMAScript only supports 16-bit codepoints)</li>
 <li>Combined reference counting and mark-and-sweep garbage collection,
     with finalizers and emergency garbage collection (you can also build
     with just mark-and-sweep)</li>
@@ -114,9 +114,9 @@ features (some are visible to applications, while others are internal):</p>
 
 <h2>Goals</h2>
 
-<p><b>Compliance</b>.  Ecmascript E5/E5.1 and real world compliance.
-Ecmascript compliance requires regular expression and Unicode support.
-When possible, implement features from latest or draft Ecmascript
+<p><b>Compliance</b>.  ECMAScript E5/E5.1 and real world compliance.
+ECMAScript compliance requires regular expression and Unicode support.
+When possible, implement features from latest or draft ECMAScript
 specifications to minimize Duktape custom features.</p>
 
 <p><b>Portability</b>.  Minimal system dependencies are nice when porting,
@@ -168,7 +168,7 @@ discuss core Duktape concepts such as <i>heap</i>, <i>context</i>, <i>value stac
 <i>Duktape API</i>, and <i>Duktape/C functions</i>.  Duktape stack types and C type
 wrappers are discussed in detail.</p>
 
-<p>Duktape specific Ecmascript features are discussed in multiple sections:
+<p>Duktape specific ECMAScript features are discussed in multiple sections:
 <a href="#typealgorithms">Type algorithms</a> (for custom types),
 <a href="#duktapebuiltins">Duktape built-ins</a> (additional built-ins), 
 <a href="#postes5features">Post-ES5 features</a> (features implemented from ES2016 and beyond),
@@ -200,7 +200,7 @@ as part of your application.
 <a href="#portability">Portability</a> covers platform and compiler specific
 issues and other portability issues.
 <a href="#compatibility">Compatibility</a> discusses Duktape's compatibility
-with Ecmascript dialects, extensions, and frameworks.
+with ECMAScript dialects, extensions, and frameworks.
 <a href="#versioning">Versioning</a> describes Duktape versioning and what version
 compatibility to expect.
 <a href="#limitations">Limitations</a> summarizes currently known limitations

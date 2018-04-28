@@ -7,7 +7,7 @@ stack: |
   [ ... val! ... ] -> [ ... ToNumber(val)! ... ]
 
 summary: |
-  <p>Replace the value at <code>index</code> with an Ecmascript
+  <p>Replace the value at <code>index</code> with an ECMAScript
   <a href="http://www.ecma-international.org/ecma-262/5.1/#sec-9.4">ToInteger()</a>
   coerced value.  Returns an <code>duk_int_t</code> further coerced from the <code>ToInteger()</code>
   result using the algorithm described in

@@ -8,7 +8,7 @@ stack: |
 
 summary: |
   <p>Get the Duktape/C function pointer (a <code>duk_c_function</code>) from an
-  Ecmascript function object associated with a Duktape/C function.  If the
+  ECMAScript function object associated with a Duktape/C function.  If the
   value is <code>undefined</code> or the index is invalid, <code>def_value</code>
   default value is returned.  In other cases (<code>null</code> or non-matching
   type) throws an error.</p>

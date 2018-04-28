@@ -23,7 +23,7 @@ summary: |
   <li>If <code>obj_idx</code> is invalid, throws an error.</li>
   </ul>
 
-  <p>The property read is equivalent to the Ecmascript expression
+  <p>The property read is equivalent to the ECMAScript expression
   <code>res = obj[key]</code> with the exception that the presence or absence of the
   property is indicated by the call return value.  For precise semantics, see
   <a href="http://www.ecma-international.org/ecma-262/5.1/#sec-11.2.1">Property Accessors</a>,

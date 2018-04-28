@@ -7,7 +7,7 @@ stack: |
   [ ... val! ... ]
 
 summary: |
-  <p>Set "length" for value at <code>idx</code>.  Equivalent to the Ecmascript
+  <p>Set "length" for value at <code>idx</code>.  Equivalent to the ECMAScript
   statement <code>obj.length = len;</code>.</p>
 
 example: |

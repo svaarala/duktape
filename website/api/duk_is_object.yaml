@@ -13,9 +13,9 @@ summary: |
   <p>Note that many values are considered to be an object, e.g.:</p>
 
   <ul>
-  <li>Ecmascript object</li>
-  <li>Ecmascript array</li>
-  <li>Ecmascript function</li>
+  <li>ECMAScript object</li>
+  <li>ECMAScript array</li>
+  <li>ECMAScript function</li>
   <li>Duktape thread (coroutine)</li>
   <li>Duktape internal objects</li>
   </ul>

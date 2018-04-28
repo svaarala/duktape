@@ -17,7 +17,7 @@ summary: |
   <li>If <code>obj_idx</code> is invalid, throws an error.</li>
   </ul>
 
-  <p>The property existence check is equivalent to the Ecmascript expression
+  <p>The property existence check is equivalent to the ECMAScript expression
   <code>res = key in obj</code>.  For semantics, see
   <a href="http://www.ecma-international.org/ecma-262/5.1/#sec-11.2.1">Property Accessors</a>,
   <a href="http://www.ecma-international.org/ecma-262/5.1/#sec-11.8.7">The in operator</a>,
@@ -40,7 +40,7 @@ summary: |
   Instead of accepting any
   <a href="http://www.ecma-international.org/ecma-262/5.1/#sec-9.10">object coercible</a>
   value (like most property related API calls) this call accepts only an object
-  as its target value.  This is intentional as it follows Ecmascript operator semantics.
+  as its target value.  This is intentional as it follows ECMAScript operator semantics.
   </div>
 
   <p>If the key is a fixed string you can avoid one API call and use the

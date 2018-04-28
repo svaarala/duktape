@@ -7,7 +7,7 @@ stack: |
   [ ... source! filename! ] -> [ ... function! ]
 
 summary: |
-  <p>Compile Ecmascript source code and replace it with a compiled function
+  <p>Compile ECMAScript source code and replace it with a compiled function
   object (the code is not executed).  The <code>filename</code> argument is stored
   as the <code>fileName</code> property of the resulting function, and is the name
   used in e.g. tracebacks to identify the function.  May throw a <code>SyntaxError</code>
@@ -18,11 +18,11 @@ summary: |
   <table>
   <tr>
   <td>DUK_COMPILE_EVAL</td>
-  <td>Compile the input as eval code instead of as an Ecmascript program</td>
+  <td>Compile the input as eval code instead of as an ECMAScript program</td>
   </tr>
   <tr>
   <td>DUK_COMPILE_FUNCTION</td>
-  <td>Compile the input as a function instead of as an Ecmascript program</td>
+  <td>Compile the input as a function instead of as an ECMAScript program</td>
   </tr>
   <tr>
   <td>DUK_COMPILE_STRICT</td>
@@ -39,15 +39,15 @@ summary: |
 
   <ul>
   <li>Global code: compiles into a function with zero arguments, which
-      executes like a top level Ecmascript program (default)</li>
+      executes like a top level ECMAScript program (default)</li>
   <li>Eval code: compiles into a function with zero arguments, which
-      executes like an Ecmascript <code>eval</code> call
+      executes like an ECMAScript <code>eval</code> call
       (flag <code>DUK_COMPILE_EVAL</code>)</li>
   <li>Function code: compiles into a function with zero or more arguments
       (flag <code>DUK_COMPILE_FUNCTION</code>)</li>
   </ul>
 
-  <p>All of these have slightly different semantics in Ecmascript.  See
+  <p>All of these have slightly different semantics in ECMAScript.  See
   <a href="http://www.ecma-international.org/ecma-262/5.1/#sec-10.4">Establishing an Execution Context</a>
   for a detailed discussion.
   One major difference is that global and eval contexts have an implicit
@@ -64,7 +64,7 @@ summary: |
   123;  // implicit return value
   </pre>
 
-  <p>Function code follows the Ecmascript <code>function</code> syntax
+  <p>Function code follows the ECMAScript <code>function</code> syntax
   (the function name is optional):</p>
   <pre class="ecmascript-code">
   function adder(x,y) {
@@ -90,7 +90,7 @@ summary: |
   thus preferable to have as much code inside functions as possible.</p>
 
   <p>When compiling eval and global expressions, be careful to avoid the
-  usual Ecmascript gotchas, such as:</p>
+  usual ECMAScript gotchas, such as:</p>
   <pre class="ecmascript-code">
   /* Function at top level is a function declaration which registers a global
    * function, and is different from a function expression.  Use parentheses

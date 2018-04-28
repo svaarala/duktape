@@ -7,7 +7,7 @@ stack: |
   [ ... val! ... ] -> [ ... ToObject(val)! ... ]
 
 summary: |
-  <p>Replace the value at <code>idx</code> with an Ecmascript
+  <p>Replace the value at <code>idx</code> with an ECMAScript
   <a href="http://www.ecma-international.org/ecma-262/5.1/#sec-9.9">ToObject()</a>
   coerced value.  There is no return value.  Throws an error if value at
   <code>idx</code> is not

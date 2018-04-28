@@ -1,29 +1,29 @@
 <h1 id="compatibility">Compatibility</h1>
 
-<p>This section discussed Duktape compatibility with Ecmascript dialects,
+<p>This section discussed Duktape compatibility with ECMAScript dialects,
 extensions, frameworks, and test suites.</p>
 
-<h2 id="compatibility-e5">Ecmascript E5 / E5.1</h2>
+<h2 id="compatibility-e5">ECMAScript E5 / E5.1</h2>
 
-<p>The main compatibility goal of Duktape is to be Ecmascript E5/E5.1
+<p>The main compatibility goal of Duktape is to be ECMAScript E5/E5.1
 compatible.  However, ES5 feature semantics are updated to ES2015 (or
 later) where incompatible changes have been made in newer specification
 versions.  Current level of compatibility should be quite high.</p>
 
-<h2 id="compatibility-e6">Ecmascript 2015 (E6)</h2>
+<h2 id="compatibility-e6">ECMAScript 2015 (E6)</h2>
 
-<p>Duktape implements some features from Ecmascript 2015 (E6), but generally there
+<p>Duktape implements some features from ECMAScript 2015 (E6), but generally there
 is no compatibility with E6 yet.</p>
 
-<h2 id="compatibility-e7">Ecmascript 2016 (E7)</h2>
+<h2 id="compatibility-e7">ECMAScript 2016 (E7)</h2>
 
-<p>Duktape implements some features from Ecmascript 2016 (E7), but generally there
+<p>Duktape implements some features from ECMAScript 2016 (E7), but generally there
 is no compatibility with E7 yet.</p>
 
-<h2 id="compatibility-e3">Ecmascript E3</h2>
+<h2 id="compatibility-e3">ECMAScript E3</h2>
 
 <p>There is no effort to maintain
-<a href="http://www.mozilla.org/js/language/E262-3.pdf">Ecmascript E3</a>
+<a href="http://www.mozilla.org/js/language/E262-3.pdf">ECMAScript E3</a>
 compatibility, other than required by the E5/E5.1 specification.</p>
 
 <h2 id="compatibility-coffeescript">CoffeeScript</h2>
@@ -72,7 +72,7 @@ running the resulting Javascript using Duktape.  It's also possible to
 <h2 id="compatibility-underscorejs">Underscore.js</h2>
 
 <p><a href="http://underscorejs.org/">Underscore.js</a> provides a lot of
-useful utilities to plain Ecmascript.  Duktape passes almost all of Underscore's
+useful utilities to plain ECMAScript.  Duktape passes almost all of Underscore's
 test cases, see
 <a href="https://github.com/svaarala/duktape/blob/master/doc/underscore-status.rst">underscore-status.rst</a>
 for current compatibility status.</p>
@@ -93,7 +93,7 @@ target language for compilers".  As a subset of JavaScript, functions using
 asm.js type annotations should be fully compatible with Duktape.  However,
 Duktape has no specific support for asm.js and won't optimize asm.js code.
 In fact, asm.js code will generate unnecessary bytecode and execute slower
-than normal Ecmascript code.  The <code>"use asm"</code> directive specified
+than normal ECMAScript code.  The <code>"use asm"</code> directive specified
 by asm.js is ignored by Duktape.  Also, because there is not typed array
 support yet, no "heap object" can be provided.</p>
 

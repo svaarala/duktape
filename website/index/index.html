@@ -7,7 +7,7 @@ with a focus on <b>portability</b> and compact <b>footprint</b>.</p>
 
 <p>Duktape is easy to integrate into a C/C++ project: add <code>duktape.c</code>,
 <code>duktape.h</code>, and <code>duk_config.h</code> to your build, and use the
-Duktape API to call Ecmascript functions from C code and vice versa.</p>
+Duktape API to call ECMAScript functions from C code and vice versa.</p>
 
 <script>
 // <![CDATA[
@@ -38,11 +38,11 @@ Duktape API to call Ecmascript functions from C code and vice versa.</p>
 <ul>
 <li>Embeddable, portable, compact:
     can run on platforms with 160kB flash and 64kB system RAM</li>
-<li><a href="http://www.ecma-international.org/ecma-262/5.1/">Ecmascript E5/E5.1</a>,
+<li><a href="http://www.ecma-international.org/ecma-262/5.1/">ECMAScript E5/E5.1</a>,
     with some semantics updated from ES2015+</li>
 <li>Partial support for
-    <a href="http://www.ecma-international.org/ecma-262/6.0/index.html">Ecmascript 2015 (E6)</a> and
-    <a href="http://www.ecma-international.org/ecma-262/7.0/index.html">Ecmascript 2016 (E7)</a>, see
+    <a href="http://www.ecma-international.org/ecma-262/6.0/index.html">ECMAScript 2015 (E6)</a> and
+    <a href="http://www.ecma-international.org/ecma-262/7.0/index.html">ECMAScript 2016 (E7)</a>, see
     <a href="http://wiki.duktape.org/PostEs5Features.html">Post-ES5 feature status</a> and
     <a href="https://kangax.github.io/compat-table">kangax/compat-table</a>
 </li>
@@ -57,7 +57,7 @@ Duktape API to call Ecmascript functions from C code and vice versa.</p>
 <li>Combined reference counting and mark-and-sweep garbage collection
     with finalization</li>
 <li>Coroutines</li>
-<li>Property virtualization using a subset of Ecmascript ES2015 Proxy object</li>
+<li>Property virtualization using a subset of ECMAScript ES2015 Proxy object</li>
 <li>Bytecode dump/load for caching compiled functions</li>
 <li>Distributable includes an optional logging framework, CommonJS-based module
     loading implementations, etc</li>
@@ -138,7 +138,7 @@ $ ./test
 </pre>
 
 <p>To <a href="http://wiki.duktape.org/Configuring.html">customize Duktape configuration</a>,
-here to disable Ecmascript 6 <code>Proxy</code> object support:</p>
+here to disable ECMAScript 6 <code>Proxy</code> object support:</p>
 
 <pre>
 $ python2 duktape-2.2.0/tools/configure.py --output-directory src-duktape \
@@ -171,7 +171,7 @@ int main(int argc, char *argv[]) {
 
 <h1><span class="step">3</span> Add C function bindings</h1>
 
-<p>To call a C function from Ecmascript code, first declare your
+<p>To call a C function from ECMAScript code, first declare your
 C functions:</p>
 
 <pre class="c-code">
@@ -208,7 +208,7 @@ duk_push_c_function(ctx, native_adder, DUK_VARARGS);
 duk_put_global_string(ctx, "adder");
 </pre>
 
-<p>You can then call your function from Ecmascript code:</p>
+<p>You can then call your function from ECMAScript code:</p>
 
 <pre class="c-code">
 duk_eval_string_noresult(ctx, "print('2+3=' + adder(2, 3));");

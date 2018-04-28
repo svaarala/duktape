@@ -9,7 +9,7 @@ stack: |
 
 summary: |
   <p>Push the currently running Duktape thread to the stack.  The value pushed
-  is a thread object which is also an Ecmascript object.  If there is no current
+  is a thread object which is also an ECMAScript object.  If there is no current
   thread, <code>undefined</code> is pushed instead.</p>
 
   <p>The current thread is (almost always) the thread represented by the
