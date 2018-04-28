@@ -229,14 +229,14 @@ int main(int argc, char *argv[]) {
 	fileio_register(ctx);
 
 	if (c_evloop) {
-		fprintf(stderr, "Using C based eventloop (omit -c to use Ecmascript based eventloop)\n");
+		fprintf(stderr, "Using C based eventloop (omit -c to use ECMAScript based eventloop)\n");
 		fflush(stderr);
 
 		eventloop_register(ctx);
 		fileio_push_file_string(ctx, "c_eventloop.js");
 		duk_eval(ctx);
 	} else {
-		fprintf(stderr, "Using Ecmascript based eventloop (give -c to use C based eventloop)\n");
+		fprintf(stderr, "Using ECMAScript based eventloop (give -c to use C based eventloop)\n");
 		fflush(stderr);
 
 		fileio_push_file_string(ctx, "ecma_eventloop.js");
@@ -268,7 +268,7 @@ int main(int argc, char *argv[]) {
  usage:
 	fprintf(stderr, "Usage: evloop [-c] <filename>\n");
 	fprintf(stderr, "\n");
-	fprintf(stderr, "Uses an Ecmascript based eventloop (ecma_eventloop.js) by default.\n");
+	fprintf(stderr, "Uses an ECMAScript based eventloop (ecma_eventloop.js) by default.\n");
 	fprintf(stderr, "If -c option given, uses a C based eventloop (c_eventloop.{c,js}).\n");
 	fprintf(stderr, "If <filename> is '-', the entire STDIN executed.\n");
 	fflush(stderr);

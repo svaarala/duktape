@@ -12,7 +12,7 @@ built otherwise).
 To test (Linux only, perhaps other Unix)::
 
   $ make
-  $ ./evloop curses-timers.js     # run with Ecmascript eventloop
+  $ ./evloop curses-timers.js     # run with ECMAScript eventloop
   $ ./evloop -c curses-timers.js  # run with C eventloop
 
 Implementation approaches
@@ -25,8 +25,8 @@ two main approaches:
    like timers, sockets, etc, is held in C structures.
    (See ``c_eventloop.c`` and ``c_eventloop.js``.)
 
-2. Using an Ecmascript eventloop which never returns.  All the event loop state
-   can be managed with Ecmascript code instead of C structures.  The Ecmascript
+2. Using an ECMAScript eventloop which never returns.  All the event loop state
+   can be managed with ECMAScript code instead of C structures.  The ECMAScript
    eventloop calls a Duktape/C helper to do the lowest level poll() call.
    (See ``ecma_eventloop.js``.)
 

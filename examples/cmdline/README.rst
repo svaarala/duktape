@@ -2,5 +2,5 @@
 Duktape command line
 ====================
 
-Ecmascript command line execution tool, useful for running Ecmascript code
+ECMAScript command line execution tool, useful for running ECMAScript code
 from a file, stdin, or interactively.  Also used by automatic testing.

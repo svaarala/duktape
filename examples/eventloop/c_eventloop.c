@@ -272,7 +272,7 @@ duk_ret_t eventloop_run(duk_context *ctx, void *udata) {
 
 	(void) udata;
 
-	/* The Ecmascript poll handler is passed through EventLoop.fdPollHandler
+	/* The ECMAScript poll handler is passed through EventLoop.fdPollHandler
 	 * which c_eventloop.js sets before we come here.
 	 */
 	duk_push_global_object(ctx);
@@ -356,7 +356,7 @@ duk_ret_t eventloop_run(duk_context *ctx, void *udata) {
 
 		/*
 		 *  Check socket activity, handle all sockets.  Handling is offloaded to
-		 *  Ecmascript code (fd + revents).
+		 *  ECMAScript code (fd + revents).
 		 *
 		 *  If FDs are removed from the poll list while we're processing callbacks,
 		 *  the entries are simply marked unused (fd set to 0) without actually

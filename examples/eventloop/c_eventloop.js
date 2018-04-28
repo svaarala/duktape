@@ -1,7 +1,7 @@
 /*
  *  C eventloop example (c_eventloop.c).
  *
- *  Ecmascript code to initialize the exposed API (setTimeout() etc) when
+ *  ECMAScript code to initialize the exposed API (setTimeout() etc) when
  *  using the C eventloop.
  *
  *  https://developer.mozilla.org/en-US/docs/Web/JavaScript/Timers

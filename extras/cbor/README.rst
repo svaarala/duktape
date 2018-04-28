@@ -14,7 +14,7 @@ To integrate CBOR into your application:
   is enough.
 
 * Call ``duk_cbor_init()`` to register a global ``CBOR`` object with
-  Ecmascript bindings ``CBOR.encode()`` and ``CBOR.decode()``, roughly
+  ECMAScript bindings ``CBOR.encode()`` and ``CBOR.decode()``, roughly
   matching https://github.com/paroga/cbor-js.
 
 Basic usage of the ``jsoncbor`` conversion tool::
@@ -24,7 +24,7 @@ Basic usage of the ``jsoncbor`` conversion tool::
     $ cat test.json | ./jsoncbor -e   # writes CBOR to stdout
     $ cat test.cbor | ./jsoncbor -d   # writes JSON to stdout
 
-CBOR objects are decoded into Ecmascript objects, with non-string keys
+CBOR objects are decoded into ECMAScript objects, with non-string keys
 coerced into strings.
 
 Direct support for CBOR is likely to be included in the Duktape API in the
@@ -45,7 +45,7 @@ Some CBOR shortcomings for preserving information:
 - Array objects with properties lose their non-index properties.
 - Array objects with gaps lose their gaps as they read back as undefined.
 - Buffer objects and views lose much of their detail besides the raw data.
-- Ecmascript strings cannot be fully represented; strings must be UTF-8.
+- ECMAScript strings cannot be fully represented; strings must be UTF-8.
 - Functions and native objects lose most of their detail.
 - CBOR tags are useful to provide soft decoding information, but the tags
   are just integers from an IANA controlled space with no space for custom

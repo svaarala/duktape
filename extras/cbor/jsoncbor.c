@@ -51,7 +51,7 @@ static void usage_and_exit(void) {
 	                "\n"
 	                "       Input is read from stdin, output is written to stdout.\n"
 	                "       'jx' is a Duktape custom JSON extension.\n"
-	                "       'js' means evaluate input as an Ecmascript expression.\n");
+	                "       'js' means evaluate input as an ECMAScript expression.\n");
 	exit(1);
 }
 
