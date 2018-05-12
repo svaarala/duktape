@@ -22,6 +22,14 @@
 (function () {
     if (typeof Promise !== 'undefined') { return; }
 
+    // As far as the specification goes, almost all Promise settling is via
+    // concrete resolve/reject functions with mutual protection from being
+    // called multiple times.  Sometimes the actual resolve/reject functions
+    // are not exposed to calling code, and can safely be omitted which is
+    // useful because resolve/reject functions are memory heavy.  These
+    // optimizations are enabled by default; set to false to disable.
+    var allowOptimization = true;
+
     // Job queue to simulate ES2015 job queues, linked list, 'next' reference.
     // While ES2015 doesn't guarantee the relative order of jobs in different
     // job queues, within a certain queue strict FIFO is required.  See ES5.1
@@ -31,6 +39,9 @@
     // multiple Job Queues are serviced."
     var queueHead = null, queueTail = null;
     function enqueueJob(job) {
+        // Avoid inheriting conflicting properties if caller already didn't
+        // ensure it.
+        Object.setPrototypeOf(job, null);
         compact(job);
         if (queueHead) {
             queueTail.next = job;
@@ -80,32 +91,44 @@
     }
 
     // Raw fulfill/reject operations, assume resolution processing done.
+    // The specification algorithms RejectPromise() and FulfillPromise()
+    // assert that the Promise is pending so the initial check in these
+    // implementations (p.state !== void 0) is not needed: the resolve/reject
+    // function pairs always ensure a Promise is not ultimately settled twice.
+    // With some of the "as if" optimizations we rely on these raw operations
+    // to protect against multiple attempts to settle the Promise so the checks
+    // are actually needed.
     function doFulfill(p, val) {
-        if (p.state !== void 0) { return; }  // should not happen
+        if (p.state !== void 0) { return; }  // additional check needed with optimizations
         p.state = true; p.value = val;
         var reactions = p.fulfillReactions;
         delete p.fulfillReactions; delete p.rejectReactions; compact(p);
-        reactions.forEach(function (r) {
-            enqueueJob({
-                handler: r.handler,
-                resolve: r.resolve,
-                reject: r.reject,
-                value: val
-            });  // only value is new
+        reactions.forEach(function (ent) {
+            // Conceptually: create a job from the registered reaction.
+            // In practice: reuse the reaction object because it is unique,
+            // never leaks to calling code, and is never reused.
+            ent.value = val;
+            enqueueJob(ent);
         });
     }
     function doReject(p, val) {
-        if (p.state !== void 0) { return; }  // should not happen
+        if (p.state !== void 0) { return; }  // additional check needed with optimizations
         p.state = false; p.value = val;
         var reactions = p.rejectReactions;
         delete p.fulfillReactions; delete p.rejectReactions; compact(p);
-        reactions.forEach(function (r) {
-            enqueueJob({
-                handler: r.handler,
-                resolve: r.resolve,
-                reject: r.reject,
-                value: val
-            });  // only value is new
+        reactions.forEach(function (ent) {
+            // As for doFulfill(), reuse the registered reaction object.
+            ent.value = val;
+            if (!ent.handler) {
+                // Without a .handler, we're dealing with an optimized
+                // entry where only .target exists and the resolve/reject
+                // behavior is simulated when the entry runs.  However,
+                // we need to know whether to simulate resolve or reject
+                // at that time, so flag rejection explicitly (resolve
+                // requires no flag).
+                ent.rejected = true;
+            }
+            enqueueJob(ent);
         });
     }
 
@@ -127,6 +150,7 @@
             if (p.state !== void 0) { return; }
             doReject(p, err);
         };
+        reject.prototype = null;  // drop .prototype object
         var resolve = function (val) {
             if (new.target) { throw new TypeError('resolve is not constructable'); }
             if (alreadyResolved) { return; }
@@ -140,12 +164,25 @@
                             val.then);
                 if (typeof then === 'function') {
                     var t = createResolutionFunctions(p);
-                    return enqueueJob({
-                        thenable: val,
-                        then: then,
-                        resolve: t.resolve,
-                        reject: t.reject
-                    });
+                    var optimized = allowOptimization;
+                    if (optimized) {
+                        // XXX: this optimization may not be useful because the
+                        // job entry runs usually very quickly, and as part of
+                        // running the job, the resolve/reject function must be
+                        // created for the then() call.
+                        return enqueueJob({
+                            thenable: val,
+                            then: then,
+                            target: p
+                        });
+                    } else {
+                        return enqueueJob({
+                            thenable: val,
+                            then: then,
+                            resolve: t.resolve,
+                            reject: t.reject
+                        });
+                    }
                     // old resolve/reject is neutralized, only new pair is live
                 }
                 return doFulfill(p, val);
@@ -153,34 +190,65 @@
                 return doReject(p, e);
             }
         };
+        resolve.prototype = null;  // drop .prototype object
         return { resolve: resolve, reject: reject };
     }
 
     // Job queue simulation.
     function runQueueEntry() {
+        // XXX: In optimized cases, creating both resolution functions is
+        // not always necessary.  There's also no need for alreadySettled
+        // protections for the optimized cases either.
         var job = dequeueJob();
+        var tmp;
         if (!job) { return false; }
-        if (job.then && job.resolve && job.reject) {
-            try {
-                void job.then.call(job.thenable, job.resolve, job.reject);
-            } catch (e) {
-                job.reject(e);
+        if (job.then) {
+            // PromiseResolveThenableJob
+            if (job.target) {
+                tmp = createResolutionFunctions(job.target);
             }
-        } else if (job.handler && job.resolve && job.reject) {
             try {
-                if (job.handler === 'Identity') {
+                if (tmp) {
+                    void job.then.call(job.thenable, tmp.resolve, tmp.reject);
+                } else {
+                    void job.then.call(job.thenable, job.resolve, job.reject);
+                }
+            } catch (e) {
+                if (tmp) {
+                    tmp.reject.call(void 0, e);
+                } else {
+                    job.reject.call(void 0, e);
+                }
+            }
+        } else {
+            // PromiseReactionJob
+            try {
+                if (job.handler === void 0) {
+                    // Optimized case where two Promises are tied together
+                    // without the need for an actual 'handler'.
+                    tmp = createResolutionFunctions(job.target);  // must exist in this case
+                    tmp = job.rejected ? tmp.reject : tmp.resolve;
+                    tmp.call(void 0, job.value);
+                    return true;
+                } else if (job.handler === 'Identity') {
                     res = job.value;
                 } else if (job.handler === 'Thrower') {
                     throw job.value;
                 } else {
                     res = job.handler.call(void 0, job.value);
                 }
-                job.resolve(res);
+                if (job.target) {
+                    createResolutionFunctions(job.target).resolve.call(void 0, res);
+                } else {
+                    job.resolve.call(void 0, res);
+                }
             } catch (e) {
-                job.reject(e);
+                if (job.target) {
+                    createResolutionFunctions(job.target).reject.call(void 0, e);
+                } else {
+                    job.reject.call(void 0, e);
+                }
             }
-        } else {
-            throw new Error('internal error');  // unknown job
         }
         return true;
     }
@@ -225,6 +293,9 @@
 
     // %Promise%.all().
     function all(list) {
+        if (!Array.isArray(list)) {
+            throw new TypeError('non-array all() argument not supported');
+        }
         var resolveFn, rejectFn;
         var p = new Promise(function (resolve, reject) {
             resolveFn = resolve; rejectFn = reject;
@@ -257,13 +328,29 @@
 
     // %Promise%.race().
     function race(list) {
+        if (!Array.isArray(list)) {
+            throw new TypeError('non-array race() argument not supported');
+        }
         var resolveFn, rejectFn;
         var p = new Promise(function (resolve, reject) {
             resolveFn = resolve; rejectFn = reject;
         });
         list.forEach(function (x) {  // XXX: no iterator support
             var t = Promise.resolve(x);
-            t.then(resolveFn, rejectFn);
+            var func = t.then;
+            var optimized = (func === then) && allowOptimization;
+            if (optimized) {
+                // If the .then() of the Promise.resolve() is the original
+                // built-in implementation, we don't need to queue the actual
+                // resolve and reject functions explicitly because (1) the
+                // functions don't leak and can't be called by anyone else,
+                // and (2) the onFulfilled/onRejected functions would just
+                // directly forward the result from 't' to 'p'.
+                optimizedThen(t, p);
+            } else {
+                // Generic case, the result Promise of .then() is ignored.
+                void func.call(t, resolveFn, rejectFn);
+            }
         });
         return p;
     }
@@ -276,35 +363,87 @@
         var p = new Promise(function (resolve, reject) {
             resolveFn = resolve; rejectFn = reject;
         });
-        if (typeof onFulfilled !== 'function') { onFulfilled = 'Identity' }
-        if (typeof onRejected !== 'function') { onRejected = 'Thrower' }
+        var optimized = allowOptimization;
+        if (typeof onFulfilled !== 'function') { onFulfilled = 'Identity'; }
+        if (typeof onRejected !== 'function') { onRejected = 'Thrower'; }
         if (this.state === void 0) {  // pending
-            this.fulfillReactions.push({
-                handler: onFulfilled,
-                resolve: resolveFn,
-                reject: rejectFn
-            });
-            this.rejectReactions.push({
-                handler: onRejected,
-                resolve: resolveFn,
-                reject: rejectFn
-            });
+            if (optimized) {
+                this.fulfillReactions.push({
+                    handler: onFulfilled,
+                    target: p
+                });
+                this.rejectReactions.push({
+                    handler: onRejected,
+                    target: p
+                });
+            } else {
+                this.fulfillReactions.push({
+                    handler: onFulfilled,
+                    resolve: resolveFn,
+                    reject: rejectFn
+                });
+                this.rejectReactions.push({
+                    handler: onRejected,
+                    resolve: resolveFn,
+                    reject: rejectFn
+                });
+            }
         } else if (this.state) {  // fulfilled
+            if (optimized) {
+                enqueueJob({
+                    handler: onFulfilled,
+                    target: p,
+                    value: this.value
+                });
+            } else {
+                enqueueJob({
+                    handler: onFulfilled,
+                    resolve: resolveFn,
+                    reject: rejectFn,
+                    value: this.value
+                });
+            }
+        } else {  // rejected
+            if (optimized) {
+                enqueueJob({
+                    handler: onRejected,
+                    target: p,
+                    value: this.value
+                });
+            } else {
+                enqueueJob({
+                    handler: onRejected,
+                    resolve: resolveFn,
+                    reject: rejectFn,
+                    value: this.value
+                });
+            }
+        }
+        return p;
+    }
+
+    // Optimized .then() where a specific source Promise just forwards its
+    // result to a target Promise unless its already settled.
+    function optimizedThen(source, target) {
+        if (source.state === void 0) {  // pending
+            source.fulfillReactions.push({
+                target: target
+            });
+            source.rejectReactions.push({
+                target: target
+            });
+        } else if (source.state) {  // fulfilled
             enqueueJob({
-                handler: onFulfilled,
-                resolve: resolveFn,
-                reject: rejectFn,
-                value: this.value
+                target: target,
+                value: source.value
             });
         } else {  // rejected
             enqueueJob({
-                handler: onRejected,
-                resolve: resolveFn,
-                reject: rejectFn,
-                value: this.value
+                target: target,
+                value: source.value,
+                rejected: true
             });
         }
-        return p;
     }
 
     // %PromisePrototype%.catch.
