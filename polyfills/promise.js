@@ -121,12 +121,14 @@
         // with a [[AlreadyResolved]] slot.  Here we use an in-scope variable.
         var alreadyResolved = false;
         var reject = function (err) {
+            if (new.target) { throw new TypeError('reject is not constructable'); }
             if (alreadyResolved) { return; }
             alreadyResolved = true;  // neutralize resolve/reject
             if (p.state !== void 0) { return; }
             doReject(p, err);
         };
         var resolve = function (val) {
+            if (new.target) { throw new TypeError('resolve is not constructable'); }
             if (alreadyResolved) { return; }
             alreadyResolved = true;  // neutralize resolve/reject
             if (p.state !== void 0) { return; }

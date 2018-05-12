@@ -429,6 +429,10 @@ def prepare_ecmascript_testcase(data, meta):
     if meta.get('use_strict', False):
         data = "'use strict'; " + data
 
+    # Manually enabled Promise hack.
+    if False:
+        data = data + '\n' + "if (typeof Promise === 'function' && typeof Promise.runQueue === 'function') { Promise.runQueue(); }"
+
     return data
 
 # Similar preparation for API testcases.
