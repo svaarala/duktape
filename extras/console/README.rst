@@ -28,3 +28,8 @@ contains an example binding:
 
 * After these steps, ``console`` will be registered to the global object
   and is ready to use.
+
+* By default the console object will use ``stdout`` for log levels up to
+  info, and ``stderr`` for warning and above.  You can change this by
+  providing either ``DUK_CONSOLE_STDOUT_ONLY`` or ``DUK_CONSOLE_STDERR_ONLY``
+  in ``duk_console_init()`` flags.

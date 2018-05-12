@@ -67,3 +67,8 @@ from Duktape v2.2.x.  Note the following:
   configurations).  Note, however, that recent gcc/clang versions are
   optimizing around undefined behavior so while relying on undefined behavior
   may work in one version, it may break with newer compiler versions.
+
+* The console extra (extras/console) now by default uses ``stdout`` for log
+  levels up to info, and ``stderr`` for warn and above.  To restore previous
+  behavior (stdout only) use the ``DUK_CONSOLE_STDOUT_ONLY`` flag in
+  ``duk_console_init()``.
