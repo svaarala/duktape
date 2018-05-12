@@ -3155,7 +3155,12 @@ Miscellaneous:
 * Add some statistics dumps to mark-and-sweep with debug logging enabled
   (GH-1579, GH-1640, GH-1677)
 
-* Add DUK_CONSOLE_FLUSH flag to extras/duktape-console (GH-1587, GH-1588)
+* Add DUK_CONSOLE_FLUSH flag to extras/console (GH-1587, GH-1588)
+
+* Use stdout for info and below, and stderr for warn and above in
+  extras/console; previous behavior was to use stdout only, use
+  DUK_CONSOLE_STDOUT_ONLY init flag to restore previous behavior (GH-1890,
+  GH-1903)
 
 * Compile warning fixes and Duktape 1.x compatibility fix to module-node
   (GH-1605)
