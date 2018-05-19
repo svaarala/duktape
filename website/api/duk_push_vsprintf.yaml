@@ -26,6 +26,8 @@ summary: |
   This is a limitation of the vararg mechanism.</p>
   </div>
 
+  <div include="vararg-portability.html" />
+
 example: |
   void test_vsprintf(duk_context *ctx, ...) {
       va_list ap;
