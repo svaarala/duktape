@@ -1,0 +1,9 @@
+<div>
+<div class="note">
+This API call is not fully portable because the va_end() macro in the calling
+code may never be reached (e.g. due to an error throw).  Some implementations
+rely on va_end() to e.g. free memory allocated by va_start(); see
+<a href="https://stackoverflow.com/questions/11645282/do-i-need-to-va-end-when-an-exception-is-thrown">https://stackoverflow.com/questions/11645282/do-i-need-to-va-end-when-an-exception-is-thrown</a>.
+However, such implementations are rare so this isn't usually a practical concern.
+</div>
+</div>

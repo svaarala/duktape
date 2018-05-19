@@ -11,6 +11,8 @@ summary: |
   <code><a href="#duk_error_va">duk_error_va()</a></code> with an error code
   <code>DUK_ERR_RANGE_ERROR</code>.</p>
 
+  <div include="vararg-portability.html" />
+
 example: |
   void my_range_error(duk_context *ctx, const char *fmt, ...) {
       va_list ap;

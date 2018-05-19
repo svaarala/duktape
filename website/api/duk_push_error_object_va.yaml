@@ -10,6 +10,8 @@ summary: |
   <p>Vararg variant of
   <code><a href="#duk_push_error_object">duk_push_error_object()</a></code>.</p>
 
+  <div include="vararg-portability.html" />
+
 example: |
   duk_idx_t my_type_error(duk_context *ctx, const char *fmt, ...) {
       va_list ap;

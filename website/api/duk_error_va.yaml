@@ -10,6 +10,8 @@ summary: |
   <p>Vararg variant of
   <code><a href="#duk_error">duk_error()</a></code>.</p>
 
+  <div include="vararg-portability.html" />
+
 example: |
   void my_range_error(duk_context *ctx, const char *fmt, ...) {
       va_list ap;
