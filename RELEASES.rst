@@ -3162,6 +3162,8 @@ Miscellaneous:
   DUK_CONSOLE_STDOUT_ONLY init flag to restore previous behavior (GH-1890,
   GH-1903)
 
+* Compile warning fix to extras/console (GH-1906)
+
 * Compile warning fixes and Duktape 1.x compatibility fix to module-node
   (GH-1605)
 
