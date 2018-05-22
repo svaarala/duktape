@@ -51,6 +51,7 @@ and agreed to irrevocably license their contributions under the Duktape
 * Fabrice Fontaine (https://github.com/ffontaine)
 * Christopher Hiller (https://github.com/boneskull)
 * Gonzalo Diethelm (https://github.com/gonzus)
+* Michal Kasperek (https://github.com/michalkas)
 
 Other contributions
 ===================
