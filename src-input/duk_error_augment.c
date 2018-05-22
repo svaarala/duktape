@@ -354,7 +354,6 @@ DUK_LOCAL void duk__add_fileline(duk_hthread *thr, duk_hthread *thr_callstack, c
 			DUK_UNREF(pc);
 			DUK_ASSERT_DISABLE(pc >= 0);  /* unsigned */
 			DUK_ASSERT((duk_double_t) pc < DUK_DOUBLE_2TO32);  /* assume PC is at most 32 bits and non-negative */
-			act = NULL;  /* invalidated by pushes, so get out of the way */
 
 			duk_push_hobject(thr, func);
 
