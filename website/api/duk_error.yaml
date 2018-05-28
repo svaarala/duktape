@@ -37,7 +37,7 @@ summary: |
   </pre>
 
 example: |
-  duk_error(ctx, DUK_ERR_RANGE_ERROR, "argument out of range: %d", (int) argval);
+  (void) duk_error(ctx, DUK_ERR_RANGE_ERROR, "argument out of range: %d", (int) argval);
 
 tags:
   - error
