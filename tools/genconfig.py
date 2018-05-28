@@ -980,7 +980,11 @@ def generate_duk_config_header(opts, meta_dir):
     forced_opts = get_forced_options(opts)
     for doc in use_defs_list:
         if doc.get('warn_if_missing', False) and not forced_opts.has_key(doc['define']):
-            logger.warning('Recommended config option ' + doc['define'] + ' not provided')
+            # Awkward handling for DUK_USE_CPP_EXCEPTIONS + DUK_USE_FATAL_HANDLER.
+            if doc['define'] == 'DUK_USE_FATAL_HANDLER' and forced_opts.has_key('DUK_USE_CPP_EXCEPTIONS'):
+                pass  # DUK_USE_FATAL_HANDLER not critical with DUK_USE_CPP_EXCEPTIONS
+            else:
+                logger.warning('Recommended config option ' + doc['define'] + ' not provided')
 
     # Gather a map of "active options" for genbuiltins.py.  This is used to
     # implement proper optional built-ins, e.g. if a certain config option
