@@ -18,6 +18,15 @@ summary: |
   }
   </pre>
 
+  <p>If the return value is ignored, cast to void to avoid compilation
+  warnings:</p>
+  <pre class="c-code">
+  if (argvalue &lt; 0) {
+      duk_push_error_object(ctx, DUK_ERR_TYPE_ERROR, "invalid argument: %d", (int) argvalue);
+      (void) duk_throw(ctx);
+  }
+  </pre>
+
 example: |
   /* Throw a string value; equivalent to the ECMAScript code:
    *
