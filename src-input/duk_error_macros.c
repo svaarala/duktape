@@ -113,10 +113,18 @@ DUK_INTERNAL DUK_COLD void duk_default_fatal_handler(void *udata, const char *ms
 	DUK_UNREF(udata);
 	DUK_UNREF(msg);
 
+	msg = msg ? msg : "NULL";
+
 #if defined(DUK_USE_FATAL_HANDLER)
 	/* duk_config.h provided a custom default fatal handler. */
-	DUK_D(DUK_DPRINT("custom default fatal error handler called: %s", msg ? msg : "NULL"));
+	DUK_D(DUK_DPRINT("custom default fatal error handler called: %s", msg));
 	DUK_USE_FATAL_HANDLER(udata, msg);
+#elif defined(DUK_USE_CPP_EXCEPTIONS)
+	/* With C++ use a duk_fatal_exception which user code can catch in
+	 * a natural way.
+	 */
+	DUK_D(DUK_DPRINT("built-in default C++ fatal error handler called: %s", msg));
+	throw duk_fatal_exception(msg);
 #else
 	/* Default behavior is to abort() on error.  There's no printout
 	 * which makes this awkward, so it's always recommended to use an
@@ -133,7 +141,7 @@ DUK_INTERNAL DUK_COLD void duk_default_fatal_handler(void *udata, const char *ms
 	 *   - http://duktape.org/api.html#taglist-protected
 	 * ====================================================================
 	 */
-	DUK_D(DUK_DPRINT("built-in default fatal error handler called: %s", msg ? msg : "NULL"));
+	DUK_D(DUK_DPRINT("built-in default fatal error handler called: %s", msg));
 	DUK_ABORT();
 #endif
 

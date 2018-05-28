@@ -2724,7 +2724,10 @@ DUK_INTERNAL duk_int_t duk_handle_safe_call(duk_hthread *thr,
 		retval = DUK_EXEC_ERROR;
 	}
 #if defined(DUK_USE_CPP_EXCEPTIONS)
-	catch (std::exception &exc) {
+	catch (duk_fatal_exception &exc) {
+		DUK_D(DUK_DPRINT("rethrow duk_fatal_exception"));
+		throw;
+	} catch (std::exception &exc) {
 		const char *what = exc.what();
 		DUK_ASSERT((duk_size_t) ((duk_uint8_t *) thr->valstack_end - (duk_uint8_t *) thr->valstack) >= entry_valstack_end_byteoff);
 		DUK_STATS_INC(thr->heap, stats_safecall_throw);
