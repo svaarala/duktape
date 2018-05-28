@@ -34,7 +34,7 @@ example: |
    */
 
   duk_push_string(ctx, "this string is thrown");
-  duk_throw(ctx);
+  (void) duk_throw(ctx);
 
 tags:
   - error
