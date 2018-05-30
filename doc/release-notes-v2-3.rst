@@ -23,6 +23,11 @@ Main changes in this release (see RELEASES.rst for full details):
   literal to a heap string object quite fast (almost as fast as using a heapptr).
   For now the calls are experimental.
 
+* When C++ exception support is enabled (DUK_USE_CPP_EXCEPTIONS), Duktape now
+  uses a C++ exception throw also for fatal errors (e.g. uncaught error).  The
+  exception thrown has the type ``duk_fatal_exception`` which inherits from
+  ``std::runtime_error`` so it has a ::what() method and a useful message.
+
 Upgrading from Duktape 2.2
 ==========================
 
@@ -30,6 +35,22 @@ No action (other than recompiling) should be needed for most users to upgrade
 from Duktape v2.2.x.  Note the following:
 
 * TBD.
+
+* If you are using DUK_USE_CPP_EXCEPTIONS note that fatal errors are now
+  thrown using a C++ exception of the type ``duk_fatal_exception`` which
+  inherits from ``std::runtime_error`` and will be caught by a boilerplate
+  ``std::exception`` catch.  In previous versions uncaught errors would
+  propagate out as ``duk_internal_exception``\s, while assertions would
+  default to ``abort()``.  As before, it is unsafe to continue after catching
+  a ``duk_fatal_exception``.  You can override the new behavior by:
+
+  - Providing an explicit fatal error handler in heap creation.  This affects
+    heap related fatal errors (like uncaught exceptions), but won't affect
+    fatal errors without a heap context (like assertions).
+
+  - Providing an explicit default fatal error handler using the
+    ``DUK_USE_FATAL_HANDLER`` config option.  This affects both types of
+    fatal errors.
 
 * If performance matters, you might consider using duk_xxx_literal() variants
   in place of duk_xxx_string() variants when the argument is a C literal.
