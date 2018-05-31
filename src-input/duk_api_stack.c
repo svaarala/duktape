@@ -3287,6 +3287,8 @@ DUK_INTERNAL void duk_push_class_string_tval(duk_hthread *thr, duk_tval *tv, duk
 		}
 		duk_pop_unsafe(thr);
 	}
+#else
+	DUK_UNREF(avoid_side_effects);
 #endif
 
 	h_obj = duk_known_hobject(thr, -1);
