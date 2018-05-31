@@ -19,7 +19,7 @@ provides the same bindings (``Duktape.Logger`` object, ``duk_log()`` and
 
 The framework focuses on how logger objects are created and what the
 logger interface looks like.  Other features are quite barebones; for
-example the default backend simply writes to the ``stderr`` and there is
+example, the default backend simply writes to the ``stderr`` and there is
 no advanced backend configuration like multiple log outputs.  The user can
 easily replace the frontend and the backend functions to extend the
 basic feature set in a transparent manner.
@@ -239,7 +239,7 @@ intentional to keep the logger footprint small:
   writes go through a single logger instance.  If multiple global objects
   exist in the Duktape heap, each global context (or more specifically
   ``Duktape.Logger`` instance) will have its own logger object.  Logging
-  from C is usually less of a priority so the logging C api is kept very
+  from C is usually less of a priority so the logging C API is kept very
   minimal on purpose.
 
 Existing frameworks and related links

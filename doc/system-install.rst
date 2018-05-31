@@ -45,7 +45,7 @@ There a few limitations in this approach:
   Duktape because there are a lot of config options.
 
 * Technically the Duktape library and the user application should be compiled
-  with the same compiler.  When using different compilers basic types or
+  with the same compiler.  When using different compilers, basic types or
   struct alignment rules (among other things) may differ.  In practice it's
   unlikely you'll run into problems, at least when using mainline compilers
   like gcc and clang.

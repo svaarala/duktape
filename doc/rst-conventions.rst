@@ -16,7 +16,7 @@ Book level:
 
 #. Over- and underlined hash marks (``#``) for book title
 
-#. Over- and underlines stars (``*``) for book sub-title
+#. Over- and underlined stars (``*``) for book sub-title
 
 File level:
 
@@ -63,8 +63,8 @@ However, e.g. GitHub will renumber the bullets and may also change the
 numbering style.  This will make references to list elements confusing;
 e.g. if you refer to Quux as element 1.a.1 above, the reference is quite
 confusing if Quux was renumbered to 1.1.1 or 1.a.iii.  Even so, such
-references are sometimes necessary so they can be used.
-Start at zero indent
+references are sometimes necessary, so they can be used.
+Start at zero indent.
 
 Bullets
 -------

@@ -342,7 +342,7 @@ Checklist for maintenance releases
 
 * Review diff between previous release and new patch release.
 
-* Tag release, description "maintenance release" should be good enough for
+* Tag release; description "maintenance release" should be good enough for
   most patch releases.
 
 * Build release.  Compare release to previous release package by diffing the

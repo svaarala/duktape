@@ -25,7 +25,7 @@ The general principles for implementation are:
 * Compile-time operations on non-ASCII characters can have a performance
   penalty in exchange for small size.
 
-Handling unicode case conversion, character classes etc in a compact code
+Handling Unicode case conversion, character classes, etc. in a compact code
 size is bit challenging.  The current solution is to fast path ASCII
 characters and to use a bit-packed format for encoding case conversion
 rules (e.g. range mappings).  The rules are created by build-time Python
