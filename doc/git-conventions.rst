@@ -5,7 +5,7 @@ Git conventions
 Repositories
 ============
 
-The main development repository is hosted on Github:
+The main development repository is hosted on GitHub:
 
 * https://github.com/svaarala/duktape
 

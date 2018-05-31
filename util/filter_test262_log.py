@@ -106,7 +106,7 @@ def main():
         print('TEST262 FAILED')
     elif len(known_errors) > 0 or len(diagnosed_errors) > 0:
         # Known and diagnosed errors don't indicate test failure
-        # as far as Github status is concerned.
+        # as far as GitHub status is concerned.
         print('TEST262 SUCCESS')
     else:
         print('TEST262 SUCCESS')
