@@ -2710,7 +2710,7 @@ DUK_LOCAL void duk__to_primitive_helper(duk_hthread *thr, duk_idx_t idx, duk_int
 	 * which mimic objects.
 	 */
 	if (check_symbol && duk_get_method_stridx(thr, idx, DUK_STRIDX_WELLKNOWN_SYMBOL_TO_PRIMITIVE)) {
-		DUK_ASSERT(hint >= 0 && hint < sizeof(duk__toprim_hint_strings) / sizeof(const char *));
+		DUK_ASSERT(hint >= 0 && (duk_size_t) hint < sizeof(duk__toprim_hint_strings) / sizeof(const char *));
 		duk_dup(thr, idx);
 		duk_push_string(thr, duk__toprim_hint_strings[hint]);
 		duk_call_method(thr, 1);  /* [ ... method value hint ] -> [ ... res] */
