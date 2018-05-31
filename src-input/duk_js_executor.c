@@ -2937,7 +2937,10 @@ DUK_INTERNAL void duk_js_execute_bytecode(duk_hthread *exec_thr) {
 			                           entry_jmpbuf_ptr);
 		}
 #if defined(DUK_USE_CPP_EXCEPTIONS)
-		catch (std::exception &exc) {
+		catch (duk_fatal_exception &exc) {
+			DUK_D(DUK_DPRINT("rethrow duk_fatal_exception"));
+			throw;
+		} catch (std::exception &exc) {
 			const char *what = exc.what();
 			if (!what) {
 				what = "unknown";

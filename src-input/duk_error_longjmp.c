@@ -76,14 +76,9 @@ DUK_INTERNAL void duk_err_longjmp(duk_hthread *thr) {
 
 	DUK_DD(DUK_DDPRINT("about to longjmp, pf_prevent_count=%ld", (long) thr->heap->pf_prevent_count));
 
-#if !defined(DUK_USE_CPP_EXCEPTIONS)
 	/* If we don't have a jmpbuf_ptr, there is little we can do except
 	 * cause a fatal error.  The caller's expectation is that we never
 	 * return.
-	 *
-	 * With C++ exceptions we now just propagate an uncaught error
-	 * instead of invoking the fatal error handler.  Because there's
-	 * a dummy jmpbuf for C++ exceptions now, this could be changed.
 	 */
 	if (!thr->heap->lj.jmpbuf_ptr) {
 		DUK_D(DUK_DPRINT("uncaught error: type=%d iserror=%d value1=%!T value2=%!T",
@@ -97,16 +92,12 @@ DUK_INTERNAL void duk_err_longjmp(duk_hthread *thr) {
 #endif
 		DUK_UNREACHABLE();
 	}
-#endif  /* DUK_USE_CPP_EXCEPTIONS */
 
 #if defined(DUK_USE_CPP_EXCEPTIONS)
-	{
-		duk_internal_exception exc;  /* dummy */
-		throw exc;
-	}
-#else  /* DUK_USE_CPP_EXCEPTIONS */
+	throw duk_internal_exception();  /* dummy */
+#else
 	DUK_LONGJMP(thr->heap->lj.jmpbuf_ptr->jb);
-#endif  /* DUK_USE_CPP_EXCEPTIONS */
+#endif
 
 	DUK_UNREACHABLE();
 }
