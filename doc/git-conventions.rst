@@ -10,8 +10,8 @@ The main development repository is hosted on GitHub:
 * https://github.com/svaarala/duktape
 
 The duktape.org website is also part of the repository.  Up to Duktape 0.12.0
-also the release binaries were stored in the Duktape repo.  For Duktape 1.0.0
-and after the convention is changed to use external binaries, see releases
+the release binaries were also stored in the Duktape repo.  For Duktape 1.0.0
+and after the convention is changed to use external binaries; see the Releases
 section below.  The upside of keeping the website in the same repo is that
 old documentation matching the current checkout is always available.
 
@@ -30,7 +30,7 @@ Issues are tracked in GitHub, i.e. outside the repository itself.
 Releases
 ========
 
-Release versioning follows semantic versioning, for details, see:
+Release versioning follows semantic versioning; for details, see:
 
 * http://duktape.org/guide.html#versioning
 
@@ -66,12 +66,12 @@ Branch and tag naming
 Development branches:
 
 * ``master``: Churn branch with active development, kept close to release
-  quality at all times, unstable features are developed in feature branches.
+  quality at all times; unstable features are developed in feature branches.
 
-* ``frob-xyz-tweaks``, ``add-missing-docs``, etc: Relatively short lived
-  branches for developing a particular feature, may be rebased, commits may
+* ``frob-xyz-tweaks``, ``add-missing-docs``, etc.: Relatively short lived
+  branches for developing a particular feature; may be rebased, commits may
   be squashed, etc.  Merged into ``master`` when code works, documentation
-  has been updated, etc and then deleted.  There is no fixed branch naming
+  has been updated, etc., and then deleted.  There is no fixed branch naming
   but avoid ``fix-`` and ``bug-`` prefixes.
 
 * ``fix-xxx``: Short lived bug fix branch, otherwise similar to a feature
@@ -153,7 +153,7 @@ Commit messages
 Merges to master branch must have clean commit messages.  Merge commit
 should retain the default merge heading which should be followed by a
 descriptive paragraph similar to what the release note updates are.
-This makes the merge commits useful for getting an overview what changes
+This makes the merge commits useful for getting an overview of what changes
 have been made and why.
 
 Commit messages should follow these guidelines:
@@ -161,7 +161,7 @@ Commit messages should follow these guidelines:
 * Capitalized title line at most 50 characters long, no trailing period.
   This works best with GitHub and is also a common convention.
 
-* Beneath that use normal sentence structure, bullet lists etc are OK.
+* Beneath that use normal sentence structure, bullet lists etc. are OK.
   No particular format for this part now.
 
 * GitHub compatible messages are nice:

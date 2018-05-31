@@ -111,7 +111,7 @@ tips for using fastints:
           // All 'i' values here will be fastints.
       }
 
-* Note that the number syntax doesn't affect the fastint downgrade check,
+* Note that the number syntax doesn't affect the fastint downgrade check;
   only the final value matters.  All of the following will be represented
   as fastints::
 
@@ -120,7 +120,7 @@ tips for using fastints:
       t = 100e-2;
       t = 0.01e2;
 
-  Similarly constant folding, when possible, will be done before doing the
+  Similarly, constant folding, when possible, will be done before doing the
   downgrade check, so the following will be represented as a fastint::
 
       t = 123.123 / 123.123;  // fastint 1
@@ -206,7 +206,7 @@ Fastints and Duktape internals
 
 A few notes on how fastints are used internally, what macros are used, etc.
 
-Fastint aware vs. unware code
+Fastint aware vs. unaware code
 -----------------------------
 
 Fastint support is optional and added between ``#if defined()`` guards::
@@ -219,7 +219,7 @@ Number handling will be either:
 
 * fastint unaware: requires no changes to existing code
 
-* fastint aware: requires fastint detection e.g. in switch-case statements
+* fastint aware: requires fastint detection, e.g. in switch-case statements
   and then usage of fastint aware macros
 
 Type switch cases
@@ -366,7 +366,7 @@ downgrade check::
 
   DUK_TVAL_CHKFAST_INPLACE(tv);
 
-The target 'tv' can have any type; the macro first checks if the value
+The target ``tv`` can have any type; the macro first checks if the value
 is a double and if so, if it can be fastint coerced.
 
 When fastint support is disabled, the macro is a no-op.
@@ -614,7 +614,7 @@ if a double value can be represented as a fastint.
 
 The "fast path" for fastint operations doesn't execute this algorithm because
 both inputs and outputs are fastints and Duktape detects this in the fast path
-preconditions.  Even so the performance of the downgrade check matters for
+preconditions.  Even so, the performance of the downgrade check matters for
 overall performance.
 
 Exponent and sign by cases
@@ -943,7 +943,7 @@ arithmetic would certainly be faster.
 
 The downside would be that some bit operations won't be possible: to
 fully support all bit operations both signed and unsigned 32-bit values
-is needed.
+are needed.
 
 Optimize upgrade and downgrade
 ------------------------------
