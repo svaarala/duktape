@@ -3233,9 +3233,10 @@ Planned
 2.3.0 (XXXX-XX-XX)
 ------------------
 
-* When DUK_USE_CPP_EXCEPTIONS is enabled: use duk_fatal_exception when
-  propagating a fatal error out of Duktape; use duk_fatal_exception also
-  in the default fatal error handler (GH-1915)
+* When C++ exception support is enabled use a separate duk_fatal_exception
+  (inherits from std::runtime_error) to propagate fatal errors (uncaught
+  errors, assertions) out of Duktape when using the default fatal error
+  handler (GH-1915)
 
 * Update UnicodeData.txt and SpecialCasing.txt used for building internal
   Unicode control data to Unicode version 10.0.0 (GH-1851)
