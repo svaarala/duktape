@@ -27,7 +27,7 @@ Main features:
 * Built-in Unicode support
 * Minimal platform dependencies
 * Combined reference counting and mark-and-sweep garbage collection with finalization
-* Custom features like co-routines
+* Custom features like coroutines
 * Property virtualization using a subset of ECMAScript E2015 Proxy object
 * Bytecode dump/load for caching compiled functions
 * Distributable includes an optional logging framework, CommonJS-based module
@@ -165,7 +165,7 @@ Reporting bugs
 
 See [CONTRIBUTING.md](https://github.com/svaarala/duktape/blob/master/CONTRIBUTING.md).
 
-Security critical Github issues (for example anything leading to a segfault)
+Security critical GitHub issues (for example anything leading to a segfault)
 are tagged `security`.
 
 Contributing

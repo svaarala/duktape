@@ -533,7 +533,7 @@ def context_linux_x64_test262test():
 
     # Test result plumbing a bit awkward but works for now.
     # Known and diagnosed issues are considered a "pass" for
-    # Github status.
+    # GitHub status.
     return 'TEST262 SUCCESS\n' in res['stdout']
 
 def context_linux_x64_duk_dddprint():

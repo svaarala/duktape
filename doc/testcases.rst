@@ -292,7 +292,7 @@ Test tools
 * ``runtests/runtests.js``: original Node.js based test runner which is
   likely to be rewritten as a Python program.
 
-* ``testrunner/``: distributed test runner jobs for Github commit/pull webhook
+* ``testrunner/``: distributed test runner jobs for GitHub commit/pull webhook
   tests.  The testrunner client/server code is in its own repo
   https://github.com/svaarala/duktape-testrunner.
 

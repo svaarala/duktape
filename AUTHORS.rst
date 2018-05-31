@@ -91,6 +91,7 @@ bugs, provided ideas, etc; roughly in order of appearance):
 * Laurent Zubiaur (https://github.com/lzubiaur)
 * Neil Kolban (https://github.com/nkolban)
 * Wilhelm Wanecek (https://github.com/wanecek)
+* Andrew Janke (https://github.com/apjanke)
 
 If you are accidentally missing from this list, send me an e-mail
 (``sami.vaarala@iki.fi``) and I'll fix the omission.
