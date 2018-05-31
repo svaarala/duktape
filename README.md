@@ -86,19 +86,19 @@ example, to enable fastint support (example for Linux):
     # src-custom/ will now contain: duktape.c, duktape.h, duk_config.h.
 
 You can also clone this repository, make modifications, and build a source
-distributable on Linux, OSX, and Windows using `python util/dist.py`.
+distributable on Linux, macOS, and Windows using `python util/dist.py`.
 
 Getting started: modifying and rebuilding the distributable
 -----------------------------------------------------------
 
 If you intend to change Duktape internals and want to rebuild the source
-distributable in Linux, OSX, or Windows:
+distributable in Linux, macOS, or Windows:
 
     # Linux; can often install from packages or using 'pip'
     $ sudo apt-get install python python-yaml
     $ python util/dist.py
 
-    # OSX
+    # macOS
     # Install Python 2.7.x
     $ pip install PyYAML
     $ python util/dist.py
