@@ -52,6 +52,7 @@ and agreed to irrevocably license their contributions under the Duktape
 * Christopher Hiller (https://github.com/boneskull)
 * Gonzalo Diethelm (https://github.com/gonzus)
 * Michal Kasperek (https://github.com/michalkas)
+* Andrew Janke (https://github.com/apjanke)
 
 Other contributions
 ===================
