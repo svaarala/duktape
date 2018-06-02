@@ -42,7 +42,7 @@ See http://comments.gmane.org/gmane.text.docutils.user/6473.
 You can use::
 
   .. raw:: LaTeX
-  
+
      \newpage
 
 Lists
@@ -106,12 +106,12 @@ minimize formatting issues::
 
   3. Quux
 
-Nested lists and GitHub
+Nested lists
 -----------------------
 
 While ``rst2pdf`` and friends are somewhat lenient with respect to nested
-lists, GitHub RST formatter is a bit more picky.  To work with the GitHub
-formatter, make sure that a nested list's bullet mark is intended to the
+lists, some RST formatters are a bit more picky.  To work well with all
+formatters, make sure that a nested list's bullet mark is indented to the
 level of the previous level's body, e.g.::
 
   1. Foo
@@ -122,7 +122,7 @@ level of the previous level's body, e.g.::
 
   2. Bar
 
-The following is **incorrect** and GitHub will render the nested list as
+The following is **incorrect** and may render the nested list as
 a quoted block::
 
   1. Foo
