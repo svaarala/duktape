@@ -2290,7 +2290,7 @@ def rom_emit_strings_source(genc, meta):
     genc.emitLine('#endif  /* DUK_USE_HSTRING_CLEN */')
     genc.emitLine('#else  /* DUK_USE_HEAPPTR16 */')
     genc.emitLine('#define DUK__STRINIT(heaphdr_flags,refcount,hash32,hash16,blen,clen,next) \\')
-    genc.emitLine('\t{ { (heaphdr_flags), DUK__REFCINIT((refcount)), DUK_LOSE_CONST((next)) }, (hash32), (blen), (clen) }')
+    genc.emitLine('\t{ { (heaphdr_flags), DUK__REFCINIT((refcount)), (duk_hstring *) DUK_LOSE_CONST((next)) }, (hash32), (blen), (clen) }')
     genc.emitLine('#endif  /* DUK_USE_HEAPPTR16 */')
 
     # Organize ROM strings into a chained ROM string table.  The ROM string
