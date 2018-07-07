@@ -1,6 +1,7 @@
 function setupPromiseUnhandledCallbacks(unhandledRejection, rejectionHandled) {
     if (typeof Duktape === 'object' && typeof Promise === 'function' && Promise.isPolyfill) {
         Promise.unhandledRejection = function (args) {
+            //console.log('unhandledCallback:', args);
             if (args.event === 'reject') {
                 unhandledRejection(args.promise);
             } else if (args.event === 'handle') {
