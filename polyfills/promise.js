@@ -9,15 +9,20 @@
  *    - Doesn't handle errors from core operations, e.g. out-of-memory or
  *      internal error when queueing/running jobs.  These are implementation
  *      defined for the most part.
- *    - Unhandled rejection 'reject' and 'handle' events don't have the same
- *      ordering as in Node.js at present.  Unhandled rejection behavior also
- *      hasn't been checked against latest ES specifications.
  *
  *  This polyfill was originally used to gain a better understanding of the
  *  ES2015 specification algorithms, before implementing Promises natively.
  *
  *  The polyfill uses a Symbol to mark Promise instances, but falls back to
  *  an ordinary (non-enumerable) property if no Symbol support is available.
+ *  Presence of the polyfill itself can be checked using "Promise.isPolyfill".
+ *
+ *  Unhandled Promise rejections use a custom API signature.  For now, a
+ *  single Promise.unhandledRejection() hook receives both 'rawReject' and
+ *  'rawHandle' events directly from HostPromiseRejectionTracker, and higher
+ *  level (Node.js / WHATWG like) 'reject' and 'handle' events which filter
+ *  out cases where a rejected Promise is initially unhandled but gets handled
+ *  within the same "tick".
  *
  *  See also: https://github.com/stefanpenner/es6-promise#readme
  */
@@ -65,6 +70,9 @@
         }
         return ret;
     }
+    function queueEmpty() {
+        return !queueHead;
+    }
 
     // Helper to define/modify properties more compactly.
     function def(obj, key, val, attrs) {
@@ -94,6 +102,45 @@
     }
     function requirePromise(p) {
         if (!isPromise(p)) { throw new TypeError('Promise required'); }
+    }
+
+    // Raw HostPromiseRejectionTracker call.  This operation should "never"
+    // fail but that's in practice unachievable due to possible out-of-memory
+    // on any operation (including invocation of the callback).  Higher level
+    // hook events are emitted from Promise.runQueue().
+    function safeCallUnhandledRejection(event) {
+        try {
+            cons.unhandledRejection(event);
+        } catch (e) {
+            //console.log('Promise.unhandledRejection failed:', e);
+        }
+    }
+    function rejectionTracker(p, operation) {
+        try {
+            if (operation === 'reject') {
+                // Unhandled at resolution.
+                safeCallUnhandledRejection({ promise: p, event: 'rawReject', reason: p.value });
+                def(p, 'unhandled', 1);
+                cons.potentiallyUnhandled.push(p);
+            } else if (operation === 'handle') {
+                safeCallUnhandledRejection({ promise: p, event: 'rawHandle', reason: p.value });
+                if (p.unhandled === 2) {
+                    // Unhandled, already notified, need handled notification.
+                    def(p, 'unhandled', 3);
+                    cons.potentiallyUnhandled.push(p);
+                } else {
+                    // Handled but not yet notified -> no action needed.
+                    // XXX: If this.unhandled was 1, we'd like to remove
+                    // the Promise from cons.potentiallyUnhandled list.
+                    // We skip that here because it would mean an expensive
+                    // list remove.  If cons.potentiallyUnhandled was a
+                    // Set, it would be natural to remove from Set here.
+                    delete p.unhandled;
+                }
+            }
+        } catch (e) {
+            //console.log('HostPromiseRejectionTracker failed:', e);
+        }
     }
 
     // Raw fulfill/reject operations, assume resolution processing done.
@@ -136,10 +183,8 @@
             }
             enqueueJob(ent);
         });
-        if (reactions.length === 0 && !p.rejectionHandled) {
-            // Unhandled at resolution.
-            p.unhandled = 1;
-            cons.potentiallyUnhandled.push(p);
+        if (!p.isHandled) {
+            rejectionTracker(p, 'reject');
         }
     }
 
@@ -278,7 +323,7 @@
         def(this, 'value', void 0);
         def(this, 'fulfillReactions', []);
         def(this, 'rejectReactions', []);
-        def(this, 'rejectionHandled', false);  // XXX: roll into 'state' to minimize fields
+        def(this, 'isHandled', false);  // XXX: roll into 'state' to minimize fields
         compact(this);
         var t = createResolutionFunctions(this);
         try {
@@ -368,26 +413,6 @@
         return p;
     }
 
-    // Shared helper for checking unhandled rejections after settling.
-    function checkRejectionHandling(p) {
-        if (p.unhandled === 2) {
-            if (p.rejectionHandled) {
-                // Unhandled, already notified, need handled notification.
-                p.unhandled = 3;
-                cons.potentiallyUnhandled.push(p);
-            } else {
-                // Maybe handled later.
-            }
-        } else {
-            // XXX: If this.unhandled was 1, we'd like to remove
-            // the Promise from cons.potentiallyUnhandled list
-            // but skip that because it would mean an expensive
-            // list remove.  If cons.potentiallyUnhandled was a
-            // Set, it would be natural to remove from Set here.
-            delete p.unhandled;
-        }
-    }
-
     // %PromisePrototype%.then(), also used for .catch().
     function then(onFulfilled, onRejected) {
         // No subclassing support here now, no NewPromiseCapability() handling.
@@ -399,11 +424,6 @@
         var optimized = allowOptimization;
         if (typeof onFulfilled !== 'function') { onFulfilled = 'Identity'; }
         if (typeof onRejected !== 'function') { onRejected = 'Thrower'; }
-
-        // This is unconditional on purpose: if 'onRejected' is not callable,
-        // the rejection of 'this' is forwarded to 'p' so 'this' is considered
-        // handled.
-        this.rejectionHandled = true;
 
         if (this.state === void 0) {  // pending
             if (optimized) {
@@ -443,7 +463,9 @@
                 });
             }
         } else {  // rejected
-            checkRejectionHandling(this);
+            if (!this.isHandled) {
+                rejectionTracker(this, 'handle');
+            }
             if (optimized) {
                 enqueueJob({
                     handler: onRejected,
@@ -459,6 +481,7 @@
                 });
             }
         }
+        this.isHandled = true;
         return p;
     }
 
@@ -478,13 +501,16 @@
                 value: source.value
             });
         } else {  // rejected
-            checkRejectionHandling(source);
+            if (!source.isHandled) {
+                rejectionTracker(source, 'handle');
+            }
             enqueueJob({
                 target: target,
                 value: source.value,
                 rejected: true
             });
         }
+        source.isHandled = true;
     }
 
     // %PromisePrototype%.catch.
@@ -501,8 +527,10 @@
     };
     def(_try, 'name', 'try', 'c');
 
-    // Unhandled rejection notifications after a "tick", which seems to be
-    // interpreted as "run jobs until job queue is empty".
+    // Emit higher level Node.js/WHATWG like 'reject' and 'handle' events,
+    // filtering out some cases where a rejected Promise is initially unhandled
+    // but is handled within the same "tick" (for a relatively murky definition
+    // of a "tick").
     // https://html.spec.whatwg.org/multipage/webappapis.html#unhandled-promise-rejections
     // https://www.ecma-international.org/ecma-262/8.0/#sec-host-promise-rejection-tracker
     function checkUnhandledRejections() {
@@ -526,18 +554,18 @@
             var p = cons.potentiallyUnhandled[idx];
             cons.potentiallyUnhandled[idx] = null;
 
-            // The unhandledRejection() callback runs intentionally without a
-            // try-catch.  If the application wants an unhandled rejection to
-            // cause a process exit, the callback may throw which causes an
-            // uncaught exception.
+            // For consistency with hook calls from HostPromiseRejectionTracker
+            // errors from user callback are silently eaten.  If a process exit
+            // is desirable, user callback may call a custom native binding to
+            // do that ("process.exit(1)" or similar).
             //
             // Use a custom object argument convention for flexibility.
 
             if (p.unhandled === 1) {
-                cons.unhandledRejection({ promise: p, event: 'reject', reason: p.value });
-                p.unhandled = 2;
+                safeCallUnhandledRejection({ promise: p, event: 'reject', reason: p.value });
+                def(p, 'unhandled', 2);
             } else if (p.unhandled === 3) {
-                cons.unhandledRejection({ promise: p, event: 'handle', reason: p.value });
+                safeCallUnhandledRejection({ promise: p, event: 'handle', reason: p.value });
                 delete p.unhandled;
             }
         }
@@ -565,12 +593,12 @@
         // Custom API to drive the "job queue".  We only want to exit when
         // there are no more Promise jobs or unhandledRejection() callbacks,
         // i.e. no more work to do.  Note that an unhandledRejection()
-        // callback may queue more Promise job entries.
+        // callback may queue more Promise job entries and vice versa.
         def(cons, 'runQueue', function _runQueueUntilEmpty() {
             do {
                 while (runQueueEntry()) {}
-                var recheck = checkUnhandledRejections();
-            } while(recheck);
+                checkUnhandledRejections();
+            } while(!(queueEmpty() && cons.potentiallyUnhandled.length === 0));
         });
         def(cons, 'unhandledRejection', nop);
 
