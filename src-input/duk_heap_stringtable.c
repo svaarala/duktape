@@ -686,7 +686,7 @@ DUK_LOCAL duk_hstring *duk__strtab_romstring_lookup(duk_heap *heap, const duk_ui
 	}
 	lookup_hash &= 0xff;
 
-	curr = DUK_LOSE_CONST(duk_rom_strings_lookup[lookup_hash]);
+	curr = (duk_hstring *) DUK_LOSE_CONST(duk_rom_strings_lookup[lookup_hash]);
 	while (curr != NULL) {
 		/* Unsafe memcmp() because for zero blen, str may be NULL. */
 		if (strhash == DUK_HSTRING_GET_HASH(curr) &&
