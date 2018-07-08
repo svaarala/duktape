@@ -53,6 +53,7 @@ and agreed to irrevocably license their contributions under the Duktape
 * Gonzalo Diethelm (https://github.com/gonzus)
 * Michal Kasperek (https://github.com/michalkas)
 * Andrew Janke (https://github.com/apjanke)
+* Steve Fan（https://github.com/stevefan1999)
 
 Other contributions
 ===================
