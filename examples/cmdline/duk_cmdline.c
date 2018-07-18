@@ -1565,7 +1565,12 @@ int main(int argc, char *argv[]) {
 			"   --recreate-heap    recreate heap after every file\n"
 			"   --no-heap-destroy  force GC, but don't destroy heap at end (leak testing)\n"
 	                "\n"
-	                "If <filename> is omitted, interactive mode is started automatically.\n");
+	                "If <filename> is omitted, interactive mode is started automatically.\n"
+			"\n"
+	                "Input files can be either Ecmascript source files or bytecode files.\n"
+	                "Bytecode files are not validated prior to loading, so that incompatible\n"
+			"or crafted files can cause memory unsafe behavior.  See discussion in\n"
+			"https://github.com/svaarala/duktape/blob/master/doc/bytecode.rst#memory-safety-and-bytecode-validation.\n");
 	fflush(stderr);
 	exit(1);
 }
