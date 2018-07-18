@@ -81,11 +81,15 @@ executed::
 When to use bytecode dump/load
 ==============================
 
-There are two main motivations for using bytecode dump/load:
+Generally speaking, there are two main motivations for using a bytecode
+dump/load mechanism:
 
 * Performance
 
 * Obfuscation
+
+Duktape's bytecode format improves performance compared to compilation, but
+is not ideal for obfuscation as discussed in more detail below.
 
 Performance
 -----------
