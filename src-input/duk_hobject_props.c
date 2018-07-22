@@ -460,6 +460,8 @@ DUK_LOCAL duk_bool_t duk__proxy_check_prop(duk_hthread *thr, duk_hobject *obj, d
 	 * Or rely on later stack depth macro check (insert one here)?
 	 */
 
+	/* FIXME: implement recursive Proxy target support directly here? */
+
 	duk_require_stack(thr, DUK__VALSTACK_PROXY_LOOKUP);
 	duk_push_hobject(thr, h_handler);
 	if (duk_get_prop_stridx_short(thr, -1, stridx_trap)) {
