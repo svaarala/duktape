@@ -6,7 +6,9 @@
 <ul>
 <li>Add Duktape source (<code>duktape.c</code>) and headers
     (<code>duktape.h</code> and <code>duk_config.h</code>)
-    to your build.</li>
+    to your build.  If the default configuration is not appropriate,
+    use <code>python2 tools/configure.py</code> to prepare Duktape
+    sources and headers for a custom configuration.</li>
 <li>Create a Duktape <b>heap</b> (a garbage collection region) and an initial
     <b>context</b> (essentially a thread handle) in your program.</li>
 <li>Load the necessary ECMAScript script files, and register your Duktape/C
@@ -52,9 +54,8 @@ values of the coroutine's active call stack.  The value stack always has an
 active <b>stack frame</b> for the most recent function call (when no function
 calls have been made, the active stack frame is the value stack as is).
 The Duktape API calls operate almost exclusively in the currently active
-stack frame.  A coroutine also has an internal <b>catch stack</b> which is used
-to track error catching sites established using e.g. <code>try-catch-finally</code>
-blocks.  This is not visible to the caller in any way at the moment.</p>
+stack frame.  There's also internal book-keeping for error catching sites
+established using e.g. <code>try-catch-finally</code>.</p>
 
 <p>Multiple contexts can share the same Duktape <b>heap</b>.  In more concrete
 terms this means that multiple contexts can share the same garbage collection
@@ -121,7 +122,7 @@ to values which resided on the value stack of a context associated with the
 heap, such pointers are invalidated and must never be dereferenced after
 the heap destruction call returns.</p>
 
-<h2>Call stack and catch stack (of a context)</h2>
+<h2>Call stack (of a context)</h2>
 
 <p>The call stack of a context is not directly visible to the caller.
 It keeps track of the chain of function calls, either C or ECMAScript,
@@ -130,11 +131,6 @@ to facilitate the passing of arguments and results between function callers
 and callees, and to keep track of how the value stack is divided between
 function calls.  The call stack also allows Duktape to construct a traceback
 for errors.</p>
-
-<p>Closely related to the call stack, Duktape also maintains a catch stack
-for keeping track of current error catching sites established using e.g.
-<code>try-catch-finally</code>.  The catch stack is even less visible to the
-caller than the call stack.</p>
 
 <p>Because Duktape supports tail calls, the call stack does not always
 accurately represent the true call chain: tail calls will be "squashed"
@@ -618,17 +614,22 @@ shorthand to automatically throw an error.</p>
 
 <p>Error handling in the Duktape API is similar to how ECMAScript handles
 errors: errors are thrown either explicitly or implicitly, then caught and
-handled.  However, instead of a try-catch statement application code uses
+handled.  Instead of a try-catch statement application C code uses
 <code><a href="api.html#taglist-protected">protected</a></code>
 Duktape API calls to establish points in C code where errors can be caught
-and handled.
-An uncaught error causes the fatal error handler to be called, which is
+and handled.  All Duktape API calls except protected calls may throw errors:
+most ECMAScript operations may cause error throws in some situations, and an
+out-of-memory error is possible in almost any situation.  The long control
+transfer between the throw site and the catch site is based either on
+<code>setjmp()</code>/<code>longjmp()</code> (or their platform specific
+variants), or a C++ exception throw (when <code>DUK_USE_CPP_EXCEPTIONS</code>
+is enabled), see <a href="#long-control-transfers">Long control transfers</a>.</p>
+
+<p>An uncaught error causes the fatal error handler to be called, which is
 considered an unrecoverable situation and should ordinarily be avoided,
 see <a href="#normal-and-fatal-errors">Normal and fatal errors</a> and
-<a href="http://wiki.duktape.org/HowtoFatalErrors.html">How to handle fatal errors</a>.</p>
-
-<p>To avoid fatal errors, typical application code should establish an error
-catch point before making other Duktape API calls.  This is done using
+<a href="http://wiki.duktape.org/HowtoFatalErrors.html">How to handle fatal errors</a>.  To avoid fatal errors, typical application code should establish an
+error catch site before making other Duktape API calls.  This is done using
 protected Duktape API calls, for example:</p>
 <ul>
 <li>Use protected calls to evaluate code
@@ -707,7 +708,7 @@ necessarily context dependent, but could be something like:</p>
 
 <p>Note that it may be fine for some applications to make API calls without
 an error catcher and risk throwing uncaught errors leading to a fatal error.
-It's not possible to continue execution after a fatal error, so such
+It's not safe to continue execution after a fatal error, so such
 applications would typically simply exit when a fatal error occurs.  Even
 without an actual recovery strategy, a fatal error handler should be used to
 e.g. write fatal error information to <code>stderr</code> before process exit.</p>
@@ -724,34 +725,104 @@ code or e.g. <code><a href="api.html#duk_pcall">duk_pcall()</a></code>
 <code><a href="api.html#taglist-protected">protected</a></code>)
 in C code.</p>
 
-<p>A <b>fatal error</b> is caused by an uncaught error, an explicit call to
-<code><a href="api.html#duk_fatal">duk_fatal()</a></code>, or an
-unrecoverable error inside Duktape.  Each Duktape heap has a heap-wide fatal
-error handler registered in
-<code><a href="api.html#duk_create_heap">duk_create_heap()</a></code>; if no
-handler is given a built-in default handler is used.  There's no safe way to
-resume execution after a fatal error, so that a fatal error handler must not
-return or call into the Duktape API.  Instead the handler should e.g. write
-out the message to the console or a log file and then exit the process (or
-restart an embedded device).</p>
+<p>A <b>fatal error</b> is caused by an uncaught error, an assertion failure
+(if enabled), an explicit call to
+<code><a href="api.html#duk_fatal">duk_fatal()</a></code>, or an unrecoverable
+error inside Duktape.</p>
+
+<p>Each Duktape heap has a heap-wide fatal error handler registered in
+<code><a href="api.html#duk_create_heap">duk_create_heap()</a></code>.
+If no handler is given a built-in default handler is used:</p>
+<ul>
+<li>Default configuration: the built-in default fatal error handler
+    writes a debug log message but <b>won't</b> write anything to
+    <code>stdout</code> or <code>stderr</code>.  Debug logging is disabled
+    by default, so that the fatal error message is not displayed by default.
+    The handler then calls <code>abort()</code>.  If the abort() call exits
+    for some reason, the handler then enters an infinite loop to ensure
+    execution doesn't resume after a fatal error.</li>
+<li><code>DUK_USE_CPP_EXCEPTIONS</code> enabled: the built-in default
+    fatal error handler throws a <code>duk_fatal_exception</code>.  This
+    exception inherits from <code>std::runtime_error</code> so that it can be
+    easily caught and provides a <code>::what()</code> method to read the
+    fatal error message.  It is unsafe to continue execution after catching
+    the fatal error.</li>
+<li>If <code>DUK_USE_FATAL_HANDLER</code> is defined, it is always used as the
+    built-in default fatal error handler, even if C++ exceptions are enabled.</li>
+</ul>
+
+<div class="note">
+It is <b>strongly recommended</b> to both (1) provide a custom fatal error
+handler in heap creation and (2) replace the built-in default fatal error
+handler using the <code>DUK_USE_FATAL_HANDLER()</code> option in
+<code>duk_config.h</code>.
+</div>
+
+<p>There's no safe way to resume execution after a fatal error, so that a
+fatal error handler must not return or call into the Duktape API.  Instead the
+handler should e.g. write out the message to the console or a log file and
+then exit the process (or restart an embedded device).  This also applies when
+using C++ exceptions as the long control transfer mechanism.  <b>If the
+application continues execution after a fatal error all bets are off: memory
+leaks are possible, and memory safety may be compromised.</b></p>
 
 <p>Fatal errors may also happen without any heap context, so that Duktape
 can't look up a possible heap-specific fatal error handler.  Duktape will then
 always call the built-in default fatal error handler (with the handler
 userdata argument set to NULL).  Fatal errors handled this way are currently
 limited to assertion failures, so that if you don't enable assertions, no such
-errors will currently occur.  All fatal error handling goes through the
+errors will currently occur and all fatal error handling goes through the
 heap-associated fatal error handler which is in direct application control.</p>
-
-<div class="note">
-The built-in default fatal error handler will write a debug log message
-(but <b>won't</b> write anything to <code>stdout</code> to <code>stderr</code>),
-and will then call <code>abort()</code>; if that fails, it enters an
-infinite loop to ensure execution doesn't resume after a fatal error.  It is
-<b>strongly recommended</b> to both (1) provide a custom fatal error handler
-in heap creation and (2) replace the built-in default fatal error handler using
-the <code>DUK_USE_FATAL_HANDLER()</code> option in <code>duk_config.h</code>.
-</div>
 
 <p>See <a href="http://wiki.duktape.org/HowtoFatalErrors.html">How to handle fatal errors</a>
 for more detail and examples.</p>
+
+<h2 id="long-control-transfers">Long control transfers</h2>
+
+<p>The specific long control transfer mechanism Duktape uses internally
+for error throwing and catching is not directly visible to application code:
+application code uses a
+<code><a href="api.html#taglist-protected">protected</a></code> call to catch
+errors, while errors are thrown by Duktape or by the application using a
+variety of Duktape API calls, e.g. <code>duk_error()</code>.</p>
+
+<h3>Default configuration, without DUK_USE_CPP_EXCEPTIONS</h3>
+
+<p>In the default configuration a Duktape API protected call uses
+<code>setjmp()</code> to establish a catch site.  The error throw
+site uses <code>longjmp()</code> to unwind the native C stack and return
+to the (nearest) catch site.  On some platforms variants of the calls, such
+as <code>sigsetjmp()</code> and <code>siglongjmp</code> are used.  There are
+minor differences between the call variants e.g. with regards to performance
+and signal handling.  The variant is chosen by <code>duk_config.h</code>.</p>
+
+<p>A <code>longjmp()</code> unwinds all the native C stack frames between the
+<code>longjmp()</code> and the <code>setjmp()</code>.  However, this unwinding
+process won't invoke C++ automatic destructors which may be a significant
+limitation for some C++ applications.</p>
+
+<p>For fatal errors, e.g. uncaught errors, the default fatal error handler
+uses <code>abort()</code>, see <a href="#normal-and-fatal-errors">Normal and fatal errors</a>.</p>
+
+<h3>C++ mode, with DUK_USE_CPP_EXCEPTIONS</h3>
+
+<p>When <code>DUK_USE_CPP_EXCEPTIONS</code> is enabled the long control transfer
+is based on a C++ exception throw.  The protected call uses a C++ try-catch
+to establish a catch site; note that this happens inside Duktape, and is not
+visible to the application.  The error throw site throws a
+<code>duk_internal_exception</code> which is caught by the (nearest) Duktape
+catch site.  <b>Application code must not catch the exception.</b>  To minimize
+that risk, the exception doesn't inherit from any standard exception class so
+it won't be caught by a boilerplate <code>std::exception</code> catch site.</p>
+
+<p>For fatal errors, e.g. uncaught errors, a <code>duk_fatal_exception</code>
+is thrown by the default fatal error handler.  The exception inherits from
+<code>std::runtime_error</code> and is intended to be caught by user code.
+The exception provides a <code>::what()</code> method returning the fatal
+error message.  Even though the fatal error is catchable, it is still unsafe
+to continue execution after catching the error.  See
+<a href="#normal-and-fatal-errors">Normal and fatal errors</a>.</p>
+
+<p>For both C++ exception types the C++ native stack unwind process supports
+automatic destructors for the stack frames between the throw site and the catch
+site.</p>
