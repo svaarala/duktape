@@ -1341,6 +1341,41 @@ Switch statement
 
 Any integral type should work as a switch argument, so avoid casting it.
 
+Differences in malloc(), realloc(), and free()
+----------------------------------------------
+
+For malloc(), zero size is special:
+
+* A malloc() with zero size cannot fail, but may return either NULL or a
+  non-NULL pointer which must be free()'d.
+
+* Safest strategy is to:
+
+  - Consider malloc() failed if return value is NULL *and* requested size != 0.
+    Otherwise consider successful.
+
+  - If successful, store result pointer in internal data structures.  Ensure
+    that eventually free() is called for the pointer; free(NULL) is acceptable
+    so no guard is needed.
+
+For free():
+
+* free(NULL) is allowed and guaranteed to be a no-op.  Duktape relies on this.
+
+For realloc(), zero size is special as well:
+
+* A realloc() with a zero size cannot fail, but may return either NULL or a
+  non-NULL pointer which must be free()'d.
+
+* Safest strategy is to:
+
+  - Consider realloc() failed if return value is NULL *and* requested size != 0.
+    Otherwise consider successful.
+
+  - If successful, store result pointer in internal data structures (replacing
+    a previous value).  Ensure that eventually free() is called for the
+    pointer; free(NULL) is acceptable so no guard is needed.
+
 String handling
 ---------------
 
