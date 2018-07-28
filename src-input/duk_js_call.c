@@ -2055,6 +2055,12 @@ DUK_LOCAL duk_int_t duk__handle_call_raw(duk_hthread *thr,
 	 *  Because 'act' is not zeroed, all fields must be filled in.
 	 */
 
+	/* Should not be necessary, but initialize to silence warnings. */
+	act = NULL;
+	nargs = 0;
+	nregs = 0;
+	vs_min_bytes = 0;
+
 #if defined(DUK_USE_TAILCALL)
 	use_tailcall = (call_flags & DUK_CALL_FLAG_TAILCALL);
 	if (use_tailcall) {
