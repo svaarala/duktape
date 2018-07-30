@@ -740,6 +740,9 @@ def main():
 
     copy_and_replace(os.path.join('dist-files', 'README.rst'), os.path.join(dist, 'README.rst'), {
         '@DUK_VERSION_FORMATTED@': duk_version_formatted,
+        '@DUK_MAJOR@': str(duk_major),
+        '@DUK_MINOR@': str(duk_minor),
+        '@DUK_PATCH@': str(duk_patch),
         '@GIT_COMMIT@': git_commit,
         '@GIT_DESCRIBE@': git_describe,
         '@GIT_BRANCH@': git_branch
