@@ -1512,7 +1512,7 @@ DUK_INTERNAL duk_ret_t duk_bi_string_prototype_startswith_endswith(duk_hthread *
 
 	if (duk_is_undefined(thr, 1)) {
 		if (magic) {
-			p_cmp_start += DUK_HSTRING_GET_BYTELEN(h) - blen_search;
+			p_cmp_start = p_cmp_start + DUK_HSTRING_GET_BYTELEN(h) - blen_search;
 		} else {
 			/* p_cmp_start already OK */
 		}

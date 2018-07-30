@@ -3379,7 +3379,8 @@ Planned
 
 * Fix harmless -Wcast-align warnings on armhf (GH-1793)
 
-* Various compiler warning fixes (GH-1788, GH-1932, GH-1924, GH-1950, etc)
+* Various compiler warning fixes (GH-1788, GH-1932, GH-1924, GH-1950,
+  GH-1951, etc)
 
 * Add automatic workaround for union aliasing issues with FreeBSD + -m32 +
   Clang prior to 5.0; the aliasing issues cause packed duk_tval to work

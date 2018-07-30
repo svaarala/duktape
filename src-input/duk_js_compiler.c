@@ -4562,7 +4562,7 @@ DUK_LOCAL void duk__expr_led(duk_compiler_ctx *comp_ctx, duk_ivalue *left, duk_i
 						 * one instruction, so use explicit PC computation.
 						 */
 						DUK_DD(DUK_DDPRINT("rhs is side effect free, rewind and avoid unnecessary temp for reg-based <op>="));
-						DUK_BW_ADD_PTR(comp_ctx->thr, &comp_ctx->curr_func.bw_code, (duk_size_t) (pc_temp_load - pc_before_rhs) * sizeof(duk_compiler_instr));
+						DUK_BW_ADD_PTR(comp_ctx->thr, &comp_ctx->curr_func.bw_code, (pc_temp_load - pc_before_rhs) * (duk_int_t) sizeof(duk_compiler_instr));
 						reg_src = reg_varbind;
 					} else {
 						DUK_DD(DUK_DDPRINT("rhs evaluation emitted code, not sure if rhs is side effect free; use temp reg for LHS"));
