@@ -245,6 +245,7 @@ static duk_ret_t test_func(duk_context *ctx, void *udata) {
 	(void) duk_push_literal(ctx, "dummy");
 	(void) duk_push_lstring(ctx, "dummy", 0);
 	(void) duk_push_nan(ctx);
+	(void) duk_push_new_target(ctx);
 	(void) duk_push_null(ctx);
 	(void) duk_push_number(ctx, 0.0);
 	(void) duk_push_object(ctx);
