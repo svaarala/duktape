@@ -7,12 +7,6 @@ Release overview
 
 Main changes in this release (see RELEASES.rst for full details):
 
-* TBD.
-
-* DUK_USE_ALIGN_BY now always defaults to 8 (natural alignment) to avoid any
-  potentially unsafe assumptions about compiler behavior for unaligned memory
-  accesses and pointers (which may be an issue even on x86).
-
 * duk_xxx_literal() API call variants which take a plain C literal argument,
   for example duk_get_prop_literal(ctx, -2, "myProperty").  The calls are
   conceptually similar to the duk_xxx_string() variants, but can take advantage
@@ -23,18 +17,38 @@ Main changes in this release (see RELEASES.rst for full details):
   literal to a heap string object quite fast (almost as fast as using a heapptr).
   For now the calls are experimental.
 
+* More ES2015 support: Symbol.hasInstance, Symbol.toStringTag,
+  Symbol.isConcatSpreadable, Symbol.toPrimitive, Proxy improvements,
+  Number.EPSILON, Number.MIN_SAFE_INTEGER, Number.MAX_SAFE_INTEGER,
+  Number.isFinite(), Number.isNaN(), Number.isSafeInteger(),
+  Number.parseInt(), Number.parseFloat().
+
+* Other API additions: duk_random(), duk_push_new_target(),
+  duk_get_global_heapptr(), duk_put_global_heapptr().
+
 * When C++ exception support is enabled (DUK_USE_CPP_EXCEPTIONS), Duktape now
   uses a C++ exception throw also for fatal errors (e.g. uncaught error).  The
   exception thrown has the type ``duk_fatal_exception`` which inherits from
   ``std::runtime_error`` so it has a ::what() method and a useful message.
+
+* DUK_USE_ALIGN_BY now always defaults to 8 (natural alignment) to avoid any
+  potentially unsafe assumptions about compiler behavior for unaligned memory
+  accesses and pointers (which may be an issue even on x86).
+
+* A new CBOR encoder/decoder extra which may be eventually merged (in some
+  form) into Duktape itself.  CBOR is a useful binary serialization format
+  which is a superset of JSON and has an RFC specification.
+
+* A Promise polyfill which will be used as a basis for the initial native
+  implementation.
+
+* Various fixes and portability improvements.
 
 Upgrading from Duktape 2.2
 ==========================
 
 No action (other than recompiling) should be needed for most users to upgrade
 from Duktape v2.2.x.  Note the following:
-
-* TBD.
 
 * If you are using DUK_USE_CPP_EXCEPTIONS note that fatal errors are now
   thrown using a C++ exception of the type ``duk_fatal_exception`` which
@@ -76,6 +90,11 @@ from Duktape v2.2.x.  Note the following:
 * Base-64 and hex encoding/decoding support is now configurable and disabled
   by default in the example low_memory.yaml configuration.  Enable them
   manually if necessary using DUK_USE_BASE64_SUPPORT and DUK_USE_HEX_SUPPORT.
+
+* The built-in base64 decoder is now more lenient.  If you're relying on
+  strictness or specific behavior of the base64 decoder, you should use an
+  external decoder with the exact behavior desired (base64 decoders differ
+  quite a lot with respect to various decoding corner cases).
 
 * Several -fsanitize=undefined warnings have been fixed in the default
   configuration using explicit checks to avoid undefined behavior.  For
