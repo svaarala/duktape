@@ -28,6 +28,22 @@ DUK_VERSION = @DUK_VERSION@
 SONAME_VERSION = @SONAME_VERSION@
 REAL_VERSION = $(SONAME_VERSION).$(DUK_VERSION)
 
+# Mac has an unusual .so naming convention
+ifeq ($(OS),Windows_NT)
+    DETECTED_OS := Windows
+else
+    DETECTED_OS := $(shell uname -s)
+endif
+ifeq ($(DETECTED_OS),Darwin)
+    LD_SONAME_ARG=-install_name
+    SO_SONAME_SUFFIX=$(SONAME_VERSION).so
+    SO_REALNAME_SUFFIX=$(REAL_VERSION).so
+else
+    LD_SONAME_ARG=-soname
+    SO_SONAME_SUFFIX=so.$(SONAME_VERSION)
+    SO_REALNAME_SUFFIX=so.$(REAL_VERSION)
+endif
+
 # Change to actual path for actual distribution packaging.
 INSTALL_PREFIX = /usr/local
 
@@ -39,31 +55,31 @@ DUKTAPE_SRCDIR = ./src
 CC = gcc
 
 .PHONY: all
-all: libduktape.so.$(REAL_VERSION) libduktaped.so.$(REAL_VERSION)
+all: libduktape.$(SO_REALNAME_SUFFIX) libduktaped.$(SO_REALNAME_SUFFIX)
 
 # If the default duk_config.h is not suitable for the distribution, modify it
 # before compiling the shared library and copy the same, edited duk_config.h
 # to $INSTALL_PREFIX/include on installation.
 
-libduktape.so.$(REAL_VERSION):
-	$(CC) -shared -fPIC -Wall -Wextra -Os -Wl,-soname,libduktape.so.$(SONAME_VERSION) \
+libduktape.$(SO_REALNAME_SUFFIX):
+	$(CC) -shared -fPIC -Wall -Wextra -Os -Wl,$(LD_SONAME_ARG),libduktape.$(SO_SONAME_SUFFIX) \
 		-o $@ $(DUKTAPE_SRCDIR)/duktape.c
 
-libduktaped.so.$(REAL_VERSION):
-	$(CC) -shared -fPIC -g -Wall -Wextra -Os -Wl,-soname,libduktaped.so.$(SONAME_VERSION) \
+libduktaped.$(SO_REALNAME_SUFFIX):
+	$(CC) -shared -fPIC -g -Wall -Wextra -Os -Wl,$(LD_SONAME_ARG),libduktaped.$(SO_SONAME_SUFFIX) \
 		-o $@ $(DUKTAPE_SRCDIR)/duktape.c
 
 # Symlinks depend on platform conventions.
 .PHONY: install
-install: libduktape.so.$(REAL_VERSION) libduktaped.so.$(REAL_VERSION)
+install: libduktape.$(SO_REALNAME_SUFFIX) libduktaped.$(SO_REALNAME_SUFFIX)
 	mkdir -p $(INSTALL_PREFIX)/lib/
 	cp $+ $(INSTALL_PREFIX)/lib/
-	rm -f $(INSTALL_PREFIX)/lib/libduktape.so $(INSTALL_PREFIX)/lib/libduktape.so.$(SONAME_VERSION)
-	ln -s libduktape.so.$(REAL_VERSION) $(INSTALL_PREFIX)/lib/libduktape.so
-	ln -s libduktape.so.$(REAL_VERSION) $(INSTALL_PREFIX)/lib/libduktape.so.$(SONAME_VERSION)
-	rm -f $(INSTALL_PREFIX)/lib/libduktaped.so $(INSTALL_PREFIX)/lib/libduktaped.so.$(SONAME_VERSION)
-	ln -s libduktaped.so.$(REAL_VERSION) $(INSTALL_PREFIX)/lib/libduktaped.so
-	ln -s libduktaped.so.$(REAL_VERSION) $(INSTALL_PREFIX)/lib/libduktaped.so.$(SONAME_VERSION)
+	rm -f $(INSTALL_PREFIX)/lib/libduktape.so $(INSTALL_PREFIX)/lib/libduktape.$(SO_SONAME_SUFFIX)
+	ln -s libduktape.$(SO_REALNAME_SUFFIX) $(INSTALL_PREFIX)/lib/libduktape.so
+	ln -s libduktape.$(SO_REALNAME_SUFFIX) $(INSTALL_PREFIX)/lib/libduktape.$(SO_SONAME_SUFFIX)
+	rm -f $(INSTALL_PREFIX)/lib/libduktaped.so $(INSTALL_PREFIX)/lib/libduktaped.$(SO_SONAME_SUFFIX)
+	ln -s libduktaped.$(SO_REALNAME_SUFFIX) $(INSTALL_PREFIX)/lib/libduktaped.so
+	ln -s libduktaped.$(SO_REALNAME_SUFFIX) $(INSTALL_PREFIX)/lib/libduktaped.$(SO_SONAME_SUFFIX)
 	mkdir -p $(INSTALL_PREFIX)/include/
 	cp $(DUKTAPE_SRCDIR)/duktape.h $(DUKTAPE_SRCDIR)/duk_config.h $(INSTALL_PREFIX)/include/
 
