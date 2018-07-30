@@ -67,9 +67,6 @@ install: libduktape.so.$(REAL_VERSION) libduktaped.so.$(REAL_VERSION)
 	mkdir -p $(INSTALL_PREFIX)/include/
 	cp $(DUKTAPE_SRCDIR)/duktape.h $(DUKTAPE_SRCDIR)/duk_config.h $(INSTALL_PREFIX)/include/
 
-# Note: assumes /usr/local/include/ and /usr/local/lib/ are in include/link
-# path which may not be the case for all distributions.
-#CCOPTS = -I/usr/local/include -L/usr/local/lib
 CCOPTS = -I./examples/cmdline
 duk:
-	$(CC) $(CCOPTS) -Wall -Wextra -Os -o $@ ./examples/cmdline/duk_cmdline.c -lduktape -lm
+	$(CC) $(CCOPTS) -I$(INSTALL_PREFIX)/include -L$(INSTALL_PREFIX)/lib -Wall -Wextra -Os -o $@ ./examples/cmdline/duk_cmdline.c -lduktape -lm
