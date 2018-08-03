@@ -96,6 +96,7 @@ DUK_INTERNAL duk_int_t duk_bi_date_get_local_tzoffset_windows(duk_double_t d) {
 	ULARGE_INTEGER tmp2;
 	ULARGE_INTEGER tmp3;
 	FILETIME ft1;
+	BOOL fRet;
 
 	/* XXX: handling of timestamps outside Windows supported range.
 	 * How does Windows deal with dates before 1600?  Does windows
@@ -115,7 +116,14 @@ DUK_INTERNAL duk_int_t duk_bi_date_get_local_tzoffset_windows(duk_double_t d) {
 
 	ft1.dwLowDateTime = tmp2.LowPart;
 	ft1.dwHighDateTime = tmp2.HighPart;
-	FileTimeToSystemTime((const FILETIME *) &ft1, &st2);
+	fRet = FileTimeToSystemTime((const FILETIME *) &ft1, &st2);
+	if(!fRet) {
+		/* Avoid calling SystemTimeToTzSpecificLocalTime with bad/uninitialized st2 parameters.
+		 * This can break the process on Win2k3 with stack corruption.
+		 */
+		DUK_D(DUK_DPRINT("FileTimeToSystemTime() failed, return tzoffset 0"));
+		return 0;
+	}
 	if (SystemTimeToTzSpecificLocalTime((LPTIME_ZONE_INFORMATION) NULL, &st2, &st3) == 0) {
 		DUK_D(DUK_DPRINT("SystemTimeToTzSpecificLocalTime() failed, return tzoffset 0"));
 		return 0;
