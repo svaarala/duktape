@@ -3364,6 +3364,9 @@ Planned
 
 * Fix 'defined but not used' warning for Windows (GH-1775)
 
+* Fix potential uninitialized data use when Windows Date provider
+  FileTimeToSystemTime() or FileTimeToLocalFileTime() failed (GH-1953)
+
 * Fix some Clang warnings by avoiding undefined behavior by default, define
   DUK_USE_ALLOW_UNDEFINED_BEHAVIOR to reduce the explicit undefined behavior
   checks for better footprint/performance (GH-1777, GH-1795, GH-1796, GH-1797,
