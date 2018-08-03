@@ -54,6 +54,7 @@ and agreed to irrevocably license their contributions under the Duktape
 * Michal Kasperek (https://github.com/michalkas)
 * Andrew Janke (https://github.com/apjanke)
 * Steve Fan (https://github.com/stevefan1999)
+* Gero Kuehn (support@gkware.com,https://github.com/dc6jgk)
 
 Other contributions
 ===================
