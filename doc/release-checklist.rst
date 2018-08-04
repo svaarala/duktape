@@ -15,11 +15,13 @@ Checklist for ordinary releases
 
 * Git maintenance
 
-  - ensure git commits are up-to-date
+  - Ensure git commits are up-to-date
 
-  - ensure branches are merged, unused branches deleted (also remotely)
+  - Ensure branches are merged, unused branches deleted (also remotely)
 
-  - ensure branches are rebased where applicable
+  - Ensure branches are rebased where applicable
+
+  - Check for uncommitted files
 
   - git fsck --full
 
@@ -36,8 +38,6 @@ Checklist for ordinary releases
   should lose their experimental status
 
 * Check dist-files/README.rst
-
-  - Update release specific release notes link
 
 * Ensure LICENSE.txt is up-to-date
 
@@ -109,7 +109,7 @@ Checklist for ordinary releases
   - Run::
 
         $ make duk-sanitize-clang
-        $ for i in tests/ecmascript/test-*.js; do python util/runtest.py --duk ./duk-sanitize-clang --timeout 30 $i; done
+        $ for i in tests/ecmascript/test-*.js; do python util/runtest.py --duk ./duk-sanitize-clang --timeout 60 $i; done
 
 * ECMAScript testcases
 
@@ -117,7 +117,10 @@ Checklist for ordinary releases
 
     - make ecmatest
 
-    - VALGRIND_WRAP=1 make ecmatest  # valgrind test
+    - Run testcases with util/runtest.py with --valgrind option::
+
+          $ make duk
+          $ for i in tests/ecmascript/test-*.js; do python util/runtest.py --duk ./duk --valgrind --timeout 60 $i; done
 
   - On x86-32 (exercise 8-byte duk_tval)
 
@@ -127,7 +130,7 @@ Checklist for ordinary releases
 
   - Run with assertions enabled at least on x86-64
 
-* Run testcases with torture options
+* Run testcases with torture options, DUK_USE_ASSERTIONS and:
 
   - DUK_USE_GC_TORTURE
 

@@ -118,7 +118,7 @@ You can find release notes at:
 * https://github.com/svaarala/duktape/blob/master/RELEASES.rst
   (summary of all versions)
 
-* https://github.com/svaarala/duktape/blob/master/doc/release-notes-v2-2.rst
+* https://github.com/svaarala/duktape/blob/master/doc/release-notes-v@DUK_MAJOR@-@DUK_MINOR@.rst
   (more detailed notes for this version)
 
 This distributable contains Duktape version @DUK_VERSION_FORMATTED@, created from git

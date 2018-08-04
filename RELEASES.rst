@@ -3227,10 +3227,7 @@ Miscellaneous:
 * Fix potential dangling pointer use in Duktape thread termination handling;
   the dangling pointer could cause unsafe memory behavior (GH-1845, GH-1868)
 
-Planned
-=======
-
-2.3.0 (XXXX-XX-XX)
+2.3.0 (2018-08-04)
 ------------------
 
 * When C++ exception support is enabled use a separate duk_fatal_exception
@@ -3251,6 +3248,9 @@ Planned
 * Add support for Symbol.isConcatSpreadable (@@isConcatSpreadable) in
   Array.prototype.concat() (GH-1823)
 
+* Add support for Symbol.toPrimitive (@@toPrimitive) in ToPrimitive()
+  internal algorithm and duk_to_primitive() API call (GH-1825)
+
 * Invoke Proxy 'has' trap in Array.prototype.concat() when inspecting the
   elements of the Proxy target (GH-1823)
 
@@ -3260,9 +3260,6 @@ Planned
 * Remove DUK_USE_NONSTD_ARRAY_MAP_TRAILER because ES5.0/ES5.1 behavior
   actually did match the "non-standard" behavior provided by the option
   (GH-1823)
-
-* Add support for Symbol.toPrimitive (@@toPrimitive) in ToPrimitive()
-  internal algorithm and duk_to_primitive() API call (GH-1825)
 
 * Add duk_random() to allow C code access to the same random number source
   as ECMAScript code (GH-1815)
@@ -3338,6 +3335,8 @@ Planned
 
 * Add Makefile.jsoncbor to the distributable (GH-1885)
 
+* Makefile.sharedlibrary portability improvements (GH-1922, GH-1923)
+
 * Change spelling from ECMAScript to ECMAScript throughout the internal source
   code; as far as external behavior is concerned this only affects a few
   debug prints (GH-1894)
@@ -3390,6 +3389,12 @@ Planned
   incorrectly (see
   https://github.com/svaarala/duktape/blob/master/misc/clang_aliasing.c),
   and the workaround is to use unpacked duk_tval prior to Clang 5.0 (GH-1764)
+
+Planned
+=======
+
+2.4.0 (XXXX-XX-XX)
+------------------
 
 3.0.0 (XXXX-XX-XX)
 ------------------

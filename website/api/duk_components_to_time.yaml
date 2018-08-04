@@ -42,7 +42,6 @@ example: |
 
 tags:
   - time
-  - experimental
 
 seealso:
   - duk_time_to_components
