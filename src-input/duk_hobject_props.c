@@ -456,7 +456,11 @@ DUK_LOCAL duk_bool_t duk__proxy_check_prop(duk_hthread *thr, duk_hobject *obj, d
 	 * are not realized now.)
 	 */
 
-	/* XXX: C recursion limit if proxies are allowed as handler/target values */
+	/* FIXME: C recursion limit if proxies are allowed as handler/target values?
+	 * Or rely on later stack depth macro check (insert one here)?
+	 */
+
+	/* FIXME: implement recursive Proxy target support directly here? */
 
 	duk_require_stack(thr, DUK__VALSTACK_PROXY_LOOKUP);
 	duk_push_hobject(thr, h_handler);
@@ -2372,6 +2376,7 @@ DUK_INTERNAL duk_bool_t duk_hobject_getprop(duk_hthread *thr, duk_tval *tv_obj, 
 	 *  Coercion and fast path processing
 	 */
 
+ recheck_object:
 	switch (DUK_TVAL_GET_TAG(tv_obj)) {
 	case DUK_TAG_UNDEFINED:
 	case DUK_TAG_NULL: {
@@ -2552,6 +2557,7 @@ DUK_INTERNAL duk_bool_t duk_hobject_getprop(duk_hthread *thr, duk_tval *tv_obj, 
 
 			curr = h_target;  /* resume lookup from target */
 			DUK_TVAL_SET_OBJECT(tv_obj, curr);
+			goto recheck_object;
 		}
 #endif  /* DUK_USE_ES6_PROXY */
 
@@ -2891,6 +2897,7 @@ DUK_INTERNAL duk_bool_t duk_hobject_hasprop(duk_hthread *thr, duk_tval *tv_obj, 
 	DUK_ASSERT(obj != NULL);
 	DUK_UNREF(arr_idx);
 
+ recheck_object:
 #if defined(DUK_USE_ES6_PROXY)
 	if (DUK_UNLIKELY(DUK_HOBJECT_IS_PROXY(obj))) {
 		duk_hobject *h_target;
@@ -2936,6 +2943,7 @@ DUK_INTERNAL duk_bool_t duk_hobject_hasprop(duk_hthread *thr, duk_tval *tv_obj, 
 		}
 
 		obj = h_target;  /* resume check from proxy target */
+		goto recheck_object;
 	}
 #endif  /* DUK_USE_ES6_PROXY */
 
@@ -3378,6 +3386,7 @@ DUK_INTERNAL duk_bool_t duk_hobject_putprop(duk_hthread *thr, duk_tval *tv_obj, 
 	 *  Coercion and fast path processing.
 	 */
 
+ recheck_object:
 	switch (DUK_TVAL_GET_TAG(tv_obj)) {
 	case DUK_TAG_UNDEFINED:
 	case DUK_TAG_NULL: {
@@ -3539,6 +3548,7 @@ DUK_INTERNAL duk_bool_t duk_hobject_putprop(duk_hthread *thr, duk_tval *tv_obj, 
 
 			orig = h_target;  /* resume write to target */
 			DUK_TVAL_SET_OBJECT(tv_obj, orig);
+			goto recheck_object;
 		}
 #endif  /* DUK_USE_ES6_PROXY */
 
@@ -4451,6 +4461,7 @@ DUK_INTERNAL duk_bool_t duk_hobject_delprop(duk_hthread *thr, duk_tval *tv_obj, 
 	duk_push_tval(thr, tv_obj);
 	duk_push_tval(thr, tv_key);
 
+ recheck_object:
 	tv_obj = DUK_GET_TVAL_NEGIDX(thr, -2);
 	if (DUK_TVAL_IS_OBJECT(tv_obj)) {
 		duk_hobject *obj = DUK_TVAL_GET_OBJECT(tv_obj);
@@ -4501,7 +4512,9 @@ DUK_INTERNAL duk_bool_t duk_hobject_delprop(duk_hthread *thr, duk_tval *tv_obj, 
 				goto done_rc;
 			}
 
-			obj = h_target;  /* resume delete to target */
+			duk_push_hobject(thr, h_target);  /* resume delete to target */
+			duk_replace(thr, -3);
+			goto recheck_object;
 		}
 #endif  /* DUK_USE_ES6_PROXY */
 

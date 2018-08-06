@@ -1158,9 +1158,10 @@ DUK_LOCAL duk_bool_t duk__js_instanceof_helper(duk_hthread *thr, duk_tval *tv_x,
 		if (!val) {
 			goto pop3_and_false;
 		}
-
 		DUK_ASSERT(val != NULL);
+
 #if defined(DUK_USE_ES6_PROXY)
+		/* FIXME: getPrototypeOf trap; testcase; comment */
 		val = duk_hobject_resolve_proxy_target(val);
 #endif
 

@@ -3396,6 +3396,11 @@ Planned
 2.4.0 (XXXX-XX-XX)
 ------------------
 
+* Allow a Proxy object to have a Proxy as its target (i.e. Proxy chains)
+  (GH-1947)
+
+* Allow a Proxy handler object to be a Proxy (GH-1947)
+
 3.0.0 (XXXX-XX-XX)
 ------------------
 

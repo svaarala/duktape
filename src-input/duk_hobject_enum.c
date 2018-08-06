@@ -254,6 +254,8 @@ DUK_INTERNAL void duk_hobject_enumerator_create(duk_hthread *thr, duk_small_uint
 		DUK_DDD(DUK_DDDPRINT("h_proxy_target=%!O", (duk_heaphdr *) h_proxy_target));
 		enum_target = h_proxy_target;
 
+		/* FIXME: recursive proxy case? */
+
 		duk_push_hobject(thr, enum_target);  /* -> [ ... enum_target res handler undefined target ] */
 		duk_put_prop_stridx_short(thr, -4, DUK_STRIDX_INT_TARGET);
 

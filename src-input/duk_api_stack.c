@@ -5558,19 +5558,11 @@ DUK_EXTERNAL duk_idx_t duk_push_proxy(duk_hthread *thr, duk_uint_t proxy_flags) 
 	DUK__CHECK_SPACE();
 #endif
 
-	/* Reject a proxy object as the target because it would need
-	 * special handling in property lookups.  (ES2015 has no such
-	 * restriction.)
-	 */
+	/* Proxy target validation. */
 	h_target = duk_require_hobject_promote_mask(thr, -2, DUK_TYPE_MASK_LIGHTFUNC | DUK_TYPE_MASK_BUFFER);
 	DUK_ASSERT(h_target != NULL);
-	if (DUK_HOBJECT_IS_PROXY(h_target)) {
-		goto fail_args;
-	}
 
-	/* Reject a proxy object as the handler because it would cause
-	 * potentially unbounded recursion.  (ES2015 has no such
-	 * restriction.)
+	/* Proxy handler object validation.
 	 *
 	 * There's little practical reason to use a lightfunc or a plain
 	 * buffer as the handler table: one could only provide traps via
@@ -5580,9 +5572,6 @@ DUK_EXTERNAL duk_idx_t duk_push_proxy(duk_hthread *thr, duk_uint_t proxy_flags) 
 	 */
 	h_handler = duk_require_hobject_promote_mask(thr, -1, DUK_TYPE_MASK_LIGHTFUNC | DUK_TYPE_MASK_BUFFER);
 	DUK_ASSERT(h_handler != NULL);
-	if (DUK_HOBJECT_IS_PROXY(h_handler)) {
-		goto fail_args;
-	}
 
 	/* XXX: Proxy object currently has no prototype, so ToPrimitive()
 	 * coercion fails which is a bit confusing.
@@ -5629,10 +5618,6 @@ DUK_EXTERNAL duk_idx_t duk_push_proxy(duk_hthread *thr, duk_uint_t proxy_flags) 
 	DUK_DD(DUK_DDPRINT("created Proxy: %!iT", duk_get_tval(thr, -1)));
 
 	return (duk_idx_t) (thr->valstack_top - thr->valstack_bottom - 1);
-
- fail_args:
-	DUK_ERROR_TYPE_INVALID_ARGS(thr);
-	DUK_WO_NORETURN(return 0;);
 }
 #else  /* DUK_USE_ES6_PROXY */
 DUK_EXTERNAL duk_idx_t duk_push_proxy(duk_hthread *thr, duk_uint_t proxy_flags) {
