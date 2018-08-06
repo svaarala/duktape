@@ -3396,6 +3396,9 @@ Planned
 2.4.0 (XXXX-XX-XX)
 ------------------
 
+* Trivial fixes and cleanups: Windows Date provider return code check
+  consistency (GH-1956)
+
 3.0.0 (XXXX-XX-XX)
 ------------------
 
