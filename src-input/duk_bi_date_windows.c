@@ -96,7 +96,6 @@ DUK_INTERNAL duk_int_t duk_bi_date_get_local_tzoffset_windows(duk_double_t d) {
 	ULARGE_INTEGER tmp2;
 	ULARGE_INTEGER tmp3;
 	FILETIME ft1;
-	BOOL ret;
 
 	/* XXX: handling of timestamps outside Windows supported range.
 	 * How does Windows deal with dates before 1600?  Does windows
@@ -116,8 +115,7 @@ DUK_INTERNAL duk_int_t duk_bi_date_get_local_tzoffset_windows(duk_double_t d) {
 
 	ft1.dwLowDateTime = tmp2.LowPart;
 	ft1.dwHighDateTime = tmp2.HighPart;
-	ret = FileTimeToSystemTime((const FILETIME *) &ft1, &st2);
-	if (!ret) {
+	if (FileTimeToSystemTime((const FILETIME *) &ft1, &st2) == 0) {
 		DUK_D(DUK_DPRINT("FileTimeToSystemTime() failed, return tzoffset 0"));
 		return 0;
 	}
@@ -140,7 +138,6 @@ DUK_INTERNAL duk_int_t duk_bi_date_get_local_tzoffset_windows_no_dst(duk_double_
 	FILETIME ft2;
 	ULARGE_INTEGER tmp1;
 	ULARGE_INTEGER tmp2;
-	BOOL ret;
 
 	/* Do a similar computation to duk_bi_date_get_local_tzoffset_windows
 	 * but without accounting for daylight savings time.  Use this on
@@ -156,14 +153,11 @@ DUK_INTERNAL duk_int_t duk_bi_date_get_local_tzoffset_windows_no_dst(duk_double_
 
 	ft1.dwLowDateTime = tmp1.LowPart;
 	ft1.dwHighDateTime = tmp1.HighPart;
-	ret = FileTimeToLocalFileTime((const FILETIME *) &ft1, &ft2);
-	if (!ret) {
+	if (FileTimeToLocalFileTime((const FILETIME *) &ft1, &ft2) == 0) {
 		DUK_D(DUK_DPRINT("FileTimeToLocalFileTime() failed, return tzoffset 0"));
 		return 0;
 	}
-
-	ret = FileTimeToSystemTime((const FILETIME *) &ft2, &st2);
-	if (!ret) {
+	if (FileTimeToSystemTime((const FILETIME *) &ft2, &st2) == 0) {
 		DUK_D(DUK_DPRINT("FileTimeToSystemTime() failed, return tzoffset 0"));
 		return 0;
 	}
