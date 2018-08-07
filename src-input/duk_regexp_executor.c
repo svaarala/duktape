@@ -146,6 +146,7 @@ DUK_LOCAL duk_codepoint_t duk__inp_get_prev_cp(duk_re_matcher_ctx *re_ctx, const
  */
 
 DUK_LOCAL const duk_uint8_t *duk__match_regexp(duk_re_matcher_ctx *re_ctx, const duk_uint8_t *pc, const duk_uint8_t *sp) {
+	duk_native_stack_check(re_ctx->thr);
 	if (re_ctx->recursion_depth >= re_ctx->recursion_limit) {
 		DUK_ERROR_RANGE(re_ctx->thr, DUK_STR_REGEXP_EXECUTOR_RECURSION_LIMIT);
 		DUK_WO_NORETURN(return NULL;);

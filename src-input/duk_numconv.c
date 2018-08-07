@@ -1537,7 +1537,7 @@ DUK_LOCAL void duk__dragon4_ctx_to_double(duk__numconv_stringify_ctx *nc_ctx, du
  *  Output: [ string ]
  */
 
-DUK_INTERNAL void duk_numconv_stringify(duk_hthread *thr, duk_small_int_t radix, duk_small_int_t digits, duk_small_uint_t flags) {
+DUK_LOCAL DUK_NOINLINE void duk__numconv_stringify_raw(duk_hthread *thr, duk_small_int_t radix, duk_small_int_t digits, duk_small_uint_t flags) {
 	duk_double_t x;
 	duk_small_int_t c;
 	duk_small_int_t neg;
@@ -1730,6 +1730,11 @@ DUK_INTERNAL void duk_numconv_stringify(duk_hthread *thr, duk_small_int_t radix,
 	duk__dragon4_convert_and_push(nc_ctx, thr, radix, digits, flags, neg);
 }
 
+DUK_INTERNAL void duk_numconv_stringify(duk_hthread *thr, duk_small_int_t radix, duk_small_int_t digits, duk_small_uint_t flags) {
+	duk_native_stack_check(thr);
+	duk__numconv_stringify_raw(thr, radix, digits, flags);
+}
+
 /*
  *  Exposed string-to-number API
  *
@@ -1740,7 +1745,7 @@ DUK_INTERNAL void duk_numconv_stringify(duk_hthread *thr, duk_small_int_t radix,
  *  fails due to an internal error, an InternalError is thrown.
  */
 
-DUK_INTERNAL void duk_numconv_parse(duk_hthread *thr, duk_small_int_t radix, duk_small_uint_t flags) {
+DUK_LOCAL DUK_NOINLINE void duk__numconv_parse_raw(duk_hthread *thr, duk_small_int_t radix, duk_small_uint_t flags) {
 	duk__numconv_stringify_ctx nc_ctx_alloc;  /* large context; around 2kB now */
 	duk__numconv_stringify_ctx *nc_ctx = &nc_ctx_alloc;
 	duk_double_t res;
@@ -2267,4 +2272,9 @@ DUK_INTERNAL void duk_numconv_parse(duk_hthread *thr, duk_small_int_t radix, duk
 	DUK_DDD(DUK_DDDPRINT("parse failed, internal error, can't return a value"));
 	DUK_ERROR_RANGE(thr, "exponent too large");
 	DUK_WO_NORETURN(return;);
+}
+
+DUK_INTERNAL void duk_numconv_parse(duk_hthread *thr, duk_small_int_t radix, duk_small_uint_t flags) {
+	duk_native_stack_check(thr);
+	duk__numconv_parse_raw(thr, radix, flags);
 }

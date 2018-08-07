@@ -11,6 +11,11 @@ DUK_USE_FATAL_HANDLER:
   verbatim: "#define DUK_USE_FATAL_HANDLER(udata,msg) do { const char *fatal_msg = (msg); fprintf(stderr, \"*** FATAL ERROR: %s\\n\", fatal_msg ? fatal_msg : \"no message\"); fflush(stderr); *((volatile unsigned int *) 0) = (unsigned int) 0xdeadbeefUL; abort(); } while(0)"
 DUK_USE_SELF_TESTS: true
 
+#DUK_USE_NATIVE_STACK_CHECK:
+#  verbatim: "int duk_cmdline_stack_check(void);\n#define DUK_USE_NATIVE_STACK_CHECK() duk_cmdline_stack_check()"
+#DUK_USE_NATIVE_CALL_RECLIMIT: 10000000
+#DUK_USE_CALLSTACK_LIMIT: 10000000
+
 #DUK_USE_ASSERTIONS: true
 #DUK_USE_GC_TORTURE: true
 #DUK_USE_SHUFFLE_TORTURE: true

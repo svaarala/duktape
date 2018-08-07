@@ -153,7 +153,7 @@
 #define DUK_STR_CALLSTACK_LIMIT                  "callstack limit"
 #define DUK_STR_PROTOTYPE_CHAIN_LIMIT            "prototype chain limit"
 #define DUK_STR_BOUND_CHAIN_LIMIT                "function call bound chain limit"
-#define DUK_STR_C_CALLSTACK_LIMIT                "C call stack depth limit"
+#define DUK_STR_NATIVE_STACK_LIMIT               "C stack depth limit"
 #define DUK_STR_COMPILER_RECURSION_LIMIT         "compiler recursion limit"
 #define DUK_STR_BYTECODE_LIMIT                   "bytecode limit"
 #define DUK_STR_REG_LIMIT                        "register limit"

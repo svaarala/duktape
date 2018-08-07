@@ -9,7 +9,7 @@
 ---*/
 
 /*===
-RangeError: C call stack depth limit
+RangeError: C stack depth limit
 still here
 ===*/
 
