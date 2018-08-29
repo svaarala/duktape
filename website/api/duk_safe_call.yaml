@@ -12,7 +12,7 @@ summary: |
   topmost values in the current value stack frame are identified as call
   arguments, and <code>nrets</code> return values are provided after the call
   returns.  Calling code must ensure value stack has reserve for <code>nrets</code>
-  using e.g. <code><a href="duk_check_stack()">duk_check_stack</a></code>, and
+  using e.g. <code><a href="#duk_check_stack">duk_check_stack()</a></code>, and
   handling reservation errors.</p>
 
   <p>The <code>udata</code> (userdata) pointer is passed on to
