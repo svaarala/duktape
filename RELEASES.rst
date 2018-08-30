@@ -3396,6 +3396,8 @@ Planned
 2.4.0 (XXXX-XX-XX)
 ------------------
 
+* Enable Symbol built-in by default (DUK_USE_SYMBOL_BUILTIN) (GH-1969)
+
 * Trivial fixes and cleanups: Windows Date provider return code check
   consistency (GH-1956)
 
