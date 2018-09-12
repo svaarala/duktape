@@ -18,6 +18,6 @@ description: >
   Also enable DUK_USE_HSTRING_EXTDATA to use this feature.
 
   NOTE: Right now there is no API to push external strings; external strings
-  come into being as a resul of DUK_USE_EXTSTR_INTERN_CHECK() only.  If/when
+  come into being as a result of DUK_USE_EXTSTR_INTERN_CHECK() only.  If/when
   this is changed, this hook will get called for every string, even if pushed
   by the user using an API call; this may need to be rethought at that time.
