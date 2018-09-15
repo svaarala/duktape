@@ -3401,6 +3401,8 @@ Planned
 * Trivial fixes and cleanups: Windows Date provider return code check
   consistency (GH-1956)
 
+* Various portability fixes (GH-1931, GH-1976)
+
 3.0.0 (XXXX-XX-XX)
 ------------------
 
