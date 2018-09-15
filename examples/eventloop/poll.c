@@ -7,7 +7,7 @@
 #include <string.h>
 #include <stdio.h>
 
-#ifdef _WIN32
+#if defined(_WIN32)
 #include <WinSock2.h>
 #define poll WSAPoll
 #pragma comment(lib, "ws2_32")
