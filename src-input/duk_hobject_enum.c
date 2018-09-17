@@ -309,6 +309,7 @@ DUK_INTERNAL void duk_hobject_enumerator_create(duk_hthread *thr, duk_small_uint
 #if !defined(DUK_USE_PREFER_SIZE)
 		duk_bool_t need_sort = 0;
 #endif
+		duk_bool_t cond;
 
 		/* Enumeration proceeds by inheritance level.  Virtual
 		 * properties need to be handled specially, followed by
@@ -335,10 +336,12 @@ DUK_INTERNAL void duk_hobject_enumerator_create(duk_hthread *thr, duk_small_uint
 		 */
 
 #if defined(DUK_USE_BUFFEROBJECT_SUPPORT)
-		if (DUK_HOBJECT_HAS_EXOTIC_STRINGOBJ(curr) || DUK_HOBJECT_IS_BUFOBJ(curr)) {
+		cond = DUK_HOBJECT_HAS_EXOTIC_STRINGOBJ(curr) || DUK_HOBJECT_IS_BUFOBJ(curr);
 #else
-		if (DUK_HOBJECT_HAS_EXOTIC_STRINGOBJ(curr)) {
+		cond = DUK_HOBJECT_HAS_EXOTIC_STRINGOBJ(curr);
 #endif
+		cond = cond && !(enum_flags & DUK_ENUM_EXCLUDE_STRINGS);
+		if (cond) {
 			duk_bool_t have_length = 1;
 
 			/* String and buffer enumeration behavior is identical now,
@@ -400,26 +403,29 @@ DUK_INTERNAL void duk_hobject_enumerator_create(duk_hthread *thr, duk_small_uint
 		 *  Array part
 		 */
 
-		for (i = 0; i < (duk_uint_fast32_t) DUK_HOBJECT_GET_ASIZE(curr); i++) {
-			duk_hstring *k;
-			duk_tval *tv;
+		cond = !(enum_flags & DUK_ENUM_EXCLUDE_STRINGS);
+		if (cond) {
+			for (i = 0; i < (duk_uint_fast32_t) DUK_HOBJECT_GET_ASIZE(curr); i++) {
+				duk_hstring *k;
+				duk_tval *tv;
 
-			tv = DUK_HOBJECT_A_GET_VALUE_PTR(thr->heap, curr, i);
-			if (DUK_TVAL_IS_UNUSED(tv)) {
-				continue;
+				tv = DUK_HOBJECT_A_GET_VALUE_PTR(thr->heap, curr, i);
+				if (DUK_TVAL_IS_UNUSED(tv)) {
+					continue;
+				}
+				k = duk_heap_strtable_intern_u32_checked(thr, (duk_uint32_t) i);  /* Fragile reachability. */
+				DUK_ASSERT(k);
+
+				duk__add_enum_key(thr, k);
+
+				/* [enum_target res] */
 			}
-			k = duk_heap_strtable_intern_u32_checked(thr, (duk_uint32_t) i);  /* Fragile reachability. */
-			DUK_ASSERT(k);
 
-			duk__add_enum_key(thr, k);
-
-			/* [enum_target res] */
-		}
-
-		if (DUK_HOBJECT_HAS_EXOTIC_ARRAY(curr)) {
-			/* Array .length comes after numeric indices. */
-			if (enum_flags & DUK_ENUM_INCLUDE_NONENUMERABLE) {
-				duk__add_enum_key_stridx(thr, DUK_STRIDX_LENGTH);
+			if (DUK_HOBJECT_HAS_EXOTIC_ARRAY(curr)) {
+				/* Array .length comes after numeric indices. */
+				if (enum_flags & DUK_ENUM_INCLUDE_NONENUMERABLE) {
+					duk__add_enum_key_stridx(thr, DUK_STRIDX_LENGTH);
+				}
 			}
 		}
 
