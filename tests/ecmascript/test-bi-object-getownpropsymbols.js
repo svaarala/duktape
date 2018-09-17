@@ -1,5 +1,3 @@
-print=console.log
-
 /*===
 test 1
 0 Symbol(foo)
