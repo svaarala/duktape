@@ -3398,6 +3398,10 @@ Planned
 
 * Enable Symbol built-in by default (DUK_USE_SYMBOL_BUILTIN) (GH-1969)
 
+* Fix Object.getOwnPropertySymbols() behavior for the virtual properties
+  of arrays, Strings, and buffer objects: string keys were incorrectly
+  included in the result (GH-1978, GH-1979)
+
 * Trivial fixes and cleanups: Windows Date provider return code check
   consistency (GH-1956)
 
