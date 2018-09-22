@@ -3,11 +3,15 @@
 #  Utility to dump bytecode into a human readable form.
 #
 
-import struct
+import os
+import sys
 import optparse
+import struct
 import yaml
-from os.path import isfile
 
+script_path = sys.path[0]  # http://stackoverflow.com/questions/4934806/how-can-i-find-scripts-directory-with-python
+
+ops = None
 
 def decode_string(buf, off):
     strlen, = struct.unpack('>L', buf[off:off + 4])
@@ -16,7 +20,6 @@ def decode_string(buf, off):
     off += strlen
 
     return off, strdata
-
 
 def sanitize_string(val):
     # Don't try to UTF-8 decode, just escape non-printable ASCII.
@@ -28,16 +31,14 @@ def sanitize_string(val):
 
     return "'" + ''.join(map(f, val)) + "'"
 
-
 def decode_sanitize_string(buf, off):
     off, val = decode_string(buf, off)
     return off, sanitize_string(val)
 
-
 def dump_ins(ins, x):
     global ops
 
-    if not ops:
+    if ops is None:
         return ''
 
     pc = x / 4
@@ -146,16 +147,14 @@ def dump_ins(ins, x):
             if ins & f['mask']:
                 comments.append(f['name'])
 
-    if len(args):
-        res = '{} {}'.format(op['name'], ', '.join(args))
+    if len(args) > 0:
+        res = '%-12s %s' % (op['name'], ', '.join(args))
     else:
         res = op['name']
-
-    if len(comments):
-        res = '{}  ; {}'.format(res, ', '.join(comments))
+    if len(comments) > 0:
+        res = '%-44s ; %s' % (res, ', '.join(comments))
 
     return res
-
 
 def dump_function(buf, off, ind):
     count_inst, count_const, count_funcs = struct.unpack('>LLL', buf[off:off + 12])
@@ -233,7 +232,6 @@ def dump_function(buf, off, ind):
 
     return off
 
-
 def dump_bytecode(buf, off, ind):
     sig, = struct.unpack('B', buf[off:off + 1])
     print('%sSignature byte: 0x%02x' % (ind, sig))
@@ -247,22 +245,20 @@ def dump_bytecode(buf, off, ind):
 
     return off
 
-
 def main():
     global ops
-    ops = None
-    yamlpath = None
 
-    if isfile('duk_opcodes.yaml'):
-        yamlpath = 'duk_opcodes.yaml'
-    elif isfile('../debugger/duk_opcodes.yaml'):
-        yamlpath = '../debugger/duk_opcodes.yaml'
-    else:
-        print('WARN: duk_opcodes.yaml NOT found! Unable to show opcodes!')
+    for ops_path in [ '.',
+                      os.path.join('..', 'debugger'),
+                      script_path,
+                      os.path.join(script_path, '..', 'debugger') ]:
+        fn = os.path.join(ops_path, 'duk_opcodes.yaml')
+        if os.path.isfile(fn):
+            with open(fn) as f:
+                ops = yaml.load(f)['opcodes']
 
-    if yamlpath:
-        y = yaml.load(open(yamlpath))
-        ops = y['opcodes']
+    if ops is None:
+        print('WARN: duk_opcodes.yaml not found, unable do dump opcodes!')
 
     parser = optparse.OptionParser()
     parser.add_option('--hex-decode', dest='hex_decode', default=False, action='store_true',
@@ -275,7 +271,6 @@ def main():
             d = d.strip()
             d = d.decode('hex')
     dump_bytecode(d, 0, '')
-
 
 if __name__ == '__main__':
     main()
