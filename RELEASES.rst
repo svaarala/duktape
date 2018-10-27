@@ -3402,6 +3402,9 @@ Planned
   of arrays, Strings, and buffer objects: string keys were incorrectly
   included in the result (GH-1978, GH-1979)
 
+* Fix compile error (missing DUK_DCERROR_UNSUPPORTED macro) when compiling
+  with RegExp support disabled (GH-1990, GH-1991)
+
 * Trivial fixes and cleanups: Windows Date provider return code check
   consistency (GH-1956)
 
