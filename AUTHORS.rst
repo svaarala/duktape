@@ -55,6 +55,7 @@ and agreed to irrevocably license their contributions under the Duktape
 * Andrew Janke (https://github.com/apjanke)
 * Steve Fan (https://github.com/stevefan1999)
 * Edward Betts (https://github.com/edwardbetts)
+* Ozhan Duz (https://github.com/webfolderio)
 
 Other contributions
 ===================
