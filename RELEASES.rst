@@ -3398,6 +3398,9 @@ Planned
 
 * Enable Symbol built-in by default (DUK_USE_SYMBOL_BUILTIN) (GH-1969)
 
+* Remove arguments.caller for strict argument objects to match revised
+  ES2017 behavior (GH-2009)
+
 * Fix Object.getOwnPropertySymbols() behavior for the virtual properties
   of arrays, Strings, and buffer objects: string keys were incorrectly
   included in the result (GH-1978, GH-1979)
