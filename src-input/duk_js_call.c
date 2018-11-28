@@ -355,7 +355,7 @@ DUK_LOCAL void duk__create_arguments_object(duk_hthread *thr,
 
 		DUK_DDD(DUK_DDDPRINT("strict function, setting caller/callee to throwers"));
 
-		duk_xdef_prop_stridx_thrower(thr, i_arg, DUK_STRIDX_CALLER);
+		/* In ES2017 .caller is no longer set at all. */
 		duk_xdef_prop_stridx_thrower(thr, i_arg, DUK_STRIDX_CALLEE);
 	} else {
 		DUK_DDD(DUK_DDDPRINT("non-strict function, setting callee to actual value"));
