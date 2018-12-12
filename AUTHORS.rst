@@ -56,6 +56,7 @@ and agreed to irrevocably license their contributions under the Duktape
 * Steve Fan (https://github.com/stevefan1999)
 * Edward Betts (https://github.com/edwardbetts)
 * Ozhan Duz (https://github.com/webfolderio)
+* Akos Kiss (https://github.com/akosthekiss)
 
 Other contributions
 ===================
