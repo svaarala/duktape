@@ -3408,6 +3408,10 @@ Planned
 * Fix compile error (missing DUK_DCERROR_UNSUPPORTED macro) when compiling
   with RegExp support disabled (GH-1990, GH-1991)
 
+* Fix configure.py -D option to accept parenthesized macros, e.g.
+  '-DFOO(bar)=quux', which were used in some examples but were not
+  actually functional (GH-2013, GH-2014)
+
 * Trivial fixes and cleanups: Windows Date provider return code check
   consistency (GH-1956)
 
