@@ -16,4 +16,5 @@ script:
   - make tidy-site
   - make apitest
   - make ecmatest
+  - make configuretest
   - make errorinjecttest
