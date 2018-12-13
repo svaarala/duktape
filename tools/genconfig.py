@@ -1382,13 +1382,15 @@ def add_genconfig_optparse_options(parser, direct=False):
         with open(value, 'rb') as f:
             force_options_yaml.append(f.read())
     def add_force_option_define(option, opt, value, parser):
-        tmp = value.split('=')
-        if len(tmp) == 1:
-            doc = { tmp[0]: True }
-        elif len(tmp) == 2:
-            doc = { tmp[0]: tmp[1] }
+        defname, eq, defval = value.partition('=')
+        if not eq:
+            doc = { defname: True }
         else:
-            raise Exception('invalid option value: %r' % value)
+            defname, paren, defargs = defname.partition('(')
+            if not paren:
+                doc = { defname: defval }
+            else:
+                doc = { defname: { 'verbatim': '#define %s%s%s %s' % (defname, paren, defargs, defval) } }
         force_options_yaml.append(yaml.safe_dump(doc))
     def add_force_option_undefine(option, opt, value, parser):
         tmp = value.split('=')
