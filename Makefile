@@ -634,7 +634,7 @@ test: apitest ecmatest
 
 # Set of miscellaneous tests for release.
 .PHONY: releasetest
-releasetest: xmldoctest closuretest bluebirdtest luajstest jsinterpretertest lodashtest underscoretest emscriptenluatest emscriptenduktest emscripteninceptiontest emscriptenmandeltest emscriptentest errorinjecttest
+releasetest: configuretest xmldoctest closuretest bluebirdtest luajstest jsinterpretertest lodashtest underscoretest emscriptenluatest emscriptenduktest emscripteninceptiontest emscriptenmandeltest emscriptentest errorinjecttest
 	@echo ""
 	@echo "### Release tests successful!"  # These tests now have output checks.
 
@@ -660,6 +660,11 @@ apiprep: runtestsdeps libduktape.so.1.0.0
 apitest: apiprep
 	@echo "### apitest"
 	"$(NODE)" runtests/runtests.js $(RUNTESTSOPTS) --num-threads 1 --log-file=/tmp/duk-api-test.log tests/api/
+
+# Configure.py test.
+configuretest:
+	@echo "### configuretest"
+	bash tests/configure/test_minimal.sh
 
 # Dukweb.js test.
 .PHONY: dukwebtest
