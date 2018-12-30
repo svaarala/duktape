@@ -31,6 +31,8 @@
  *          prep/duktape.c -lm -lws2_32
  */
 
+#define DUK_COMPILING_DUKTAPE
+
 #undef UNICODE
 #if !defined(WIN32_LEAN_AND_MEAN)
 #define WIN32_LEAN_AND_MEAN
