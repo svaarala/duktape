@@ -542,23 +542,23 @@ DUK_LOCAL void duk__init_func_valstack_slots(duk_compiler_ctx *comp_ctx) {
 	DUK_BW_INIT_PUSHBUF(thr, &func->bw_code, DUK__BC_INITIAL_INSTS * sizeof(duk_compiler_instr));
 	/* code_idx = entry_top + 0 */
 
-	duk_push_array(thr);
+	duk_push_bare_array(thr);
 	func->consts_idx = entry_top + 1;
 	func->h_consts = DUK_GET_HOBJECT_POSIDX(thr, entry_top + 1);
 	DUK_ASSERT(func->h_consts != NULL);
 
-	duk_push_array(thr);
+	duk_push_bare_array(thr);
 	func->funcs_idx = entry_top + 2;
 	func->h_funcs = DUK_GET_HOBJECT_POSIDX(thr, entry_top + 2);
 	DUK_ASSERT(func->h_funcs != NULL);
 	DUK_ASSERT(func->fnum_next == 0);
 
-	duk_push_array(thr);
+	duk_push_bare_array(thr);
 	func->decls_idx = entry_top + 3;
 	func->h_decls = DUK_GET_HOBJECT_POSIDX(thr, entry_top + 3);
 	DUK_ASSERT(func->h_decls != NULL);
 
-	duk_push_array(thr);
+	duk_push_bare_array(thr);
 	func->labelnames_idx = entry_top + 4;
 	func->h_labelnames = DUK_GET_HOBJECT_POSIDX(thr, entry_top + 4);
 	DUK_ASSERT(func->h_labelnames != NULL);
@@ -569,7 +569,7 @@ DUK_LOCAL void duk__init_func_valstack_slots(duk_compiler_ctx *comp_ctx) {
 	DUK_ASSERT(func->h_labelinfos != NULL);
 	DUK_ASSERT(DUK_HBUFFER_HAS_DYNAMIC(func->h_labelinfos) && !DUK_HBUFFER_HAS_EXTERNAL(func->h_labelinfos));
 
-	duk_push_array(thr);
+	duk_push_bare_array(thr);
 	func->argnames_idx = entry_top + 6;
 	func->h_argnames = DUK_GET_HOBJECT_POSIDX(thr, entry_top + 6);
 	DUK_ASSERT(func->h_argnames != NULL);
