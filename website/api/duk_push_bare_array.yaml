@@ -1,0 +1,28 @@
+name: duk_push_bare_array
+
+proto: |
+  duk_idx_t duk_push_bare_array(duk_context *ctx);
+
+stack: |
+  [ ... ] -> [ ... arr! ]
+
+summary: |
+  <p>Similar to <code><a href="#duk_push_array">duk_push_array()</a></code>
+  but the pushed array doesn't inherit from any other object, i.e. its internal
+  prototype is <code>null</code>.  Returns non-negative index (relative to
+  stack bottom) of the pushed array.</p>
+
+example: |
+  duk_idx_t arr_idx;
+
+  arr_idx = duk_push_bare_array(ctx);
+
+tags:
+  - stack
+  - object
+
+seealso:
+  - duk_push_array
+  - duk_push_bare_object
+
+introduced: 2.4.0
