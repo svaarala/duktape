@@ -4935,6 +4935,33 @@ DUK_EXTERNAL duk_idx_t duk_push_array(duk_hthread *thr) {
 	return ret;
 }
 
+DUK_EXTERNAL duk_idx_t duk_push_bare_array(duk_hthread *thr) {
+	duk_uint_t flags;
+	duk_harray *obj;
+	duk_idx_t ret;
+	duk_tval *tv_slot;
+
+	DUK_ASSERT_API_ENTRY(thr);
+
+	flags = DUK_HOBJECT_FLAG_EXTENSIBLE |
+	        DUK_HOBJECT_FLAG_FASTREFS |
+	        DUK_HOBJECT_FLAG_ARRAY_PART |
+	        DUK_HOBJECT_FLAG_EXOTIC_ARRAY |
+	        DUK_HOBJECT_CLASS_AS_FLAGS(DUK_HOBJECT_CLASS_ARRAY);
+
+	obj = duk_harray_alloc(thr, flags);
+	DUK_ASSERT(obj != NULL);
+
+	tv_slot = thr->valstack_top;
+	DUK_TVAL_SET_OBJECT(tv_slot, (duk_hobject *) obj);
+	DUK_HOBJECT_INCREF(thr, obj);  /* XXX: could preallocate with refcount = 1 */
+	ret = (duk_idx_t) (thr->valstack_top - thr->valstack_bottom);
+	thr->valstack_top++;
+
+	DUK_ASSERT(obj->length == 0);  /* Array .length starts at zero. */
+	return ret;
+}
+
 DUK_INTERNAL duk_harray *duk_push_harray(duk_hthread *thr) {
 	/* XXX: API call could do this directly, cast to void in API macro. */
 	duk_harray *a;
