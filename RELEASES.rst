@@ -3401,6 +3401,13 @@ Planned
 * Remove arguments.caller for strict argument objects to match revised
   ES2017 behavior (GH-2009)
 
+* When using Proxy wrapping in console extra, don't return a fake NOP
+  function for console.toJSON to avoid confusing JX serialization of the
+  console object (GH-2052, GH-2054, GH-2055)
+
+* Disable Proxy wrapper for 'duk' console binding because it is no longer
+  the preferred console implementation method (GH-2055)
+
 * Fix Object.getOwnPropertySymbols() behavior for the virtual properties
   of arrays, Strings, and buffer objects: string keys were incorrectly
   included in the result (GH-1978, GH-1979)
