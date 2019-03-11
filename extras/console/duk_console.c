@@ -157,20 +157,26 @@ void duk_console_init(duk_context *ctx, duk_uint_t flags) {
 	duk_put_global_string(ctx, "console");
 
 	/* Proxy wrapping: ensures any undefined console method calls are
-	 * ignored silently.  This is required specifically by the
-	 * DeveloperToolsWG proposal (and is implemented also by Firefox:
-	 * https://bugzilla.mozilla.org/show_bug.cgi?id=629607).
+	 * ignored silently.  This was required specifically by the
+	 * DeveloperToolsWG proposal (and was implemented also by Firefox:
+	 * https://bugzilla.mozilla.org/show_bug.cgi?id=629607).  This is
+	 * apparently no longer the preferred way of implementing console.
+	 * When Proxy is enabled, whitelist at least .toJSON() to avoid
+	 * confusing JX serialization of the console object.
 	 */
 
 	if (flags & DUK_CONSOLE_PROXY_WRAPPER) {
-		/* Tolerate errors: Proxy may be disabled. */
-		duk_peval_string_noresult(ctx,
+		/* Tolerate failure to initialize Proxy wrapper in case
+		 * Proxy support is disabled.
+		 */
+		(void) duk_peval_string_noresult(ctx,
 			"(function(){"
 			    "var D=function(){};"
+			    "var W={toJSON:true};"  /* whitelisted */
 			    "console=new Proxy(console,{"
 			        "get:function(t,k){"
 			            "var v=t[k];"
-			            "return typeof v==='function'?v:D;"
+			            "return typeof v==='function'||W[k]?v:D;"
 			        "}"
 			    "});"
 			"})();"
