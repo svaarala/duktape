@@ -1157,7 +1157,7 @@ static duk_context *create_duktape_heap(int alloc_provider, int debugger, int lo
 
 	/* Register console object. */
 #if defined(DUK_CMDLINE_CONSOLE_SUPPORT)
-	duk_console_init(ctx, DUK_CONSOLE_PROXY_WRAPPER | DUK_CONSOLE_FLUSH /*flags*/);
+	duk_console_init(ctx, DUK_CONSOLE_FLUSH /*flags*/);
 #endif
 
 	/* Register Duktape.Logger (removed in Duktape 2.x). */
