@@ -8,6 +8,7 @@ Release overview
 TBD.
 
 * Symbol built-in is now enabled by default.
+* Add duk_to_stacktrace() and duk_safe_to_stacktrace() to make it easier to get stacktraces in C
 
 Upgrading from Duktape 2.3
 ==========================

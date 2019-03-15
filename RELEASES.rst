@@ -3424,6 +3424,8 @@ Planned
 
 * Various portability fixes (GH-1931, GH-1976)
 
+* Add duk_to_stacktrace() and duk_safe_to_stacktrace() to make it easier to get stacktraces in C
+
 3.0.0 (XXXX-XX-XX)
 ------------------
 
