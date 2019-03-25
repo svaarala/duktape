@@ -9,12 +9,20 @@ stack: |
 summary: |
   <p>Like <code><a href="#duk_to_string">duk_to_string()</a></code> but if
   the initial string coercion fails, the error value is coerced to a string.
-  If that also fails, a fixed error string is returned.</p>
+  If that also fails, a fixed pre-allocated error string <code>"Error"</code>
+  is used instead (because the string is pre-allocated, this cannot fail due to
+  out-of-memory).</p>
 
   <p>The caller can safely use this function to coerce a value to a string,
   which is useful in C code to print out a return value safely with
-  <code>printf()</code>.  The only uncaught errors possible are out-of-memory
-  and other internal errors which trigger fatal error handling anyway.</p>
+  <code>printf()</code>.  The only uncaught errors possible are internal
+  errors which trigger fatal error handling anyway.</p>
+
+  <div class="note">
+  While the string coercion is safe from error throws, it may have side
+  effects in the current implementation.  In particular, the string coercion
+  may enter an infinite loop and never return.
+  </div>
 
 example: |
   /* Coercion causes error. */
