@@ -1,7 +1,8 @@
 /*===
 arr_idx = 1
+prototype is undefined: 1
 duk_is_array(1) = 1
-arr[5] = 'inherit'
+arr[5] = 'undefined'
 json encoded: ["foo","bar"]
 top=2
 ===*/
@@ -11,8 +12,11 @@ void test(duk_context *ctx) {
 
 	duk_push_int(ctx, 123);  /* dummy */
 
-	arr_idx = duk_push_array(ctx);
+	arr_idx = duk_push_bare_array(ctx);
 	printf("arr_idx = %ld\n", (long) arr_idx);
+	duk_get_prototype(ctx, -1);
+	printf("prototype is undefined: %ld\n", (long) duk_is_undefined(ctx, -1));
+	duk_pop(ctx);
 
 	duk_push_string(ctx, "foo");
 	duk_put_prop_index(ctx, arr_idx, 0);
@@ -20,7 +24,8 @@ void test(duk_context *ctx) {
 	duk_put_prop_index(ctx, arr_idx, 1);
 
 	/* Array is now: [ "foo", "bar" ], and array.length is 2 (automatically
-	 * updated for ECMAScript arrays).
+	 * updated for ECMAScript arrays).  The array being bare does not affect
+	 * JSON serialization.
 	 */
 
 	printf("duk_is_array(%ld) = %d\n", (long) arr_idx, (int) duk_is_array(ctx, arr_idx));
