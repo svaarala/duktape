@@ -577,6 +577,7 @@ DUK_EXTERNAL_DECL void duk_push_thread_stash(duk_context *ctx, duk_context *targ
 DUK_EXTERNAL_DECL duk_idx_t duk_push_object(duk_context *ctx);
 DUK_EXTERNAL_DECL duk_idx_t duk_push_bare_object(duk_context *ctx);
 DUK_EXTERNAL_DECL duk_idx_t duk_push_array(duk_context *ctx);
+DUK_EXTERNAL_DECL duk_idx_t duk_push_bare_array(duk_context *ctx);
 DUK_EXTERNAL_DECL duk_idx_t duk_push_c_function(duk_context *ctx, duk_c_function func, duk_idx_t nargs);
 DUK_EXTERNAL_DECL duk_idx_t duk_push_c_lightfunc(duk_context *ctx, duk_c_function func, duk_idx_t nargs, duk_idx_t length, duk_int_t magic);
 DUK_EXTERNAL_DECL duk_idx_t duk_push_thread_raw(duk_context *ctx, duk_uint_t flags);

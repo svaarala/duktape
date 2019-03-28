@@ -3396,6 +3396,9 @@ Planned
 2.4.0 (XXXX-XX-XX)
 ------------------
 
+* Add duk_push_bare_array() to push an Array instance which doesn't
+  inherit from anything (GH-2064)
+
 * Enable Symbol built-in by default (DUK_USE_SYMBOL_BUILTIN) (GH-1969)
 
 * Remove arguments.caller for strict argument objects to match revised
