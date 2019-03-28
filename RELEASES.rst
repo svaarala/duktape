@@ -3422,6 +3422,9 @@ Planned
   '-DFOO(bar)=quux', which were used in some examples but were not
   actually functional (GH-2013, GH-2014)
 
+* Fix several assertion failures with possible memory unsafe behavior
+  (GH-2025, GH-2026, GH-2031, GH-2033, GH-2035, GH-2036, GH-2065)
+
 * Trivial fixes and cleanups: Windows Date provider return code check
   consistency (GH-1956)
 
