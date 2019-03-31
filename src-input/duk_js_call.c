@@ -212,8 +212,8 @@ DUK_LOCAL void duk__create_arguments_object(duk_hthread *thr,
 	/*
 	 *  Create required objects:
 	 *    - 'arguments' object: array-like, but not an array
-	 *    - 'map' object: internal object, tied to 'arguments'
-	 *    - 'mappedNames' object: temporary value used during construction
+	 *    - 'map' object: internal object, tied to 'arguments' (bare)
+	 *    - 'mappedNames' object: temporary value used during construction (bare)
 	 */
 
 	arg = duk_push_object_helper(thr,
@@ -236,6 +236,9 @@ DUK_LOCAL void duk__create_arguments_object(duk_hthread *thr,
 	i_arg = duk_get_top(thr) - 3;
 	i_map = i_arg + 1;
 	i_mappednames = i_arg + 2;
+	DUK_ASSERT(!duk_is_bare_object(thr, -3));  /* arguments */
+	DUK_ASSERT(duk_is_bare_object(thr, -2));  /* map */
+	DUK_ASSERT(duk_is_bare_object(thr, -1));  /* mappedNames */
 
 	/* [ ... formals arguments map mappedNames ] */
 
@@ -918,6 +921,7 @@ DUK_LOCAL void duk__handle_proxy_for_call(duk_hthread *thr, duk_idx_t idx_func, 
 	duk_push_hobject(thr, h_proxy->target);
 	duk_insert(thr, idx_func + 3);
 	duk_pack(thr, duk_get_top(thr) - (idx_func + 5));
+	DUK_ASSERT(!duk_is_bare_object(thr, -1));
 
 	/* Here:
 	 * idx_func + 0: Proxy object

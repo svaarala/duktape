@@ -100,6 +100,8 @@ DUK_INTERNAL_DECL duk_bool_t duk_is_string_notsymbol(duk_hthread *thr, duk_idx_t
 
 DUK_INTERNAL_DECL duk_bool_t duk_is_callable_tval(duk_hthread *thr, duk_tval *tv);
 
+DUK_INTERNAL_DECL duk_bool_t duk_is_bare_object(duk_hthread *thr, duk_idx_t idx);
+
 DUK_INTERNAL_DECL duk_hstring *duk_get_hstring(duk_hthread *thr, duk_idx_t idx);
 DUK_INTERNAL_DECL duk_hstring *duk_get_hstring_notsymbol(duk_hthread *thr, duk_idx_t idx);
 DUK_INTERNAL_DECL const char *duk_get_string_notsymbol(duk_hthread *thr, duk_idx_t idx);
@@ -326,6 +328,8 @@ DUK_INTERNAL_DECL duk_int_t duk_pcall_method_flags(duk_hthread *thr, duk_idx_t n
 #if defined(DUK_USE_SYMBOL_BUILTIN)
 DUK_INTERNAL_DECL void duk_to_primitive_ordinary(duk_hthread *thr, duk_idx_t idx, duk_int_t hint);
 #endif
+
+DUK_INTERNAL_DECL void duk_clear_prototype(duk_hthread *thr, duk_idx_t idx);
 
 /* Raw internal valstack access macros: access is unsafe so call site
  * must have a guarantee that the index is valid.  When that is the case,

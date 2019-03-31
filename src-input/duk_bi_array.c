@@ -165,6 +165,7 @@ DUK_INTERNAL duk_ret_t duk_bi_array_constructor(duk_hthread *thr) {
 		len_prealloc = len < 64 ? len : 64;
 		a = duk_push_harray_with_size(thr, len_prealloc);
 		DUK_ASSERT(a != NULL);
+		DUK_ASSERT(!duk_is_bare_object(thr, -1));
 		a->length = len;
 		return 1;
 	}

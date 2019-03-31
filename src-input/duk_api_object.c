@@ -901,6 +901,37 @@ DUK_EXTERNAL void duk_set_prototype(duk_hthread *thr, duk_idx_t idx) {
 	duk_pop(thr);
 }
 
+DUK_INTERNAL void duk_clear_prototype(duk_hthread *thr, duk_idx_t idx) {
+	duk_hobject *obj;
+
+	DUK_ASSERT_API_ENTRY(thr);
+
+	obj = duk_require_hobject(thr, idx);
+	DUK_ASSERT(obj != NULL);
+
+#if defined(DUK_USE_ROM_OBJECTS)
+	if (DUK_HEAPHDR_HAS_READONLY((duk_heaphdr *) obj)) {
+		DUK_ERROR_TYPE(thr, DUK_STR_NOT_CONFIGURABLE);  /* XXX: "read only object"? */
+		DUK_WO_NORETURN(return;);
+	}
+#endif
+
+	DUK_HOBJECT_SET_PROTOTYPE_UPDREF(thr, obj, NULL);
+}
+
+DUK_INTERNAL duk_bool_t duk_is_bare_object(duk_hthread *thr, duk_idx_t idx) {
+	duk_hobject *obj;
+	duk_hobject *proto;
+
+	DUK_ASSERT_API_ENTRY(thr);
+
+	obj = duk_require_hobject(thr, idx);
+	DUK_ASSERT(obj != NULL);
+
+	proto = DUK_HOBJECT_GET_PROTOTYPE(thr->heap, obj);
+	return (proto == NULL);
+}
+
 /*
  *  Object finalizer
  */

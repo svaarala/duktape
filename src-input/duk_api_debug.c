@@ -16,7 +16,7 @@ DUK_EXTERNAL void duk_push_context_dump(duk_hthread *thr) {
 	 */
 
 	top = duk_get_top(thr);
-	duk_push_array(thr);
+	duk_push_bare_array(thr);
 	for (idx = 0; idx < top; idx++) {
 		duk_dup(thr, idx);
 		duk_put_prop_index(thr, -2, (duk_uarridx_t) idx);

@@ -679,6 +679,7 @@ DUK_INTERNAL duk_ret_t duk_hobject_get_enumerated_keys(duk_hthread *thr, duk_sma
 	/* XXX: uninit would be OK */
 	tv = duk_push_harray_with_size_outptr(thr, (duk_uint32_t) count);
 	DUK_ASSERT(count == 0 || tv != NULL);
+	DUK_ASSERT(!duk_is_bare_object(thr, -1));
 
 	/* Fill result array, no side effects. */
 

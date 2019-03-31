@@ -1265,6 +1265,7 @@ DUK_INTERNAL duk_ret_t duk_bi_nodejs_buffer_tojson(duk_hthread *thr) {
 	/* XXX: uninitialized would be OK */
 	DUK_ASSERT_DISABLE((duk_size_t) h_this->length <= (duk_size_t) DUK_UINT32_MAX);
 	tv = duk_push_harray_with_size_outptr(thr, (duk_uint32_t) h_this->length);  /* XXX: needs revision with >4G buffers */
+	DUK_ASSERT(!duk_is_bare_object(thr, -1));
 
 	DUK_ASSERT(h_this->buf != NULL);
 	buf = DUK_HBUFOBJ_GET_SLICE_BASE(thr->heap, h_this);
