@@ -180,33 +180,9 @@ static void cmdline_fatal_handler(void *udata, const char *msg) {
 	abort();
 }
 
-static duk_ret_t get_stack_raw(duk_context *ctx, void *udata) {
-	(void) udata;
-
-	if (!duk_is_object(ctx, -1)) {
-		return 1;
-	}
-	if (!duk_has_prop_string(ctx, -1, "stack")) {
-		return 1;
-	}
-	if (!duk_is_error(ctx, -1)) {
-		/* Not an Error instance, don't read "stack". */
-		return 1;
-	}
-
-	duk_get_prop_string(ctx, -1, "stack");  /* caller coerces */
-	duk_remove(ctx, -2);
-	return 1;
-}
-
 /* Print error to stderr and pop error. */
 static void print_pop_error(duk_context *ctx, FILE *f) {
-	/* Print error objects with a stack trace specially.
-	 * Note that getting the stack trace may throw an error
-	 * so this also needs to be safe call wrapped.
-	 */
-	(void) duk_safe_call(ctx, get_stack_raw, NULL /*udata*/, 1 /*nargs*/, 1 /*nrets*/);
-	fprintf(f, "%s\n", duk_safe_to_string(ctx, -1));
+	fprintf(f, "%s\n", duk_safe_to_stacktrace(ctx, -1));
 	fflush(f);
 	duk_pop(ctx);
 }

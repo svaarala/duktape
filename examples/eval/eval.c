@@ -14,18 +14,6 @@ static duk_ret_t native_print(duk_context *ctx) {
 	return 0;
 }
 
-static duk_ret_t eval_raw(duk_context *ctx, void *udata) {
-	(void) udata;
-	duk_eval(ctx);
-	return 1;
-}
-
-static duk_ret_t tostring_raw(duk_context *ctx, void *udata) {
-	(void) udata;
-	duk_to_string(ctx, -1);
-	return 1;
-}
-
 static void usage_exit(void) {
 	fprintf(stderr, "Usage: eval <expression> [<expression>] ...\n");
 	fflush(stderr);
@@ -36,6 +24,7 @@ int main(int argc, char *argv[]) {
 	duk_context *ctx;
 	int i;
 	const char *res;
+	int rc;
 
 	if (argc < 2) {
 		usage_exit();
@@ -49,8 +38,12 @@ int main(int argc, char *argv[]) {
 	for (i = 1; i < argc; i++) {
 		printf("=== eval: '%s' ===\n", argv[i]);
 		duk_push_string(ctx, argv[i]);
-		duk_safe_call(ctx, eval_raw, NULL, 1 /*nargs*/, 1 /*nrets*/);
-		duk_safe_call(ctx, tostring_raw, NULL, 1 /*nargs*/, 1 /*nrets*/);
+		rc = duk_peval(ctx);
+		if (rc != 0) {
+			duk_safe_to_stacktrace(ctx, -1);
+		} else {
+			duk_safe_to_string(ctx, -1);
+		}
 		res = duk_get_string(ctx, -1);
 		printf("%s\n", res ? res : "null");
 		duk_pop(ctx);
