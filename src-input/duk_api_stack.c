@@ -3030,7 +3030,7 @@ DUK_LOCAL duk_ret_t duk__safe_to_string_raw(duk_hthread *thr, void *udata) {
 	DUK_ASSERT_CTX_VALID(thr);
 	DUK_UNREF(udata);
 
-	duk_to_string(thr, -1);
+	(void) duk_to_string(thr, -1);
 	return 1;
 }
 
@@ -3071,30 +3071,34 @@ DUK_EXTERNAL const char *duk_to_stacktrace(duk_hthread *thr, duk_idx_t idx) {
 	DUK_ASSERT_API_ENTRY(thr);
 	idx = duk_require_normalize_index(thr, idx);
 
-	if (duk_is_error(thr, idx)) {
-		duk_get_prop_string(thr, idx, "stack");  /* caller coerces */
-		if (!duk_is_null_or_undefined(thr, -1)) {
+	/* The expected argument to the call is an Error object.  The stack
+	 * trace is extracted without an inheritance-based instanceof check
+	 * so that one can also extract the stack trace of a foreign error
+	 * created in another Realm.  Accept only a string .stack property.
+	 */
+	if (duk_is_object(thr, idx)) {
+		(void) duk_get_prop_string(thr, idx, "stack");
+		if (duk_is_string(thr, -1)) {
 			duk_replace(thr, idx);
 		} else {
 			duk_pop(thr);
 		}
-		return duk_to_string(thr, idx);
-	} else {
-		return duk_to_string(thr, idx);
 	}
+
+	return duk_to_string(thr, idx);
 }
 
 DUK_LOCAL duk_ret_t duk__safe_to_stacktrace_raw(duk_hthread *thr, void *udata) {
 	DUK_ASSERT_CTX_VALID(thr);
 	DUK_UNREF(udata);
 
-	duk_to_stacktrace(thr, -1);
+	(void) duk_to_stacktrace(thr, -1);
 
 	return 1;
 }
 
 DUK_EXTERNAL const char *duk_safe_to_stacktrace(duk_hthread *thr, duk_idx_t idx) {
-	int rc;
+	duk_int_t rc;
 
 	DUK_ASSERT_API_ENTRY(thr);
 	idx = duk_require_normalize_index(thr, idx);
@@ -3102,7 +3106,15 @@ DUK_EXTERNAL const char *duk_safe_to_stacktrace(duk_hthread *thr, duk_idx_t idx)
 	duk_dup(thr, idx);
 	rc = duk_safe_call(thr, duk__safe_to_stacktrace_raw, NULL /*udata*/, 1 /*nargs*/, 1 /*nrets*/);
 	if (rc != 0) {
-		duk_safe_to_stacktrace(thr, -1);
+		/* Coercion failed.  Try to coerce the coercion itself error
+		 * to a stack trace once.  If that also fails, return a fixed,
+		 * preallocated 'Error' string to avoid potential infinite loop.
+		 */
+		rc = duk_safe_call(thr, duk__safe_to_stacktrace_raw, NULL /*udata*/, 1 /*nargs*/, 1 /*nrets*/);
+		if (rc != 0) {
+			duk_pop_unsafe(thr);
+			duk_push_hstring_stridx(thr, DUK_STRIDX_UC_ERROR);
+		}
 	}
 	duk_replace(thr, idx);
 
