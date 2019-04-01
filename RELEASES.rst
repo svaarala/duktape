@@ -3396,6 +3396,9 @@ Planned
 2.4.0 (XXXX-XX-XX)
 ------------------
 
+* Add duk_to_stacktrace() and duk_safe_to_stacktrace() to make it easier to
+  get stacktraces in C code (GH-2059, GH-2086)
+
 * Add duk_push_bare_array() to push an Array instance which doesn't
   inherit from anything (GH-2064)
 
@@ -3434,8 +3437,6 @@ Planned
 * Fix MSVC ARM64 detection (GH-2078)
 
 * Various portability fixes (GH-1931, GH-1976)
-
-* Add duk_to_stacktrace() and duk_safe_to_stacktrace() to make it easier to get stacktraces in C
 
 3.0.0 (XXXX-XX-XX)
 ------------------

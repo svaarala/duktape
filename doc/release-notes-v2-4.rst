@@ -8,7 +8,12 @@ Release overview
 TBD.
 
 * Symbol built-in is now enabled by default.
-* Add duk_to_stacktrace() and duk_safe_to_stacktrace() to make it easier to get stacktraces in C
+
+* Add duk_push_bare_array() API call which pushes a bare Array, i.e. one
+  that doesn't inherit from Array.prototype.
+
+* Add duk_to_stacktrace() and duk_safe_to_stacktrace() to make it easier
+  to get stacktraces in C code.
 
 Upgrading from Duktape 2.3
 ==========================
