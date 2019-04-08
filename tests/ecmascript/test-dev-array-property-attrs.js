@@ -3,31 +3,29 @@
  *  and without an internal "array part".
  */
 
-function printDesc(desc) {
-    print(desc.writable, desc.enumerable, desc.configurable);
-}
+/*@include util-object.js@*/
 
 /*===
-true true true
-true true true
-true true true
-true true true
-true true true
-true true true
-true true true
+value=1,writable=true,enumerable=true,configurable=true
+value=2,writable=true,enumerable=true,configurable=true
+value=3,writable=true,enumerable=true,configurable=true
+value=1,writable=true,enumerable=true,configurable=true
+value=2,writable=true,enumerable=true,configurable=true
+value=3,writable=true,enumerable=true,configurable=true
+value=4,writable=true,enumerable=true,configurable=true
 ===*/
 
 /* array is initially dense (array part exists) */
 a = [1,2,3];
 
-printDesc(Object.getOwnPropertyDescriptor(a, '0'));
-printDesc(Object.getOwnPropertyDescriptor(a, '1'));
-printDesc(Object.getOwnPropertyDescriptor(a, '2'));
+printPropDesc(Object.getOwnPropertyDescriptor(a, '0'));
+printPropDesc(Object.getOwnPropertyDescriptor(a, '1'));
+printPropDesc(Object.getOwnPropertyDescriptor(a, '2'));
 
 /* force array to be sparse (array part is abandoned) */
 a[10000] = 4;
 
-printDesc(Object.getOwnPropertyDescriptor(a, '0'));
-printDesc(Object.getOwnPropertyDescriptor(a, '1'));
-printDesc(Object.getOwnPropertyDescriptor(a, '2'));
-printDesc(Object.getOwnPropertyDescriptor(a, '10000'));
+printPropDesc(Object.getOwnPropertyDescriptor(a, '0'));
+printPropDesc(Object.getOwnPropertyDescriptor(a, '1'));
+printPropDesc(Object.getOwnPropertyDescriptor(a, '2'));
+printPropDesc(Object.getOwnPropertyDescriptor(a, '10000'));

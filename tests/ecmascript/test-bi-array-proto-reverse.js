@@ -1,27 +1,6 @@
 // XXX: shared test utils
 
-function formatValue(v) {
-    if (typeof v === 'function') {
-        return 'function';
-    }
-    return typeof(v) + ':' + String(v);
-}
-
-function printDescriptor(obj, key) {
-    var pd = Object.getOwnPropertyDescriptor(obj, key);
-    if (!pd) {
-        print('key=' + key, 'nonexistent');
-        return;
-    }
-
-    print('key=' + key,
-          'value=' + formatValue(pd.value),
-          'writable=' + formatValue(pd.writable),
-          'enumerable=' + formatValue(pd.enumerable),
-          'configurable=' + formatValue(pd.configurable),
-          'get=' + formatValue(pd.get),
-          'set=' + formatValue(pd.set));
-}
+/*@include util-object.js@*/
 
 function dumpValue(x) {
     var i, n, clipped;
@@ -157,14 +136,14 @@ try {
 /*===
 attributes
 true true false false false true false true
-key=0 value=undefined:undefined writable=undefined:undefined enumerable=boolean:false configurable=boolean:true get=function set=function
-key=1 value=undefined:undefined writable=undefined:undefined enumerable=boolean:false configurable=boolean:true get=function set=function
-key=2 nonexistent
-key=3 nonexistent
-key=4 nonexistent
-key=5 value=undefined:undefined writable=undefined:undefined enumerable=boolean:true configurable=boolean:true get=function set=function
-key=6 nonexistent
-key=7 value=undefined:undefined writable=undefined:undefined enumerable=boolean:true configurable=boolean:true get=function set=function
+key: 0, desc: get=function,set=function,enumerable=false,configurable=true
+key: 1, desc: get=function,set=function,enumerable=false,configurable=true
+key: 2, desc: none
+key: 3, desc: none
+key: 4, desc: none
+key: 5, desc: get=function,set=function,enumerable=true,configurable=true
+key: 6, desc: none
+key: 7, desc: get=function,set=function,enumerable=true,configurable=true
 get 0
 get 7
 set 0 val7
@@ -172,18 +151,18 @@ set 7 val0
 get 1
 get 5
 true false true false false false true true
-key=0 value=undefined:undefined writable=undefined:undefined enumerable=boolean:false configurable=boolean:true get=function set=function
-key=1 nonexistent
-key=2 value=string:val5 writable=boolean:true enumerable=boolean:true configurable=boolean:true get=undefined:undefined set=undefined:undefined
-key=3 nonexistent
-key=4 nonexistent
-key=5 nonexistent
-key=6 value=string:val1 writable=boolean:true enumerable=boolean:true configurable=boolean:true get=undefined:undefined set=undefined:undefined
-key=7 value=undefined:undefined writable=undefined:undefined enumerable=boolean:true configurable=boolean:true get=function set=function
-key=0 value=string:foo writable=boolean:true enumerable=boolean:false configurable=boolean:true get=undefined:undefined set=undefined:undefined
-key=1 nonexistent
-key=0 value=string:foo writable=boolean:true enumerable=boolean:false configurable=boolean:true get=undefined:undefined set=undefined:undefined
-key=1 nonexistent
+key: 0, desc: get=function,set=function,enumerable=false,configurable=true
+key: 1, desc: none
+key: 2, desc: value="val5",writable=true,enumerable=true,configurable=true
+key: 3, desc: none
+key: 4, desc: none
+key: 5, desc: none
+key: 6, desc: value="val1",writable=true,enumerable=true,configurable=true
+key: 7, desc: get=function,set=function,enumerable=true,configurable=true
+key: 0, desc: value="foo",writable=true,enumerable=false,configurable=true
+key: 1, desc: none
+key: 0, desc: value="foo",writable=true,enumerable=false,configurable=true
+key: 1, desc: none
 ===*/
 
 print('attributes');
@@ -245,7 +224,7 @@ function attributesTest() {
           t.hasOwnProperty(6), t.hasOwnProperty(7));
 
     for (i = 0; i < 8; i++) {
-        printDescriptor(t, String(i));
+        printKeyPropDesc(t, String(i));
     }
 
     t.reverse();
@@ -256,7 +235,7 @@ function attributesTest() {
           t.hasOwnProperty(6), t.hasOwnProperty(7));
 
     for (i = 0; i < 8; i++) {
-        printDescriptor(t, String(i));
+        printKeyPropDesc(t, String(i));
     }
 
     // Here, '0' is not enumerable, but when it gets swapped to position 1,
@@ -269,11 +248,11 @@ function attributesTest() {
         '0': { value: 'foo', writable: true, enumerable: false, configurable: true },
         'length': { value: 2 }
     });
-    printDescriptor(t, '0');
-    printDescriptor(t, '1');
+    printKeyPropDesc(t, '0');
+    printKeyPropDesc(t, '1');
     [].reverse();
-    printDescriptor(t, '0');
-    printDescriptor(t, '1');
+    printKeyPropDesc(t, '0');
+    printKeyPropDesc(t, '1');
 }
 
 try {

@@ -268,7 +268,8 @@ DUK_INTERNAL void duk_hobject_enumerator_create(duk_hthread *thr, duk_small_uint
 	h_trap_result = duk_require_hobject(thr, -1);
 	DUK_UNREF(h_trap_result);
 
-	duk_proxy_ownkeys_postprocess(thr, h_proxy_target, enum_flags);
+	/* FIXME: enum_target vs. h_proxy_target? */
+	duk_proxy_ownkeys_postprocess(thr, (duk_hproxy *) enum_target, enum_flags);
 	/* -> [ ... enum_target res trap_result keys_array ] */
 
 	/* Copy cleaned up trap result keys into the enumerator object. */
