@@ -52,6 +52,10 @@ autodetect:
     check: DUK_F_EMSCRIPTEN
     include: platform_emscripten.h.in
   -
+    name: Android
+    check: DUK_F_ANDROID
+    include: platform_android.h.in
+  -
     name: Linux
     check: DUK_F_LINUX
     include: platform_linux.h.in
