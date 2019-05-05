@@ -42,13 +42,13 @@ example: |
        * the target stack allocation explicitly.
        */
       duk_require_stack(new_ctx, nargs);
-      duk_xmove_top(ctx, new_ctx, nargs);
+      duk_xmove_top(new_ctx, ctx, nargs);
 
       /* Call the function; new_ctx is now: [ func arg1 ... argN ]. */
       duk_call(new_ctx, nargs - 1);
 
       /* Return the function call result by copying it to the original stack. */
-      duk_xmove_top(new_ctx, ctx, 1);
+      duk_xmove_top(ctx, new_ctx, 1);
       return 1;
   }
 

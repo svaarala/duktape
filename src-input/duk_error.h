@@ -181,6 +181,10 @@
 #define DUK_ERROR_UNSUPPORTED(thr) do { \
 		DUK_ERROR((thr), DUK_ERR_ERROR, DUK_STR_UNSUPPORTED); \
 	} while (0)
+#define DUK_DCERROR_UNSUPPORTED(thr) do { \
+		DUK_ERROR_UNSUPPORTED((thr)); \
+		return 0; \
+	} while (0)
 #define DUK_ERROR_ERROR(thr,msg) do { \
 		duk_err_error((thr), DUK_FILE_MACRO, (duk_int_t) DUK_LINE_MACRO, (msg)); \
 	} while (0)
@@ -268,6 +272,10 @@
 	} while (0)
 #define DUK_ERROR_UNSUPPORTED(thr) do { \
 		duk_err_error((thr)); \
+	} while (0)
+#define DUK_DCERROR_UNSUPPORTED(thr) do { \
+		DUK_UNREF((thr)); \
+		return DUK_RET_ERROR; \
 	} while (0)
 #define DUK_ERROR_ERROR(thr,msg) do { \
 		duk_err_error((thr)); \

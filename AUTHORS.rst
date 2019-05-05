@@ -54,6 +54,11 @@ and agreed to irrevocably license their contributions under the Duktape
 * Michal Kasperek (https://github.com/michalkas)
 * Andrew Janke (https://github.com/apjanke)
 * Steve Fan (https://github.com/stevefan1999)
+* Edward Betts (https://github.com/edwardbetts)
+* Ozhan Duz (https://github.com/webfolderio)
+* Akos Kiss (https://github.com/akosthekiss)
+* TheBrokenRail (https://github.com/TheBrokenRail)
+* Jesse Doyle (https://github.com/jessedoyle)
 
 Other contributions
 ===================
@@ -94,6 +99,7 @@ bugs, provided ideas, etc; roughly in order of appearance):
 * Neil Kolban (https://github.com/nkolban)
 * Wilhelm Wanecek (https://github.com/wanecek)
 * Andrew Janke (https://github.com/apjanke)
+* Unamer (https://github.com/unamer)
 
 If you are accidentally missing from this list, send me an e-mail
 (``sami.vaarala@iki.fi``) and I'll fix the omission.

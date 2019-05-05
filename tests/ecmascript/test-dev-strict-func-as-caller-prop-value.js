@@ -35,6 +35,9 @@
  *      Arguments object even when the callee has formal arguments
  *      (which is supposed to enable the special behaviors for the
  *      [[ParameterMap]] handling and "caller").
+ *
+ *  ES2017 removes the arguments.caller thrower for strict argument objects,
+ *  test case has been updated to reflect this.
  */
 
 /*===
@@ -92,10 +95,12 @@ undefined
 4 TypeError
 strict arguments, no formals
 bar
-TypeError
+undefined
+pass in es2017
 strict arguments, with formals
 bar
-TypeError
+undefined
+pass in es2017
 ===*/
 
 var baseFunctionCreators = [
@@ -283,6 +288,7 @@ try {
 print('strict arguments, no formals');
 try {
     testArgumentsStrictNoFormals('foo', 'bar', 'quux');
+    print('pass in es2017');
 } catch (e) {
     print(e);
 }
@@ -290,6 +296,7 @@ try {
 print('strict arguments, with formals');
 try {
     testArgumentsStrictWithFormals('foo', 'bar', 'quux');
+    print('pass in es2017');
 } catch (e) {
     print(e);
 }

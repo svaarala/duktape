@@ -24,5 +24,6 @@ tags:
 
 seealso:
   - duk_push_object
+  - duk_push_bare_array
 
 introduced: 2.0.0

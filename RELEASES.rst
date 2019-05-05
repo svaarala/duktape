@@ -3227,10 +3227,7 @@ Miscellaneous:
 * Fix potential dangling pointer use in Duktape thread termination handling;
   the dangling pointer could cause unsafe memory behavior (GH-1845, GH-1868)
 
-Planned
-=======
-
-2.3.0 (XXXX-XX-XX)
+2.3.0 (2018-08-04)
 ------------------
 
 * When C++ exception support is enabled use a separate duk_fatal_exception
@@ -3251,6 +3248,9 @@ Planned
 * Add support for Symbol.isConcatSpreadable (@@isConcatSpreadable) in
   Array.prototype.concat() (GH-1823)
 
+* Add support for Symbol.toPrimitive (@@toPrimitive) in ToPrimitive()
+  internal algorithm and duk_to_primitive() API call (GH-1825)
+
 * Invoke Proxy 'has' trap in Array.prototype.concat() when inspecting the
   elements of the Proxy target (GH-1823)
 
@@ -3260,9 +3260,6 @@ Planned
 * Remove DUK_USE_NONSTD_ARRAY_MAP_TRAILER because ES5.0/ES5.1 behavior
   actually did match the "non-standard" behavior provided by the option
   (GH-1823)
-
-* Add support for Symbol.toPrimitive (@@toPrimitive) in ToPrimitive()
-  internal algorithm and duk_to_primitive() API call (GH-1825)
 
 * Add duk_random() to allow C code access to the same random number source
   as ECMAScript code (GH-1815)
@@ -3338,6 +3335,8 @@ Planned
 
 * Add Makefile.jsoncbor to the distributable (GH-1885)
 
+* Makefile.sharedlibrary portability improvements (GH-1922, GH-1923)
+
 * Change spelling from ECMAScript to ECMAScript throughout the internal source
   code; as far as external behavior is concerned this only affects a few
   debug prints (GH-1894)
@@ -3364,6 +3363,9 @@ Planned
 
 * Fix 'defined but not used' warning for Windows (GH-1775)
 
+* Fix potential uninitialized data use when Windows Date provider
+  FileTimeToSystemTime() or FileTimeToLocalFileTime() failed (GH-1953)
+
 * Fix some Clang warnings by avoiding undefined behavior by default, define
   DUK_USE_ALLOW_UNDEFINED_BEHAVIOR to reduce the explicit undefined behavior
   checks for better footprint/performance (GH-1777, GH-1795, GH-1796, GH-1797,
@@ -3387,6 +3389,48 @@ Planned
   incorrectly (see
   https://github.com/svaarala/duktape/blob/master/misc/clang_aliasing.c),
   and the workaround is to use unpacked duk_tval prior to Clang 5.0 (GH-1764)
+
+Planned
+=======
+
+2.4.0 (XXXX-XX-XX)
+------------------
+
+* Add duk_push_bare_array() to push an Array instance which doesn't
+  inherit from anything (GH-2064)
+
+* Enable Symbol built-in by default (DUK_USE_SYMBOL_BUILTIN) (GH-1969)
+
+* Remove arguments.caller for strict argument objects to match revised
+  ES2017 behavior (GH-2009)
+
+* When using Proxy wrapping in console extra, don't return a fake NOP
+  function for console.toJSON to avoid confusing JX serialization of the
+  console object (GH-2052, GH-2054, GH-2055)
+
+* Disable Proxy wrapper for 'duk' console binding because it is no longer
+  the preferred console implementation method (GH-2055)
+
+* Fix Object.getOwnPropertySymbols() behavior for the virtual properties
+  of arrays, Strings, and buffer objects: string keys were incorrectly
+  included in the result (GH-1978, GH-1979)
+
+* Fix compile error (missing DUK_DCERROR_UNSUPPORTED macro) when compiling
+  with RegExp support disabled (GH-1990, GH-1991)
+
+* Fix configure.py -D option to accept parenthesized macros, e.g.
+  '-DFOO(bar)=quux', which were used in some examples but were not
+  actually functional (GH-2013, GH-2014)
+
+* Fix several assertion failures with possible memory unsafe behavior
+  (GH-2025, GH-2026, GH-2031, GH-2033, GH-2035, GH-2036, GH-2065)
+
+* Trivial fixes and cleanups: Windows Date provider return code check
+  consistency (GH-1956)
+
+* Various portability fixes (GH-1931, GH-1976)
+
+* Add duk_to_stacktrace() and duk_safe_to_stacktrace() to make it easier to get stacktraces in C
 
 3.0.0 (XXXX-XX-XX)
 ------------------

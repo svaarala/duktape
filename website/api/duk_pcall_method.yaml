@@ -23,8 +23,8 @@ example: |
 
   duk_int_t rc;
 
-  duk_push_string(ctx, "function(x,y) { print('this:', this); "
-                       "print(x,y); return x+y; }");
+  duk_push_string(ctx, "(function(x,y) { print('this:', this); "
+                       "print(x,y); return x+y; })");
   duk_eval(ctx);  /* -> [ ... func ] */
   duk_push_int(ctx, 123);
   duk_push_int(ctx, 2);
