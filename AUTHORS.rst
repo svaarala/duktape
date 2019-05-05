@@ -59,6 +59,7 @@ and agreed to irrevocably license their contributions under the Duktape
 * Akos Kiss (https://github.com/akosthekiss)
 * TheBrokenRail (https://github.com/TheBrokenRail)
 * Jesse Doyle (https://github.com/jessedoyle)
+* Gero Kuehn (https://github.com/dc6jgk)
 
 Other contributions
 ===================
