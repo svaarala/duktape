@@ -3428,6 +3428,8 @@ Planned
 * Trivial fixes and cleanups: Windows Date provider return code check
   consistency (GH-1956)
 
+* Fix MSVC ARM64 detection (GH-2078)
+
 * Various portability fixes (GH-1931, GH-1976)
 
 * Add duk_to_stacktrace() and duk_safe_to_stacktrace() to make it easier to get stacktraces in C
