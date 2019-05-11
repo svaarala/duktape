@@ -7,12 +7,19 @@ Hello world test
 
 Quick hello world test::
 
-  $ ./emcc --memory-init-file 0 tests/hello_world.cpp -o /tmp/test.js
+  $ ./emcc --memory-init-file 0 \
+          -s WASM=0 -s POLYFILL_OLD_MATH_FUNCTIONS=1 \
+          tests/hello_world.cpp -o /tmp/test.js
   $ duk /tmp/test.js
 
 Tweaks needed:
 
 * ``--memory-init-file 0``: don't use an external memory file.
+
+* ``-s WASM=0``: disable WebAssembly support, as Duktape doesn't support it.
+
+* ``-s POLYFILL_OLD_MATH_FUNCTIONS``: don't assume post-ES5.1 Math functions
+  like Math.fround().
 
 Normally this suffices.  If you're running Duktape with a small amount of
 memory (e.g. when running the Duktape command line tool with the ``-r``

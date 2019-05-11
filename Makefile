@@ -204,9 +204,9 @@ endif
 # Reducing the TOTAL_MEMORY and TOTAL_STACK values is useful if you run
 # Duktape cmdline with resource limits (i.e. "duk -r test.js").
 #EMCCOPTS = -s TOTAL_MEMORY=2097152 -s TOTAL_STACK=524288 --memory-init-file 0
-EMCCOPTS = -O2 -std=c99 -Wall --memory-init-file 0
-EMCCOPTS_DUKVM = -O2 -std=c99 -Wall --memory-init-file 0 -DEMSCRIPTEN
-EMCCOPTS_DUKWEB_EXPORT = -s EXPORTED_FUNCTIONS='["_dukweb_is_open", "_dukweb_open","_dukweb_close","_dukweb_eval"]'
+EMCCOPTS = -O2 -std=c99 -Wall --memory-init-file 0 -s WASM=0 -s POLYFILL_OLD_MATH_FUNCTIONS
+EMCCOPTS_DUKVM = -O2 -std=c99 -Wall --memory-init-file 0 -DEMSCRIPTEN -s WASM=0
+EMCCOPTS_DUKWEB_EXPORT = -s EXPORTED_FUNCTIONS='["_dukweb_is_open", "_dukweb_open","_dukweb_close","_dukweb_eval"]' -s 'EXTRA_EXPORTED_RUNTIME_METHODS=["ccall","cwrap"]'
 EMDUKOPTS = -s TOTAL_MEMORY=268435456 -DDUK_CMDLINE_PRINTALERT_SUPPORT
 EMDUKOPTS += -DEMSCRIPTEN  # enable stdin workaround in duk_cmdline.c
 
@@ -848,8 +848,10 @@ underscore:
 lodash:
 	# http://lodash.com/
 	# https://github.com/lodash
-	# Master is OK because not a critical dependency
-	$(GIT) clone --depth 1 https://github.com/lodash/lodash.git
+	# Use pre-built .js file.
+	mkdir lodash
+	cd lodash && wget https://raw.githubusercontent.com/lodash/lodash/4.17.10-npm/lodash.js -O lodash.js
+	#$(GIT) clone --depth 1 https://github.com/lodash/lodash.git
 3883a2e9063b0a5f2705bdac3263577a03913c94.zip:
 	# http://test262.ecmascript.org/
 	# https://github.com/tc39/test262
