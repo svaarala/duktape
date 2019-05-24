@@ -61,6 +61,7 @@ and agreed to irrevocably license their contributions under the Duktape
 * Jesse Doyle (https://github.com/jessedoyle)
 * Gero Kuehn (https://github.com/dc6jgk)
 * James Swift (https://github.com/phraemer)
+* Luis de Bethencourt (https://github.com/luisbg)
 
 Other contributions
 ===================
