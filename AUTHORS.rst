@@ -62,6 +62,7 @@ and agreed to irrevocably license their contributions under the Duktape
 * Gero Kuehn (https://github.com/dc6jgk)
 * James Swift (https://github.com/phraemer)
 * Luis de Bethencourt (https://github.com/luisbg)
+* Ian Whyman (https://github.com/v00d00)
 
 Other contributions
 ===================
