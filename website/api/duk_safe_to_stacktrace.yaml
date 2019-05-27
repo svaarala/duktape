@@ -7,35 +7,34 @@ stack: |
   [ ... val! ... ] -> [ ... val.stack! ... ]
 
 summary: |
-  <p>Like <code><a href="#duk_safe_to_string">duk_safe_to_string()</a></code> but
-  instead of converting a value to a string, it converts an error to a stacktrace.
-  If the object is not an error, it will fallback to duk_safe_to_string(). If there
-  is an error when reading .stack, it will return the stacktrace of that error.</p>
+  <p>Like <code><a href="#duk_to_stacktrace">duk_to_stacktrace()</a></code>
+  but if the coercion fails, duk_to_stacktrace() is applied to the coercion
+  error.  If that also fails, a fixed pre-allocated error string <code>"Error"</code>
+  is used instead (because the string is pre-allocated, this cannot fail due to
+  out-of-memory).</p>
+
+  <p>ECMAScript equivalent:</p>
+  <pre class="ecmascript-code">
+  function duk_safe_to_stacktrace(val) {
+      try {
+          return duk_to_stacktrace(val);
+      } catch (e) {
+          try {
+              return duk_to_stacktrace(e);
+          } catch (e2) {
+              return 'Error';
+          }
+      }
+  }
+  </pre>
 
 example: |
-  /* Throw Error and print stacktrace */
-  duk_eval_string(ctx, "function err() { throw new Error(); }; err();");
-  printf("stacktrace: %s\n", duk_safe_to_stacktrace(ctx, -1));  /* -> "Error at err (eval:1)" */
-  duk_pop(ctx);
-
-  /* Equivalent ECMAScript */
-  try {
-    function err() {
-      throw new Error();
-    }
-    err();
-  } catch (e) {
-    if (e instanceof Error) {
-      var stack = e.stack;
-      if (stack) {
-        console.log(stack);
-      } else {
-        console.log(e.toString());
-      }
-    } else {
-      console.log(e.toString());
-    }
+  if (duk_peval_string(ctx, "1 + 2 +") != 0) {  /* => SyntaxError */
+      printf("failed: %s\n", duk_safe_to_stacktrace(ctx, -1));
+  } else {
+      printf("success\n");
   }
+  duk_pop(ctx);
 
 tags:
   - stack

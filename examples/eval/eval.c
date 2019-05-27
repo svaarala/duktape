@@ -24,7 +24,7 @@ int main(int argc, char *argv[]) {
 	duk_context *ctx;
 	int i;
 	const char *res;
-	int rc;
+	duk_int_t rc;
 
 	if (argc < 2) {
 		usage_exit();

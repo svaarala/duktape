@@ -18,6 +18,36 @@ summary: |
   <code>printf()</code>.  The only uncaught errors possible are internal
   errors which trigger fatal error handling anyway.</p>
 
+  <p>ECMAScript equivalent:</p>
+  <pre class="ecmascript-code">
+  function duk_safe_to_string(val) {
+      function tostr(x) {
+          try {
+              return String(x);
+          } catch (e) {
+              return e;
+          }
+      }
+
+      // Initial coercion attempt.
+      var t = tostr(val);
+      if (typeof t === 'string') {
+          // ToString() coercion succeeded with a string result, or
+          // coercion failed with a plain string error value; return as is.
+          return t;
+      }
+
+      // Result was an Error or a non-string, try to coerce again.
+      t = tostr(t);
+      if (typeof t === 'string') {
+          return t;
+      }
+
+      // Still an Error or a non-string, return fixed value.
+      return 'Error';
+  }
+  </pre>
+
   <div class="note">
   While the string coercion is safe from error throws, it may have side
   effects in the current implementation.  In particular, the string coercion
