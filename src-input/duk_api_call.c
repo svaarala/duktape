@@ -97,18 +97,16 @@ DUK_LOCAL void duk__call_prop_prep_stack(duk_hthread *thr, duk_idx_t normalized_
 
 #if defined(DUK_USE_VERBOSE_ERRORS)
 	if (DUK_UNLIKELY(!duk_is_callable(thr, -1))) {
-		duk_tval *tv_targ;
 		duk_tval *tv_base;
 		duk_tval *tv_key;
 
-		tv_targ = DUK_GET_TVAL_NEGIDX(thr, -1);
+		/* tv_targ is passed on stack top (at index -1). */
 		tv_base = DUK_GET_TVAL_POSIDX(thr, normalized_obj_idx);
 		tv_key = DUK_GET_TVAL_NEGIDX(thr, -nargs - 2);
-		DUK_ASSERT(tv_targ >= thr->valstack_bottom && tv_targ < thr->valstack_top);
 		DUK_ASSERT(tv_base >= thr->valstack_bottom && tv_base < thr->valstack_top);
 		DUK_ASSERT(tv_key >= thr->valstack_bottom && tv_key < thr->valstack_top);
 
-		duk_call_setup_propcall_error(thr, tv_targ, tv_base, tv_key);
+		duk_call_setup_propcall_error(thr, tv_base, tv_key);
 	}
 #endif
 

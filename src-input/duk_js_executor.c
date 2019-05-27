@@ -4152,7 +4152,7 @@ DUK_LOCAL DUK_NOINLINE DUK_HOT void duk__js_execute_bytecode_inner(duk_hthread *
 			 * arguments to deal with potentially changed \
 			 * valstack base pointer! \
 			 */ \
-			duk_call_setup_propcall_error(thr, tv__targ, (barg), (carg)); \
+			duk_call_setup_propcall_error(thr, (barg), (carg)); \
 		} \
 		DUK__REPLACE_TOP_A_BREAK(); \
 	}
