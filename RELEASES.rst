@@ -3417,6 +3417,9 @@ Planned
 * Update UnicodeData.txt and SpecialCasing.txt used for building internal
   Unicode control data to Unicode version 12.1.0 (GH-2085)
 
+* Fix incorrect handling of zero-length dynamic buffer in base-64 fast path
+  decoder (GH-2027, GH-2088)
+
 * Fix Object.getOwnPropertySymbols() behavior for the virtual properties
   of arrays, Strings, and buffer objects: string keys were incorrectly
   included in the result (GH-1978, GH-1979)
