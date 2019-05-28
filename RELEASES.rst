@@ -3428,6 +3428,10 @@ Planned
   '-DFOO(bar)=quux', which were used in some examples but were not
   actually functional (GH-2013, GH-2014)
 
+* Fix error handling corner case when a property-based call (foo.bar())
+  caused an error and Duktape.errCreate returned a callable value (such
+  as Float64Array); this caused an assertion failure (GH-2061, GH-2087)
+
 * Fix several assertion failures with possible memory unsafe behavior
   (GH-2025, GH-2026, GH-2031, GH-2033, GH-2035, GH-2036, GH-2065)
 

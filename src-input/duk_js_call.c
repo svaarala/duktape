@@ -1318,14 +1318,17 @@ DUK_LOCAL duk_hobject *duk__resolve_target_func_and_this_binding(duk_hthread *th
 
 #if defined(DUK_USE_VERBOSE_ERRORS)
 	/* GETPROPC delayed error handling: when target is not callable,
-	 * GETPROPC replaces idx_func+0 with an Error (non-callable) with
-	 * a hidden Symbol to signify it's to be thrown as is here.  The
+	 * GETPROPC replaces idx_func+0 with a non-callable wrapper object
+	 * with a hidden Symbol to signify it's to be handled here.  If
+	 * found, unwrap the original Error and throw it as is here.  The
 	 * hidden Symbol is only checked as an own property, not inherited
 	 * (which would be dangerous).
 	 */
 	if (DUK_TVAL_IS_OBJECT(tv_func)) {
-		if (duk_hobject_find_existing_entry_tval_ptr(thr->heap, DUK_TVAL_GET_OBJECT(tv_func), DUK_HTHREAD_STRING_INT_TARGET(thr)) != NULL) {
-			duk_push_tval(thr, tv_func);
+		duk_tval *tv_wrap = duk_hobject_find_existing_entry_tval_ptr(thr->heap, DUK_TVAL_GET_OBJECT(tv_func), DUK_HTHREAD_STRING_INT_TARGET(thr));
+		if (tv_wrap != NULL) {
+			DUK_DD(DUK_DDPRINT("delayed error from GETPROPC: %!T", tv_wrap));
+			duk_push_tval(thr, tv_wrap);
 			(void) duk_throw(thr);
 			DUK_WO_NORETURN(return NULL;);
 		}
@@ -2825,58 +2828,71 @@ DUK_INTERNAL duk_int_t duk_handle_safe_call(duk_hthread *thr,
 
 /*
  *  Property-based call (foo.noSuch()) error setup: replace target function
- *  on stack top with a specially tagged (hidden Symbol) error which gets
- *  thrown in call handling at the proper spot to follow ECMAScript semantics.
+ *  on stack top with a hidden Symbol tagged non-callable wrapper object
+ *  holding the error.  The error gets thrown in call handling at the
+ *  proper spot to follow ECMAScript semantics.
  */
 
 #if defined(DUK_USE_VERBOSE_ERRORS)
-DUK_INTERNAL DUK_NOINLINE DUK_COLD void duk_call_setup_propcall_error(duk_hthread *thr, duk_tval *tv_targ, duk_tval *tv_base, duk_tval *tv_key) {
-	const char *str1, *str2, *str3;
+DUK_INTERNAL DUK_NOINLINE DUK_COLD void duk_call_setup_propcall_error(duk_hthread *thr, duk_tval *tv_base, duk_tval *tv_key) {
+	const char *str_targ, *str_key, *str_base;
 	duk_idx_t entry_top;
 
 	entry_top = duk_get_top(thr);
 
-	/* Must stabilize pointers first.  Argument convention is a bit awkward,
-	 * it comes from the executor call site where some arguments may not be
-	 * on the value stack (consts).
-	 */
+	/* [ <nargs> target ] */
+
+	/* Must stabilize pointers first.  tv_targ is already on stack top. */
 	duk_push_tval(thr, tv_base);
 	duk_push_tval(thr, tv_key);
-	duk_push_tval(thr, tv_targ);
 
 	DUK_GC_TORTURE(thr->heap);
 
-	/* We only push an error, replacing the call target (at idx_func)
-	 * with the error to ensure side effects come out correctly:
+	duk_push_bare_object(thr);
+
+	/* [ <nargs> target base key {} ] */
+
+	/* We only push a wrapped error, replacing the call target (at
+	 * idx_func) with the error to ensure side effects come out
+	 * correctly:
 	 * - Property read
 	 * - Call argument evaluation
-	 * - Callability check and error thrown.
+	 * - Callability check and error thrown
 	 *
-	 * A hidden Symbol on the error object pushed here is used by
+	 * A hidden Symbol on the wrapper object pushed above is used by
 	 * call handling to figure out the error is to be thrown as is.
 	 * It is CRITICAL that the hidden Symbol can never occur on a
 	 * user visible object that may get thrown.
 	 */
 
 #if defined(DUK_USE_PARANOID_ERRORS)
-	str1 = duk_get_type_name(thr, -1);
-	str2 = duk_get_type_name(thr, -2);
-	str3 = duk_get_type_name(thr, -3);
-	duk_push_error_object(thr, DUK_ERR_TYPE_ERROR | DUK_ERRCODE_FLAG_NOBLAME_FILELINE, "%s not callable (property %s of %s)", str1, str2, str3);
+	str_targ = duk_get_type_name(thr, -4);
+	str_key = duk_get_type_name(thr, -2);
+	str_base = duk_get_type_name(thr, -3);
+	duk_push_error_object(thr,
+	                      DUK_ERR_TYPE_ERROR | DUK_ERRCODE_FLAG_NOBLAME_FILELINE,
+	                      "%s not callable (property %s of %s)", str_targ, str_key, str_base);
+	duk_put_prop_stridx(thr, -2, DUK_STRIDX_INT_TARGET);  /* Marker property, reuse _Target. */
+	/* [ <nargs> target base key { _Target: error } ] */
+	duk_replace(thr, entry_top - 1);
 #else
-	str1 = duk_push_string_readable(thr, -1);
-	str2 = duk_push_string_readable(thr, -3);
-	str3 = duk_push_string_readable(thr, -5);
-	duk_push_error_object(thr, DUK_ERR_TYPE_ERROR | DUK_ERRCODE_FLAG_NOBLAME_FILELINE, "%s not callable (property %s of %s)", str1, str2, str3);
+	str_targ = duk_push_string_readable(thr, -4);
+	str_key = duk_push_string_readable(thr, -3);
+	str_base = duk_push_string_readable(thr, -5);
+	duk_push_error_object(thr,
+	                      DUK_ERR_TYPE_ERROR | DUK_ERRCODE_FLAG_NOBLAME_FILELINE,
+	                      "%s not callable (property %s of %s)", str_targ, str_key, str_base);
+	/* [ <nargs> target base key {} str_targ str_key str_base error ] */
+	duk_put_prop_stridx(thr, -5, DUK_STRIDX_INT_TARGET);  /* Marker property, reuse _Target. */
+	/* [ <nargs> target base key { _Target: error } str_targ str_key str_base ] */
+	duk_swap(thr, -4, entry_top - 1);
+	/* [ <nargs> { _Target: error } base key target str_targ str_key str_base ] */
 #endif
 
-	duk_push_true(thr);
-	duk_put_prop_stridx(thr, -2, DUK_STRIDX_INT_TARGET);  /* Marker property, reuse _Target. */
-
-	/* [ <nregs> propValue <variable> error ] */
-	duk_replace(thr, entry_top - 1);
+	/* [ <nregs> { _Target: error } <variable> */
 	duk_set_top(thr, entry_top);
 
+	/* [ <nregs> { _Target: error } */
 	DUK_ASSERT(!duk_is_callable(thr, -1));  /* Critical so that call handling will throw the error. */
 }
 #endif  /* DUK_USE_VERBOSE_ERRORS */
