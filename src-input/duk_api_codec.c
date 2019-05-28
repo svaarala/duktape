@@ -14,23 +14,34 @@
 
 /* Shared handling for encode/decode argument.  Fast path handling for
  * buffer and string values because they're the most common.  In particular,
- * avoid creating a temporary string or buffer when possible.
+ * avoid creating a temporary string or buffer when possible.  Return value
+ * is guaranteed to be non-NULL, even for zero length input.
  */
 DUK_LOCAL const duk_uint8_t *duk__prep_codec_arg(duk_hthread *thr, duk_idx_t idx, duk_size_t *out_len) {
-	void *ptr;
+	const void *def_ptr = (const void *) out_len;  /* Any non-NULL pointer will do. */
+	const void *ptr;
 	duk_bool_t isbuffer;
 
+	DUK_ASSERT(out_len != NULL);
+	DUK_ASSERT(def_ptr != NULL);
 	DUK_ASSERT(duk_is_valid_index(thr, idx));  /* checked by caller */
 
-	/* XXX: with def_ptr set to a stack related pointer, isbuffer could
-	 * be removed from the helper?
-	 */
-	ptr = duk_get_buffer_data_raw(thr, idx, out_len, NULL /*def_ptr*/, 0 /*def_size*/, 0 /*throw_flag*/, &isbuffer);
+	ptr = (const void *) duk_get_buffer_data_raw(thr, idx, out_len, NULL /*def_ptr*/, 0 /*def_size*/, 0 /*throw_flag*/, &isbuffer);
 	if (isbuffer) {
-		DUK_ASSERT(*out_len == 0 || ptr != NULL);
-		return (const duk_uint8_t *) ptr;
+		DUK_ASSERT(ptr != NULL || *out_len == 0U);
+		if (DUK_UNLIKELY(ptr == NULL)) {
+			ptr = def_ptr;
+		}
+		DUK_ASSERT(ptr != NULL);
+	} else {
+		/* For strings a non-NULL pointer is always guaranteed because
+		 * at least a NUL will be present.
+		 */
+		ptr = (const void *) duk_to_lstring(thr, idx, out_len);
+		DUK_ASSERT(ptr != NULL);
 	}
-	return (const duk_uint8_t *) duk_to_lstring(thr, idx, out_len);
+	DUK_ASSERT(ptr != NULL);
+	return (const duk_uint8_t *) ptr;
 }
 
 /*
@@ -273,6 +284,8 @@ DUK_LOCAL duk_bool_t duk__base64_decode_helper(const duk_uint8_t *src, duk_size_
 	const duk_uint8_t *p_end;
 	const duk_uint8_t *p_end_safe;
 	duk_uint8_t *q;
+
+	DUK_ASSERT(src != NULL);  /* Required by pointer arithmetic below, which fails for NULL. */
 
 	p = src;
 	p_end = src + srclen;
@@ -609,7 +622,7 @@ DUK_EXTERNAL const char *duk_base64_encode(duk_hthread *thr, duk_idx_t idx) {
 
 	idx = duk_require_normalize_index(thr, idx);
 	src = duk__prep_codec_arg(thr, idx, &srclen);
-	/* Note: for srclen=0, src may be NULL */
+	DUK_ASSERT(src != NULL);
 
 	/* Compute exact output length.  Computation must not wrap; this
 	 * limit works for 32-bit size_t:
@@ -645,6 +658,7 @@ DUK_EXTERNAL void duk_base64_decode(duk_hthread *thr, duk_idx_t idx) {
 
 	idx = duk_require_normalize_index(thr, idx);
 	src = duk__prep_codec_arg(thr, idx, &srclen);
+	DUK_ASSERT(src != NULL);
 
 	/* Round up and add safety margin.  Avoid addition before division to
 	 * avoid possibility of wrapping.  Margin includes +3 for rounding up,
@@ -704,7 +718,7 @@ DUK_EXTERNAL const char *duk_hex_encode(duk_hthread *thr, duk_idx_t idx) {
 
 	idx = duk_require_normalize_index(thr, idx);
 	inp = duk__prep_codec_arg(thr, idx, &len);
-	DUK_ASSERT(inp != NULL || len == 0);
+	DUK_ASSERT(inp != NULL);
 
 	/* Fixed buffer, no zeroing because we'll fill all the data. */
 	buf = (duk_uint8_t *) duk_push_fixed_buffer_nozero(thr, len * 2);
@@ -761,7 +775,7 @@ DUK_EXTERNAL void duk_hex_decode(duk_hthread *thr, duk_idx_t idx) {
 
 	idx = duk_require_normalize_index(thr, idx);
 	inp = duk__prep_codec_arg(thr, idx, &len);
-	DUK_ASSERT(inp != NULL || len == 0);
+	DUK_ASSERT(inp != NULL);
 
 	if (len & 0x01) {
 		goto type_error;
