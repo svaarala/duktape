@@ -6238,6 +6238,7 @@ DUK_INTERNAL void duk_pop_3_nodecref_unsafe(duk_hthread *thr) {
  */
 
 /* XXX: pack index range? array index offset? */
+/* XXX: need ability to pack into a bare array? */
 DUK_INTERNAL void duk_pack(duk_hthread *thr, duk_idx_t count) {
 	duk_tval *tv_src;
 	duk_tval *tv_dst;
@@ -6266,6 +6267,7 @@ DUK_INTERNAL void duk_pack(duk_hthread *thr, duk_idx_t count) {
 
 	tv_dst = duk_push_harray_with_size_outptr(thr, (duk_uint32_t) count);  /* XXX: uninitialized would be OK */
 	DUK_ASSERT(count == 0 || tv_dst != NULL);
+	DUK_ASSERT(!duk_is_bare_object(thr, -1));
 
 	/* Copy value stack values directly to the array part without
 	 * any refcount updates: net refcount changes are zero.

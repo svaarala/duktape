@@ -194,9 +194,13 @@ DUK_LOCAL void duk__add_traceback(duk_hthread *thr, duk_hthread *thr_callstack, 
 		arr_size += 2;
 	}
 
-	/* XXX: uninitialized would be OK */
+	/* XXX: Uninitialized would be OK.  Maybe add internal primitive to
+	 * push bare duk_harray with size?
+	 */
 	DUK_D(DUK_DPRINT("preallocated _Tracedata to %ld items", (long) arr_size));
 	tv = duk_push_harray_with_size_outptr(thr, (duk_uint32_t) arr_size);
+	duk_clear_prototype(thr, -1);
+	DUK_ASSERT(duk_is_bare_object(thr, -1));
 	DUK_ASSERT(arr_size == 0 || tv != NULL);
 
 	/* Compiler SyntaxErrors (and other errors) come first, and are
@@ -273,6 +277,7 @@ DUK_LOCAL void duk__add_traceback(duk_hthread *thr, duk_hthread *thr_callstack, 
 		DUK_ASSERT(a != NULL);
 		DUK_ASSERT((duk_uint32_t) (tv - DUK_HOBJECT_A_GET_BASE(thr->heap, (duk_hobject *) a)) == a->length);
 		DUK_ASSERT(a->length == (duk_uint32_t) arr_size);
+		DUK_ASSERT(duk_is_bare_object(thr, -1));
 	}
 #endif
 

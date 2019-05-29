@@ -3417,6 +3417,11 @@ Planned
 * Update UnicodeData.txt and SpecialCasing.txt used for building internal
   Unicode control data to Unicode version 12.1.0 (GH-2085)
 
+* Use bare objects/arrays in more places internally: variable map and
+  formals array of functions loaded from bytecode (to match behavior of
+  compiled functions), context dump array for duk_push_context_dump(),
+  and error tracedata (GH-2089)
+
 * Fix incorrect handling of zero-length dynamic buffer in base-64 fast path
   decoder (GH-2027, GH-2088)
 

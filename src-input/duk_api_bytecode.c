@@ -626,9 +626,11 @@ static duk_uint8_t *duk__load_func(duk_hthread *thr, duk_uint8_t *p, duk_uint8_t
 
 	if (DUK_HOBJECT_HAS_CONSTRUCTABLE((duk_hobject *) h_fun)) {
 		/* Restore empty external .prototype only for constructable
-		 * functions.
+		 * functions.  The prototype object should inherit from
+		 * Object.prototype.
 		 */
 		duk_push_object(thr);
+		DUK_ASSERT(!duk_is_bare_object(thr, -1));
 		duk_dup_m2(thr);
 		duk_xdef_prop_stridx_short(thr, -2, DUK_STRIDX_CONSTRUCTOR, DUK_PROPDESC_FLAGS_WC);  /* func.prototype.constructor = func */
 		duk_compact_m1(thr);
@@ -640,7 +642,7 @@ static duk_uint8_t *duk__load_func(duk_hthread *thr, duk_uint8_t *p, duk_uint8_t
 	duk_xdef_prop_stridx_short(thr, -2, DUK_STRIDX_INT_PC2LINE, DUK_PROPDESC_FLAGS_WC);
 #endif  /* DUK_USE_PC2LINE */
 
-	duk_push_object(thr);  /* _Varmap */
+	duk_push_bare_object(thr);  /* _Varmap */
 	for (;;) {
 		/* XXX: awkward */
 		p = duk__load_string_raw(thr, p);
@@ -660,7 +662,7 @@ static duk_uint8_t *duk__load_func(duk_hthread *thr, duk_uint8_t *p, duk_uint8_t
 	 */
 	arr_limit = DUK_RAW_READ_U32_BE(p);
 	if (arr_limit != DUK__NO_FORMALS) {
-		duk_push_array(thr);  /* _Formals */
+		duk_push_bare_array(thr);  /* _Formals */
 		for (arr_idx = 0; arr_idx < arr_limit; arr_idx++) {
 			p = duk__load_string_raw(thr, p);
 			duk_put_prop_index(thr, -2, arr_idx);

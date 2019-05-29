@@ -16,6 +16,7 @@ true
 true
 undefined
 object 2 123 234 undefined
+true
 VALUE
 - .call(), .apply(), Reflect.apply()
 apply trap
@@ -23,18 +24,21 @@ true
 true
 myThisCall
 object 4 123 234 345
+true
 VALUE
 apply trap
 true
 true
 myThisApply
 object 2 123 234 undefined
+true
 VALUE
 apply trap
 true
 true
 myThisReflectApply
 object 2 123 234 undefined
+true
 VALUE
 - bound function as trap
 function
@@ -111,6 +115,7 @@ function test() {
             print(targ === target);
             print(thisArg);
             print(typeof argArray, argArray.length, argArray[0], argArray[1], argArray[2]);
+            print(Object.getPrototypeOf(argArray) === Array.prototype);
             return 'VALUE';
         }
     };
