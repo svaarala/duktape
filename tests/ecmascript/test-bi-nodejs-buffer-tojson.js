@@ -7,7 +7,9 @@
 /*===
 node.js Buffer toJSON() test
 object string Buffer object [65,66,67]
+true
 object string Buffer object []
+true
 {"foo":"bar","my_buffer":{"type":"Buffer","data":[241,242,243]}}
 {"foo":"bar","my_buffer":{"type":"Buffer","data":[]}}
 still here
@@ -25,10 +27,12 @@ function nodejsBufferToJsonTest() {
     b[0] = 0x41; b[1] = 0x42; b[2] = 0x43;
     v = b.toJSON();
     print(typeof v, typeof v.type, v.type, typeof v.data, JSON.stringify(v.data));
+    print(Object.getPrototypeOf(v.data) === Array.prototype);
 
     b = new Buffer(0);
     v = b.toJSON();
     print(typeof v, typeof v.type, v.type, typeof v.data, JSON.stringify(v.data));
+    print(Object.getPrototypeOf(v.data) === Array.prototype);
 
     // As part of JSON.stringify()
 
