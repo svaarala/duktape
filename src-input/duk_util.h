@@ -159,24 +159,20 @@ struct duk_bufwriter_ctx {
 		                 (const char *) (bw_ctx)->p_base, \
 		                 (duk_size_t) ((bw_ctx)->p - (bw_ctx)->p_base)); \
 	} while (0)
+
 /* Pointers may be NULL for a while when 'buf' size is zero and before any
  * ENSURE calls have been made.  Once an ENSURE has been made, the pointers
  * are required to be non-NULL so that it's always valid to use memcpy() and
  * memmove(), even for zero size.
  */
-#define DUK_BW_ASSERT_VALID_EXPR(thr,bw_ctx) \
-	DUK_ASSERT_EXPR((bw_ctx) != NULL && \
-	                (bw_ctx)->buf != NULL && \
-			((DUK_HBUFFER_DYNAMIC_GET_SIZE((bw_ctx)->buf) == 0) || \
-				((bw_ctx)->p != NULL && \
-		                 (bw_ctx)->p_base != NULL && \
-		                 (bw_ctx)->p_limit != NULL && \
-		                 (bw_ctx)->p_limit >= (bw_ctx)->p_base && \
-		                 (bw_ctx)->p >= (bw_ctx)->p_base && \
-		                 (bw_ctx)->p <= (bw_ctx)->p_limit)))
-#define DUK_BW_ASSERT_VALID(thr,bw_ctx) do { \
-		DUK_BW_ASSERT_VALID_EXPR((thr), (bw_ctx)); \
-	} while (0)
+#if defined(DUK_USE_ASSERTIONS)
+DUK_INTERNAL_DECL void duk_bw_assert_valid(duk_hthread *thr, duk_bufwriter_ctx *bw_ctx);
+#define DUK_BW_ASSERT_VALID_EXPR(thr,bw_ctx)  (duk_bw_assert_valid((thr), (bw_ctx)))
+#define DUK_BW_ASSERT_VALID(thr,bw_ctx)  do { duk_bw_assert_valid((thr), (bw_ctx)); } while (0)
+#else
+#define DUK_BW_ASSERT_VALID_EXPR(thr,bw_ctx)  DUK_ASSERT_EXPR(1)
+#define DUK_BW_ASSERT_VALID(thr,bw_ctx)  do {} while (0)
+#endif
 
 /* Working with the pointer and current size. */
 

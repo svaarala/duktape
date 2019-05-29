@@ -629,4 +629,11 @@ DUK_INTERNAL_DECL void duk_tval_set_number_chkfast_fast(duk_tval *tv, duk_double
 DUK_INTERNAL_DECL void duk_tval_set_number_chkfast_slow(duk_tval *tv, duk_double_t x);
 #endif
 
+#if defined(DUK_USE_ASSERTIONS)
+DUK_INTERNAL_DECL void duk_tval_assert_valid(duk_tval *tv);
+#define DUK_TVAL_ASSERT_VALID(tv)  do { duk_tval_assert_valid((tv)); } while (0)
+#else
+#define DUK_TVAL_ASSERT_VALID(tv)  do {} while (0)
+#endif
+
 #endif  /* DUK_TVAL_H_INCLUDED */

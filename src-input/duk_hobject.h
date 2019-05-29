@@ -333,26 +333,12 @@
  *  Assert for currently guaranteed relations between flags, for instance.
  */
 
-#define DUK_ASSERT_HOBJECT_VALID(h) do { \
-		DUK_ASSERT((h) != NULL); \
-		DUK_ASSERT(!DUK_HOBJECT_IS_CALLABLE((h)) || \
-		           DUK_HOBJECT_GET_CLASS_NUMBER((h)) == DUK_HOBJECT_CLASS_FUNCTION); \
-		DUK_ASSERT(!DUK_HOBJECT_IS_BUFOBJ((h)) || \
-		           (DUK_HOBJECT_GET_CLASS_NUMBER((h)) == DUK_HOBJECT_CLASS_ARRAYBUFFER || \
-		            DUK_HOBJECT_GET_CLASS_NUMBER((h)) == DUK_HOBJECT_CLASS_DATAVIEW || \
-		            DUK_HOBJECT_GET_CLASS_NUMBER((h)) == DUK_HOBJECT_CLASS_INT8ARRAY || \
-		            DUK_HOBJECT_GET_CLASS_NUMBER((h)) == DUK_HOBJECT_CLASS_UINT8ARRAY || \
-		            DUK_HOBJECT_GET_CLASS_NUMBER((h)) == DUK_HOBJECT_CLASS_UINT8CLAMPEDARRAY || \
-		            DUK_HOBJECT_GET_CLASS_NUMBER((h)) == DUK_HOBJECT_CLASS_INT16ARRAY || \
-		            DUK_HOBJECT_GET_CLASS_NUMBER((h)) == DUK_HOBJECT_CLASS_UINT16ARRAY || \
-		            DUK_HOBJECT_GET_CLASS_NUMBER((h)) == DUK_HOBJECT_CLASS_INT32ARRAY || \
-		            DUK_HOBJECT_GET_CLASS_NUMBER((h)) == DUK_HOBJECT_CLASS_UINT32ARRAY || \
-		            DUK_HOBJECT_GET_CLASS_NUMBER((h)) == DUK_HOBJECT_CLASS_FLOAT32ARRAY || \
-		            DUK_HOBJECT_GET_CLASS_NUMBER((h)) == DUK_HOBJECT_CLASS_FLOAT64ARRAY)); \
-		/* Object is an Array <=> object has exotic array behavior */ \
-		DUK_ASSERT((DUK_HOBJECT_GET_CLASS_NUMBER((h)) == DUK_HOBJECT_CLASS_ARRAY && DUK_HOBJECT_HAS_EXOTIC_ARRAY((h))) || \
-		           (DUK_HOBJECT_GET_CLASS_NUMBER((h)) != DUK_HOBJECT_CLASS_ARRAY && !DUK_HOBJECT_HAS_EXOTIC_ARRAY((h)))); \
-	} while (0)
+#if defined(DUK_USE_ASSERTIONS)
+DUK_INTERNAL_DECL void duk_hobject_assert_valid(duk_hobject *h);
+#define DUK_HOBJECT_ASSERT_VALID(h)  do { duk_hobject_assert_valid((h)); } while (0)
+#else
+#define DUK_HOBJECT_ASSERT_VALID(h)  do {} while (0)
+#endif
 
 /*
  *  Macros to access the 'props' allocation.

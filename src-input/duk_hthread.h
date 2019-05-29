@@ -144,37 +144,24 @@
  *  diagnose behavior so it's worth checking even when the check is not 100%.
  */
 
+#if defined(DUK_USE_ASSERTIONS)
 /* Assertions for internals. */
-#define DUK_ASSERT_HTHREAD_VALID(thr) do { \
-		DUK_ASSERT((thr) != NULL); \
-		DUK_ASSERT(DUK_HEAPHDR_GET_TYPE((duk_heaphdr *) (thr)) == DUK_HTYPE_OBJECT); \
-		DUK_ASSERT(DUK_HOBJECT_IS_THREAD((duk_hobject *) (thr))); \
-		DUK_ASSERT((thr)->unused1 == 0); \
-		DUK_ASSERT((thr)->unused2 == 0); \
-	} while (0)
+DUK_INTERNAL_DECL void duk_hthread_assert_valid(duk_hthread *thr);
+#define DUK_HTHREAD_ASSERT_VALID(thr)  do { duk_hthread_assert_valid((thr)); } while (0)
 
 /* Assertions for public API calls; a bit stronger. */
-#define DUK_ASSERT_CTX_VALID(thr) do { \
-		DUK_ASSERT((thr) != NULL); \
-		DUK_ASSERT_HTHREAD_VALID((thr)); \
-		DUK_ASSERT((thr)->valstack != NULL); \
-		DUK_ASSERT((thr)->valstack_bottom != NULL); \
-		DUK_ASSERT((thr)->valstack_top != NULL); \
-		DUK_ASSERT((thr)->valstack_end != NULL); \
-		DUK_ASSERT((thr)->valstack_alloc_end != NULL); \
-		DUK_ASSERT((thr)->valstack_alloc_end >= (thr)->valstack); \
-		DUK_ASSERT((thr)->valstack_end >= (thr)->valstack); \
-		DUK_ASSERT((thr)->valstack_top >= (thr)->valstack); \
-		DUK_ASSERT((thr)->valstack_top >= (thr)->valstack_bottom); \
-		DUK_ASSERT((thr)->valstack_end >= (thr)->valstack_top); \
-		DUK_ASSERT((thr)->valstack_alloc_end >= (thr)->valstack_end); \
-	} while (0)
+DUK_INTERNAL_DECL void duk_ctx_assert_valid(duk_hthread *thr);
+#define DUK_CTX_ASSERT_VALID(thr)  do { duk_ctx_assert_valid((thr)); } while (0)
+#else
+#define DUK_HTHREAD_ASSERT_VALID(thr)  do {} while (0)
+#define DUK_CTX_ASSERT_VALID(thr)  do {} while (0)
+#endif
 
 /* Assertions for API call entry specifically.  Checks 'ctx' but also may
  * check internal state (e.g. not in a debugger transport callback).
  */
 #define DUK_ASSERT_API_ENTRY(thr) do { \
-		DUK_ASSERT_CTX_VALID((thr)); \
+		DUK_CTX_ASSERT_VALID((thr)); \
 		DUK_ASSERT((thr)->heap != NULL); \
 		DUK_ASSERT((thr)->heap->dbg_calling_transport == 0); \
 	} while (0)

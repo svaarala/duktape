@@ -629,7 +629,7 @@ DUK_INTERNAL void duk_js_close_environment_record(duk_hthread *thr, duk_hobject 
 		return;
 	}
 	DUK_ASSERT(((duk_hdecenv *) env)->thread != NULL);
-	DUK_ASSERT_HDECENV_VALID((duk_hdecenv *) env);
+	DUK_HDECENV_ASSERT_VALID((duk_hdecenv *) env);
 
 	DUK_DDD(DUK_DDDPRINT("closing env: %!iO", (duk_heaphdr *) env));
 	DUK_DDD(DUK_DDDPRINT("varmap: %!O", (duk_heaphdr *) varmap));
@@ -739,7 +739,7 @@ duk_bool_t duk__getid_open_decl_env_regs(duk_hthread *thr,
 	DUK_ASSERT(out != NULL);
 
 	DUK_ASSERT(DUK_HOBJECT_IS_DECENV((duk_hobject *) env));
-	DUK_ASSERT_HDECENV_VALID(env);
+	DUK_HDECENV_ASSERT_VALID(env);
 
 	if (env->thread == NULL) {
 		/* already closed */
@@ -953,7 +953,7 @@ duk_bool_t duk__get_identifier_reference(duk_hthread *thr,
 			 *  register-bound variables.
 			 */
 
-			DUK_ASSERT_HDECENV_VALID((duk_hdecenv *) env);
+			DUK_HDECENV_ASSERT_VALID((duk_hdecenv *) env);
 			if (duk__getid_open_decl_env_regs(thr, name, (duk_hdecenv *) env, out)) {
 				DUK_DDD(DUK_DDDPRINT("duk__get_identifier_reference successful: "
 				                     "name=%!O -> value=%!T, attrs=%ld, has_this=%ld, env=%!O, holder=%!O "
@@ -999,7 +999,7 @@ duk_bool_t duk__get_identifier_reference(duk_hthread *thr,
 			duk_bool_t found;
 
 			DUK_ASSERT(cl == DUK_HOBJECT_CLASS_OBJENV);
-			DUK_ASSERT_HOBJENV_VALID((duk_hobjenv *) env);
+			DUK_HOBJENV_ASSERT_VALID((duk_hobjenv *) env);
 
 			target = ((duk_hobjenv *) env)->target;
 			DUK_ASSERT(target != NULL);
@@ -1679,10 +1679,10 @@ duk_bool_t duk__declvar_helper(duk_hthread *thr,
 	 */
 
 	if (DUK_HOBJECT_IS_DECENV(env)) {
-		DUK_ASSERT_HDECENV_VALID((duk_hdecenv *) env);
+		DUK_HDECENV_ASSERT_VALID((duk_hdecenv *) env);
 		holder = env;
 	} else {
-		DUK_ASSERT_HOBJENV_VALID((duk_hobjenv *) env);
+		DUK_HOBJENV_ASSERT_VALID((duk_hobjenv *) env);
 		holder = ((duk_hobjenv *) env)->target;
 		DUK_ASSERT(holder != NULL);
 	}

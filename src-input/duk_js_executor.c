@@ -2329,7 +2329,7 @@ DUK_LOCAL DUK__NOINLINE_PERF void duk__handle_op_trycatch(duk_hthread *thr, duk_
 		env->target = target;  /* always provideThis=true */
 		DUK_HOBJECT_INCREF(thr, target);
 		env->has_this = 1;
-		DUK_ASSERT_HOBJENV_VALID(env);
+		DUK_HOBJENV_ASSERT_VALID(env);
 		DUK_DDD(DUK_DDDPRINT("environment for with binding: %!iO", env));
 
 		DUK_ASSERT(act == thr->callstack_curr);

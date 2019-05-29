@@ -12,7 +12,7 @@ DUK_LOCAL void duk__concat_and_join_helper(duk_hthread *thr, duk_idx_t count_in,
 	duk_hstring *h;
 	duk_uint8_t *buf;
 
-	DUK_ASSERT_CTX_VALID(thr);
+	DUK_CTX_ASSERT_VALID(thr);
 
 	if (DUK_UNLIKELY(count_in <= 0)) {
 		if (count_in < 0) {

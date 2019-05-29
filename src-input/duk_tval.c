@@ -140,3 +140,13 @@ DUK_INTERNAL DUK_ALWAYS_INLINE duk_double_t duk_tval_get_number_unpacked_fastint
 #endif  /* DUK_USE_FASTINT && DUK_USE_PACKED_TVAL */
 
 #endif  /* DUK_USE_FASTINT */
+
+/*
+ *  Assertion helpers.
+ */
+
+#if defined(DUK_USE_ASSERTIONS)
+DUK_INTERNAL void duk_tval_assert_valid(duk_tval *tv) {
+	DUK_ASSERT(tv != NULL);
+}
+#endif

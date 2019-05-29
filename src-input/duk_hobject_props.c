@@ -370,7 +370,7 @@ DUK_INTERNAL duk_bool_t duk_hobject_proxy_check(duk_hobject *obj, duk_hobject **
 		return 0;
 	}
 	h_proxy = (duk_hproxy *) obj;
-	DUK_ASSERT_HPROXY_VALID(h_proxy);
+	DUK_HPROXY_ASSERT_VALID(h_proxy);
 
 	DUK_ASSERT(h_proxy->handler != NULL);
 	DUK_ASSERT(h_proxy->target != NULL);
@@ -397,7 +397,7 @@ DUK_INTERNAL duk_hobject *duk_hobject_resolve_proxy_target(duk_hobject *obj) {
 		duk_hproxy *h_proxy;
 
 		h_proxy = (duk_hproxy *) obj;
-		DUK_ASSERT_HPROXY_VALID(h_proxy);
+		DUK_HPROXY_ASSERT_VALID(h_proxy);
 		obj = h_proxy->target;
 		DUK_ASSERT(obj != NULL);
 	}
@@ -1765,7 +1765,7 @@ DUK_LOCAL duk_bool_t duk__get_own_propdesc_raw(duk_hthread *thr, duk_hobject *ob
 		                     (duk_heaphdr *) key, (long) arr_idx));
 
 		a = (duk_harray *) obj;
-		DUK_ASSERT_HARRAY_VALID(a);
+		DUK_HARRAY_ASSERT_VALID(a);
 
 		if (key == DUK_HTHREAD_STRING_LENGTH(thr)) {
 			DUK_DDD(DUK_DDDPRINT("-> found, key is 'length', length exotic behavior"));
@@ -1847,7 +1847,7 @@ DUK_LOCAL duk_bool_t duk__get_own_propdesc_raw(duk_hthread *thr, duk_hobject *ob
 		duk_small_uint_t elem_size;
 
 		h_bufobj = (duk_hbufobj *) obj;
-		DUK_ASSERT_HBUFOBJ_VALID(h_bufobj);
+		DUK_HBUFOBJ_ASSERT_VALID(h_bufobj);
 		DUK_DDD(DUK_DDDPRINT("bufobj property get for key: %!O, arr_idx: %ld",
 		                     (duk_heaphdr *) key, (long) arr_idx));
 
@@ -2158,7 +2158,7 @@ DUK_LOCAL duk_bool_t duk__putprop_shallow_fastpath_array_tval(duk_hthread *thr, 
 	DUK_ASSERT(!DUK_HEAPHDR_HAS_READONLY((duk_heaphdr *) obj));  /* caller ensures */
 
 	a = (duk_harray *) obj;
-	DUK_ASSERT_HARRAY_VALID(a);
+	DUK_HARRAY_ASSERT_VALID(a);
 
 #if defined(DUK_USE_FASTINT)
 	if (DUK_TVAL_IS_FASTINT(tv_key)) {
@@ -3248,7 +3248,7 @@ DUK_LOCAL duk_bool_t duk__handle_put_array_length(duk_hthread *thr, duk_hobject 
 	DUK_ASSERT(DUK_HOBJECT_HAS_EXOTIC_ARRAY(obj));
 	DUK_ASSERT(DUK_HOBJECT_IS_ARRAY(obj));
 	a = (duk_harray *) obj;
-	DUK_ASSERT_HARRAY_VALID(a);
+	DUK_HARRAY_ASSERT_VALID(a);
 
 	DUK_ASSERT(duk_is_valid_index(thr, -1));
 
@@ -3778,7 +3778,7 @@ DUK_INTERNAL duk_bool_t duk_hobject_putprop(duk_hthread *thr, duk_tval *tv_obj, 
 					duk_small_uint_t elem_size;
 
 					h_bufobj = (duk_hbufobj *) curr;
-					DUK_ASSERT_HBUFOBJ_VALID(h_bufobj);
+					DUK_HBUFOBJ_ASSERT_VALID(h_bufobj);
 
 					DUK_DD(DUK_DDPRINT("writable virtual property is in buffer object"));
 
@@ -3950,7 +3950,7 @@ DUK_INTERNAL duk_bool_t duk_hobject_putprop(duk_hthread *thr, duk_tval *tv_obj, 
 		duk_harray *a;
 
 		a = (duk_harray *) orig;
-		DUK_ASSERT_HARRAY_VALID(a);
+		DUK_HARRAY_ASSERT_VALID(a);
 
 		old_len = a->length;
 
@@ -4796,7 +4796,7 @@ DUK_INTERNAL void duk_hobject_define_property_internal_arridx(duk_hthread *thr, 
 DUK_INTERNAL duk_size_t duk_hobject_get_length(duk_hthread *thr, duk_hobject *obj) {
 	duk_double_t val;
 
-	DUK_ASSERT_CTX_VALID(thr);
+	DUK_CTX_ASSERT_VALID(thr);
 	DUK_ASSERT(obj != NULL);
 
 	/* Fast path for Arrays. */
@@ -5175,7 +5175,7 @@ duk_bool_t duk_hobject_define_property_helper(duk_hthread *thr,
 		 */
 
 		a = (duk_harray *) obj;
-		DUK_ASSERT_HARRAY_VALID(a);
+		DUK_HARRAY_ASSERT_VALID(a);
 		arrlen_old_len = a->length;
 
 		DUK_ASSERT(idx_value >= 0);
@@ -5216,7 +5216,7 @@ duk_bool_t duk_hobject_define_property_helper(duk_hthread *thr,
 		duk_harray *a;
 
 		a = (duk_harray *) obj;
-		DUK_ASSERT_HARRAY_VALID(a);
+		DUK_HARRAY_ASSERT_VALID(a);
 
 		old_len = a->length;
 
@@ -5717,7 +5717,7 @@ duk_bool_t duk_hobject_define_property_helper(duk_hthread *thr,
 			duk_harray *a;
 			a = (duk_harray *) obj;
 			DUK_DD(DUK_DDPRINT("Object.defineProperty() attribute update for duk_harray .length -> %02lx", (unsigned long) new_flags));
-			DUK_ASSERT_HARRAY_VALID(a);
+			DUK_HARRAY_ASSERT_VALID(a);
 			if ((new_flags & DUK_PROPDESC_FLAGS_EC) != (curr.flags & DUK_PROPDESC_FLAGS_EC)) {
 				DUK_D(DUK_DPRINT("Object.defineProperty() attempt to change virtual array .length enumerable or configurable attribute, fail"));
 				goto fail_virtual;
@@ -5786,7 +5786,7 @@ duk_bool_t duk_hobject_define_property_helper(duk_hthread *thr,
 				duk_harray *a;
 				a = (duk_harray *) obj;
 				DUK_DD(DUK_DDPRINT("Object.defineProperty() value update for duk_harray .length -> %ld", (long) arrlen_new_len));
-				DUK_ASSERT_HARRAY_VALID(a);
+				DUK_HARRAY_ASSERT_VALID(a);
 				a->length = arrlen_new_len;
 			} else {
 				goto fail_virtual;  /* should not happen */
@@ -5818,7 +5818,7 @@ duk_bool_t duk_hobject_define_property_helper(duk_hthread *thr,
 		duk_harray *a;
 
 		a = (duk_harray *) obj;
-		DUK_ASSERT_HARRAY_VALID(a);
+		DUK_HARRAY_ASSERT_VALID(a);
 
 		if (arridx_new_array_length > 0) {
 			/*

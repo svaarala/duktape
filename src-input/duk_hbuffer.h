@@ -162,6 +162,14 @@
 	)
 #endif
 
+/* Validity assert. */
+#if defined(DUK_USE_ASSERTIONS)
+DUK_INTERNAL_DECL void duk_hbuffer_assert_valid(duk_hbuffer *h);
+#define DUK_HBUFFER_ASSERT_VALID(h)  do { duk_hbuffer_assert_valid((h)); } while (0)
+#else
+#define DUK_HBUFFER_ASSERT_VALID(h)  do {} while (0)
+#endif
+
 /*
  *  Structs
  */

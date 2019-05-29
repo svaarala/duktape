@@ -131,9 +131,12 @@
  *  Validity assert
  */
 
-#define DUK_ASSERT_HCOMPFUNC_VALID(h) do { \
-		DUK_ASSERT((h) != NULL); \
-	} while (0)
+#if defined(DUK_USE_ASSERTIONS)
+DUK_INTERNAL_DECL void duk_hcompfunc_assert_valid(duk_hcompfunc *h);
+#define DUK_HCOMPFUNC_ASSERT_VALID(h)  do { duk_hcompfunc_assert_valid((h)); } while (0)
+#else
+#define DUK_HCOMPFUNC_ASSERT_VALID(h)  do {} while (0)
+#endif
 
 /*
  *  Main struct
