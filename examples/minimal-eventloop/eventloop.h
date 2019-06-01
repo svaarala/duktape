@@ -3,7 +3,7 @@
 
 #include "duktape.h"
 
-void eventloop_register(duk_context *);
+duk_ret_t eventloop_register(duk_context *, void *);
 
 void eventloop_run(duk_context *);
 

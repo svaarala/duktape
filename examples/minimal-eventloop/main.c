@@ -126,7 +126,12 @@ int main(int argc, char *argv[]) {
 
 	ctx = duk_create_heap_default();
 
-    eventloop_register(ctx);
+    if (duk_safe_call(ctx, eventloop_register, NULL, 0 /*nargs*/, 1 /*nret*/) != 0) {
+        fprintf(stderr, "Unable To Initialize Eventloop: %s\n", duk_safe_to_stacktrace(ctx, -1));
+        exit(1);
+    }
+    duk_pop(ctx);
+    
 	duk_console_init(ctx, 0);
 
 	if (strcmp(filename, "-") == 0) {

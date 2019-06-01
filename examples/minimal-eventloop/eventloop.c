@@ -426,7 +426,7 @@ static const char *eventloop_js = ""
         "};\n"
     "}\n";
 
-static duk_ret_t eventloop_register_raw(duk_context *ctx, void *udata) {
+duk_ret_t eventloop_register(duk_context *ctx, void *udata) {
     (void) udata;
 
     duk_compile_string(ctx, DUK_COMPILE_FUNCTION, eventloop_js);
@@ -466,12 +466,4 @@ void eventloop_run(duk_context *ctx) {
 	 */
 	exit_requested = 0;
     eventloop_start(ctx);
-}
-
-void eventloop_register(duk_context *ctx) {
-    if (duk_safe_call(ctx, eventloop_register_raw, NULL, 0 /*nargs*/, 1 /*nret*/) != 0) {
-        fprintf(stderr, "Unable To Initialize Eventloop: %s\n", duk_safe_to_stacktrace(ctx, -1));
-        exit(1);
-    }
-    duk_pop(ctx);
 }
