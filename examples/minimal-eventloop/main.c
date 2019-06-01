@@ -131,7 +131,7 @@ int main(int argc, char *argv[]) {
         exit(1);
     }
     duk_pop(ctx);
-    
+
 	duk_console_init(ctx, 0);
 
 	if (strcmp(filename, "-") == 0) {
