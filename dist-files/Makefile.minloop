@@ -1,0 +1,14 @@
+#
+#  Example Makefile for building the minimal eventloop example
+#
+
+CC = gcc
+
+minloop:
+	$(CC) -o $@ -std=c99 -Wall -Wextra -O2 -Isrc -Iextras/console \
+		examples/minimal-eventloop/main.c \
+		examples/minimal-eventloop/eventloop.c \
+		examples/minimal-eventloop/fileio.c \
+		src/duktape.c \
+		extras/console/duk_console.c \
+		-lm
