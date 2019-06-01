@@ -534,6 +534,7 @@ def main():
     copy_files([
         'README.rst',
         'c_eventloop.c',
+        'c_eventloop.h',
         'c_eventloop.js',
         'ecma_eventloop.js',
         'main.c',
