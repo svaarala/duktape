@@ -3446,6 +3446,9 @@ Planned
 * Fix compile error for extras/eventloop due to missing a header file
   (c_eventloop.h) in the dist package (GH-2090)
 
+* Fix CBOR decoding of text strings and byte strings with a lot of
+  concatenated pieces in the CBOR extra (GH-2093)
+
 * Trivial fixes and cleanups: Windows Date provider return code check
   consistency (GH-1956)
 
