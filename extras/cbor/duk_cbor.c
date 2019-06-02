@@ -718,6 +718,7 @@ static void duk__cbor_decode_and_join_strbuf(duk_cbor_decode_context *dec_ctx, d
 		if (duk__cbor_decode_checkbreak(dec_ctx)) {
 			break;
 		}
+		duk_require_stack(dec_ctx->ctx, 1);
 		duk__cbor_decode_buffer(dec_ctx, expected_base);
 		count++;
 		if (count <= 0) {
