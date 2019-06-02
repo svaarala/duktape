@@ -357,3 +357,22 @@ DUK_INTERNAL DUK_ALWAYS_INLINE void duk_raw_write_double_be(duk_uint8_t **p, duk
 	duk_memcpy((void *) (*p + 4), (const void *) u.b, (size_t) 4);
 	*p += 8;
 }
+
+/*
+ *  Assertion helpers
+ */
+
+#if defined(DUK_USE_ASSERTIONS)
+DUK_INTERNAL void duk_bw_assert_valid(duk_hthread *thr, duk_bufwriter_ctx *bw_ctx) {
+	DUK_UNREF(thr);
+	DUK_ASSERT(bw_ctx != NULL);
+	DUK_ASSERT(bw_ctx->buf != NULL);
+	DUK_ASSERT((DUK_HBUFFER_DYNAMIC_GET_SIZE(bw_ctx->buf) == 0) ||
+	           (bw_ctx->p != NULL &&
+	            bw_ctx->p_base != NULL &&
+	            bw_ctx->p_limit != NULL &&
+	            bw_ctx->p_limit >= bw_ctx->p_base &&
+	            bw_ctx->p >= bw_ctx->p_base &&
+	            bw_ctx->p <= bw_ctx->p_limit));
+}
+#endif

@@ -168,6 +168,14 @@
 #define DUK_SYMBOL_TYPE_LOCAL 2
 #define DUK_SYMBOL_TYPE_WELLKNOWN 3
 
+/* Assertion for duk_hstring validity. */
+#if defined(DUK_USE_ASSERTIONS)
+DUK_INTERNAL_DECL void duk_hstring_assert_valid(duk_hstring *h);
+#define DUK_HSTRING_ASSERT_VALID(h)  do { duk_hstring_assert_valid((h)); } while (0)
+#else
+#define DUK_HSTRING_ASSERT_VALID(h)  do {} while (0)
+#endif
+
 /*
  *  Misc
  */

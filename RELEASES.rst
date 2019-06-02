@@ -3443,10 +3443,16 @@ Planned
 * Fix several assertion failures with possible memory unsafe behavior
   (GH-2025, GH-2026, GH-2031, GH-2033, GH-2035, GH-2036, GH-2065)
 
+* Fix compile error for extras/eventloop due to missing a header file
+  (c_eventloop.h) in the dist package (GH-2090)
+
 * Trivial fixes and cleanups: Windows Date provider return code check
   consistency (GH-1956)
 
 * Fix MSVC ARM64 detection (GH-2078)
+
+* Improve assertion coverage for internal structures during mark-and-sweep
+  (GH-2092)
 
 * Various portability fixes (GH-1931, GH-1976)
 

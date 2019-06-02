@@ -19,32 +19,12 @@
 #define DUK_HBUFOBJ_ELEM_FLOAT64         8
 #define DUK_HBUFOBJ_ELEM_MAX             8
 
-#define DUK_ASSERT_HBUFOBJ_VALID(h) do { \
-		DUK_ASSERT((h) != NULL); \
-		DUK_ASSERT((h)->shift <= 3); \
-		DUK_ASSERT((h)->elem_type <= DUK_HBUFOBJ_ELEM_MAX); \
-		DUK_ASSERT(((h)->shift == 0 && (h)->elem_type == DUK_HBUFOBJ_ELEM_UINT8) || \
-		           ((h)->shift == 0 && (h)->elem_type == DUK_HBUFOBJ_ELEM_UINT8CLAMPED) || \
-		           ((h)->shift == 0 && (h)->elem_type == DUK_HBUFOBJ_ELEM_INT8) || \
-		           ((h)->shift == 1 && (h)->elem_type == DUK_HBUFOBJ_ELEM_UINT16) || \
-		           ((h)->shift == 1 && (h)->elem_type == DUK_HBUFOBJ_ELEM_INT16) || \
-		           ((h)->shift == 2 && (h)->elem_type == DUK_HBUFOBJ_ELEM_UINT32) || \
-		           ((h)->shift == 2 && (h)->elem_type == DUK_HBUFOBJ_ELEM_INT32) || \
-		           ((h)->shift == 2 && (h)->elem_type == DUK_HBUFOBJ_ELEM_FLOAT32) || \
-		           ((h)->shift == 3 && (h)->elem_type == DUK_HBUFOBJ_ELEM_FLOAT64)); \
-		DUK_ASSERT((h)->is_typedarray == 0 || (h)->is_typedarray == 1); \
-		DUK_ASSERT(DUK_HOBJECT_IS_BUFOBJ((duk_hobject *) (h))); \
-		if ((h)->buf == NULL) { \
-			DUK_ASSERT((h)->offset == 0); \
-			DUK_ASSERT((h)->length == 0); \
-		} else { \
-			/* No assertions for offset or length; in particular, \
-			 * it's OK for length to be longer than underlying \
-			 * buffer.  Just ensure they don't wrap when added. \
-			 */ \
-			DUK_ASSERT((h)->offset + (h)->length >= (h)->offset); \
-		} \
-	} while (0)
+#if defined(DUK_USE_ASSERTIONS)
+DUK_INTERNAL_DECL void duk_hbufobj_assert_valid(duk_hbufobj *h);
+#define DUK_HBUFOBJ_ASSERT_VALID(h)  do { duk_hbufobj_assert_valid((h)); } while (0)
+#else
+#define DUK_HBUFOBJ_ASSERT_VALID(h)  do {} while (0)
+#endif
 
 /* Get the current data pointer (caller must ensure buf != NULL) as a
  * duk_uint8_t ptr.  Note that the result may be NULL if the underlying
@@ -138,6 +118,10 @@ DUK_INTERNAL_DECL void duk_hbufobj_push_uint8array_from_plain(duk_hthread *thr, 
 DUK_INTERNAL_DECL void duk_hbufobj_push_validated_read(duk_hthread *thr, duk_hbufobj *h_bufobj, duk_uint8_t *p, duk_small_uint_t elem_size);
 DUK_INTERNAL_DECL void duk_hbufobj_validated_write(duk_hthread *thr, duk_hbufobj *h_bufobj, duk_uint8_t *p, duk_small_uint_t elem_size);
 DUK_INTERNAL_DECL void duk_hbufobj_promote_plain(duk_hthread *thr, duk_idx_t idx);
+
+#else  /* DUK_USE_BUFFEROBJECT_SUPPORT */
+
+/* nothing */
 
 #endif  /* DUK_USE_BUFFEROBJECT_SUPPORT */
 #endif  /* DUK_HBUFOBJ_H_INCLUDED */

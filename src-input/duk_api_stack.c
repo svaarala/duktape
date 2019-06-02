@@ -686,7 +686,7 @@ DUK_LOCAL DUK_COLD DUK_NOINLINE duk_bool_t duk__resize_valstack(duk_hthread *thr
 	duk_tval *tv_prev_alloc_end;
 	duk_tval *p;
 
-	DUK_ASSERT_HTHREAD_VALID(thr);
+	DUK_HTHREAD_ASSERT_VALID(thr);
 	DUK_ASSERT(thr->valstack_bottom >= thr->valstack);
 	DUK_ASSERT(thr->valstack_top >= thr->valstack_bottom);
 	DUK_ASSERT(thr->valstack_end >= thr->valstack_top);
@@ -1360,8 +1360,8 @@ DUK_EXTERNAL void duk_xcopymove_raw(duk_hthread *to_thr, duk_hthread *from_thr, 
 	/* XXX: several pointer comparison issues here */
 
 	DUK_ASSERT_API_ENTRY(to_thr);
-	DUK_ASSERT_CTX_VALID(to_thr);
-	DUK_ASSERT_CTX_VALID(from_thr);
+	DUK_CTX_ASSERT_VALID(to_thr);
+	DUK_CTX_ASSERT_VALID(from_thr);
 	DUK_ASSERT(to_thr->heap == from_thr->heap);
 
 	if (DUK_UNLIKELY(to_thr == from_thr)) {
@@ -1487,7 +1487,7 @@ DUK_LOCAL DUK_ALWAYS_INLINE duk_bool_t duk__get_boolean_raw(duk_hthread *thr, du
 	duk_bool_t ret;
 	duk_tval *tv;
 
-	DUK_ASSERT_CTX_VALID(thr);
+	DUK_CTX_ASSERT_VALID(thr);
 
 	tv = duk_get_tval_or_unused(thr, idx);
 	DUK_ASSERT(tv != NULL);
@@ -1545,7 +1545,7 @@ DUK_LOCAL DUK_ALWAYS_INLINE duk_double_t duk__get_number_raw(duk_hthread *thr, d
 	duk_double_union ret;
 	duk_tval *tv;
 
-	DUK_ASSERT_CTX_VALID(thr);
+	DUK_CTX_ASSERT_VALID(thr);
 
 	tv = duk_get_tval_or_unused(thr, idx);
 	DUK_ASSERT(tv != NULL);
@@ -1830,7 +1830,7 @@ DUK_LOCAL void *duk__get_pointer_raw(duk_hthread *thr, duk_idx_t idx, void *def_
 	duk_tval *tv;
 	void *p;
 
-	DUK_ASSERT_CTX_VALID(thr);
+	DUK_CTX_ASSERT_VALID(thr);
 
 	tv = duk_get_tval_or_unused(thr, idx);
 	DUK_ASSERT(tv != NULL);
@@ -1905,7 +1905,7 @@ DUK_LOCAL void *duk__get_buffer_helper(duk_hthread *thr, duk_idx_t idx, duk_size
 	duk_size_t len;
 	duk_tval *tv;
 
-	DUK_ASSERT_CTX_VALID(thr);
+	DUK_CTX_ASSERT_VALID(thr);
 
 	if (out_size != NULL) {
 		*out_size = 0;
@@ -2004,7 +2004,7 @@ DUK_INTERNAL void *duk_get_buffer_data_raw(duk_hthread *thr, duk_idx_t idx, duk_
 			 * duk_hbufobj, get a validated buffer pointer/length.
 			 */
 			duk_hbufobj *h_bufobj = (duk_hbufobj *) h;
-			DUK_ASSERT_HBUFOBJ_VALID(h_bufobj);
+			DUK_HBUFOBJ_ASSERT_VALID(h_bufobj);
 
 			if (h_bufobj->buf != NULL &&
 			    DUK_HBUFOBJ_VALID_SLICE(h_bufobj)) {
@@ -2067,7 +2067,7 @@ DUK_LOCAL duk_heaphdr *duk__get_tagged_heaphdr_raw(duk_hthread *thr, duk_idx_t i
 	duk_tval *tv;
 	duk_heaphdr *ret;
 
-	DUK_ASSERT_CTX_VALID(thr);
+	DUK_CTX_ASSERT_VALID(thr);
 
 	tv = duk_get_tval_or_unused(thr, idx);
 	DUK_ASSERT(tv != NULL);
@@ -2411,7 +2411,7 @@ DUK_LOCAL duk_hobject *duk__get_hobject_promote_mask_raw(duk_hthread *thr, duk_i
 	duk_uint_t val_mask;
 	duk_hobject *res;
 
-	DUK_ASSERT_CTX_VALID(thr);
+	DUK_CTX_ASSERT_VALID(thr);
 
 	res = duk_get_hobject(thr, idx);  /* common case, not promoted */
 	if (DUK_LIKELY(res != NULL)) {
@@ -2587,7 +2587,7 @@ DUK_LOCAL duk_heaphdr *duk__known_heaphdr(duk_hthread *thr, duk_idx_t idx) {
 	duk_tval *tv;
 	duk_heaphdr *h;
 
-	DUK_ASSERT_CTX_VALID(thr);
+	DUK_CTX_ASSERT_VALID(thr);
 	if (idx < 0) {
 		tv = thr->valstack_top + idx;
 	} else {
@@ -2889,7 +2889,7 @@ DUK_LOCAL duk_double_t duk__to_int_uint_helper(duk_hthread *thr, duk_idx_t idx, 
 	duk_tval *tv;
 	duk_double_t d;
 
-	DUK_ASSERT_CTX_VALID(thr);
+	DUK_CTX_ASSERT_VALID(thr);
 
 	tv = duk_require_tval(thr, idx);
 	DUK_ASSERT(tv != NULL);
@@ -3027,7 +3027,7 @@ DUK_EXTERNAL const char *duk_to_lstring(duk_hthread *thr, duk_idx_t idx, duk_siz
 }
 
 DUK_LOCAL duk_ret_t duk__safe_to_string_raw(duk_hthread *thr, void *udata) {
-	DUK_ASSERT_CTX_VALID(thr);
+	DUK_CTX_ASSERT_VALID(thr);
 	DUK_UNREF(udata);
 
 	(void) duk_to_string(thr, -1);
@@ -3089,7 +3089,7 @@ DUK_EXTERNAL const char *duk_to_stacktrace(duk_hthread *thr, duk_idx_t idx) {
 }
 
 DUK_LOCAL duk_ret_t duk__safe_to_stacktrace_raw(duk_hthread *thr, void *udata) {
-	DUK_ASSERT_CTX_VALID(thr);
+	DUK_CTX_ASSERT_VALID(thr);
 	DUK_UNREF(udata);
 
 	(void) duk_to_stacktrace(thr, -1);
@@ -4812,7 +4812,7 @@ DUK_EXTERNAL void duk_push_thread_stash(duk_hthread *thr, duk_hthread *target_th
 DUK_LOCAL duk_int_t duk__try_push_vsprintf(duk_hthread *thr, void *buf, duk_size_t sz, const char *fmt, va_list ap) {
 	duk_int_t len;
 
-	DUK_ASSERT_CTX_VALID(thr);
+	DUK_CTX_ASSERT_VALID(thr);
 	DUK_UNREF(thr);
 
 	/* NUL terminator handling doesn't matter here */
@@ -5189,7 +5189,7 @@ DUK_LOCAL duk_idx_t duk__push_c_function_raw(duk_hthread *thr, duk_c_function fu
 	duk_tval *tv_slot;
 	duk_int16_t func_nargs;
 
-	DUK_ASSERT_CTX_VALID(thr);
+	DUK_CTX_ASSERT_VALID(thr);
 
 	DUK__CHECK_SPACE();
 
@@ -5334,7 +5334,7 @@ DUK_INTERNAL duk_hbufobj *duk_push_bufobj_raw(duk_hthread *thr, duk_uint_t hobje
 	DUK_ASSERT(obj != NULL);
 
 	DUK_HOBJECT_SET_PROTOTYPE_INIT_INCREF(thr, (duk_hobject *) obj, thr->builtins[prototype_bidx]);
-	DUK_ASSERT_HBUFOBJ_VALID(obj);
+	DUK_HBUFOBJ_ASSERT_VALID(obj);
 
 	tv_slot = thr->valstack_top;
 	DUK_TVAL_SET_OBJECT(tv_slot, (duk_hobject *) obj);
@@ -5408,7 +5408,7 @@ DUK_EXTERNAL void duk_push_buffer_object(duk_hthread *thr, duk_idx_t idx_buffer,
 	    DUK_HOBJECT_GET_CLASS_NUMBER(h_arraybuf) == DUK_HOBJECT_CLASS_ARRAYBUFFER  /* argument is ArrayBuffer */) {
 		duk_uint_t tmp_offset;
 
-		DUK_ASSERT_HBUFOBJ_VALID((duk_hbufobj *) h_arraybuf);
+		DUK_HBUFOBJ_ASSERT_VALID((duk_hbufobj *) h_arraybuf);
 		h_val = ((duk_hbufobj *) h_arraybuf)->buf;
 		if (DUK_UNLIKELY(h_val == NULL)) {
 			goto arg_error;
@@ -5457,7 +5457,7 @@ DUK_EXTERNAL void duk_push_buffer_object(duk_hthread *thr, duk_idx_t idx_buffer,
 	h_bufobj->shift = (tmp >> 4) & 0x0f;
 	h_bufobj->elem_type = (tmp >> 8) & 0xff;
 	h_bufobj->is_typedarray = tmp & 0x0f;
-	DUK_ASSERT_HBUFOBJ_VALID(h_bufobj);
+	DUK_HBUFOBJ_ASSERT_VALID(h_bufobj);
 
 	/* TypedArray views need an automatic ArrayBuffer which must be
 	 * provided as .buffer property of the view.  The ArrayBuffer is
@@ -5695,7 +5695,7 @@ DUK_EXTERNAL duk_idx_t duk_push_proxy(duk_hthread *thr, duk_uint_t proxy_flags) 
 	h_proxy->target = h_target;
 	DUK_ASSERT(h_handler != NULL);
 	h_proxy->handler = h_handler;
-	DUK_ASSERT_HPROXY_VALID(h_proxy);
+	DUK_HPROXY_ASSERT_VALID(h_proxy);
 
 	DUK_ASSERT(duk_get_hobject(thr, -2) == h_target);
 	DUK_ASSERT(duk_get_hobject(thr, -1) == h_handler);
@@ -5849,7 +5849,7 @@ DUK_EXTERNAL duk_idx_t duk_push_heapptr(duk_hthread *thr, void *ptr) {
 		return ret;
 	}
 
-	DUK_ASSERT_HEAPHDR_VALID((duk_heaphdr *) ptr);
+	DUK_HEAPHDR_ASSERT_VALID((duk_heaphdr *) ptr);
 
 	/* If the argument is on finalize_list it has technically been
 	 * unreachable before duk_push_heapptr() but it's still safe to
@@ -5984,7 +5984,7 @@ DUK_LOCAL DUK_ALWAYS_INLINE void duk__pop_n_unsafe_raw(duk_hthread *thr, duk_idx
 	duk_tval *tv_end;
 #endif
 
-	DUK_ASSERT_CTX_VALID(thr);
+	DUK_CTX_ASSERT_VALID(thr);
 	DUK_ASSERT(count >= 0);
 	DUK_ASSERT((duk_size_t) (thr->valstack_top - thr->valstack_bottom) >= (duk_size_t) count);
 
@@ -6085,7 +6085,7 @@ DUK_INTERNAL void duk_pop_nodecref_unsafe(duk_hthread *thr) {
 DUK_LOCAL DUK_ALWAYS_INLINE void duk__pop_unsafe_raw(duk_hthread *thr) {
 	duk_tval *tv;
 
-	DUK_ASSERT_CTX_VALID(thr);
+	DUK_CTX_ASSERT_VALID(thr);
 	DUK_ASSERT(thr->valstack_top != thr->valstack_bottom);
 	DUK_ASSERT(thr->valstack_top >= thr->valstack_bottom);
 	DUK_ASSERT((duk_size_t) (thr->valstack_top - thr->valstack_bottom) >= (duk_size_t) 1);
@@ -6167,7 +6167,7 @@ DUK_INTERNAL void duk_pop_2_nodecref_unsafe(duk_hthread *thr) {
 DUK_LOCAL DUK_ALWAYS_INLINE void duk__pop_2_unsafe_raw(duk_hthread *thr) {
 	duk_tval *tv;
 
-	DUK_ASSERT_CTX_VALID(thr);
+	DUK_CTX_ASSERT_VALID(thr);
 	DUK_ASSERT(thr->valstack_top != thr->valstack_bottom);
 	DUK_ASSERT(thr->valstack_top >= thr->valstack_bottom);
 	DUK_ASSERT((duk_size_t) (thr->valstack_top - thr->valstack_bottom) >= (duk_size_t) 2);
@@ -6498,7 +6498,7 @@ DUK_LOCAL void duk__throw_error_from_stash(duk_hthread *thr, duk_errcode_t err_c
 	const char *filename;
 	duk_int_t line;
 
-	DUK_ASSERT_CTX_VALID(thr);
+	DUK_CTX_ASSERT_VALID(thr);
 
 	filename = duk_api_global_filename;
 	line = duk_api_global_line;
@@ -6736,7 +6736,7 @@ DUK_LOCAL void duk__push_hstring_readable_unicode(duk_hthread *thr, duk_hstring 
 	duk_ucodepoint_t cp;
 	duk_small_uint_t nchars;
 
-	DUK_ASSERT_CTX_VALID(thr);
+	DUK_CTX_ASSERT_VALID(thr);
 	DUK_ASSERT(h_input != NULL);
 	DUK_ASSERT(maxchars <= DUK__READABLE_SUMMARY_MAXCHARS);
 
@@ -6780,7 +6780,7 @@ DUK_LOCAL void duk__push_hstring_readable_unicode(duk_hthread *thr, duk_hstring 
 }
 
 DUK_LOCAL const char *duk__push_string_tval_readable(duk_hthread *thr, duk_tval *tv, duk_bool_t error_aware) {
-	DUK_ASSERT_CTX_VALID(thr);
+	DUK_CTX_ASSERT_VALID(thr);
 	/* 'tv' may be NULL */
 
 	if (tv == NULL) {

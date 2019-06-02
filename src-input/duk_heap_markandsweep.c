@@ -19,6 +19,7 @@ DUK_LOCAL void duk__mark_hstring(duk_heap *heap, duk_hstring *h) {
 
 	DUK_DDD(DUK_DDDPRINT("duk__mark_hstring: %p", (void *) h));
 	DUK_ASSERT(h);
+	DUK_HSTRING_ASSERT_VALID(h);
 
 	/* nothing to process */
 }
@@ -29,6 +30,7 @@ DUK_LOCAL void duk__mark_hobject(duk_heap *heap, duk_hobject *h) {
 	DUK_DDD(DUK_DDDPRINT("duk__mark_hobject: %p", (void *) h));
 
 	DUK_ASSERT(h);
+	DUK_HOBJECT_ASSERT_VALID(h);
 
 	/* XXX: use advancing pointers instead of index macros -> faster and smaller? */
 
@@ -69,7 +71,7 @@ DUK_LOCAL void duk__mark_hobject(duk_heap *heap, duk_hobject *h) {
 		duk_tval *tv, *tv_end;
 		duk_hobject **fn, **fn_end;
 
-		DUK_ASSERT_HCOMPFUNC_VALID(f);
+		DUK_HCOMPFUNC_ASSERT_VALID(f);
 
 		/* 'data' is reachable through every compiled function which
 		 * contains a reference.
@@ -99,30 +101,30 @@ DUK_LOCAL void duk__mark_hobject(duk_heap *heap, duk_hobject *h) {
 		}
 	} else if (DUK_HOBJECT_IS_DECENV(h)) {
 		duk_hdecenv *e = (duk_hdecenv *) h;
-		DUK_ASSERT_HDECENV_VALID(e);
+		DUK_HDECENV_ASSERT_VALID(e);
 		duk__mark_heaphdr(heap, (duk_heaphdr *) e->thread);
 		duk__mark_heaphdr(heap, (duk_heaphdr *) e->varmap);
 	} else if (DUK_HOBJECT_IS_OBJENV(h)) {
 		duk_hobjenv *e = (duk_hobjenv *) h;
-		DUK_ASSERT_HOBJENV_VALID(e);
+		DUK_HOBJENV_ASSERT_VALID(e);
 		duk__mark_heaphdr_nonnull(heap, (duk_heaphdr *) e->target);
 #if defined(DUK_USE_BUFFEROBJECT_SUPPORT)
 	} else if (DUK_HOBJECT_IS_BUFOBJ(h)) {
 		duk_hbufobj *b = (duk_hbufobj *) h;
-		DUK_ASSERT_HBUFOBJ_VALID(b);
+		DUK_HBUFOBJ_ASSERT_VALID(b);
 		duk__mark_heaphdr(heap, (duk_heaphdr *) b->buf);
 		duk__mark_heaphdr(heap, (duk_heaphdr *) b->buf_prop);
 #endif  /* DUK_USE_BUFFEROBJECT_SUPPORT */
 	} else if (DUK_HOBJECT_IS_BOUNDFUNC(h)) {
 		duk_hboundfunc *f = (duk_hboundfunc *) (void *) h;
-		DUK_ASSERT_HBOUNDFUNC_VALID(f);
+		DUK_HBOUNDFUNC_ASSERT_VALID(f);
 		duk__mark_tval(heap, &f->target);
 		duk__mark_tval(heap, &f->this_binding);
 		duk__mark_tvals(heap, f->args, f->nargs);
 #if defined(DUK_USE_ES6_PROXY)
 	} else if (DUK_HOBJECT_IS_PROXY(h)) {
 		duk_hproxy *p = (duk_hproxy *) h;
-		DUK_ASSERT_HPROXY_VALID(p);
+		DUK_HPROXY_ASSERT_VALID(p);
 		duk__mark_heaphdr_nonnull(heap, (duk_heaphdr *) p->target);
 		duk__mark_heaphdr_nonnull(heap, (duk_heaphdr *) p->handler);
 #endif  /* DUK_USE_ES6_PROXY */
@@ -131,7 +133,7 @@ DUK_LOCAL void duk__mark_hobject(duk_heap *heap, duk_hobject *h) {
 		duk_activation *act;
 		duk_tval *tv;
 
-		DUK_ASSERT_HTHREAD_VALID(t);
+		DUK_HTHREAD_ASSERT_VALID(t);
 
 		tv = t->valstack;
 		while (tv < t->valstack_top) {
@@ -178,6 +180,7 @@ DUK_LOCAL void duk__mark_heaphdr(duk_heap *heap, duk_heaphdr *h) {
 		return;
 	}
 
+	DUK_HEAPHDR_ASSERT_VALID(h);
 	DUK_ASSERT(!DUK_HEAPHDR_HAS_READONLY(h) || DUK_HEAPHDR_HAS_REACHABLE(h));
 
 #if defined(DUK_USE_ASSERTIONS) && defined(DUK_USE_REFERENCE_COUNTING)
@@ -232,6 +235,7 @@ DUK_LOCAL void duk__mark_tval(duk_heap *heap, duk_tval *tv) {
 	if (tv == NULL) {
 		return;
 	}
+	DUK_TVAL_ASSERT_VALID(tv);
 	if (DUK_TVAL_IS_HEAP_ALLOCATED(tv)) {
 		duk_heaphdr *h;
 		h = DUK_TVAL_GET_HEAPHDR(tv);
@@ -244,6 +248,7 @@ DUK_LOCAL void duk__mark_tvals(duk_heap *heap, duk_tval *tv, duk_idx_t count) {
 	DUK_ASSERT(count == 0 || tv != NULL);
 
 	while (count-- > 0) {
+		DUK_TVAL_ASSERT_VALID(tv);
 		if (DUK_TVAL_IS_HEAP_ALLOCATED(tv)) {
 			duk_heaphdr *h;
 			h = DUK_TVAL_GET_HEAPHDR(tv);
@@ -735,8 +740,8 @@ DUK_LOCAL void duk__sweep_heap(duk_heap *heap, duk_small_uint_t flags, duk_size_
 #if defined(DUK_USE_DOUBLE_LINKED_HEAP)
 				DUK_HEAPHDR_SET_PREV(heap, curr, prev);
 #endif
-				DUK_ASSERT_HEAPHDR_LINKS(heap, prev);
-				DUK_ASSERT_HEAPHDR_LINKS(heap, curr);
+				DUK_HEAPHDR_ASSERT_LINKS(heap, prev);
+				DUK_HEAPHDR_ASSERT_LINKS(heap, curr);
 				prev = curr;
 			}
 
@@ -811,7 +816,7 @@ DUK_LOCAL void duk__sweep_heap(duk_heap *heap, duk_small_uint_t flags, duk_size_
 	if (prev != NULL) {
 		DUK_HEAPHDR_SET_NEXT(heap, prev, NULL);
 	}
-	DUK_ASSERT_HEAPHDR_LINKS(heap, prev);
+	DUK_HEAPHDR_ASSERT_LINKS(heap, prev);
 
 #if defined(DUK_USE_DEBUG)
 	DUK_D(DUK_DPRINT("mark-and-sweep sweep objects (non-string): %ld freed, %ld kept, %ld rescued, %ld queued for finalization",
@@ -946,66 +951,18 @@ DUK_LOCAL void duk__compact_objects(duk_heap *heap) {
  */
 
 #if defined(DUK_USE_ASSERTIONS)
-DUK_LOCAL void duk__assert_heaphdr_flags(duk_heap *heap) {
-	duk_heaphdr *hdr;
+typedef void (*duk__gc_heaphdr_assert)(duk_heap *heap, duk_heaphdr *h);
+typedef void (*duk__gc_hstring_assert)(duk_heap *heap, duk_hstring *h);
 
-	hdr = heap->heap_allocated;
-	while (hdr) {
-		DUK_ASSERT(!DUK_HEAPHDR_HAS_REACHABLE(hdr));
-		DUK_ASSERT(!DUK_HEAPHDR_HAS_TEMPROOT(hdr));
-		DUK_ASSERT(!DUK_HEAPHDR_HAS_FINALIZABLE(hdr));
-		/* may have FINALIZED */
-		hdr = DUK_HEAPHDR_GET_NEXT(heap, hdr);
-	}
-
-#if defined(DUK_USE_REFERENCE_COUNTING)
-	DUK_ASSERT(heap->refzero_list == NULL);  /* Always handled to completion inline in DECREF. */
-#endif
-}
-
-#if defined(DUK_USE_REFERENCE_COUNTING)
-DUK_LOCAL void duk__assert_valid_refcounts(duk_heap *heap) {
-	duk_heaphdr *hdr = heap->heap_allocated;
-	while (hdr) {
-		/* Cannot really assert much w.r.t. refcounts now. */
-
-		if (DUK_HEAPHDR_GET_REFCOUNT(hdr) == 0 &&
-		    DUK_HEAPHDR_HAS_FINALIZED(hdr)) {
-			/* An object may be in heap_allocated list with a zero
-			 * refcount if it has just been finalized and is waiting
-			 * to be collected by the next cycle.
-			 * (This doesn't currently happen however.)
-			 */
-		} else if (DUK_HEAPHDR_GET_REFCOUNT(hdr) == 0) {
-			/* An object may be in heap_allocated list with a zero
-			 * refcount also if it is a temporary object created
-			 * during debugger paused state.  It will get collected
-			 * by mark-and-sweep based on its reachability status
-			 * (presumably not reachable because refcount is 0).
-			 */
-		}
-		DUK_ASSERT_DISABLE(DUK_HEAPHDR_GET_REFCOUNT(hdr) >= 0);  /* Unsigned. */
-		hdr = DUK_HEAPHDR_GET_NEXT(heap, hdr);
-	}
-}
-
-DUK_LOCAL void duk__clear_assert_refcounts(duk_heap *heap) {
+DUK_LOCAL void duk__assert_walk_list(duk_heap *heap, duk_heaphdr *start, duk__gc_heaphdr_assert func) {
 	duk_heaphdr *curr;
-	duk_uint32_t i;
+	for (curr = start; curr != NULL; curr = DUK_HEAPHDR_GET_NEXT(heap, curr)) {
+		func(heap, curr);
+	}
+}
 
-	for (curr = heap->heap_allocated; curr != NULL; curr = DUK_HEAPHDR_GET_NEXT(heap, curr)) {
-		curr->h_assert_refcount = 0;
-	}
-#if defined(DUK_USE_FINALIZER_SUPPORT)
-	for (curr = heap->finalize_list; curr != NULL; curr = DUK_HEAPHDR_GET_NEXT(heap, curr)) {
-		curr->h_assert_refcount = 0;
-	}
-#endif
-#if defined(DUK_USE_REFERENCE_COUNTING)
-	for (curr = heap->refzero_list; curr != NULL; curr = DUK_HEAPHDR_GET_NEXT(heap, curr)) {
-		curr->h_assert_refcount = 0;
-	}
-#endif
+DUK_LOCAL void duk__assert_walk_strtable(duk_heap *heap, duk__gc_hstring_assert func) {
+	duk_uint32_t i;
 
 	for (i = 0; i < heap->st_size; i++) {
 		duk_hstring *h;
@@ -1016,10 +973,91 @@ DUK_LOCAL void duk__clear_assert_refcounts(duk_heap *heap) {
 		h = heap->strtable[i];
 #endif
 		while (h != NULL) {
-			((duk_heaphdr *) h)->h_assert_refcount = 0;
+			func(heap, h);
 			h = h->hdr.h_next;
 		}
 	}
+}
+
+DUK_LOCAL void duk__assert_heaphdr_flags_cb(duk_heap *heap, duk_heaphdr *h) {
+	DUK_UNREF(heap);
+	DUK_ASSERT(!DUK_HEAPHDR_HAS_REACHABLE(h));
+	DUK_ASSERT(!DUK_HEAPHDR_HAS_TEMPROOT(h));
+	DUK_ASSERT(!DUK_HEAPHDR_HAS_FINALIZABLE(h));
+	/* may have FINALIZED */
+}
+DUK_LOCAL void duk__assert_heaphdr_flags(duk_heap *heap) {
+	duk__assert_walk_list(heap, heap->heap_allocated, duk__assert_heaphdr_flags_cb);
+#if defined(DUK_USE_REFERENCE_COUNTING)
+	DUK_ASSERT(heap->refzero_list == NULL);  /* Always handled to completion inline in DECREF. */
+#endif
+	/* XXX: Assertions for finalize_list? */
+}
+
+DUK_LOCAL void duk__assert_validity_cb1(duk_heap *heap, duk_heaphdr *h) {
+	DUK_UNREF(heap);
+	DUK_ASSERT(DUK_HEAPHDR_IS_OBJECT(h) || DUK_HEAPHDR_IS_BUFFER(h));
+	duk_heaphdr_assert_valid_subclassed(h);
+}
+DUK_LOCAL void duk__assert_validity_cb2(duk_heap *heap, duk_hstring *h) {
+	DUK_UNREF(heap);
+	DUK_ASSERT(DUK_HEAPHDR_IS_STRING((duk_heaphdr *) h));
+	duk_heaphdr_assert_valid_subclassed((duk_heaphdr *) h);
+}
+DUK_LOCAL void duk__assert_validity(duk_heap *heap) {
+	duk__assert_walk_list(heap, heap->heap_allocated, duk__assert_validity_cb1);
+#if defined(DUK_USE_FINALIZER_SUPPORT)
+	duk__assert_walk_list(heap, heap->finalize_list, duk__assert_validity_cb1);
+#endif
+#if defined(DUK_USE_REFERENCE_COUNTING)
+	duk__assert_walk_list(heap, heap->refzero_list, duk__assert_validity_cb1);
+#endif
+	duk__assert_walk_strtable(heap, duk__assert_validity_cb2);
+}
+
+#if defined(DUK_USE_REFERENCE_COUNTING)
+DUK_LOCAL void duk__assert_valid_refcounts_cb(duk_heap *heap, duk_heaphdr *h) {
+	/* Cannot really assert much w.r.t. refcounts now. */
+
+	DUK_UNREF(heap);
+	if (DUK_HEAPHDR_GET_REFCOUNT(h) == 0 &&
+	    DUK_HEAPHDR_HAS_FINALIZED(h)) {
+		/* An object may be in heap_allocated list with a zero
+		 * refcount if it has just been finalized and is waiting
+		 * to be collected by the next cycle.
+		 * (This doesn't currently happen however.)
+		 */
+	} else if (DUK_HEAPHDR_GET_REFCOUNT(h) == 0) {
+		/* An object may be in heap_allocated list with a zero
+		 * refcount also if it is a temporary object created
+		 * during debugger paused state.  It will get collected
+		 * by mark-and-sweep based on its reachability status
+		 * (presumably not reachable because refcount is 0).
+		 */
+	}
+	DUK_ASSERT_DISABLE(DUK_HEAPHDR_GET_REFCOUNT(h) >= 0);  /* Unsigned. */
+}
+DUK_LOCAL void duk__assert_valid_refcounts(duk_heap *heap) {
+	duk__assert_walk_list(heap, heap->heap_allocated, duk__assert_valid_refcounts_cb);
+}
+
+DUK_LOCAL void duk__clear_assert_refcounts_cb1(duk_heap *heap, duk_heaphdr *h) {
+	DUK_UNREF(heap);
+	h->h_assert_refcount = 0;
+}
+DUK_LOCAL void duk__clear_assert_refcounts_cb2(duk_heap *heap, duk_hstring *h) {
+	DUK_UNREF(heap);
+	((duk_heaphdr *) h)->h_assert_refcount = 0;
+}
+DUK_LOCAL void duk__clear_assert_refcounts(duk_heap *heap) {
+	duk__assert_walk_list(heap, heap->heap_allocated, duk__clear_assert_refcounts_cb1);
+#if defined(DUK_USE_FINALIZER_SUPPORT)
+	duk__assert_walk_list(heap, heap->finalize_list, duk__clear_assert_refcounts_cb1);
+#endif
+#if defined(DUK_USE_REFERENCE_COUNTING)
+	duk__assert_walk_list(heap, heap->refzero_list, duk__clear_assert_refcounts_cb1);
+#endif
+	duk__assert_walk_strtable(heap, duk__clear_assert_refcounts_cb2);
 }
 
 DUK_LOCAL void duk__check_refcount_heaphdr(duk_heaphdr *hdr) {
@@ -1054,32 +1092,21 @@ DUK_LOCAL void duk__check_refcount_heaphdr(duk_heaphdr *hdr) {
 	}
 }
 
+DUK_LOCAL void duk__check_assert_refcounts_cb1(duk_heap *heap, duk_heaphdr *h) {
+	DUK_UNREF(heap);
+	duk__check_refcount_heaphdr(h);
+}
+DUK_LOCAL void duk__check_assert_refcounts_cb2(duk_heap *heap, duk_hstring *h) {
+	DUK_UNREF(heap);
+	duk__check_refcount_heaphdr((duk_heaphdr *) h);
+}
 DUK_LOCAL void duk__check_assert_refcounts(duk_heap *heap) {
-	duk_heaphdr *curr;
-	duk_uint32_t i;
-
-	for (curr = heap->heap_allocated; curr != NULL; curr = DUK_HEAPHDR_GET_NEXT(heap, curr)) {
-		duk__check_refcount_heaphdr(curr);
-	}
+	duk__assert_walk_list(heap, heap->heap_allocated, duk__check_assert_refcounts_cb1);
 #if defined(DUK_USE_FINALIZER_SUPPORT)
-	for (curr = heap->finalize_list; curr != NULL; curr = DUK_HEAPHDR_GET_NEXT(heap, curr)) {
-		duk__check_refcount_heaphdr(curr);
-	}
+	duk__assert_walk_list(heap, heap->finalize_list, duk__check_assert_refcounts_cb1);
 #endif
-
-	for (i = 0; i < heap->st_size; i++) {
-		duk_hstring *h;
-
-#if defined(DUK_USE_STRTAB_PTRCOMP)
-		h = DUK_USE_HEAPPTR_DEC16(heap->heap_udata, heap->strtable16[i]);
-#else
-		h = heap->strtable[i];
-#endif
-		while (h != NULL) {
-			duk__check_refcount_heaphdr((duk_heaphdr *) h);
-			h = h->hdr.h_next;
-		}
-	}
+	/* XXX: Assert anything for refzero_list? */
+	duk__assert_walk_strtable(heap, duk__check_assert_refcounts_cb2);
 }
 #endif  /* DUK_USE_REFERENCE_COUNTING */
 
@@ -1220,6 +1247,7 @@ DUK_INTERNAL void duk_heap_mark_and_sweep(duk_heap *heap, duk_small_uint_t flags
 	DUK_ASSERT(!DUK_HEAP_HAS_MARKANDSWEEP_RECLIMIT_REACHED(heap));
 	DUK_ASSERT(heap->ms_recursion_depth == 0);
 	duk__assert_heaphdr_flags(heap);
+	duk__assert_validity(heap);
 #if defined(DUK_USE_REFERENCE_COUNTING)
 	/* Note: heap->refzero_free_running may be true; a refcount
 	 * finalizer may trigger a mark-and-sweep.
@@ -1367,6 +1395,7 @@ DUK_INTERNAL void duk_heap_mark_and_sweep(duk_heap *heap, duk_small_uint_t flags
 	DUK_ASSERT(!DUK_HEAP_HAS_MARKANDSWEEP_RECLIMIT_REACHED(heap));
 	DUK_ASSERT(heap->ms_recursion_depth == 0);
 	duk__assert_heaphdr_flags(heap);
+	duk__assert_validity(heap);
 #if defined(DUK_USE_REFERENCE_COUNTING)
 	/* Note: heap->refzero_free_running may be true; a refcount
 	 * finalizer may trigger a mark-and-sweep.

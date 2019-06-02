@@ -13,7 +13,7 @@ DUK_INTERNAL void duk_proxy_ownkeys_postprocess(duk_hthread *thr, duk_hobject *h
 	duk_uarridx_t i, len, idx;
 	duk_propdesc desc;
 
-	DUK_ASSERT_CTX_VALID(thr);
+	DUK_CTX_ASSERT_VALID(thr);
 	DUK_ASSERT(h_proxy_target != NULL);
 
 	len = (duk_uarridx_t) duk_get_length(thr, -1);

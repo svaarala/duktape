@@ -81,7 +81,7 @@ DUK_LOCAL duk_idx_t duk__call_get_idx_func_unvalidated(duk_hthread *thr, duk_idx
  * May currently throw an error e.g. when getting the property.
  */
 DUK_LOCAL void duk__call_prop_prep_stack(duk_hthread *thr, duk_idx_t normalized_obj_idx, duk_idx_t nargs) {
-	DUK_ASSERT_CTX_VALID(thr);
+	DUK_CTX_ASSERT_VALID(thr);
 	DUK_ASSERT(nargs >= 0);
 
 	DUK_DDD(DUK_DDDPRINT("duk__call_prop_prep_stack, normalized_obj_idx=%ld, nargs=%ld, stacktop=%ld",
@@ -176,7 +176,7 @@ DUK_LOCAL duk_ret_t duk__pcall_raw(duk_hthread *thr, void *udata) {
 	duk_idx_t idx_func;
 	duk_int_t ret;
 
-	DUK_ASSERT_CTX_VALID(thr);
+	DUK_CTX_ASSERT_VALID(thr);
 	DUK_ASSERT(udata != NULL);
 
 	args = (duk__pcall_args *) udata;
@@ -212,7 +212,7 @@ DUK_LOCAL duk_ret_t duk__pcall_method_raw(duk_hthread *thr, void *udata) {
 	duk_idx_t idx_func;
 	duk_int_t ret;
 
-	DUK_ASSERT_CTX_VALID(thr);
+	DUK_CTX_ASSERT_VALID(thr);
 	DUK_ASSERT(udata != NULL);
 
 	args = (duk__pcall_method_args *) udata;
@@ -253,7 +253,7 @@ DUK_LOCAL duk_ret_t duk__pcall_prop_raw(duk_hthread *thr, void *udata) {
 	duk_idx_t obj_idx;
 	duk_int_t ret;
 
-	DUK_ASSERT_CTX_VALID(thr);
+	DUK_CTX_ASSERT_VALID(thr);
 	DUK_ASSERT(udata != NULL);
 
 	args = (duk__pcall_prop_args *) udata;
@@ -488,7 +488,7 @@ DUK_EXTERNAL void duk_set_magic(duk_hthread *thr, duk_idx_t idx, duk_int_t magic
 DUK_INTERNAL void duk_resolve_nonbound_function(duk_hthread *thr) {
 	duk_tval *tv;
 
-	DUK_ASSERT_HTHREAD_VALID(thr);
+	DUK_HTHREAD_ASSERT_VALID(thr);
 
 	tv = DUK_GET_TVAL_NEGIDX(thr, -1);
 	if (DUK_TVAL_IS_OBJECT(tv)) {

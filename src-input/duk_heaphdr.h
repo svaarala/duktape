@@ -283,23 +283,15 @@ struct duk_heaphdr_string {
 /* Check that prev/next links are consistent: if e.g. h->prev is != NULL,
  * h->prev->next should point back to h.
  */
-#if defined(DUK_USE_DOUBLE_LINKED_HEAP) && defined(DUK_USE_ASSERTIONS)
-#define DUK_ASSERT_HEAPHDR_LINKS(heap,h) do { \
-		if ((h) != NULL) { \
-			duk_heaphdr *h__prev, *h__next; \
-			h__prev = DUK_HEAPHDR_GET_PREV((heap), (h)); \
-			h__next = DUK_HEAPHDR_GET_NEXT((heap), (h)); \
-			DUK_ASSERT(h__prev == NULL || (DUK_HEAPHDR_GET_NEXT((heap), h__prev) == (h))); \
-			DUK_ASSERT(h__next == NULL || (DUK_HEAPHDR_GET_PREV((heap), h__next) == (h))); \
-		} \
-	} while (0)
+#if defined(DUK_USE_ASSERTIONS)
+DUK_INTERNAL_DECL void duk_heaphdr_assert_valid_subclassed(duk_heaphdr *h);
+DUK_INTERNAL_DECL void duk_heaphdr_assert_links(duk_heap *heap, duk_heaphdr *h);
+DUK_INTERNAL_DECL void duk_heaphdr_assert_valid(duk_heaphdr *h);
+#define DUK_HEAPHDR_ASSERT_LINKS(heap,h)  do { duk_heaphdr_assert_links((heap), (h)); } while (0)
+#define DUK_HEAPHDR_ASSERT_VALID(h)  do { duk_heaphdr_assert_valid((h)); } while (0)
 #else
-#define DUK_ASSERT_HEAPHDR_LINKS(heap,h) do {} while (0)
+#define DUK_HEAPHDR_ASSERT_LINKS(heap,h)  do {} while (0)
+#define DUK_HEAPHDR_ASSERT_VALID(h)  do {} while (0)
 #endif
-
-#define DUK_ASSERT_HEAPHDR_VALID(h) do { \
-		DUK_ASSERT((h) != NULL); \
-		DUK_ASSERT(DUK_HEAPHDR_HTYPE_VALID((h))); \
-	} while (0)
 
 #endif  /* DUK_HEAPHDR_H_INCLUDED */

@@ -593,7 +593,7 @@ static duk_uint8_t *duk__load_func(duk_hthread *thr, duk_uint8_t *p, duk_uint8_t
 		DUK_ASSERT(new_env->thread == NULL);  /* Closed. */
 		DUK_ASSERT(new_env->varmap == NULL);
 		DUK_ASSERT(new_env->regbase_byteoff == 0);
-		DUK_ASSERT_HDECENV_VALID(new_env);
+		DUK_HDECENV_ASSERT_VALID(new_env);
 		DUK_ASSERT(DUK_HOBJECT_GET_PROTOTYPE(thr->heap, (duk_hobject *) new_env) == NULL);
 		DUK_HOBJECT_SET_PROTOTYPE(thr->heap, (duk_hobject *) new_env, func_env);
 		DUK_HOBJECT_INCREF(thr, func_env);

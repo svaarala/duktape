@@ -60,7 +60,7 @@ DUK_LOCAL duk_ret_t duk__do_compile(duk_hthread *thr, void *udata) {
 	duk_uint_t flags;
 	duk_hcompfunc *h_templ;
 
-	DUK_ASSERT_CTX_VALID(thr);
+	DUK_CTX_ASSERT_VALID(thr);
 	DUK_ASSERT(udata != NULL);
 
 	/* Note: strictness is not inherited from the current Duktape/C
