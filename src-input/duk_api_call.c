@@ -379,10 +379,7 @@ DUK_EXTERNAL duk_bool_t duk_is_constructor_call(duk_hthread *thr) {
 	return 0;
 }
 
-/* XXX: Make this obsolete by adding a function flag for rejecting a
- * non-constructor call automatically?
- */
-DUK_INTERNAL void duk_require_constructor_call(duk_hthread *thr) {
+DUK_EXTERNAL void duk_require_constructor_call(duk_hthread *thr) {
 	DUK_ASSERT_API_ENTRY(thr);
 
 	if (!duk_is_constructor_call(thr)) {

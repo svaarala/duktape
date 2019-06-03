@@ -295,8 +295,6 @@ DUK_INTERNAL_DECL duk_idx_t duk_unpack_array_like(duk_hthread *thr, duk_idx_t id
 DUK_INTERNAL_DECL void duk_unpack(duk_hthread *thr);
 #endif
 
-DUK_INTERNAL_DECL void duk_require_constructor_call(duk_hthread *thr);
-DUK_INTERNAL_DECL void duk_require_constructable(duk_hthread *thr, duk_idx_t idx);
 DUK_INTERNAL_DECL void duk_push_symbol_descriptive_string(duk_hthread *thr, duk_hstring *h);
 
 DUK_INTERNAL_DECL void duk_resolve_nonbound_function(duk_hthread *thr);

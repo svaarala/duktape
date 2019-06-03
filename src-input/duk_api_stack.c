@@ -2302,7 +2302,7 @@ DUK_EXTERNAL void duk_require_function(duk_hthread *thr, duk_idx_t idx) {
 	}
 }
 
-DUK_INTERNAL void duk_require_constructable(duk_hthread *thr, duk_idx_t idx) {
+DUK_EXTERNAL void duk_require_constructable(duk_hthread *thr, duk_idx_t idx) {
 	duk_hobject *h;
 
 	DUK_ASSERT_API_ENTRY(thr);
