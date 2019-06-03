@@ -3449,6 +3449,8 @@ Planned
 * Fix CBOR decoding of text strings and byte strings with a lot of
   concatenated pieces in the CBOR extra (GH-2093)
 
+* Fix CBOR decoding of (ignored) 64-bit tags in the CBOR extra (GH-2095)
+
 * Trivial fixes and cleanups: Windows Date provider return code check
   consistency (GH-1956)
 

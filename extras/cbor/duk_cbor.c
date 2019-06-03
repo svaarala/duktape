@@ -982,7 +982,7 @@ static void duk__cbor_decode_value(duk_cbor_decode_context *dec_ctx) {
 		 * value may itself be tagged (an unlimited number of times)
 		 * so keep on peeling away tags.
 		 */
-		(void) duk__cbor_decode_aival_uint32(dec_ctx, ib);
+		(void) duk__cbor_decode_aival_uint(dec_ctx, ib);
 		goto reread_initial_byte;
 	}
 	case 7U: {  /* floating point numbers, simple data types, break; other */
