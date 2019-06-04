@@ -67,6 +67,7 @@
 /FlameGraph
 /dtrace4linux
 /flow
+/v20140814.tar.gz
 /massif-*.out
 /ms_print.*
 /dukweb.js
