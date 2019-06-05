@@ -198,3 +198,8 @@ delete require;
 
 // ... and the 'window' binding is expected
 var window = new Function('return this;')();
+window.location = {};
+window.location.protocol = 'file:';
+window.location.search = '?';
+window.addEventListener = function nop() {};
+window.removeEventListener = function nop() {};
