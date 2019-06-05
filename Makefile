@@ -1175,3 +1175,23 @@ massif-%: tests/ecmascript/%.js duk
 massif-helloworld: massif-test-dev-hello-world
 massif-deepmerge: massif-test-dev-deepmerge
 massif-arcfour: massif-test-dev-arcfour
+
+# Docker targets for building images and running specific targets in a
+# docker container for easier reproducibility.
+.PHONY: docker-images
+docker-images:
+	docker build -t duktape-base-ubuntu-18.04 docker/duktape-base-ubuntu-18.04
+	docker build -t duktape-dist-ubuntu-18.04 docker/duktape-dist-ubuntu-18.04
+	docker build -t duktape-site-ubuntu-18.04 docker/duktape-site-ubuntu-18.04
+
+.PHONY: docker-dist-src-master
+docker-dist-src-master:
+	rm -f docker-output.zip
+	docker run --rm -i duktape-dist-ubuntu-18.04 > docker-output.zip
+	unzip -t docker-output.zip ; true  # avoid failure due to leading garbage
+
+.PHONY: docker-dist-site-master
+docker-dist-site-master:
+	rm -f docker-output.zip
+	docker run --rm -i duktape-site-ubuntu-18.04 > docker-output.zip
+	unzip -t docker-output.zip ; true  # avoid failure due to leading garbage

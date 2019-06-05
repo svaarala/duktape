@@ -27,6 +27,8 @@
 /duk-low-norefc
 /duk-low-rom
 /libduktape.*
+/docker-input.zip
+/docker-output.zip
 /build/
 /prep/
 /dist/
