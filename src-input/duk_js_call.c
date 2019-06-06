@@ -1820,6 +1820,7 @@ DUK_LOCAL void duk__call_env_setup(duk_hthread *thr, duk_hobject *func, duk_acti
 
 	if (DUK_LIKELY(func != NULL)) {
 		if (DUK_LIKELY(DUK_HOBJECT_HAS_NEWENV(func))) {
+			DUK_STATS_INC(thr->heap, stats_envrec_newenv);
 			if (DUK_LIKELY(!DUK_HOBJECT_HAS_CREATEARGS(func))) {
 				/* Use a new environment but there's no 'arguments' object;
 				 * delayed environment initialization.  This is the most
@@ -1856,6 +1857,7 @@ DUK_LOCAL void duk__call_env_setup(duk_hthread *thr, duk_hobject *func, duk_acti
 
 			DUK_ASSERT(!DUK_HOBJECT_HAS_CREATEARGS(func));
 
+			DUK_STATS_INC(thr->heap, stats_envrec_oldenv);
 			duk__handle_oldenv_for_call(thr, func, act);
 
 			DUK_ASSERT(act->lex_env != NULL);
@@ -1865,6 +1867,7 @@ DUK_LOCAL void duk__call_env_setup(duk_hthread *thr, duk_hobject *func, duk_acti
 		/* Lightfuncs are always native functions and have "newenv". */
 		DUK_ASSERT(act->lex_env == NULL);
 		DUK_ASSERT(act->var_env == NULL);
+		DUK_STATS_INC(thr->heap, stats_envrec_newenv);
 	}
 }
 

@@ -138,6 +138,8 @@ void duk_js_push_closure(duk_hthread *thr,
 	DUK_ASSERT(outer_lex_env != NULL);
 	DUK_UNREF(len_value);
 
+	DUK_STATS_INC(thr->heap, stats_envrec_pushclosure);
+
 	fun_clos = duk_push_hcompfunc(thr);
 	DUK_ASSERT(fun_clos != NULL);
 	DUK_ASSERT(DUK_HOBJECT_GET_PROTOTYPE(thr->heap, (duk_hobject *) fun_clos) == thr->builtins[DUK_BIDX_FUNCTION_PROTOTYPE]);
@@ -499,6 +501,29 @@ void duk_js_push_closure(duk_hthread *thr,
  *  The non-delayed initialization is handled by duk_handle_call().
  */
 
+DUK_LOCAL void duk__preallocate_env_entries(duk_hthread *thr, duk_hobject *varmap, duk_hobject *env) {
+	duk_uint_fast32_t i;
+
+	for (i = 0; i < (duk_uint_fast32_t) DUK_HOBJECT_GET_ENEXT(varmap); i++) {
+		duk_hstring *key;
+
+		key = DUK_HOBJECT_E_GET_KEY(thr->heap, varmap, i);
+		DUK_ASSERT(key != NULL);   /* assume keys are compact in _Varmap */
+		DUK_ASSERT(!DUK_HOBJECT_E_SLOT_IS_ACCESSOR(thr->heap, varmap, i));  /* assume plain values */
+
+		/* Predefine as 'undefined' to reserve a property slot.
+		 * This makes the unwind process (where register values
+		 * are copied to the env object) safe against throwing.
+		 *
+		 * XXX: This could be made much faster by creating the
+		 * property table directly.
+		 */
+		duk_push_undefined(thr);
+		DUK_DDD(DUK_DDDPRINT("preallocate env entry for key %!O", key));
+		duk_hobject_define_property_internal(thr, env, key, DUK_PROPDESC_FLAGS_WE);
+	}
+}
+
 /* shared helper */
 DUK_INTERNAL
 duk_hobject *duk_create_activation_environment_record(duk_hthread *thr,
@@ -510,6 +535,8 @@ duk_hobject *duk_create_activation_environment_record(duk_hthread *thr,
 
 	DUK_ASSERT(thr != NULL);
 	DUK_ASSERT(func != NULL);
+
+	DUK_STATS_INC(thr->heap, stats_envrec_create);
 
 	f = (duk_hcompfunc *) func;
 	parent = DUK_HCOMPFUNC_GET_LEXENV(thr->heap, f);
@@ -546,6 +573,11 @@ duk_hobject *duk_create_activation_environment_record(duk_hthread *thr,
 			env->thread = thr;
 			DUK_HTHREAD_INCREF(thr, thr);
 			env->regbase_byteoff = bottom_byteoff;
+
+			/* Preallocate env property table to avoid potential
+			 * for out-of-memory on unwind when the env is closed.
+			 */
+			duk__preallocate_env_entries(thr, varmap, (duk_hobject *) env);
 		} else {
 			/* If function has no _Varmap, leave the environment closed. */
 			DUK_ASSERT(env->thread == NULL);
@@ -575,6 +607,8 @@ void duk_js_init_activation_environment_records_delayed(duk_hthread *thr,
 	DUK_ASSERT(DUK_HOBJECT_HAS_NEWENV(func));
 	DUK_ASSERT(act->lex_env == NULL);
 	DUK_ASSERT(act->var_env == NULL);
+
+	DUK_STATS_INC(thr->heap, stats_envrec_delayedcreate);
 
 	env = duk_create_activation_environment_record(thr, func, act->bottom_byteoff);
 	DUK_ASSERT(env != NULL);
@@ -680,9 +714,17 @@ DUK_INTERNAL void duk_js_close_environment_record(duk_hthread *thr, duk_hobject 
 		DUK_ASSERT((duk_uint8_t *) thr->valstack + regbase_byteoff + sizeof(duk_tval) * regnum >= (duk_uint8_t *) thr->valstack);
 		DUK_ASSERT((duk_uint8_t *) thr->valstack + regbase_byteoff + sizeof(duk_tval) * regnum < (duk_uint8_t *) thr->valstack_top);
 
-		/* If property already exists, overwrites silently.
+		/* Write register value into env as named properties.
+		 * If property already exists, overwrites silently.
 		 * Property is writable, but not deletable (not configurable
 		 * in terms of property attributes).
+		 *
+		 * This property write must not throw because we're unwinding
+		 * and unwind code is not allowed to throw at present.  The
+		 * call itself has no such guarantees, but we've preallocated
+		 * entries for each property when the env was created, so no
+		 * out-of-memory error should be possible.  If this guarantee
+		 * is not provided, problems like GH-476 may happen.
 		 */
 		duk_push_tval(thr, (duk_tval *) (void *) ((duk_uint8_t *) thr->valstack + regbase_byteoff + sizeof(duk_tval) * regnum));
 		DUK_DDD(DUK_DDDPRINT("closing identifier %!O -> reg %ld, value %!T",

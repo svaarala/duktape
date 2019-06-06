@@ -634,6 +634,11 @@ struct duk_heap {
 	duk_int_t stats_putprop_proxy;
 	duk_int_t stats_getvar_all;
 	duk_int_t stats_putvar_all;
+	duk_int_t stats_envrec_delayedcreate;
+	duk_int_t stats_envrec_create;
+	duk_int_t stats_envrec_newenv;
+	duk_int_t stats_envrec_oldenv;
+	duk_int_t stats_envrec_pushclosure;
 #endif
 };
 
