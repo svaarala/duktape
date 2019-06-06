@@ -1,0 +1,19 @@
+name: duk_require_constructable
+
+proto: |
+  void duk_require_constructable(duk_context *ctx, duk_idx_t idx);
+
+stack: |
+  [ ... val! ... ]
+
+summary: |
+  <p>Throw an error if value at <code>idx</code> is not a constructable
+  function or if <code>idx</code> is invalid.  Otherwise returns.</p>
+
+example: |
+  duk_require_constructable(ctx, 3);
+
+tags:
+  - stack
+
+introduced: 2.4.0
