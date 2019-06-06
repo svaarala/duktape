@@ -3446,6 +3446,10 @@ Planned
 * Fix several assertion failures with possible memory unsafe behavior
   (GH-2025, GH-2026, GH-2031, GH-2033, GH-2035, GH-2036, GH-2065)
 
+* Fix incorrect assertion with no underlying bug for resolving bound
+  function chains with a Proxy object (rather than a plain function)
+  as the final non-bound function (GH-2049, GH-2103)
+
 * Fix compile error for extras/eventloop due to missing a header file
   (c_eventloop.h) in the dist package (GH-2090)
 
