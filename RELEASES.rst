@@ -3402,6 +3402,9 @@ Planned
 * Add duk_push_bare_array() to push an Array instance which doesn't
   inherit from anything (GH-2064)
 
+* Add duk_require_constructable() and duk_require_constructor_call() to
+  the public API (previously they were internal helpers) (GH-2102)
+
 * Enable Symbol built-in by default (DUK_USE_SYMBOL_BUILTIN) (GH-1969)
 
 * Remove arguments.caller for strict argument objects to match revised
