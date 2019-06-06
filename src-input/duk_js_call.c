@@ -626,7 +626,8 @@ DUK_LOCAL void duk__handle_bound_chain_for_call(duk_hthread *thr,
 		DUK_ASSERT(func != NULL);
 		DUK_ASSERT(!DUK_HOBJECT_HAS_BOUNDFUNC(func));
 		DUK_ASSERT(DUK_HOBJECT_HAS_COMPFUNC(func) ||
-		           DUK_HOBJECT_HAS_NATFUNC(func));
+		           DUK_HOBJECT_HAS_NATFUNC(func) ||
+		           DUK_HOBJECT_IS_PROXY(func));
 	}
 #endif
 }

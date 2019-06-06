@@ -362,6 +362,7 @@ DUK_INTERNAL void duk_hthread_create_builtin_objects(duk_hthread *thr) {
 		DUK_ASSERT(!DUK_HOBJECT_HAS_COMPFUNC(h));
 		/* DUK_HOBJECT_FLAG_NATFUNC varies */
 		DUK_ASSERT(!DUK_HOBJECT_IS_THREAD(h));
+		DUK_ASSERT(!DUK_HOBJECT_IS_PROXY(h));
 		DUK_ASSERT(!DUK_HOBJECT_HAS_ARRAY_PART(h) || class_num == DUK_HOBJECT_CLASS_ARRAY);
 		/* DUK_HOBJECT_FLAG_STRICT varies */
 		DUK_ASSERT(!DUK_HOBJECT_HAS_NATFUNC(h) ||  /* all native functions have NEWENV */

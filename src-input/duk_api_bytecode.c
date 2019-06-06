@@ -462,6 +462,7 @@ static duk_uint8_t *duk__load_func(duk_hthread *thr, duk_uint8_t *p, duk_uint8_t
 	DUK_ASSERT(DUK_HOBJECT_HAS_COMPFUNC(&h_fun->obj));
 	DUK_ASSERT(!DUK_HOBJECT_HAS_NATFUNC(&h_fun->obj));
 	DUK_ASSERT(!DUK_HOBJECT_IS_THREAD(&h_fun->obj));
+	DUK_ASSERT(!DUK_HOBJECT_IS_PROXY(&h_fun->obj));
 	DUK_ASSERT(!DUK_HOBJECT_HAS_EXOTIC_ARRAY(&h_fun->obj));
 	DUK_ASSERT(!DUK_HOBJECT_HAS_EXOTIC_STRINGOBJ(&h_fun->obj));
 	DUK_ASSERT(!DUK_HOBJECT_HAS_EXOTIC_ARGUMENTS(&h_fun->obj));
