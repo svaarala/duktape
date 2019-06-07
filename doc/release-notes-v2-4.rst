@@ -15,7 +15,9 @@ TBD.
 * Add duk_to_stacktrace() and duk_safe_to_stacktrace() to make it easier
   to get stacktraces in C code.
 
-* Add Minimal Eventloop Example
+* Add Minimal Eventloop Example.
+
+* Include ``c_eventloop.h`` in dist.
 
 Upgrading from Duktape 2.3
 ==========================
