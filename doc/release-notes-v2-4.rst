@@ -15,7 +15,7 @@ TBD.
 * Add duk_to_stacktrace() and duk_safe_to_stacktrace() to make it easier
   to get stacktraces in C code.
 
-* Add Minimal Eventloop Example.
+* Add minimal eventloop example.
 
 * Include ``c_eventloop.h`` in dist.
 
