@@ -19,11 +19,14 @@ function build() {
 
 function test() {
     var obj;
+    var buf;
     var i;
 
     obj = build();
+    buf = CBOR.encode(obj);
+
     for (i = 0; i < 1e3; i++) {
-        void CBOR.encode(obj);
+        void CBOR.decode(buf);
     }
 }
 

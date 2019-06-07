@@ -349,8 +349,8 @@ enc(new Uint16Array([ 1, 2, 3, 4 ]), '480100020003000400');  // Endian specific;
 "" 60 60
 "foo" 63666f6f 63666f6f
 "foo\u20acbar" 69666f6fe282ac626172 69666f6fe282ac626172
-"foo\ud800bar" 69666f6feda080626172 69666f6feda080626172
-"foo\udc00bar" 69666f6fedb080626172 69666f6fedb080626172
+"foo\ud800bar" 49666f6feda080626172 49666f6feda080626172
+"foo\udc00bar" 49666f6fedb080626172 49666f6fedb080626172
 "\u4321\u4321\u4321\u4321\u4321\u4321\u4321xy" 77e48ca1e48ca1e48ca1e48ca1e48ca1e48ca1e48ca17879 77e48ca1e48ca1e48ca1e48ca1e48ca1e48ca1e48ca17879
 "\u4321\u4321\u4321\u4321\u4321\u4321\u4321xyz" 7818e48ca1e48ca1e48ca1e48ca1e48ca1e48ca1e48ca178797a 7818e48ca1e48ca1e48ca1e48ca1e48ca1e48ca1e48ca178797a
 "\u4321\u4321\u4321\u4321\u4321\u4321\u4321xyzw" 7819e48ca1e48ca1e48ca1e48ca1e48ca1e48ca1e48ca178797a77 7819e48ca1e48ca1e48ca1e48ca1e48ca1e48ca1e48ca178797a77
@@ -362,8 +362,8 @@ enc(new Uint16Array([ 1, 2, 3, 4 ]), '480100020003000400');  // Endian specific;
 enc('', '60');
 enc('foo', '63666f6f');
 enc('foo\u20acbar', '69666f6fe282ac626172');
-enc('foo\ud800bar', '69666f6feda080626172');  // Unpaired surrogate, this is technically an invalid encoding because CBOR strings must be UTF-8; could maybe be encoded as a byte string instead (perhaps with a tag indicating extended UTF-8)
-enc('foo\udc00bar', '69666f6fedb080626172');  // Unpaired surrogate, technically invalid
+enc('foo\ud800bar', '49666f6feda080626172');  // Unpaired surrogate, invalid UTF-8, encodes as byte string
+enc('foo\udc00bar', '49666f6fedb080626172');  // Unpaired surrogate, same behavior
 enc('\u4321\u4321\u4321\u4321\u4321\u4321\u4321xy', '77e48ca1e48ca1e48ca1e48ca1e48ca1e48ca1e48ca17879');
 enc('\u4321\u4321\u4321\u4321\u4321\u4321\u4321xyz', '7818e48ca1e48ca1e48ca1e48ca1e48ca1e48ca1e48ca178797a');
 enc('\u4321\u4321\u4321\u4321\u4321\u4321\u4321xyzw', '7819e48ca1e48ca1e48ca1e48ca1e48ca1e48ca1e48ca178797a77');
