@@ -287,6 +287,8 @@ static duk_ret_t test_func(duk_context *ctx, void *udata) {
 	(void) duk_require_buffer(ctx, 0, NULL);
 	(void) duk_require_c_function(ctx, 0);
 	(void) duk_require_callable(ctx, 0);
+	(void) duk_require_constructable(ctx, 0);
+	(void) duk_require_constructor_call(ctx);
 	(void) duk_require_context(ctx, 0);
 	(void) duk_require_function(ctx, 0);
 	(void) duk_require_heapptr(ctx, 0);

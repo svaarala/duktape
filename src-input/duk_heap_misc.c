@@ -18,8 +18,8 @@ DUK_INTERNAL void duk_heap_insert_into_heap_allocated(duk_heap *heap, duk_heaphd
 	DUK_HEAPHDR_SET_PREV(heap, hdr, NULL);
 #endif
 	DUK_HEAPHDR_SET_NEXT(heap, hdr, root);
-	DUK_ASSERT_HEAPHDR_LINKS(heap, hdr);
-	DUK_ASSERT_HEAPHDR_LINKS(heap, root);
+	DUK_HEAPHDR_ASSERT_LINKS(heap, hdr);
+	DUK_HEAPHDR_ASSERT_LINKS(heap, root);
 	heap->heap_allocated = hdr;
 }
 
@@ -79,8 +79,8 @@ DUK_INTERNAL void duk_heap_insert_into_finalize_list(duk_heap *heap, duk_heaphdr
 	}
 #endif
 	DUK_HEAPHDR_SET_NEXT(heap, hdr, root);
-	DUK_ASSERT_HEAPHDR_LINKS(heap, hdr);
-	DUK_ASSERT_HEAPHDR_LINKS(heap, root);
+	DUK_HEAPHDR_ASSERT_LINKS(heap, hdr);
+	DUK_HEAPHDR_ASSERT_LINKS(heap, root);
 	heap->finalize_list = hdr;
 }
 #endif  /* DUK_USE_FINALIZER_SUPPORT */
@@ -179,3 +179,9 @@ DUK_INTERNAL void duk_heap_switch_thread(duk_heap *heap, duk_hthread *new_thr) {
 	heap->curr_thread = new_thr;  /* may be NULL */
 }
 #endif  /* DUK_USE_INTERRUPT_COUNTER */
+
+#if defined(DUK_USE_ASSERTIONS)
+DUK_INTERNAL void duk_heap_assert_valid(duk_heap *heap) {
+	DUK_ASSERT(heap != NULL);
+}
+#endif

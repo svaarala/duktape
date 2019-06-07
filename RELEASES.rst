@@ -3402,6 +3402,9 @@ Planned
 * Add duk_push_bare_array() to push an Array instance which doesn't
   inherit from anything (GH-2064)
 
+* Add duk_require_constructable() and duk_require_constructor_call() to
+  the public API (previously they were internal helpers) (GH-2102)
+
 * Enable Symbol built-in by default (DUK_USE_SYMBOL_BUILTIN) (GH-1969)
 
 * Remove arguments.caller for strict argument objects to match revised
@@ -3443,10 +3446,25 @@ Planned
 * Fix several assertion failures with possible memory unsafe behavior
   (GH-2025, GH-2026, GH-2031, GH-2033, GH-2035, GH-2036, GH-2065)
 
+* Fix incorrect assertion with no underlying bug for resolving bound
+  function chains with a Proxy object (rather than a plain function)
+  as the final non-bound function (GH-2049, GH-2103)
+
+* Fix compile error for extras/eventloop due to missing a header file
+  (c_eventloop.h) in the dist package (GH-2090)
+
+* Fix CBOR decoding of text strings and byte strings with a lot of
+  concatenated pieces in the CBOR extra (GH-2093)
+
+* Fix CBOR decoding of (ignored) 64-bit tags in the CBOR extra (GH-2095)
+
 * Trivial fixes and cleanups: Windows Date provider return code check
   consistency (GH-1956)
 
 * Fix MSVC ARM64 detection (GH-2078)
+
+* Improve assertion coverage for internal structures during mark-and-sweep
+  (GH-2092)
 
 * Various portability fixes (GH-1931, GH-1976)
 

@@ -1,0 +1,18 @@
+name: duk_require_constructor_call
+
+proto: |
+  void duk_require_constructor_call(duk_context *ctx);
+
+summary: |
+  <p>Throw an error if current function was called as a normal function
+  call (<code>Foo()</code>) rather than a constructor call
+  (<code>new Foo()</code>).  Also throws if no current call is in
+  progress.  Otherwise returns.</p>
+
+example: |
+  duk_require_constructor_call(ctx);
+
+tags:
+  - stack
+
+introduced: 2.4.0

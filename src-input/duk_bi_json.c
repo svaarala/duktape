@@ -1651,7 +1651,7 @@ DUK_LOCAL void duk__enc_pointer(duk_json_enc_ctx *js_ctx, void *ptr) {
 #if defined(DUK_USE_BUFFEROBJECT_SUPPORT)
 #if defined(DUK_USE_JX) || defined(DUK_USE_JC)
 DUK_LOCAL void duk__enc_bufobj(duk_json_enc_ctx *js_ctx, duk_hbufobj *h_bufobj) {
-	DUK_ASSERT_HBUFOBJ_VALID(h_bufobj);
+	DUK_HBUFOBJ_ASSERT_VALID(h_bufobj);
 
 	if (h_bufobj->buf == NULL || !DUK_HBUFOBJ_VALID_SLICE(h_bufobj)) {
 		DUK__EMIT_STRIDX(js_ctx, DUK_STRIDX_LC_NULL);
@@ -2056,7 +2056,7 @@ DUK_LOCAL duk_bool_t duk__enc_value(duk_json_enc_ctx *js_ctx, duk_idx_t idx_hold
 			/* With JX/JC a bufferobject gets serialized specially. */
 			duk_hbufobj *h_bufobj;
 			h_bufobj = (duk_hbufobj *) h;
-			DUK_ASSERT_HBUFOBJ_VALID(h_bufobj);
+			DUK_HBUFOBJ_ASSERT_VALID(h_bufobj);
 			duk__enc_bufobj(js_ctx, h_bufobj);
 			goto pop2_emitted;
 		}
@@ -2364,7 +2364,7 @@ DUK_LOCAL duk_bool_t duk__json_stringify_fast_value(duk_json_enc_ctx *js_ctx, du
 
 		obj = DUK_TVAL_GET_OBJECT(tv);
 		DUK_ASSERT(obj != NULL);
-		DUK_ASSERT_HOBJECT_VALID(obj);
+		DUK_HOBJECT_ASSERT_VALID(obj);
 
 		/* Once recursion depth is increased, exit path must decrease
 		 * it (though it's OK to abort the fast path).

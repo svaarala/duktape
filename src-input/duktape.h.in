@@ -812,6 +812,8 @@ DUK_EXTERNAL_DECL duk_context *duk_require_context(duk_context *ctx, duk_idx_t i
 DUK_EXTERNAL_DECL void duk_require_function(duk_context *ctx, duk_idx_t idx);
 #define duk_require_callable(ctx,idx) \
 	duk_require_function((ctx), (idx))
+DUK_EXTERNAL_DECL void duk_require_constructor_call(duk_context *ctx);
+DUK_EXTERNAL_DECL void duk_require_constructable(duk_context *ctx, duk_idx_t idx);
 DUK_EXTERNAL_DECL void *duk_require_heapptr(duk_context *ctx, duk_idx_t idx);
 
 /* Symbols are object coercible and covered by DUK_TYPE_MASK_STRING. */

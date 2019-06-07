@@ -19,6 +19,8 @@ TBD.
 
 * Include ``c_eventloop.h`` in dist.
 
+* Add duk_require_constructable() and duk_require_constructor_call().
+
 Upgrading from Duktape 2.3
 ==========================
 

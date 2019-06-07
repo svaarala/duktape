@@ -5,12 +5,12 @@
 #if !defined(DUK_HPROXY_H_INCLUDED)
 #define DUK_HPROXY_H_INCLUDED
 
-#define DUK_ASSERT_HPROXY_VALID(h) do { \
-		DUK_ASSERT((h) != NULL); \
-		DUK_ASSERT((h)->target != NULL); \
-		DUK_ASSERT((h)->handler != NULL); \
-		DUK_ASSERT(DUK_HOBJECT_HAS_EXOTIC_PROXYOBJ((duk_hobject *) (h))); \
-	} while (0)
+#if defined(DUK_USE_ASSERTIONS)
+DUK_INTERNAL_DECL void duk_hproxy_assert_valid(duk_hproxy *h);
+#define DUK_HPROXY_ASSERT_VALID(h)  do { duk_hproxy_assert_valid((h)); } while (0)
+#else
+#define DUK_HPROXY_ASSERT_VALID(h)  do {} while (0)
+#endif
 
 struct duk_hproxy {
 	/* Shared object part. */

@@ -626,7 +626,8 @@ DUK_LOCAL void duk__handle_bound_chain_for_call(duk_hthread *thr,
 		DUK_ASSERT(func != NULL);
 		DUK_ASSERT(!DUK_HOBJECT_HAS_BOUNDFUNC(func));
 		DUK_ASSERT(DUK_HOBJECT_HAS_COMPFUNC(func) ||
-		           DUK_HOBJECT_HAS_NATFUNC(func));
+		           DUK_HOBJECT_HAS_NATFUNC(func) ||
+		           DUK_HOBJECT_IS_PROXY(func));
 	}
 #endif
 }
@@ -1950,7 +1951,7 @@ DUK_LOCAL duk_int_t duk__handle_call_raw(duk_hthread *thr,
 	/* Asserts for heap->curr_thread omitted: it may be NULL, 'thr', or
 	 * any other thread (e.g. when heap thread is used to run finalizers).
 	 */
-	DUK_ASSERT_CTX_VALID(thr);
+	DUK_CTX_ASSERT_VALID(thr);
 	DUK_ASSERT(duk_is_valid_index(thr, idx_func));
 	DUK_ASSERT(idx_func >= 0);
 
@@ -2423,7 +2424,7 @@ DUK_LOCAL void duk__handle_safe_call_inner(duk_hthread *thr,
 	duk_ret_t rc;
 
 	DUK_ASSERT(thr != NULL);
-	DUK_ASSERT_CTX_VALID(thr);
+	DUK_CTX_ASSERT_VALID(thr);
 
 	/*
 	 *  Thread state check and book-keeping.
@@ -2481,7 +2482,7 @@ DUK_LOCAL void duk__handle_safe_call_error(duk_hthread *thr,
                                            duk_size_t entry_valstack_bottom_byteoff,
                                            duk_jmpbuf *old_jmpbuf_ptr) {
 	DUK_ASSERT(thr != NULL);
-	DUK_ASSERT_CTX_VALID(thr);
+	DUK_CTX_ASSERT_VALID(thr);
 
 	/*
 	 *  Error during call.  The error value is at heap->lj.value1.
@@ -2573,7 +2574,7 @@ DUK_LOCAL void duk__handle_safe_call_shared_unwind(duk_hthread *thr,
                                                    duk_hthread *entry_curr_thread,
                                                    duk_instr_t **entry_ptr_curr_pc) {
 	DUK_ASSERT(thr != NULL);
-	DUK_ASSERT_CTX_VALID(thr);
+	DUK_CTX_ASSERT_VALID(thr);
 	DUK_UNREF(idx_retbase);
 	DUK_UNREF(num_stack_rets);
 	DUK_UNREF(entry_curr_thread);

@@ -61,7 +61,7 @@ DUK_LOCAL duk_uint32_t duk__push_this_obj_len_u32(duk_hthread *thr) {
 
 	/* XXX: push more directly? */
 	(void) duk_push_this_coercible_to_object(thr);
-	DUK_ASSERT_HOBJECT_VALID(duk_get_hobject(thr, -1));
+	DUK_HOBJECT_ASSERT_VALID(duk_get_hobject(thr, -1));
 	duk_get_prop_stridx_short(thr, -1, DUK_STRIDX_LENGTH);
 	len = duk_to_uint32(thr, -1);
 

@@ -338,6 +338,13 @@ struct duk_litcache_entry {
  *  Main heap structure
  */
 
+#if defined(DUK_USE_ASSERTIONS)
+DUK_INTERNAL_DECL void duk_heap_assert_valid(duk_heap *heap);
+#define DUK_HEAP_ASSERT_VALID(heap)  do { duk_heap_assert_valid((heap)); } while (0)
+#else
+#define DUK_HEAP_ASSERT_VALID(heap)  do {} while (0)
+#endif
+
 struct duk_heap {
 	duk_small_uint_t flags;
 

@@ -28,17 +28,16 @@ Main features:
 * Minimal platform dependencies
 * Combined reference counting and mark-and-sweep garbage collection with finalization
 * Custom features like coroutines
-* Property virtualization using a subset of ECMAScript E2015 Proxy object
+* Property virtualization using a subset of ECMAScript ES2015 Proxy object
 * Bytecode dump/load for caching compiled functions
 * Distributable includes an optional logging framework, CommonJS-based module
-  loading implementations, etc
-* Liberal license
+  loading implementations, CBOR bindings, etc
+* Liberal MIT license (see LICENSE.txt)
 
 See [duktape.org](http://duktape.org/) for packaged end-user downloads
 and documentation.  The end user downloads are also available from the
 [duktape-releases](https://github.com/svaarala/duktape-releases) repo
-as both binaries and in unpacked form as git tags.  Snapshot builds from
-master are available in [duktape.org/snapshots](http://duktape.org/snapshots).
+as both binaries and in unpacked form as git tags.
 
 Have fun!
 
@@ -65,14 +64,11 @@ distributables available from [duktape.org/download.html](http://duktape.org/dow
 See [duktape.org/guide.html#gettingstarted](http://duktape.org/guide.html#gettingstarted)
 for the basics.
 
-Automatically generated bleeding edge snapshots from master are available at
-[duktape.org/snapshots](http://duktape.org/snapshots).
-
 The distributable `src/` directory contains a `duk_config.h` configuration
-header and amalgamated sources for Duktape default configuration.  Use
-`python tools/configure.py` to create header and sources for customized
-configuration options, see http://wiki.duktape.org/Configuring.html.  For
-example, to enable fastint support (example for Linux):
+header and amalgamated sources for Duktape default configuration.  If
+necessary, use `python tools/configure.py` to create header and sources for
+customized configuration options, see http://wiki.duktape.org/Configuring.html.
+For example, to enable fastint support (example for Linux):
 
     $ tar xvfJ duktape-2.0.0.tar.xz
     $ cd duktape-2.0.0
