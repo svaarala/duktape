@@ -3450,7 +3450,9 @@ Planned
 
 * Various portability fixes (GH-1931, GH-1976)
 
-* Add Minimal Eventloop Example
+* Add Minimal Eventloop Example (GH-2091)
+
+* Include ``c_eventloop.h`` in dist. (GH-2090)
 
 3.0.0 (XXXX-XX-XX)
 ------------------
