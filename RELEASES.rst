@@ -3450,6 +3450,8 @@ Planned
 
 * Various portability fixes (GH-1931, GH-1976)
 
+* Add Minimal Eventloop Example
+
 3.0.0 (XXXX-XX-XX)
 ------------------
 
