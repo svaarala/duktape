@@ -42,6 +42,9 @@
  */
 #define DUK__AUGMENT_CALL_RELAX_COUNT  (10 + 2)
 
+/* Stack space required by call handling entry. */
+#define DUK__CALL_HANDLING_REQUIRE_STACK  8
+
 DUK_LOCAL DUK_NOINLINE void duk__call_c_recursion_limit_check_slowpath(duk_hthread *thr) {
 	/* When augmenting an error, the effective limit is a bit higher.
 	 * Check for it only if the fast path check fails.
@@ -2037,6 +2040,26 @@ DUK_LOCAL duk_int_t duk__handle_call_raw(duk_hthread *thr,
 	duk__call_thread_state_update(thr);
 
 	/*
+	 *  Increase call recursion depth as early as possible so that if we
+	 *  enter a recursive call for any reason there's a backstop to native
+	 *  recursion.  This can happen e.g. for almost any property read
+	 *  because it may cause a getter call or a Proxy trap (GC and finalizers
+	 *  are not an issue because they are not recursive).  If we end up
+	 *  doing an Ecma-to-Ecma call, revert the increase.  (See GH-2032.)
+	 *
+	 *  For similar reasons, ensure there is a known value stack spare
+	 *  even before we actually prepare the value stack for the target
+	 *  function.  If this isn't done, early recursion may consume the
+	 *  value stack space.
+	 *
+	 *  XXX: Should bump yield preventcount early, for the same reason.
+	 */
+
+	duk__call_c_recursion_limit_check(thr);
+	thr->heap->call_recursion_depth++;
+	duk_require_stack(thr, DUK__CALL_HANDLING_REQUIRE_STACK);
+
+	/*
 	 *  Resolve final target function; handle bound functions and special
 	 *  functions like .call() and .apply().  Also figure out the effective
 	 *  'this' binding, which replaces the current value at idx_func + 1.
@@ -2179,6 +2202,7 @@ DUK_LOCAL duk_int_t duk__handle_call_raw(duk_hthread *thr,
 			DUK_ASSERT((act->flags & DUK_ACT_FLAG_PREVENT_YIELD) == 0);
 			DUK_REFZERO_CHECK_FAST(thr);
 			DUK_ASSERT(thr->ptr_curr_pc == NULL);
+			thr->heap->call_recursion_depth--;  /* No recursion increase for this case. */
 			return 1;  /* 1=reuse executor */
 		}
 		DUK_ASSERT(use_tailcall == 0);
@@ -2187,12 +2211,6 @@ DUK_LOCAL duk_int_t duk__handle_call_raw(duk_hthread *thr,
 		DUK_ASSERT((act->flags & DUK_ACT_FLAG_PREVENT_YIELD) == 0);
 		act->flags |= DUK_ACT_FLAG_PREVENT_YIELD;
 		thr->callstack_preventcount++;
-
-		/* XXX: we could just do this on entry regardless of reuse, as long
-		 * as recursion depth is decreased for e2e case.
-		 */
-		duk__call_c_recursion_limit_check(thr);
-		thr->heap->call_recursion_depth++;
 
 		/* [ ... func this | arg1 ... argN ] ('this' must precede new bottom) */
 
@@ -2227,12 +2245,6 @@ DUK_LOCAL duk_int_t duk__handle_call_raw(duk_hthread *thr,
 		DUK_ASSERT((act->flags & DUK_ACT_FLAG_PREVENT_YIELD) == 0);
 		act->flags |= DUK_ACT_FLAG_PREVENT_YIELD;
 		thr->callstack_preventcount++;
-
-		/* XXX: we could just do this on entry regardless of reuse, as long
-		 * as recursion depth is decreased for e2e case.
-		 */
-		duk__call_c_recursion_limit_check(thr);
-		thr->heap->call_recursion_depth++;
 
 		/* For native calls must be NULL so we don't sync back */
 		DUK_ASSERT(thr->ptr_curr_pc == NULL);
