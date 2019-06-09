@@ -40,10 +40,12 @@ noSuch undefined
 1 true 100
 255
 - defineProperty
+false
 [object Uint8Array]
 99
 undefined
 - defineProperties
+false
 [object Uint8Array]
 99
 undefined
@@ -133,13 +135,17 @@ function objectMethodTest() {
 
     resetValues();
     print('- defineProperty');
-    print(Object.defineProperty(pb, 'newProp', { value: 1234 }));
+    var ret = Object.defineProperty(pb, 'newProp', { value: 1234 });
+    print(pb === ret);  // no match because of upgrade
+    print(Object.prototype.toString.call(ret));
     print(pb[2]);
     print(pb.newProp);
 
     resetValues();
     print('- defineProperties');
-    print(Object.defineProperties(pb, { newProp: { value: 1234 } }));
+    var ret = Object.defineProperties(pb, { newProp: { value: 1234 } });
+    print(pb === ret);  // no match because of upgrade
+    print(Object.prototype.toString.call(ret));
     print(pb[2]);
     print(pb.newProp);
 

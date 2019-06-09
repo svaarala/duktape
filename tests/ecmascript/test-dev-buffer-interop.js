@@ -46,8 +46,8 @@ function plainBufferTest() {
     d = getPlainBuffer(b);
     print(typeof a, typeof b, typeof c, typeof d);
     print(c === d);  // not the same
-    print(a);
-    print(b);
+    print('' + a);
+    print('' + b);
 
     // ArrayBuffer constructor doesn't accept another buffer so there's
     // no buffer copy/embed behavior to test at the moment.
@@ -143,7 +143,7 @@ function nodejsConcatTest() {
     b3 = new Uint8Array([ 0x61, 0x62, 0x63, 0x64, 0x65 ]).subarray(1);
 
     res = Buffer.concat([ b1, b2, b3 ]);
-    print(res);
+    print('' + res);
 }
 
 try {

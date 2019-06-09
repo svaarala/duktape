@@ -28,6 +28,7 @@ false
 false
 true
 - fill
+false
 [object Uint8Array]
 |6162111111111111116a6b6c6d6e6f70|
 - copy, source plain buffer, target Node.js Buffer
@@ -114,7 +115,9 @@ function nodejsBufferPrototypeMethodTest() {
 
     resetValues();
     print('- fill');
-    print(Buffer.prototype.fill.call(pb, 0x11, 2, 9));
+    var res = Buffer.prototype.fill.call(pb, 0x11, 2, 9);
+    print(res === pb);  // false, promoted to object
+    print(Object.prototype.toString.call(res));
     print(Duktape.enc('jx', pb));
 
     resetValues();
