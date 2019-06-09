@@ -234,7 +234,7 @@ static duk_ret_t wrapped_compile_execute(duk_context *ctx, void *udata) {
 
 		duk_dup_top(ctx);
 		duk_dump_function(ctx);
-		bc_ptr = duk_require_buffer(ctx, -1, &bc_len);
+		bc_ptr = duk_require_buffer_data(ctx, -1, &bc_len);
 		filename = duk_require_string(ctx, -5);
 #if defined(EMSCRIPTEN)
 		if (filename[0] == '/') {
@@ -920,7 +920,7 @@ static duk_ret_t fileio_write_file(duk_context *ctx) {
 	}
 
 	len = 0;
-	buf = (char *) duk_to_buffer(ctx, 1, &len);
+	buf = (char *) duk_require_buffer_data(ctx, 1, &len);
 	for (off = 0; off < len;) {
 		size_t got;
 		got = fwrite((const void *) (buf + off), 1, len - off, f);

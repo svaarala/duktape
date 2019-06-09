@@ -23,8 +23,8 @@ static duk_ret_t duk__print_alert_helper(duk_context *ctx, FILE *fh) {
 	 * arguments, join them with a single space, and append a newline.
 	 */
 
-	if (nargs == 1 && duk_is_buffer(ctx, 0)) {
-		buf = (const duk_uint8_t *) duk_get_buffer(ctx, 0, &sz_buf);
+	if (nargs == 1 && duk_is_buffer_data(ctx, 0)) {
+		buf = (const duk_uint8_t *) duk_get_buffer_data(ctx, 0, &sz_buf);
 		fwrite((const void *) buf, 1, (size_t) sz_buf, fh);
 	} else {
 		duk_push_string(ctx, " ");
@@ -57,8 +57,8 @@ static duk_ret_t duk__print_alert_helper(duk_context *ctx, FILE *fh) {
 	 * arguments, join them with a single space, and append a newline.
 	 */
 
-	if (nargs == 1 && duk_is_buffer(ctx, 0)) {
-		buf = (const duk_uint8_t *) duk_get_buffer(ctx, 0, &sz_buf);
+	if (nargs == 1 && duk_is_buffer_data(ctx, 0)) {
+		buf = (const duk_uint8_t *) duk_get_buffer_data(ctx, 0, &sz_buf);
 	} else if (nargs > 0) {
 		duk_idx_t i;
 		duk_size_t sz_str;

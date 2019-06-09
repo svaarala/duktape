@@ -250,7 +250,7 @@ static int socket_write(duk_context *ctx) {
 	size_t len;
 	ssize_t rc;
 
-	data = duk_to_buffer(ctx, 1, &len);
+	data = duk_require_buffer_data(ctx, 1, &len);
 
 	/* MSG_NOSIGNAL: avoid SIGPIPE */
 #if defined(__APPLE__)

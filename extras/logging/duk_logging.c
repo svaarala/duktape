@@ -109,7 +109,7 @@ static duk_ret_t duk__logger_prototype_raw(duk_context *ctx) {
 	const char *data;
 	duk_size_t data_len;
 
-	data = (const char *) duk_require_buffer(ctx, 0, &data_len);
+	data = (const char *) duk_require_buffer_data(ctx, 0, &data_len);
 	fwrite((const void *) data, 1, data_len, stderr);
 	fputc((int) '\n', stderr);
 #if defined(DUK_LOGGING_FLUSH)

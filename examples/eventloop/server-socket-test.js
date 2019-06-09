@@ -1,4 +1,3 @@
-
 var HOST = 'localhost'
 var PORT = 12345;
 var EXIT_TIMEOUT = 300e3;
