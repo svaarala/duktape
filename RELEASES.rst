@@ -3425,6 +3425,12 @@ Planned
   compiled functions), context dump array for duk_push_context_dump(),
   and error tracedata (GH-2089)
 
+* Accept non-plain buffer types in some examples/extras (cmdline, eventloop,
+  logging, print-alert) (GH-2107)
+
+* Fix eventloop example .write() method buffer handling which relied on
+  Duktape.Buffer, also fix a related TCP client example bug (GH-2107)
+
 * Fix incorrect handling of zero-length dynamic buffer in base-64 fast path
   decoder (GH-2027, GH-2088)
 
