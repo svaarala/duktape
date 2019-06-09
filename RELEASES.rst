@@ -3443,6 +3443,9 @@ Planned
   caused an error and Duktape.errCreate returned a callable value (such
   as Float64Array); this caused an assertion failure (GH-2061, GH-2087)
 
+* Fix possible out-of-memory in call stack unwind by preallocating the
+  environment property table on creation (GH-476, GH-2021, GH-2106)
+
 * Fix several assertion failures with possible memory unsafe behavior
   (GH-2025, GH-2026, GH-2031, GH-2033, GH-2035, GH-2036, GH-2065)
 

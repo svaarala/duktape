@@ -58,11 +58,7 @@ def main():
     for i in xrange(opts.count):
         time.sleep(opts.sleep)
 
-        cmd = [
-            'time',
-            '-f', '%U',
-            '--quiet'
-        ]
+        cmd = []
         cmd = cmd + args
         #print(repr(cmd))
 
@@ -74,6 +70,7 @@ def main():
 
         killed = False
         retval = -1
+        time_start = time.time()
         try:
             p = subprocess.Popen(cmd, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
             stdout, stderr = p.communicate()
@@ -87,6 +84,7 @@ def main():
             os.kill(p.pid, signal.SIGKILL)
             retval = p.wait()
             time.sleep(opts.kill_wait)
+        time_end = time.time()
 
         run = {
             'cmd': cmd,
@@ -114,7 +112,7 @@ def main():
             doc['failed'] = True
             break
 
-        time_this = float(stderr)
+        time_this = time_end - time_start
         #print(i, time_this)
 
         if time_min is None:

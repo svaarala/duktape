@@ -1177,6 +1177,12 @@ DUK_LOCAL void duk__dump_stats(duk_heap *heap) {
 	                 (long) heap->stats_getvar_all));
 	DUK_D(DUK_DPRINT("stats putvar: all=%ld",
 	                 (long) heap->stats_putvar_all));
+	DUK_D(DUK_DPRINT("stats envrec: delayedcreate=%ld, create=%ld, newenv=%ld, oldenv=%ld, pushclosure=%ld",
+	                 (long) heap->stats_envrec_delayedcreate,
+	                 (long) heap->stats_envrec_create,
+	                 (long) heap->stats_envrec_newenv,
+	                 (long) heap->stats_envrec_oldenv,
+	                 (long) heap->stats_envrec_pushclosure));
 }
 #endif  /* DUK_USE_DEBUG */
 
