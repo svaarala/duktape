@@ -257,8 +257,14 @@ DUK_LOCAL void duk__free_run_finalizers(duk_heap *heap) {
 
 	/* Prevent finalize_list processing and mark-and-sweep entirely.
 	 * Setting ms_running = 1 also prevents refzero handling from moving
-	 * objects away from the heap_allocated list (the flag name is a bit
-	 * misleading here).
+	 * objects away from the heap_allocated list.  The flag name is a bit
+	 * misleading here.
+	 *
+	 * We're running finalizers with ms_running == 1 here, something that
+	 * doesn't happen with normal mark-and-sweep.  This is unfortunate, as
+	 * it caused GH-2030 and makes runtime assertions weaker.  It would be
+	 * better to use a different flag or mark heap destruction state
+	 * specially so the asserts could be stronger.
 	 */
 	DUK_ASSERT(heap->pf_prevent_count == 0);
 	heap->pf_prevent_count = 1;

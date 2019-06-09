@@ -521,11 +521,12 @@ DUK_LOCAL DUK_INLINE void duk__refcount_refzero_hbuffer(duk_heap *heap, duk_hbuf
 		DUK_ASSERT(thr->heap != NULL); \
 		/* When mark-and-sweep runs, heap_thread must exist. */ \
 		DUK_ASSERT(thr->heap->ms_running == 0 || thr->heap->heap_thread != NULL); \
-		/* When mark-and-sweep runs, the 'thr' argument always matches heap_thread. \
-		 * This could be used to e.g. suppress check against 'thr' directly (and \
-		 * knowing it would be heap_thread); not really used now. \
+		/* In normal operation finalizers are executed with ms_running == 0. \
+		 * However, in heap destruction ms_running is set to 1 and remaining \
+		 * finalizers then executed.  A finalizer may resume a coroutine, in \
+		 * which case we'd have ms_running == 1 and thr != heap_thread (GH-2030). \
 		 */ \
-		DUK_ASSERT(thr->heap->ms_running == 0 || thr == thr->heap->heap_thread); \
+		/* DUK_ASSERT(thr->heap->ms_running == 0 || thr == thr->heap->heap_thread); */ \
 		/* We may be called when the heap is initializing and we process \
 		 * refzeros normally, but mark-and-sweep and finalizers are prevented \
 		 * if that's the case. \
@@ -613,6 +614,7 @@ DUK_LOCAL DUK__RZ_INLINE void duk__heaphdr_refzero_helper(duk_hthread *thr, duk_
 	heap = thr->heap;
 
 	htype = (duk_small_uint_t) DUK_HEAPHDR_GET_TYPE(h);
+	DUK_DDD(DUK_DDDPRINT("ms_running=%ld, heap_thread=%p", (long) thr->heap->ms_running, thr->heap->heap_thread));
 	DUK__RZ_SUPPRESS_CHECK();
 
 	switch (htype) {
