@@ -24,15 +24,15 @@ true
 
 function test() {
     var b = new ArrayBuffer(16);
-    print(b)
+    print(Object.prototype.toString.call(b));
     print(b.length, b.byteLength, b.byteOffset);
 
     var v = new Uint32Array(b);
-    print(v);
+    print(Object.prototype.toString.call(v));
     print(v.length, v.byteLength, v.byteOffset);
 
     var w = v.subarray(1)
-    print(w)
+    print(Object.prototype.toString.call(w));
     print(w.length, w.byteLength, w.byteOffset);
 
     print(ArrayBuffer.isView(b));

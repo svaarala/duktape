@@ -26,7 +26,7 @@ function basicViewTest() {
     var v, v2;
     var i;
 
-    print(b);
+    print(Object.prototype.toString.call(b));
     print(b.byteLength);
     print(bufferToHex(b));
 

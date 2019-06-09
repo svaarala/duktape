@@ -55,7 +55,7 @@ void fileio_push_file_buffer(duk_context *ctx, const char *filename) {
 /* Push file as a string. */
 void fileio_push_file_string(duk_context *ctx, const char *filename) {
 	fileio_push_file_buffer(ctx, filename);
-	if (duk_is_buffer(ctx, -1)) {
+	if (duk_is_buffer_data(ctx, -1)) {
 		duk_buffer_to_string(ctx, -1);
 	}
 }
@@ -63,7 +63,7 @@ void fileio_push_file_string(duk_context *ctx, const char *filename) {
 static int fileio_readfile(duk_context *ctx) {
 	const char *filename = duk_to_string(ctx, 0);
 	fileio_push_file_buffer(ctx, filename);
-	if (!duk_is_buffer(ctx, -1)) {
+	if (!duk_is_buffer_data(ctx, -1)) {
 		return DUK_RET_ERROR;
 	}
 	return 1;

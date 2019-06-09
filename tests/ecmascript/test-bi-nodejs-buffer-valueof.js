@@ -26,7 +26,7 @@ function nodejsBufferValueOfTest() {
 
     // Object.prototype.valueOf() returns the buffer as is
     b = new Buffer('ABCDEFGH');
-    print(b.valueOf());
+    print('' + b.valueOf());
     print(typeof b.valueOf());
     print(b.valueOf() === b);
 }
