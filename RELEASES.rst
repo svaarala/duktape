@@ -3452,6 +3452,9 @@ Planned
 * Fix possible out-of-memory in call stack unwind by preallocating the
   environment property table on creation (GH-476, GH-2021, GH-2106)
 
+* Fix possibility for unbounded native recursion without call stack limit
+  backstop when call handling triggers a Proxy trap (GH-2032, GH-2108)
+
 * Fix several assertion failures with possible memory unsafe behavior
   (GH-2025, GH-2026, GH-2031, GH-2033, GH-2035, GH-2036, GH-2065)
 
