@@ -6,6 +6,28 @@
 #if !defined(DUK_API_INTERNAL_H_INCLUDED)
 #define DUK_API_INTERNAL_H_INCLUDED
 
+/* Inline macro helpers. */
+#if defined(DUK_USE_PREFER_SIZE)
+#define DUK_INLINE_PERF
+#define DUK_ALWAYS_INLINE_PERF
+#define DUK_NOINLINE_PERF
+#else
+#define DUK_INLINE_PERF DUK_INLINE
+#define DUK_ALWAYS_INLINE_PERF DUK_ALWAYS_INLINE
+#define DUK_NOINLINE_PERF DUK_NOINLINE
+#endif
+
+/* Inline macro helpers, for bytecode executor. */
+#if defined(DUK_USE_EXEC_PREFER_SIZE)
+#define DUK_EXEC_INLINE_PERF
+#define DUK_EXEC_ALWAYS_INLINE_PERF
+#define DUK_EXEC_NOINLINE_PERF
+#else
+#define DUK_EXEC_INLINE_PERF DUK_INLINE
+#define DUK_EXEC_ALWAYS_INLINE_PERF DUK_ALWAYS_INLINE
+#define DUK_EXEC_NOINLINE_PERF DUK_NOINLINE
+#endif
+
 /* duk_push_sprintf constants */
 #define DUK_PUSH_SPRINTF_INITIAL_SIZE  256L
 #define DUK_PUSH_SPRINTF_SANITY_LIMIT  (1L * 1024L * 1024L * 1024L)

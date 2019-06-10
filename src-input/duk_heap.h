@@ -68,20 +68,17 @@
  */
 #define DUK_MS_FLAG_EMERGENCY                (1U << 0)
 
-/* Voluntary mark-and-sweep: triggered periodically. */
-#define DUK_MS_FLAG_VOLUNTARY                (1U << 1)
-
 /* Postpone rescue decisions for reachable objects with FINALIZED set.
  * Used during finalize_list processing to avoid incorrect rescue
  * decisions due to finalize_list being a reachability root.
  */
-#define DUK_MS_FLAG_POSTPONE_RESCUE          (1U << 2)
+#define DUK_MS_FLAG_POSTPONE_RESCUE          (1U << 1)
 
 /* Don't compact objects; needed during object property table resize
  * to prevent a recursive resize.  It would suffice to protect only the
  * current object being resized, but this is not yet implemented.
  */
-#define DUK_MS_FLAG_NO_OBJECT_COMPACTION     (1U << 3)
+#define DUK_MS_FLAG_NO_OBJECT_COMPACTION     (1U << 2)
 
 /*
  *  Thread switching
