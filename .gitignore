@@ -44,6 +44,7 @@
 /emscripten/
 /underscore/
 /lodash/
+/lz-string/
 /test262-d067d2f0ca30/
 /test262-es5-tests/
 /es5-tests.zip
