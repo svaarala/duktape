@@ -7,13 +7,20 @@ the define names.  When in doubt, consult the header directly.</p>
 
 <h2>Duktape version</h2>
 
-<p>Duktape version is available through the <code>DUK_VERSION</code> define,
-with the numeric value <code>(major * 10000 + minor * 100 + patch)</code>.
-The same value is available to ECMAScript code through <code>Duktape.version</code>.
-For example, version 1.2.3 would have <code>DUK_VERSION</code> and
-<code>Duktape.version</code> set to 10203.  For pre-releases <code>DUK_VERSION</code>
-is one less than the actual release, e.g. 1199 for a 0.12.0 pre-release and 10299
-for a 1.3.0 pre-release.  See <a href="guide.html#versioning">Versioning</a>.</p>
+<p>Duktape version is available through the <code>DUK_VERSION</code> define:</p>
+
+<table>
+<tr>
+<td><code>DUK_VERSION</code></td>
+<td>Numeric value <code>(major * 10000 + minor * 100 + patch)</code></td>
+</tr>
+</table>
+
+<p>For example, version 2.3.4 would have the value 20304.  The same value is
+available to ECMAScript code through <code>Duktape.version</code>.
+For pre-releases <code>DUK_VERSION</code> is one less than the actual
+release, e.g. 2.4.0 pre-release would be 20399.  See
+<a href="guide.html#versioning">Versioning</a>.</p>
 
 <h2>Git information</h2>
 
@@ -341,15 +348,6 @@ typedef struct duk_number_list_entry duk_number_list_entry;
 <tr>
 <td><code>DUK_HINT_NUMBER</code></td>
 <td>Prefer number</td>
-</tr>
-</table>
-
-<h2>Flags for duk_push_thread_raw()</h2>
-
-<table>
-<tr>
-<td><code>DUK_THREAD_NEW_GLOBAL_ENV</code></td>
-<td>Create a new global environment</td>
 </tr>
 </table>
 
