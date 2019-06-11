@@ -1186,12 +1186,28 @@ docker-images:
 
 .PHONY: docker-dist-src-master
 docker-dist-src-master:
-	rm -f docker-output.zip
+	rm -f docker-input.zip docker-output.zip
 	docker run --rm -i duktape-dist-ubuntu-18.04 > docker-output.zip
+	unzip -t docker-output.zip ; true  # avoid failure due to leading garbage
+
+.PHONY: docker-dist-src-wd
+docker-dist-src-wd:
+	rm -f docker-input.zip docker-output.zip
+	#git archive --format zip --output docker-input.zip HEAD
+	zip -1 -q -r docker-input.zip .
+	docker run --rm -i -e STDIN_ZIP=1 duktape-dist-ubuntu-18.04 < docker-input.zip > docker-output.zip
 	unzip -t docker-output.zip ; true  # avoid failure due to leading garbage
 
 .PHONY: docker-dist-site-master
 docker-dist-site-master:
-	rm -f docker-output.zip
+	rm -f docker-input.zip docker-output.zip
 	docker run --rm -i duktape-site-ubuntu-18.04 > docker-output.zip
+	unzip -t docker-output.zip ; true  # avoid failure due to leading garbage
+
+.PHONY: docker-dist-site-wd
+docker-dist-site-wd:
+	rm -f docker-input.zip docker-output.zip
+	#git archive --format zip --output docker-input.zip HEAD
+	zip -1 -q -r docker-input.zip .
+	docker run --rm -i -e STDIN_ZIP=1 duktape-site-ubuntu-18.04 < docker-input.zip > docker-output.zip
 	unzip -t docker-output.zip ; true  # avoid failure due to leading garbage
