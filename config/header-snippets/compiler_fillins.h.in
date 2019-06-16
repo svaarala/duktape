@@ -1,3 +1,10 @@
+#if !defined(DUK_U64_CONSTANT)
+#define DUK_U64_CONSTANT(x) x##ULL
+#endif
+#if !defined(DUK_I64_CONSTANT)
+#define DUK_I64_CONSTANT(x) x##LL
+#endif
+
 #if !defined(DUK_VA_COPY)
 /* We need va_copy() which is defined in C99 / C++11, so an awkward
  * replacement is needed for pre-C99 / pre-C++11 environments.  This
@@ -148,17 +155,30 @@
 #endif
 #endif
 
+#if defined(DUK_F_HAVE_64BIT)
+#if !defined(DUK_BSWAP64)
+#define DUK_BSWAP64(x) \
+	((((duk_uint64_t) (x)) >> 56U) | \
+	 ((((duk_uint64_t) (x)) >> 40U) & DUK_U64_CONSTANT(0xff00)) | \
+	 ((((duk_uint64_t) (x)) >> 24U) & DUK_U64_CONSTANT(0xff0000)) | \
+	 ((((duk_uint64_t) (x)) >> 8U) & DUK_U64_CONSTANT(0xff000000)) | \
+	 ((((duk_uint64_t) (x)) << 8U) & DUK_U64_CONSTANT(0xff00000000)) | \
+	 ((((duk_uint64_t) (x)) << 24U) & DUK_U64_CONSTANT(0xff0000000000)) | \
+	 ((((duk_uint64_t) (x)) << 40U) & DUK_U64_CONSTANT(0xff000000000000)) | \
+	 (((duk_uint64_t) (x)) << 56U))
+#endif
+#endif
 #if !defined(DUK_BSWAP32)
 #define DUK_BSWAP32(x) \
-	((((duk_uint32_t) (x)) >> 24) | \
-	 ((((duk_uint32_t) (x)) >> 8) & 0xff00UL) | \
-	 ((((duk_uint32_t) (x)) << 8) & 0xff0000UL) | \
-	 (((duk_uint32_t) (x)) << 24))
+	((((duk_uint32_t) (x)) >> 24U) | \
+	 ((((duk_uint32_t) (x)) >> 8U) & 0xff00UL) | \
+	 ((((duk_uint32_t) (x)) << 8U) & 0xff0000UL) | \
+	 (((duk_uint32_t) (x)) << 24U))
 #endif
 #if !defined(DUK_BSWAP16)
 #define DUK_BSWAP16(x) \
-	((duk_uint16_t) (x) >> 8) | \
-	((duk_uint16_t) (x) << 8)
+	((duk_uint16_t) (x) >> 8U) | \
+	((duk_uint16_t) (x) << 8U)
 #endif
 
 /* DUK_USE_VARIADIC_MACROS: required from compilers, so no fill-in. */
@@ -179,11 +199,4 @@
 
 #if 0  /* not defined by default */
 #undef DUK_USE_GCC_PRAGMAS
-#endif
-
-#if !defined(DUK_U64_CONSTANT)
-#define DUK_U64_CONSTANT(x) x##ULL
-#endif
-#if !defined(DUK_I64_CONSTANT)
-#define DUK_I64_CONSTANT(x) x##LL
 #endif

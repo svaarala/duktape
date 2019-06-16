@@ -62,3 +62,15 @@
 
 #undef DUK_USE_GCC_PRAGMAS
 #define DUK_USE_PACK_CLANG_ATTR
+
+#if defined(__clang__) && defined(__has_builtin)
+#if __has_builtin(__builtin_bswap64)
+#define DUK_BSWAP64(x) ((duk_uint64_t) __builtin_bswap64((duk_uint64_t) (x)))
+#endif
+#if __has_builtin(__builtin_bswap32)
+#define DUK_BSWAP32(x) ((duk_uint32_t) __builtin_bswap32((duk_uint32_t) (x)))
+#endif
+#if __has_builtin(__builtin_bswap16)
+#define DUK_BSWAP16(x) ((duk_uint16_t) __builtin_bswap16((duk_uint16_t) (x)))
+#endif
+#endif
