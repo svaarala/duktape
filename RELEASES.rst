@@ -3491,6 +3491,9 @@ Planned
 
 * Fix MSVC ARM64 detection (GH-2078)
 
+* Use GCC (>= 5.0) and Clang builtin bswap macros, add internal DUK_BSWAP64()
+  macro (GH-2122)
+
 * Improve assertion coverage for internal structures during mark-and-sweep
   (GH-2092)
 
