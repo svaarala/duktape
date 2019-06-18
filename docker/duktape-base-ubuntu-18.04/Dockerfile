@@ -40,18 +40,23 @@ RUN echo "=== Repo snapshots ===" && \
 	git clone https://github.com/svaarala/duktape-wiki.git repo-snapshots/duktape-wiki && \
 	git clone https://github.com/svaarala/duktape-releases.git repo-snapshots/duktape-releases
 
-# /build/duktape is the main repo we're working with.  Copy it from the
-# repo snapshot, but leave the snapshot intact.  Try to minimize network
-# traffic by pulling in some dependencies into the image.
-RUN echo "=== Prepare duktape repo ===" && \
-	cp -r repo-snapshots/duktape duktape && \
-	cp -r repo-snapshots/duktape-releases duktape/duktape-releases && \
-	cd duktape && \
+# /build/duktape-prep is prepared to be close to master in case the derived
+# image needs master.  Copy it from the repo snapshot, but leave the snapshot
+# intact.  Try to minimize network traffic by pulling in some dependencies into
+# the image.
+RUN echo "=== Prepare duktape-prep repo ===" && \
+	cp -r repo-snapshots/duktape duktape-prep && \
+	cp -r repo-snapshots/duktape-releases duktape-prep/duktape-releases && \
+	cd duktape-prep && \
 	make runtestsdeps linenoise UglifyJS2 && \
 	make duktape-releases lz-string jquery-1.11.2.js && \
 	make emscripten && emscripten/emcc -s WASM=0 -o /tmp/test_mandel2.js misc/test_mandel2.c && ls -l /tmp/test_mandel2.js && rm /tmp/test_mandel2.* && \
 	make luajs underscore lodash bluebird.js closure-compiler && \
 	make clean
+
+# Shared script for setting up the duktape/ directory.
+COPY prepare_repo.sh .
+RUN chmod 755 prepare_repo.sh
 
 # Dump some versions.
 RUN echo "=== Versions ===" && \
