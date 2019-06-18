@@ -321,18 +321,24 @@ struct duk_time_components {
  *  Macros to create Symbols as C statically constructed strings.
  *
  *  Call e.g. as DUK_HIDDEN_SYMBOL("myProperty") <=> ("\xFF" "myProperty").
+ *
  *  Local symbols have a unique suffix, caller should take care to avoid
  *  conflicting with the Duktape internal representation by e.g. prepending
  *  a '!' character: DUK_LOCAL_SYMBOL("myLocal", "!123").
  *
  *  Note that these can only be used for string constants, not dynamically
  *  created strings.
+ *
+ *  You shouldn't normally use DUK_INTERNAL_SYMBOL() at all.  It is reserved
+ *  for Duktape internal symbols only.  There are no versioning guarantees
+ *  for internal symbols.
  */
 
 #define DUK_HIDDEN_SYMBOL(x)     ("\xFF" x)
 #define DUK_GLOBAL_SYMBOL(x)     ("\x80" x)
 #define DUK_LOCAL_SYMBOL(x,uniq) ("\x81" x "\xff" uniq)
 #define DUK_WELLKNOWN_SYMBOL(x)  ("\x81" x "\xff")
+#define DUK_INTERNAL_SYMBOL(x)   ("\x82" x)
 
 /*
  *  If no variadic macros, __FILE__ and __LINE__ are passed through globals
