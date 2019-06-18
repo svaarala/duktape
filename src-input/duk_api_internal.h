@@ -6,8 +6,6 @@
 #if !defined(DUK_API_INTERNAL_H_INCLUDED)
 #define DUK_API_INTERNAL_H_INCLUDED
 
-#define DUK_INTERNAL_SYMBOL(x)     ("\x82" x)
-
 /* duk_push_sprintf constants */
 #define DUK_PUSH_SPRINTF_INITIAL_SIZE  256L
 #define DUK_PUSH_SPRINTF_SANITY_LIMIT  (1L * 1024L * 1024L * 1024L)

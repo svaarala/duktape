@@ -3425,6 +3425,10 @@ Planned
   compiled functions), context dump array for duk_push_context_dump(),
   and error tracedata (GH-2089)
 
+* Expose DUK_INTERNAL_SYMBOL() macro; while an application shouldn't
+  normally need to use this macro at all, it may be useful in some cases
+  to peek into Duktape internals (with no versioning guarantees) (GH-2118)
+
 * Accept non-plain buffer types in some examples/extras (cmdline, eventloop,
   logging, print-alert) (GH-2107)
 
