@@ -376,6 +376,12 @@ values:</p>
 <td><code>DUK_WELLKNOWN_SYMBOL(x)</code></td>
 <td>A C literal for a well-known symbol like <code>Symbol.iterator</code></td>
 </tr>
+<tr>
+<td><code>DUK_INTERNAL_SYMBOL(x)</code></td>
+<td>A C literal for a Duktape internal symbol; an application shouldn't
+    normally use this macro at all, it is reserved for Duktape internal
+    symbols only (with no versioning guarantees)</td>
+</tr>
 </table>
 
 <h2>Misc defines</h2>
