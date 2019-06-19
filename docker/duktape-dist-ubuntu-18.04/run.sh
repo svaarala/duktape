@@ -2,7 +2,7 @@
 
 set -e
 
-/build/prepare_repo.sh
+/work/prepare_repo.sh
 
 source emsdk-portable/emsdk_env.sh
 

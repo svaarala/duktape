@@ -3,8 +3,10 @@
 set -e
 
 echo "WD: `pwd`"
-rm -rf duktape
-if [ $STDIN_ZIP ]; then
+if [ -d duktape ]; then
+	echo "duktape/ already exists, use as is"
+	cd duktape
+elif [ $STDIN_ZIP ]; then
 	echo "STDIN_ZIP set, unzip from STDIN"
 	cat > /tmp/duktape.zip
 	mkdir duktape

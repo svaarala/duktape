@@ -29,6 +29,7 @@
 /libduktape.*
 /docker-input.zip
 /docker-output.zip
+/docker/duktape-base-ubuntu-18.04/gitconfig
 /build/
 /prep/
 /dist/
