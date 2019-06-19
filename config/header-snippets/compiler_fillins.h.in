@@ -69,12 +69,15 @@
 #define DUK_WO_NORETURN(stmt) do { stmt } while (0)
 #endif
 
-#if !defined(DUK_UNREACHABLE)
+#if defined(DUK_UNREACHABLE)
+#define DUK_WO_UNREACHABLE(stmt) do { } while (0)
+#else
 /* Don't know how to declare unreachable point, so don't do it; this
  * may cause some spurious compilation warnings (e.g. "variable used
  * uninitialized").
  */
 #define DUK_UNREACHABLE()  do { } while (0)
+#define DUK_WO_UNREACHABLE(stmt) do { stmt } while (0)
 #endif
 
 #if !defined(DUK_LOSE_CONST)
