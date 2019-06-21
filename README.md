@@ -115,6 +115,23 @@ Other development stuff, such as building the website and running test cases,
 is based on a `Makefile` **intended for Linux only**.  See detailed
 instructions in http://wiki.duktape.org/DevelopmentSetup.html.
 
+There are some Docker images which can simplify the development setup.
+These are also **intended for Linux only**.  For example:
+
+    # Build Docker images.  This takes a long time.
+    $ make docker-images
+
+    # Equivalent of 'make dist', but runs inside a container.
+    $ make docker-dist-src-wd
+
+    # Run a shell with /work/duktape containing a disposable master snapshot.
+    $ make docker-shell-master
+
+    # Run a shell with /work/duktape mounted from current directory.
+    # This allows editing, building, testing, etc with an interactive
+    # shell running in the container.
+    $ make docker-shell-wdmount
+
 Branch policy
 -------------
 

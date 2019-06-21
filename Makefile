@@ -1180,9 +1180,20 @@ massif-arcfour: massif-test-dev-arcfour
 # docker container for easier reproducibility.
 .PHONY: docker-images
 docker-images:
-	docker build -t duktape-base-ubuntu-18.04 docker/duktape-base-ubuntu-18.04
+	if [ -f ~/.gitconfig ]; then cp ~/.gitconfig docker/duktape-base-ubuntu-18.04/gitconfig; else touch docker/duktape-base-ubuntu-18.04/gitconfig; fi
+	docker build --build-arg UID=$(shell id -u) --build-arg GID=$(shell id -g) -t duktape-base-ubuntu-18.04 docker/duktape-base-ubuntu-18.04
 	docker build -t duktape-dist-ubuntu-18.04 docker/duktape-dist-ubuntu-18.04
 	docker build -t duktape-site-ubuntu-18.04 docker/duktape-site-ubuntu-18.04
+	docker build -t duktape-shell-ubuntu-18.04 docker/duktape-shell-ubuntu-18.04
+
+.PHONY: docker-clean
+docker-clean:
+	-docker rmi duktape-shell-ubuntu-18.04:latest
+	-docker rmi duktape-site-ubuntu-18.04:latest
+	-docker rmi duktape-dist-ubuntu-18.04:latest
+	-docker rmi duktape-base-ubuntu-18.04:latest
+	@echo ""
+	@echo "Now run 'docker system prune' to free disk space."
 
 .PHONY: docker-dist-src-master
 docker-dist-src-master:
@@ -1211,3 +1222,11 @@ docker-dist-site-wd:
 	zip -1 -q -r docker-input.zip .
 	docker run --rm -i -e STDIN_ZIP=1 duktape-site-ubuntu-18.04 < docker-input.zip > docker-output.zip
 	unzip -t docker-output.zip ; true  # avoid failure due to leading garbage
+
+.PHONY: docker-shell-master
+docker-shell-master:
+	docker run --rm -ti duktape-shell-ubuntu-18.04
+
+.PHONY: docker-shell-wdmount
+docker-shell-wdmount:
+	docker run -v $(shell pwd):/work/duktape --rm -ti duktape-shell-ubuntu-18.04
