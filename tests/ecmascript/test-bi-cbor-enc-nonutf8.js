@@ -46,4 +46,7 @@ test('foo\udc00d800bar');
 // surrogate.
 test('foo\ud83d\udca9bar');
 
+// XXX: Add coverage when C API exists:
+// - BF A0: initial byte is a continuation byte
+
 print('done');

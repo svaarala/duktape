@@ -3435,6 +3435,15 @@ Planned
 * Fix eventloop example .write() method buffer handling which relied on
   Duktape.Buffer, also fix a related TCP client example bug (GH-2107)
 
+* Minor changes to CBOR extra type handling: encode non-UTF-8 strings
+  as CBOR byte strings (instead of text strings), encode Symbols as empty
+  objects, refuse to decode Symbols, encode pointers as "(%p)" instead of
+  "%p" to match JX (GH-2121)
+
+* Minor performance improvements to CBOR extra encoder (GH-2121)
+
+* Add (untested) support for mixed endian targets to CBOR extra (GH-2121)
+
 * Fix incorrect handling of zero-length dynamic buffer in base-64 fast path
   decoder (GH-2027, GH-2088)
 
@@ -3474,6 +3483,8 @@ Planned
   concatenated pieces in the CBOR extra (GH-2093)
 
 * Fix CBOR decoding of (ignored) 64-bit tags in the CBOR extra (GH-2095)
+
+* Fix a CBOR encoding wrap check in the CBOR extra (GH-2121)
 
 * Trivial fixes and cleanups: Windows Date provider return code check
   consistency (GH-1956)

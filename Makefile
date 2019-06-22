@@ -285,6 +285,7 @@ cleanall: clean
 	@rm -rf closure-compiler
 	@rm -rf underscore
 	@rm -rf lodash
+	@rm -rf cbor-js
 	@rm -f d067d2f0ca30.tar.bz2
 	@rm -rf emscripten
 	@rm -rf JS-Interpreter
@@ -310,6 +311,7 @@ cleanall: clean
 	@rm -f "references/ECMA-262 5th edition December 2009.pdf"
 	@rm -f "references/ECMA-262 5.1 edition June 2011.pdf"
 	@rm -f "references/ECMA-262.pdf"
+	@rm -f citylots.json
 
 # Targets for preparing different Duktape configurations.
 prep:
@@ -852,6 +854,8 @@ lodash:
 	mkdir lodash
 	cd lodash && wget https://raw.githubusercontent.com/lodash/lodash/4.17.10-npm/lodash.js -O lodash.js
 	#$(GIT) clone --depth 1 https://github.com/lodash/lodash.git
+cbor-js:
+	$(GIT) clone --depth 1 https://github.com/paroga/cbor-js.git
 3883a2e9063b0a5f2705bdac3263577a03913c94.zip:
 	# http://test262.ecmascript.org/
 	# https://github.com/tc39/test262
@@ -974,6 +978,8 @@ flow:
 lz-string:
 	# https://github.com/pieroxy/lz-string.git
 	$(GIT) clone --depth 1 https://github.com/pieroxy/lz-string.git
+citylots.json:
+	$(WGET) https://github.com/zemirco/sf-city-lots-json/raw/master/citylots.json -O $@
 
 # Duktape binary releases are in a separate repo.
 duktape-releases:

@@ -46,6 +46,7 @@
 /underscore/
 /lodash/
 /lz-string/
+/cbor-js/
 /test262-d067d2f0ca30/
 /test262-es5-tests/
 /es5-tests.zip
@@ -72,6 +73,7 @@
 /dtrace4linux
 /flow
 /v20140814.tar.gz
+/citylots.json
 /massif-*.out
 /ms_print.*
 /dukweb.js
