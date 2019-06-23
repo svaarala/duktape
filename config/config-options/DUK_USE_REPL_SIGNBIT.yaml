@@ -8,5 +8,5 @@ description: >
 
   When enabled, define DUK_SIGNBIT as duk_repl_signbit.
 
-# FIXME: the dependency between DUK_USE_REPL_SIGNBIT and DUK_SIGNBIT
+# XXX: the dependency between DUK_USE_REPL_SIGNBIT and DUK_SIGNBIT
 # is a bit awkward.

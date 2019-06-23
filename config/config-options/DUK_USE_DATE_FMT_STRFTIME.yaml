@@ -8,6 +8,3 @@ description: >
   Use strftime() to format Date values in native, platform specific format
   before falling back into ISO 8601.  When enabled, appropriate date/time
   headers must be included.
-
-# FIXME: add an include file metadata entry to cause default #include
-# directives to be emitted?

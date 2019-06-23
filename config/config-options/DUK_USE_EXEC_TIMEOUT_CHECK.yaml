@@ -17,7 +17,7 @@ description: >
   "if (DUK_USE_EXEC_TIMEOUT_CHECK(udata)) { ... }".
 
   The macro is called occasionally by the Duktape bytecode executor (i.e.
-  when executing Ecmascript code), typically from a few times per second
+  when executing ECMAScript code), typically from a few times per second
   to a hundred times per second, but the interval varies a great deal
   depending on what kind of code is being executed.
 

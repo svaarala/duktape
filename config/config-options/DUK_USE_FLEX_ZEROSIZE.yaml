@@ -8,4 +8,4 @@ description: >
   fully portable but works with some compilers and is preferred over using
   a one element array.
 
-# FIXME: currently unused, remove or mark unused so doesn't get emitted?
+# XXX: currently unused, remove or mark unused so doesn't get emitted?

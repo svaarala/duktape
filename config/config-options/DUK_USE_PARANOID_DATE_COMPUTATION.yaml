@@ -1,6 +1,6 @@
 define: DUK_USE_PARANOID_DATE_COMPUTATION
 introduced: 1.0.0
-default: false  # FIXME: make default detect C99/C++11?
+default: false  # XXX: make default detect C99/C++11?
 tags:
   - portability
 description: >

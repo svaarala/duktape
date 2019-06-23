@@ -5,7 +5,4 @@ tags:
   - portability
 description: >
   Rely as little as possible on compiler behavior for NaN comparison,
-  signed zero handling, etc.  Currently never activated but may be needed
-  for broken compilers.
-
-# FIXME: mark unused?
+  signed zero handling, etc.  May be needed for (very) broken compilers.

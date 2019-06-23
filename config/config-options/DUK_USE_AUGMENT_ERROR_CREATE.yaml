@@ -4,5 +4,5 @@ default: true
 tags:
   - ecmascript
 description: >
-  Augment an Ecmascript error object at creation with tracedata or
+  Augment an ECMAScript error object at creation with tracedata or
   fileName/lineNumber, or Duktape.errCreate (if enabled).

@@ -4,5 +4,5 @@ default: true
 tags:
   - ecmascript
 description: >
-  Augment an Ecmascript error object at throw time with Duktape.errThrow
+  Augment an ECMAScript error object at throw time with Duktape.errThrow
   (if enabled).

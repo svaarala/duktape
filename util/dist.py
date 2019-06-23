@@ -458,7 +458,6 @@ def main():
         'config-options',
         'helper-snippets',
         'header-snippets',
-        'other-defines',
         'examples'
     ]:
         # Copy directories in their entirety

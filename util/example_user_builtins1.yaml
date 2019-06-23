@@ -419,8 +419,7 @@ objects:
       #     extern duk_ret_t my_dummy_adder(duk_context *ctx);
       #
       # User code must then provide that function, but there's no need
-      # to declare the function e.g. using DUK_USE_USER_DECLARE config
-      # option.
+      # to declare the function e.g. using configure.py fixup.
 
       - key: 'myDummyAdder'
         value:

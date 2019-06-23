@@ -26,3 +26,6 @@ from Duktape v2.3.x.  Note the following:
 * Symbol built-in (Symbol(xxx), Symbol.toPrimitive, etc) is now enabled
   by default.  If you don't want the built-in, disable
   ``DUK_USE_SYMBOL_BUILTIN`` in tools/configure.py.
+
+* The ``DUK_USE_USER_DECLARE`` config option was removed.  If in use, replace
+  with a ``configure.py`` fixup file/line.

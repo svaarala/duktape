@@ -5,7 +5,7 @@ tags:
   - encoding-api
 description: >
   Provide TextEncoder and TextDecoder built-ins (the Encoding API) which allow
-  Ecmascript code to encode and decode text stored in a buffer.  Only UTF-8 is
+  ECMAScript code to encode and decode text stored in a buffer.  Only UTF-8 is
   currently supported for decoding.
 
   DUK_USE_BUFFEROBJECT_SUPPORT is recommended but not required: If it is

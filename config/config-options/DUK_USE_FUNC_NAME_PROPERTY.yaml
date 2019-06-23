@@ -5,6 +5,6 @@ tags:
   - ecmascript
   - compliance
 description: >
-  Add a "name" property to function instances.  This is part of Ecmascript
+  Add a "name" property to function instances.  This is part of ECMAScript
   requirements, but low memory devices can sometimes opt to not include the
   .name to reduce footprint.

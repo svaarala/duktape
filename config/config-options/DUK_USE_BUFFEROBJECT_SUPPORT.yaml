@@ -8,8 +8,8 @@ description: >
 
   When disabled, Duktape custom plain buffer type is present and functional
   in the C API.  Plain buffers have virtual properties and you can read/write
-  buffer contents in Ecmascript code.  Plain buffers will still inherit from
-  ArrayBuffer.prototype, but none of the Ecmascript buffer related bindings
+  buffer contents in ECMAScript code.  Plain buffers will still inherit from
+  ArrayBuffer.prototype, but none of the ECMAScript buffer related bindings
   will work.  This includes all ArrayBuffer, typed array, and Node.js Buffer
   methods.  Native bindings which produce plain buffer results (like
   Duktape.dec()) will still work.

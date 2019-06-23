@@ -5,8 +5,5 @@ tags:
   - date
   - portability
 description: >
-  Use strptime() to parse a platform specific datetime string into Ecmascript
+  Use strptime() to parse a platform specific datetime string into ECMAScript
   time.
-
-# FIXME: add an include file metadata entry to cause default #include
-# directives to be emitted?

@@ -12,7 +12,7 @@ introduced: 1.1.0
 
 # Optional Duktape version number where this option was deprecated,
 # i.e. the option is supported but no longer recommended.
-# FIXME: automatic #error with some -DDUK_USE_NO_DEPRECATED flag?
+# XXX: automatic #error with some -DDUK_USE_NO_DEPRECATED flag?
 #deprecated: 1.2.0
 
 # Optional Duktape version number where this option was removed,
@@ -43,7 +43,7 @@ introduced: 1.1.0
 # - true: defined with no value (#define DUK_USE_EXAMPLE)
 # - string: defined with string value (#define DUK_USE_EXAMPLE "foo")
 # - number: defined with number value (#define DUK_USE_EXAMPLE 123)
-# FIXME: verbatim? #define DUK_USE_EXAMPLE do { } while (0)
+# - verbatim: define verbatim line(s)
 default: false
 
 # Tags related to option (required).  If present, first tag is used as a

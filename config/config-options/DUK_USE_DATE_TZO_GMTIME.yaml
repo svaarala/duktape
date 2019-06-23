@@ -9,6 +9,3 @@ description: >
   When enabled, appropriate date/time headers must be included.
 
   Since gmtime() is not re-entrant, this is not thread safe.
-
-# FIXME: add an include file metadata entry to cause default #include
-# directives to be emitted?
