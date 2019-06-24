@@ -8,4 +8,4 @@ description: >
   most portable alternative: zero-size arrays are not allowed by all compilers
   and flexible array member ("char arr[]") is defined in C99.
 
-# FIXME: currently unused, remove or mark unused so doesn't get emitted?
+# XXX: currently unused, remove or mark unused so doesn't get emitted?

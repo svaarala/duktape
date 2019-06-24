@@ -6,4 +6,4 @@ tags:
 description: >
   Use branch hints if the compiler supports them.
 
-# FIXME: unused now?
+# XXX: Unused now, DUK_LIKELY and DUK_UNLIKELY are used instead.

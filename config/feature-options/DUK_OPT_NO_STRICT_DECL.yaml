@@ -4,5 +4,5 @@ tags:
   - ecmascript
   - experimental
 description: >
-  Disable support for "use strict" declaration so that Ecmascript code is
+  Disable support for "use strict" declaration so that ECMAScript code is
   always executed in non-strict mode.  Duktape/C functions remain strict.

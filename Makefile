@@ -1124,16 +1124,16 @@ codepolicycheck:
 		config/feature-options/*.yaml \
 		config/examples/* config/header-snippets/* config/helper-snippets/* \
 		config/*.yaml
-	# XXX: config files not yet FIXME pure
 	@$(PYTHON) util/check_code_policy.py \
 		$(CODEPOLICYOPTS) \
 		--check-carriage-returns \
+		--check-fixme \
 		--check-non-ascii \
 		--check-trailing-whitespace \
 		--check-mixed-indent \
 		--check-nonleading-tab \
 		--dump-vim-commands \
-		config/config-options/*.yaml config/other-defines/*.yaml
+		config/config-options/*.yaml
 	@$(PYTHON) util/check_code_policy.py \
 		$(CODEPOLICYOPTS) \
 		--check-carriage-returns \

@@ -1,5 +1,6 @@
 define: DUK_USE_USER_DECLARE
 introduced: 1.0.0
+removed: 2.4.0
 default:
   verbatim: '#define DUK_USE_USER_DECLARE() /* no user declarations */'
 tags:
@@ -14,5 +15,3 @@ description: >
   NOTE: This is only needed if using the default autodetecting duk_config.h
   header.  When providing DUK_USE_xxx flags directly, you should just provide
   all the necessary declarations in duk_config.h directly.
-
-# FIXME: to be removed?

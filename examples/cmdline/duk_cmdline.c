@@ -1543,7 +1543,7 @@ int main(int argc, char *argv[]) {
 	                "\n"
 	                "If <filename> is omitted, interactive mode is started automatically.\n"
 			"\n"
-	                "Input files can be either Ecmascript source files or bytecode files.\n"
+	                "Input files can be either ECMAScript source files or bytecode files.\n"
 	                "Bytecode files are not validated prior to loading, so that incompatible\n"
 			"or crafted files can cause memory unsafe behavior.  See discussion in\n"
 			"https://github.com/svaarala/duktape/blob/master/doc/bytecode.rst#memory-safety-and-bytecode-validation.\n");

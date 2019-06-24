@@ -5,4 +5,4 @@ tags:
   - portability
   - cstackdepth
 description: >
-  Ecmascript compiler native call stack recursion limit.
+  ECMAScript compiler native call stack recursion limit.

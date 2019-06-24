@@ -8,4 +8,4 @@ description: >
   by Duktape.
 
   When disabled, reduces footprint at the cost of much less informative
-  Ecmascript errors.
+  ECMAScript errors.

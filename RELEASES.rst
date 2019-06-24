@@ -3337,9 +3337,9 @@ Miscellaneous:
 
 * Makefile.sharedlibrary portability improvements (GH-1922, GH-1923)
 
-* Change spelling from ECMAScript to ECMAScript throughout the internal source
-  code; as far as external behavior is concerned this only affects a few
-  debug prints (GH-1894)
+* Change spelling to "ECMAScript" throughout the internal source code; as
+  far as external behavior is concerned this only affects a few debug prints
+  (GH-1894)
 
 * Fix NULL pointer dereference in error augmentation when DUK_USE_TRACEBACKS
   was disabled (GH-1909)
@@ -3443,6 +3443,9 @@ Planned
 * Minor performance improvements to CBOR extra encoder (GH-2121)
 
 * Add (untested) support for mixed endian targets to CBOR extra (GH-2121)
+
+* Remove support for unnecessary DUK_USE_USER_DECLARE config option, use
+  configure.py fixup line/file instead (GH-2123)
 
 * Fix incorrect handling of zero-length dynamic buffer in base-64 fast path
   decoder (GH-2027, GH-2088)

@@ -11,5 +11,5 @@ description: >
 
   When enabled, define DUK_DOUBLE_INFINITY as duk_computed_infinity.
 
-# FIXME: remove computed infinity from Duktape itself and let user
+# XXX: Remove computed infinity from Duktape itself and let user
 # provide it instead?

@@ -11,5 +11,5 @@ description: >
 
   When enabled, define DUK_DOUBLE_NAN as duk_computed_nan.
 
-# FIXME: remove computed NaN from Duktape itself and let user provide
+# XXX: Remove computed NaN from Duktape itself and let user provide
 # it instead?

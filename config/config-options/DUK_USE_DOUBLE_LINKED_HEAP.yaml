@@ -7,5 +7,5 @@ description: >
   Use a double-linked duk_heaphdr structure.  Required when reference
   counting is enabled.
 
-# FIXME: this must currently always match DUK_USE_REFERENCE_COUNTING
+# XXX: This must currently always match DUK_USE_REFERENCE_COUNTING
 # so remove as a separate option?

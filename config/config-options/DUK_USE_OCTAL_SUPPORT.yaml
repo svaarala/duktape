@@ -5,6 +5,6 @@ default: true
 tags:
   - ecmascript
 description: >
-  Enable optional octal number support (Ecmascript E5/E5.1
+  Enable optional octal number support (ECMAScript E5/E5.1
   Annex B: http://www.ecma-international.org/ecma-262/5.1/#sec-B).
   Recommended because existing code bases use octal numbers.

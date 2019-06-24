@@ -707,16 +707,6 @@ These typedefs, macros, etc, include:
 * Duktape config options, ``DUK_USE_xxx``, including a possible custom
   Date provider.
 
-The required defines and typedefs are also available in a machine parseable
-metadata form:
-
-* ``config/other-defines/c_types.yaml``: required integer and other types
-  and their limits.
-
-* ``config/other-defines/platform_functions.yaml``: required platform
-  function wrappers.
-
-* ``config/other-defines/other_defines.yaml``: compiler specific macros
-  and other misc defines.
+Duktape config options are available in a machine parseable metadata form:
 
 * ``config/config-options/DUK_USE_*.yaml``: Duktape config options.

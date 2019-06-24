@@ -8,5 +8,5 @@ description: >
 
   When enabled, define DUK_ISNAN as duk_repl_isnan.
 
-# FIXME: the dependency between DUK_USE_REPL_ISNAN and DUK_ISNAN
+# XXX: the dependency between DUK_USE_REPL_ISNAN and DUK_ISNAN
 # is a bit awkward.

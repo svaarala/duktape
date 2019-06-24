@@ -8,5 +8,5 @@ description: >
 
   When enabled, define DUK_FPCLASSIFY as duk_repl_fpclassify.
 
-# FIXME: the dependency between DUK_USE_REPL_FPCLASSIFY and DUK_FPCLASSIFY
+# XXX: the dependency between DUK_USE_REPL_FPCLASSIFY and DUK_FPCLASSIFY
 # is a bit awkward.

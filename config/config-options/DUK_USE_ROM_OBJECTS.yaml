@@ -18,5 +18,5 @@ description: >
   standpoint, but an attempt to actually change the property value will fail
   with a TypeError.  This may seem strange, but is necessary to allow a
   property value to be overridden in a RAM object inheriting from a ROM object:
-  if the inherited ROM property was not writable, Ecmascript semantics would
+  if the inherited ROM property was not writable, ECMAScript semantics would
   prevent a new property from being established in the RAM object.

@@ -6,4 +6,4 @@ tags:
 description: >
   Use C99 flexible array member for defining variable size structures.
 
-# FIXME: currently unused, remove or mark unused so doesn't get emitted?
+# XXX: currently unused, remove or mark unused so doesn't get emitted?

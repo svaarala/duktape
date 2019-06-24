@@ -5,10 +5,7 @@ tags:
   - date
   - portability
 description: >
-  Use getdate_r() to parse a platform specific datetime string into Ecmascript
+  Use getdate_r() to parse a platform specific datetime string into ECMAScript
   time.  getdate_r() depends on DATEMSK being set so this is not always very
   convenient for an embedded interpreter.  When enabled, appropriate date/time
   headers must be included.
-
-# FIXME: add an include file metadata entry to cause default #include
-# directives to be emitted?
