@@ -148,7 +148,7 @@ def create_dist_directories(dist):
     mkdir(os.path.join(dist, 'examples', 'eval'))
     mkdir(os.path.join(dist, 'examples', 'cmdline'))
     mkdir(os.path.join(dist, 'examples', 'eventloop'))
-    mkdir(os.path.join(dist, 'examples', 'minimal-eventloop'))
+    mkdir(os.path.join(dist, 'examples', 'timers'))
     mkdir(os.path.join(dist, 'examples', 'guide'))
     mkdir(os.path.join(dist, 'examples', 'coffee'))
     mkdir(os.path.join(dist, 'examples', 'jxpretty'))
@@ -560,7 +560,7 @@ def main():
         'eventloop.h',
         'main.c',
         'fileio.c'
-    ], os.path.join('examples', 'minimal-eventloop'), os.path.join(dist, 'examples', 'minimal-eventloop'))
+    ], os.path.join('examples', 'timers'), os.path.join(dist, 'examples', 'timers'))
 
     copy_files([
         'README.rst',
@@ -738,7 +738,7 @@ def main():
         'Makefile.cmdline',
         'Makefile.dukdebug',
         'Makefile.eventloop',
-        'Makefile.minloop',
+        'Makefile.timers',
         'Makefile.hello',
         'Makefile.eval',
         'Makefile.coffee',

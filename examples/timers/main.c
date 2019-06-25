@@ -154,7 +154,7 @@ int main(int argc, char *argv[]) {
 	return retval;
 
  usage:
-	fprintf(stderr, "Usage: minloop <filename>\n");
+	fprintf(stderr, "Usage: timers <filename>\n");
 	fprintf(stderr, "\n");
 	fprintf(stderr, "Uses a C based eventloop (c_eventloop.{c,js}).\n");
 	fprintf(stderr, "If <filename> is '-', the entire STDIN executed.\n");

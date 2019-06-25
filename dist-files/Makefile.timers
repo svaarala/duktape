@@ -4,11 +4,11 @@
 
 CC = gcc
 
-minloop:
+timers:
 	$(CC) -o $@ -std=c99 -Wall -Wextra -O2 -Isrc -Iextras/console \
-		examples/minimal-eventloop/main.c \
-		examples/minimal-eventloop/eventloop.c \
-		examples/minimal-eventloop/fileio.c \
+		examples/timers/main.c \
+		examples/timers/eventloop.c \
+		examples/timers/fileio.c \
 		src/duktape.c \
 		extras/console/duk_console.c \
 		-lm
