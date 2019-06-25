@@ -22,6 +22,7 @@ RUN echo "=== Node.js and package install ===" && \
 		build-essential llvm valgrind libc6-dbg libc6-dbg:i386 \
 		gcc gcc-multilib g++-multilib gcc-4.8 gcc-5 gcc-6 \
 		clang clang-tools clang-3.9 clang-4.0 clang-5.0 clang-6.0 clang-7 \
+		libncurses5-dev libncurses5 \
 		python python-yaml make tig git bc ant diffstat colordiff nodejs \
 		python-bs4 tidy wget curl source-highlight rst2pdf openjdk-11-jre \
 		zip unzip genisoimage vim w3m screen tzdata cdecl
