@@ -8,7 +8,7 @@ LD = $(CC)
 RM = rm -f
 
 CFLAGS = -std=c99 -Wall -Wextra -O2 -Isrc
-LDFLAGS = -lm -lncurses
+LDFLAGS = -lm
 
 %.o: %.c
 	$(CC) $(CFLAGS) -c $< -o $@
@@ -19,7 +19,6 @@ OBJECTS = \
 	examples/eventloop/poll.o \
 	examples/eventloop/socket.o \
 	examples/eventloop/fileio.o \
-	examples/eventloop/ncurses.o \
 	src/duktape.o \
 
 all: evloop

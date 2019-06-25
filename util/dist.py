@@ -542,10 +542,8 @@ def main():
         'ecma_eventloop.js',
         'main.c',
         'poll.c',
-        'ncurses.c',
         'socket.c',
         'fileio.c',
-        'curses-timers.js',
         'basic-test.js',
         'server-socket-test.js',
         'client-socket-test.js'
