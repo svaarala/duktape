@@ -11,9 +11,8 @@ built otherwise).
 
 To test (Linux only, perhaps other Unix)::
 
-  $ make
-  $ ./evloop curses-timers.js     # run with ECMAScript eventloop
-  $ ./evloop -c curses-timers.js  # run with C eventloop
+  $ ./evloop timer-test.js     # run with ECMAScript eventloop
+  $ ./evloop -c timer-test.js  # run with C eventloop
 
 Implementation approaches
 =========================
@@ -21,7 +20,7 @@ Implementation approaches
 There are several approaches to implementation timers.  Here we demonstrate
 two main approaches:
 
-1. Using a C eventloop which calls into Javascript.  All the event loop state
+1. Using a C eventloop which calls into ECMAScript.  All the event loop state
    like timers, sockets, etc, is held in C structures.
    (See ``c_eventloop.c`` and ``c_eventloop.js``.)
 
@@ -43,8 +42,6 @@ In addition there are a few synchronous API bindings which are not event loop
 related:
 
 * File I/O
-
-* Curses, for doing beautiful character graphics
 
 Limitations
 ===========
@@ -72,5 +69,4 @@ keep the example somewhat simple.  Some shortcomings include:
   current callback has finished.  This is not the best behavior for some
   environments, but avoids bunching callbacks.
 
-* Error handling is mostly missing.  Debug prints don't interact well
-  with curses.
+* Error handling is mostly missing.
