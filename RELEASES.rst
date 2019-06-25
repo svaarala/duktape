@@ -3447,6 +3447,10 @@ Planned
 * Remove support for unnecessary DUK_USE_USER_DECLARE config option, use
   configure.py fixup line/file instead (GH-2123)
 
+* Remove ncurses dependency from the eventloop example, add a new example
+  for running a lot of timers, improve init error reporting (GH-2126,
+  GH-2128)
+
 * Fix incorrect handling of zero-length dynamic buffer in base-64 fast path
   decoder (GH-2027, GH-2088)
 
