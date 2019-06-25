@@ -15,7 +15,6 @@
 #include "duktape.h"
 
 extern void poll_register(duk_context *ctx);
-extern void ncurses_register(duk_context *ctx);
 extern void socket_register(duk_context *ctx);
 extern void fileio_register(duk_context *ctx);
 extern void fileio_push_file_buffer(duk_context *ctx, const char *filename);
