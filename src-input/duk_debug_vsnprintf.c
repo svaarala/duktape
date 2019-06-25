@@ -11,7 +11,9 @@
  *     %!T    tagged value (duk_tval *)
  *     %!O    heap object (duk_heaphdr *)
  *     %!I    decoded bytecode instruction
- *     %!C    bytecode instruction opcode name (arg is long)
+ *     %!X    bytecode instruction opcode name (arg is long)
+ *     %!C    catcher (duk_catcher *)
+ *     %!A    activation (duk_activation *)
  *
  *  Everything is serialized in a JSON-like manner.  The default depth is one
  *  level, internal prototype is not followed, and internal properties are not
@@ -815,6 +817,47 @@ DUK_LOCAL void duk__print_opcode(duk__dprint_state *st, duk_small_int_t opcode) 
 	}
 }
 
+DUK_LOCAL void duk__print_catcher(duk__dprint_state *st, duk_catcher *cat) {
+	duk_fixedbuffer *fb = st->fb;
+
+	if (duk_fb_is_full(fb)) {
+		return;
+	}
+
+	if (!cat) {
+		duk_fb_put_cstring(fb, "NULL");
+		return;
+	}
+
+	duk_fb_sprintf(fb, "[catcher ptr=%p parent=%p varname=%p pc_base=%p, idx_base=%ld, flags=0x%08lx]",
+	               (void *) cat,
+	               (void *) cat->parent, (void *) cat->h_varname, (void *) cat->pc_base,
+		       (long) cat->idx_base, (unsigned long) cat->flags);
+}
+
+
+DUK_LOCAL void duk__print_activation(duk__dprint_state *st, duk_activation *act) {
+	duk_fixedbuffer *fb = st->fb;
+
+	if (duk_fb_is_full(fb)) {
+		return;
+	}
+
+	if (!act) {
+		duk_fb_put_cstring(fb, "NULL");
+		return;
+	}
+
+	/* prev_caller: conditional, omitted on purpose, it's rarely used. */
+	/* prev_line: conditional, omitted on purpose (but would be nice). */
+	duk_fb_sprintf(fb, "[activation ptr=%p tv_func=<omit> func=%p parent=%p var_env=%p lex_env=%p cat=%p curr_pc=%p bottom_byteoff=%ld retval_byteoff=%ld reserve_byteoff=%ld flags=%ld]",
+	               (void *) act,
+	               (void *) act->func, (void *) act->parent, (void *) act->var_env,
+		       (void *) act->lex_env, (void *) act->cat, (void *) act->curr_pc,
+		       (long) act->bottom_byteoff, (long) act->retval_byteoff, (long) act->reserve_byteoff,
+		       (long) act->flags);
+}
+
 DUK_INTERNAL duk_int_t duk_debug_vsnprintf(char *str, duk_size_t size, const char *format, va_list ap) {
 	duk_fixedbuffer fb;
 	const char *p = format;
@@ -899,9 +942,17 @@ DUK_INTERNAL duk_int_t duk_debug_vsnprintf(char *str, duk_size_t size, const cha
 				duk_instr_t t = va_arg(ap, duk_instr_t);
 				duk__print_instr(&st, t);
 				break;
-			} else if (got_exclamation && ch == DUK_ASC_UC_C) {
+			} else if (got_exclamation && ch == DUK_ASC_UC_X) {
 				long t = va_arg(ap, long);
 				duk__print_opcode(&st, (duk_small_int_t) t);
+				break;
+			} else if (got_exclamation && ch == DUK_ASC_UC_C) {
+				duk_catcher *t = va_arg(ap, duk_catcher *);
+				duk__print_catcher(&st, t);
+				break;
+			} else if (got_exclamation && ch == DUK_ASC_UC_A) {
+				duk_activation *t = va_arg(ap, duk_activation *);
+				duk__print_activation(&st, t);
 				break;
 			} else if (!got_exclamation && strchr(DUK__ALLOWED_STANDARD_SPECIFIERS, (int) ch)) {
 				char fmtbuf[DUK__MAX_FORMAT_TAG_LENGTH];

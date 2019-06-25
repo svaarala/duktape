@@ -1036,7 +1036,7 @@ DUK_LOCAL void duk__convert_to_func_template(duk_compiler_ctx *comp_ctx) {
 
 		p = p_start;
 		while (p < p_end) {
-			DUK_DDD(DUK_DDDPRINT("BC %04ld: %!I        ; 0x%08lx op=%ld (%!C) a=%ld b=%ld c=%ld",
+			DUK_DDD(DUK_DDDPRINT("BC %04ld: %!I        ; 0x%08lx op=%ld (%!X) a=%ld b=%ld c=%ld",
 			                     (long) (p - p_start),
 			                     (duk_instr_t) (*p),
 			                     (unsigned long) (*p),
@@ -1586,7 +1586,7 @@ DUK_LOCAL void duk__emit_abc(duk_compiler_ctx *comp_ctx, duk_small_uint_t op, du
 		goto error_outofregs;
 	}
 	ins = DUK_ENC_OP_ABC(op, abc);
-	DUK_DDD(DUK_DDDPRINT("duk__emit_abc: 0x%08lx line=%ld pc=%ld op=%ld (%!C) abc=%ld (%!I)",
+	DUK_DDD(DUK_DDDPRINT("duk__emit_abc: 0x%08lx line=%ld pc=%ld op=%ld (%!X) abc=%ld (%!I)",
 	                     (unsigned long) ins, (long) comp_ctx->curr_token.start_line,
 	                     (long) duk__get_current_pc(comp_ctx), (long) op, (long) op,
 	                     (long) abc, (duk_instr_t) ins));
