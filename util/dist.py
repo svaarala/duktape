@@ -545,6 +545,7 @@ def main():
         'socket.c',
         'fileio.c',
         'basic-test.js',
+        'timer-test.js',
         'server-socket-test.js',
         'client-socket-test.js'
     ], os.path.join('examples', 'eventloop'), os.path.join(dist, 'examples', 'eventloop'))

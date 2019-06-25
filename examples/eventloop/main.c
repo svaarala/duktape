@@ -68,7 +68,7 @@ static void print_register(duk_context *ctx) {
 	duk_put_global_string(ctx, "print");
 }
 
-duk_ret_t wrapped_compile_execute(duk_context *ctx, void *udata) {
+static duk_ret_t wrapped_compile_execute(duk_context *ctx, void *udata) {
 	int comp_flags = 0;
 	int rc;
 
@@ -114,7 +114,7 @@ duk_ret_t wrapped_compile_execute(duk_context *ctx, void *udata) {
 	return 0;
 }
 
-int handle_fh(duk_context *ctx, FILE *f, const char *filename) {
+static int handle_fh(duk_context *ctx, FILE *f, const char *filename) {
 	char *buf = NULL;
 	int len;
 	int got;
@@ -158,7 +158,7 @@ int handle_fh(duk_context *ctx, FILE *f, const char *filename) {
 	return retval;
 }
 
-int handle_file(duk_context *ctx, const char *filename) {
+static int handle_file(duk_context *ctx, const char *filename) {
 	FILE *f = NULL;
 	int retval;
 
@@ -178,7 +178,7 @@ int handle_file(duk_context *ctx, const char *filename) {
 	return -1;
 }
 
-int handle_stdin(duk_context *ctx) {
+static int handle_stdin(duk_context *ctx) {
 	int retval;
 
 	retval = handle_fh(ctx, stdin, "stdin");
@@ -186,9 +186,35 @@ int handle_stdin(duk_context *ctx) {
 	return retval;
 }
 
+static duk_ret_t init_duktape_context(duk_context *ctx, void *udata) {
+	(void) udata;
+
+	print_register(ctx);
+	poll_register(ctx);
+	socket_register(ctx);
+	fileio_register(ctx);
+
+	if (c_evloop) {
+		fprintf(stderr, "Using C based eventloop (omit -c to use ECMAScript based eventloop)\n");
+		fflush(stderr);
+
+		eventloop_register(ctx);
+		fileio_push_file_string(ctx, "c_eventloop.js");
+		duk_eval(ctx);
+	} else {
+		fprintf(stderr, "Using ECMAScript based eventloop (give -c to use C based eventloop)\n");
+		fflush(stderr);
+
+		fileio_push_file_string(ctx, "ecma_eventloop.js");
+		duk_eval(ctx);
+	}
+
+	return 0;
+}
+
 int main(int argc, char *argv[]) {
 	duk_context *ctx = NULL;
-	int retval = 0;
+	int retval = 1;
 	const char *filename = NULL;
 	int i;
 
@@ -221,42 +247,27 @@ int main(int argc, char *argv[]) {
 
 	ctx = duk_create_heap_default();
 
-	print_register(ctx);
-	poll_register(ctx);
-	ncurses_register(ctx);
-	socket_register(ctx);
-	fileio_register(ctx);
-
-	if (c_evloop) {
-		fprintf(stderr, "Using C based eventloop (omit -c to use ECMAScript based eventloop)\n");
-		fflush(stderr);
-
-		eventloop_register(ctx);
-		fileio_push_file_string(ctx, "c_eventloop.js");
-		duk_eval(ctx);
-	} else {
-		fprintf(stderr, "Using ECMAScript based eventloop (give -c to use C based eventloop)\n");
-		fflush(stderr);
-
-		fileio_push_file_string(ctx, "ecma_eventloop.js");
-		duk_eval(ctx);
+	if (duk_safe_call(ctx, init_duktape_context, NULL, 0 /*nargs*/, 1 /*nrets*/) != 0) {
+		fprintf(stderr, "Failed to initialize: %s\n", duk_safe_to_string(ctx, -1));
+		goto cleanup;
 	}
+	duk_pop(ctx);
 
 	fprintf(stderr, "Executing code from: '%s'\n", filename);
 	fflush(stderr);
 
 	if (strcmp(filename, "-") == 0) {
 		if (handle_stdin(ctx) != 0) {
-			retval = 1;
 			goto cleanup;
 		}
 	} else {
 		if (handle_file(ctx, filename) != 0) {
-			retval = 1;
 			goto cleanup;
 		}
 	}
 
+	retval = 0;
+	/* fall through */
  cleanup:
 	if (ctx) {
 		duk_destroy_heap(ctx);

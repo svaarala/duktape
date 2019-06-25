@@ -5,7 +5,7 @@
 CC = gcc
 
 evloop:
-	@echo "NOTE: The eventloop is example is intended to be used on Linux"
+	@echo "NOTE: The eventloop is an example intended to be used on Linux"
 	@echo "      or other common UNIX variants.  It is not fully portable."
 	@echo ""
 

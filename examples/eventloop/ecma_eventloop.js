@@ -271,8 +271,7 @@ EventLoop.run = function() {
         try {
             Poll.poll(poll_set, wait);
         } catch (e) {
-            // Eat errors silently.  When resizing curses window an EINTR
-            // happens now.
+            // Eat errors silently.
         }
 
         /*
