@@ -15,9 +15,8 @@ evloop:
 		examples/eventloop/poll.c \
 		examples/eventloop/socket.c \
 		examples/eventloop/fileio.c \
-		examples/eventloop/ncurses.c \
 		src/duktape.c \
-		-lm -lncurses
+		-lm
 
 	@echo ""
 	@echo "NOTE: You must 'cd examples/eventloop' before you execute the"
