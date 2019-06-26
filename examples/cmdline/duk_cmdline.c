@@ -111,6 +111,9 @@ static int interactive_mode = 0;
 #if defined(DUK_CMDLINE_DEBUGGER_SUPPORT)
 static int debugger_reattach = 0;
 #endif
+#if defined(DUK_CMDLINE_LINENOISE_COMPLETION)
+static int no_auto_complete = 0;
+#endif
 
 /*
  *  Misc helpers
@@ -324,7 +327,6 @@ static duk_ret_t wrapped_compile_execute(duk_context *ctx, void *udata) {
 
 #if defined(DUK_CMDLINE_LINENOISE_COMPLETION)
 static duk_context *completion_ctx;
-
 
 static const char *linenoise_completion_script =
 	"(function linenoiseCompletion(input, addCompletion) {\n"
@@ -709,15 +711,17 @@ static int handle_interactive(duk_context *ctx) {
 	linenoiseSetMultiLine(1);
 	linenoiseHistorySetMaxLen(64);
 #if defined(DUK_CMDLINE_LINENOISE_COMPLETION)
-	linenoiseSetCompletionCallback(linenoise_completion);
-	linenoiseSetHintsCallback(linenoise_hints);
-	linenoiseSetFreeHintsCallback(linenoise_freehints);
-	duk_push_global_stash(ctx);
-	duk_eval_string(ctx, linenoise_completion_script);
-	duk_put_prop_string(ctx, -2, "linenoiseCompletion");
-	duk_eval_string(ctx, linenoise_hints_script);
-	duk_put_prop_string(ctx, -2, "linenoiseHints");
-	duk_pop(ctx);
+	if (!no_auto_complete) {
+		linenoiseSetCompletionCallback(linenoise_completion);
+		linenoiseSetHintsCallback(linenoise_hints);
+		linenoiseSetFreeHintsCallback(linenoise_freehints);
+		duk_push_global_stash(ctx);
+		duk_eval_string(ctx, linenoise_completion_script);
+		duk_put_prop_string(ctx, -2, "linenoiseCompletion");
+		duk_eval_string(ctx, linenoise_hints_script);
+		duk_put_prop_string(ctx, -2, "linenoiseHints");
+		duk_pop(ctx);
+	}
 #endif
 
 	for (;;) {
@@ -1373,6 +1377,10 @@ int main(int argc, char *argv[]) {
 			recreate_heap = 1;
 		} else if (strcmp(arg, "--no-heap-destroy") == 0) {
 			no_heap_destroy = 1;
+		} else if (strcmp(arg, "--no-auto-complete") == 0) {
+#if defined(DUK_CMDLINE_LINENOISE_COMPLETION)
+			no_auto_complete = 1;
+#endif
 		} else if (strcmp(arg, "--verbose") == 0) {
 			verbose = 1;
 		} else if (strcmp(arg, "--run-stdin") == 0) {
@@ -1540,6 +1548,11 @@ int main(int argc, char *argv[]) {
 #endif
 			"   --recreate-heap    recreate heap after every file\n"
 			"   --no-heap-destroy  force GC, but don't destroy heap at end (leak testing)\n"
+#if defined(DUK_CMDLINE_LINENOISE_COMPLETION)
+			"   --no-auto-complete disable linenoise auto completion\n"
+#else
+			"   --no-auto-complete disable linenoise auto completion [ignored, not supported]\n"
+#endif
 	                "\n"
 	                "If <filename> is omitted, interactive mode is started automatically.\n"
 			"\n"
