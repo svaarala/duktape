@@ -3486,6 +3486,11 @@ Planned
   function chains with a Proxy object (rather than a plain function)
   as the final non-bound function (GH-2049, GH-2103)
 
+* Fix incorrect assertion with no underlying bug for "thr == heap_thread"
+  during heap destruction finalizer runs; the assert is untrue when a
+  finalizer (executed during heap destruction) resumes a coroutine (GH-2030,
+  GH-2132)
+
 * Fix compile error for extras/eventloop due to missing a header file
   (c_eventloop.h) in the dist package (GH-2090)
 

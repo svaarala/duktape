@@ -1202,6 +1202,8 @@ DUK_LOCAL duk_hobject *duk__resolve_target_func_and_this_binding(duk_hthread *th
 		tv_func = DUK_GET_TVAL_POSIDX(thr, idx_func);
 		DUK_ASSERT(tv_func != NULL);
 
+		DUK_DD(DUK_DDPRINT("target func: %!iT", tv_func));
+
 		if (DUK_TVAL_IS_OBJECT(tv_func)) {
 			func = DUK_TVAL_GET_OBJECT(tv_func);
 

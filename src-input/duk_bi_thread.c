@@ -135,6 +135,18 @@ DUK_INTERNAL duk_ret_t duk_bi_thread_resume(duk_hthread *ctx) {
 		duk_pop(thr);
 	}
 
+#if 0
+	/* This check would prevent a heap destruction time finalizer from
+	 * launching a coroutine, which would ensure that during finalization
+	 * 'thr' would always equal heap_thread.  Normal runtime finalizers
+	 * run with ms_running == 0, i.e. outside mark-and-sweep.  See GH-2030.
+	 */
+	if (thr->heap->ms_running) {
+		DUK_D(DUK_DPRINT("refuse Duktape.Thread.resume() when ms_running == 1"));
+		goto state_error;
+	}
+#endif
+
 	/*
 	 *  The error object has been augmented with a traceback and other
 	 *  info from its creation point -- usually another thread.  The
