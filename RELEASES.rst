@@ -3451,6 +3451,9 @@ Planned
   for running a lot of timers, improve init error reporting (GH-2126,
   GH-2128)
 
+* Add --no-auto-complete option to 'duk' to disable linenoise auto
+  completion (GH-2131)
+
 * Fix incorrect handling of zero-length dynamic buffer in base-64 fast path
   decoder (GH-2027, GH-2088)
 
