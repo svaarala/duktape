@@ -521,12 +521,14 @@ DUK_LOCAL DUK_INLINE void duk__refcount_refzero_hbuffer(duk_heap *heap, duk_hbuf
 		DUK_ASSERT(thr->heap != NULL); \
 		/* When mark-and-sweep runs, heap_thread must exist. */ \
 		DUK_ASSERT(thr->heap->ms_running == 0 || thr->heap->heap_thread != NULL); \
-		/* In normal operation finalizers are executed with ms_running == 0. \
-		 * However, in heap destruction ms_running is set to 1 and remaining \
-		 * finalizers then executed.  A finalizer may resume a coroutine, in \
-		 * which case we'd have ms_running == 1 and thr != heap_thread (GH-2030). \
+		/* In normal operation finalizers are executed with ms_running == 0 \
+		 * so we should never see ms_running == 1 and thr != heap_thread. \
+		 * In heap destruction finalizers are executed with ms_running != 0 \
+		 * to e.g. prevent refzero; a special value ms_running == 2 is used \
+		 * in that case so it can be distinguished from the normal runtime \
+		 * case, and allows a stronger assertion here (GH-2030). \
 		 */ \
-		/* DUK_ASSERT(thr->heap->ms_running == 0 || thr == thr->heap->heap_thread); */ \
+		DUK_ASSERT(!(thr->heap->ms_running == 1 && thr != thr->heap->heap_thread)); \
 		/* We may be called when the heap is initializing and we process \
 		 * refzeros normally, but mark-and-sweep and finalizers are prevented \
 		 * if that's the case. \

@@ -142,7 +142,7 @@ DUK_INTERNAL duk_ret_t duk_bi_thread_resume(duk_hthread *ctx) {
 	 * run with ms_running == 0, i.e. outside mark-and-sweep.  See GH-2030.
 	 */
 	if (thr->heap->ms_running) {
-		DUK_D(DUK_DPRINT("refuse Duktape.Thread.resume() when ms_running == 1"));
+		DUK_D(DUK_DPRINT("refuse Duktape.Thread.resume() when ms_running != 0"));
 		goto state_error;
 	}
 #endif
