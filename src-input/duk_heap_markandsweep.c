@@ -1388,8 +1388,8 @@ DUK_INTERNAL void duk_heap_mark_and_sweep(duk_heap *heap, duk_small_uint_t flags
 	 */
 
 	DUK_ASSERT(heap->ms_prevent_count == 1);
-	heap->ms_prevent_count = 0;
 	DUK_ASSERT(heap->ms_running == 1);
+	heap->ms_prevent_count = 0;
 	heap->ms_running = 0;
 
 	/*

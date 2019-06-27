@@ -416,6 +416,11 @@ struct duk_heap {
 
 	/* Mark-and-sweep running flag.  Prevents re-entry, and also causes
 	 * refzero events to be ignored (= objects won't be queued to refzero_list).
+	 *
+	 * 0: mark-and-sweep not running
+	 * 1: mark-and-sweep is running
+	 * 2: heap destruction active or debugger active, prevent mark-and-sweep
+	 *    and refzero processing (but mark-and-sweep not itself running)
 	 */
 	duk_uint_t ms_running;
 

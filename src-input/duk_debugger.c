@@ -2867,7 +2867,7 @@ DUK_INTERNAL void duk_debug_set_paused(duk_heap *heap) {
 		heap->dbg_state_dirty = 1;
 		duk_debug_clear_pause_state(heap);
 		DUK_ASSERT(heap->ms_running == 0);  /* debugger can't be triggered within mark-and-sweep */
-		heap->ms_running = 1;  /* prevent mark-and-sweep, prevent refzero queueing */
+		heap->ms_running = 2;  /* prevent mark-and-sweep, prevent refzero queueing */
 		heap->ms_prevent_count++;
 		DUK_ASSERT(heap->ms_prevent_count != 0);  /* Wrap. */
 		DUK_ASSERT(heap->heap_thread != NULL);
@@ -2879,7 +2879,7 @@ DUK_INTERNAL void duk_debug_clear_paused(duk_heap *heap) {
 		DUK_HEAP_CLEAR_DEBUGGER_PAUSED(heap);
 		heap->dbg_state_dirty = 1;
 		duk_debug_clear_pause_state(heap);
-		DUK_ASSERT(heap->ms_running == 1);
+		DUK_ASSERT(heap->ms_running == 2);
 		DUK_ASSERT(heap->ms_prevent_count > 0);
 		heap->ms_prevent_count--;
 		heap->ms_running = 0;
