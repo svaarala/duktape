@@ -38,9 +38,11 @@ CMDLINE_SOURCES += extras/module-duktape/duk_module_duktape.o
 
 # If you want linenoise, you can enable these.  At the moment linenoise
 # will cause some harmless compilation warnings.
-#CFLAGS += -DDUK_CMDLINE_FANCY -I./linenoise -D_POSIX_C_SOURCE=200809L 
-#CMDLINE_SOURCES += linenoise/linenoise.o
-#EXTRA_TARGETS += linenoise
+ifeq ($(LINENOISE),1)
+	CFLAGS += -DDUK_CMDLINE_FANCY -I./linenoise -D_POSIX_C_SOURCE=200809L 
+	CMDLINE_SOURCES += linenoise/linenoise.o
+	EXTRA_TARGETS += linenoise
+endif
 
 # Use the tools/configure.py utility to modify Duktape default configuration:
 # http://duktape.org/guide.html#compiling
