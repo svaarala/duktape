@@ -2952,7 +2952,7 @@ DUK_INTERNAL void duk_js_execute_bytecode(duk_hthread *exec_thr) {
 #endif
 			DUK_DDD(DUK_DDDPRINT("after setjmp, delayed catch setup: %ld\n", (long) delayed_catch_setup));
 
-			if (DUK_UNLIKELY(delayed_catch_setup)) {
+			if (DUK_UNLIKELY(delayed_catch_setup != 0)) {
 				duk_hthread *thr = entry_thread->heap->curr_thread;
 
 				delayed_catch_setup = 0;

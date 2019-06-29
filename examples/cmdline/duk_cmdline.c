@@ -229,7 +229,7 @@ static duk_ret_t wrapped_compile_execute(duk_context *ctx, void *udata) {
 			memcpy(buf, (const void *) src_data, src_len);
 			duk_load_function(ctx);
 		} else {
-			duk_type_error(ctx, "bytecode input rejected (use -b to allow bytecode inputs)");
+			(void) duk_type_error(ctx, "bytecode input rejected (use -b to allow bytecode inputs)");
 		}
 	} else {
 		/* Source code. */
