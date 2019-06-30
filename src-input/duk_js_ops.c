@@ -146,7 +146,8 @@ DUK_INTERNAL duk_bool_t duk_js_toboolean(duk_tval *tv) {
  *      ("0x123") and infinities
  *
  *    - Unlike source code literals, ToNumber() coerces empty strings
- *      and strings with only whitespace to zero (not NaN).
+ *      and strings with only whitespace to zero (not NaN).  However,
+ *      while '' coerces to 0, '+' and '-' coerce to NaN.
  */
 
 /* E5 Section 9.3.1 */
