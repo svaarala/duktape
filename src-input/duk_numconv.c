@@ -2090,9 +2090,16 @@ DUK_INTERNAL void duk_numconv_parse(duk_hthread *thr, duk_small_int_t radix, duk
 				goto parse_fail;
 			}
 		} else {
-			/* empty ("") is allowed in some formats (e.g. Number(''), as zero */
+			/* Empty ("") is allowed in some formats (e.g. Number(''), as zero,
+			 * but it must not have a leading +/- sign (GH-2019).  Note that
+			 * for Number(), h_str is already trimmed so we can check for zero
+			 * length and still get Number('  +  ') == NaN.
+			 */
 			if ((flags & DUK_S2N_FLAG_ALLOW_EMPTY_AS_ZERO) == 0) {
 				DUK_DDD(DUK_DDDPRINT("parse failed: empty string not allowed (as zero)"));
+				goto parse_fail;
+			} else if (DUK_HSTRING_GET_BYTELEN(h_str) != 0) {
+				DUK_DDD(DUK_DDDPRINT("parse failed: no digits, but not empty (had a +/- sign)"));
 				goto parse_fail;
 			}
 		}
