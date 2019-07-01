@@ -174,6 +174,11 @@ for more practical details.</p>
     In such a case you can implement an external "Date provider" which allows
     you to provide the necessary date/time primitives without Duktape changes.  See
     <a href="https://github.com/svaarala/duktape/blob/master/doc/datetime.rst">datetime.rst</a>.</li>
+<li><b>Native stack check macro</b>.  When the target has a small stack, it
+    may be useful to define
+    <code><a href="https://github.com/svaarala/duktape/blob/master/config/config-options/DUK_USE_NATIVE_STACK_CHECK.yaml">DUK_USE_NATIVE_STACK_CHECK()</a></code>
+    macro which provides a better safeguard against stack exhaustion than stack
+    depth limits which can't account for the size of stack frames.</li>
 </ul>
 
 <!-- XXX: this might be more suited to the Wiki -->
