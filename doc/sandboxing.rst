@@ -85,6 +85,19 @@ Pros and cons of using a Duktape thread for sandboxing:
 These two approaches can of course be mixed: you can have multiple heaps,
 each with one or more sandboxed threads.
 
+Define a native stack check macro (DUK_USE_NATIVE_STACK_CHECK)
+--------------------------------------------------------------
+
+This macro allows a sandbox environment to minimize chances of a native
+stack overrun more accurately than plain stack depth limits (such as
+DUK_USE_NATIVE_CALL_RECLIMIT).  See:
+
+* Config option description:
+  https://github.com/svaarala/duktape/blob/master/config/config-options/DUK_USE_NATIVE_STACK_CHECK.yaml
+
+* Example stack check call in (duk_cmdline_stack_check):
+  https://github.com/svaarala/duktape/blob/master/examples/cmdline/duk_cmdline.c
+
 Disable verbose errors
 ----------------------
 
