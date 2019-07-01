@@ -35,6 +35,17 @@
  *  Limit check helpers.
  */
 
+/* Check native stack space if DUK_USE_NATIVE_STACK_CHECK() defined. */
+DUK_INTERNAL void duk_native_stack_check(duk_hthread *thr) {
+#if defined(DUK_USE_NATIVE_STACK_CHECK)
+	if (DUK_USE_NATIVE_STACK_CHECK() != 0) {
+		DUK_ERROR_RANGE(thr, DUK_STR_NATIVE_STACK_LIMIT);
+	}
+#else
+	DUK_UNREF(thr);
+#endif
+}
+
 /* Allow headroom for calls during error augmentation (see GH-191).
  * We allow space for 10 additional recursions, with one extra
  * for, e.g. a print() call at the deepest level, and an extra
@@ -59,13 +70,15 @@ DUK_LOCAL DUK_NOINLINE void duk__call_c_recursion_limit_check_slowpath(duk_hthre
 #endif
 
 	DUK_D(DUK_DPRINT("call prevented because C recursion limit reached"));
-	DUK_ERROR_RANGE(thr, DUK_STR_C_CALLSTACK_LIMIT);
+	DUK_ERROR_RANGE(thr, DUK_STR_NATIVE_STACK_LIMIT);
 	DUK_WO_NORETURN(return;);
 }
 
 DUK_LOCAL DUK_ALWAYS_INLINE void duk__call_c_recursion_limit_check(duk_hthread *thr) {
 	DUK_ASSERT(thr->heap->call_recursion_depth >= 0);
 	DUK_ASSERT(thr->heap->call_recursion_depth <= thr->heap->call_recursion_limit);
+
+	duk_native_stack_check(thr);
 
 	/* This check is forcibly inlined because it's very cheap and almost
 	 * always passes.  The slow path is forcibly noinline.

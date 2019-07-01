@@ -3410,6 +3410,11 @@ Planned
 * Remove arguments.caller for strict argument objects to match revised
   ES2017 behavior (GH-2009)
 
+* Add DUK_USE_NATIVE_STACK_CHECK() macro config option (disabled by default)
+  for a platform specific stack space check in recursive and stack heavy
+  code paths; this is more accurate than the default fixed recursion limit
+  (GH-1995)
+
 * When using Proxy wrapping in console extra, don't return a fake NOP
   function for console.toJSON to avoid confusing JX serialization of the
   console object (GH-2052, GH-2054, GH-2055)

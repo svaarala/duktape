@@ -99,6 +99,7 @@ DUK_INTERNAL_DECL void duk_js_push_closure(duk_hthread *thr,
                                            duk_bool_t add_auto_proto);
 
 /* call handling */
+DUK_INTERNAL_DECL void duk_native_stack_check(duk_hthread *thr);
 DUK_INTERNAL_DECL duk_int_t duk_handle_call_unprotected(duk_hthread *thr, duk_idx_t idx_func, duk_small_uint_t call_flags);
 DUK_INTERNAL_DECL duk_int_t duk_handle_call_unprotected_nargs(duk_hthread *thr, duk_idx_t nargs, duk_small_uint_t call_flags);
 DUK_INTERNAL_DECL duk_int_t duk_handle_safe_call(duk_hthread *thr, duk_safe_call_function func, void *udata, duk_idx_t num_stack_args, duk_idx_t num_stack_res);

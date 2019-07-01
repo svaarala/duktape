@@ -522,6 +522,7 @@ DUK_LOCAL void duk__parse_disjunction(duk_re_compiler_ctx *re_ctx, duk_bool_t ex
 
 	DUK_ASSERT(out_atom_info != NULL);
 
+	duk_native_stack_check(re_ctx->thr);
 	if (re_ctx->recursion_depth >= re_ctx->recursion_limit) {
 		DUK_ERROR_RANGE(re_ctx->thr, DUK_STR_REGEXP_COMPILER_RECURSION_LIMIT);
 		DUK_WO_NORETURN(return;);

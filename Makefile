@@ -114,6 +114,7 @@ ifdef SYSTEMROOT  # Windows
 # Skip fancy (linenoise)
 else
 CCOPTS_SHARED += -DDUK_CMDLINE_FANCY
+#CCOPTS_SHARED += -DDUK_CMDLINE_PTHREAD_STACK_CHECK
 endif
 CCOPTS_SHARED += -DDUK_CMDLINE_ALLOC_LOGGING
 CCOPTS_SHARED += -DDUK_CMDLINE_ALLOC_TORTURE
@@ -191,6 +192,7 @@ CCOPTS_DUKLOW += -DDUK_ALLOC_POOL_TRACK_WASTE  # quite fast, but not free so dis
 ifdef SYSTEMROOT  # Windows
 CCLIBS = -lm -lws2_32
 else
+#CCLIBS = -lm -lpthread
 CCLIBS = -lm
 endif
 
