@@ -52,20 +52,27 @@ USER $USERNAME
 # Use /work for builds, temporaries, etc.
 WORKDIR /work
 
+# Emscripten.  Source emsdk-portable/emsdk_env.sh to get 'emcc' into PATH.
+#RUN echo "=== Emscripten (emsdk-portable) ===" && \
+#	wget https://s3.amazonaws.com/mozilla-games/emscripten/releases/emsdk-portable.tar.gz && \
+#	tar xvfz emsdk-portable.tar.gz && \
+#	cd emsdk-portable && \
+#	./emsdk update && \
+#	./emsdk install latest && \
+#	./emsdk activate latest && \
+#	cd .. && \
+#	rm emsdk-portable.tar.gz
+
+# Emscripten.  Source emsdk/emsdk_env.sh to get 'emcc' into PATH.
+RUN echo "=== Emscripten (emsdk) ===" && \
+	git clone https://github.com/emscripten-core/emsdk && \
+	cd emsdk && \
+	./emsdk install latest && \
+	./emsdk activate latest
+
 # Shared script for setting up the duktape/ directory.
 COPY --chown=duktape:duktape prepare_repo.sh .
 RUN chmod 755 prepare_repo.sh
-
-# Emscripten.  Source emsdk-portable/emsdk_env.sh to get 'emcc' into PATH.
-RUN echo "=== Emscripten ===" && \
-	wget https://s3.amazonaws.com/mozilla-games/emscripten/releases/emsdk-portable.tar.gz && \
-	tar xvfz emsdk-portable.tar.gz && \
-	cd emsdk-portable && \
-	./emsdk update && \
-	./emsdk install latest && \
-	./emsdk activate latest && \
-	cd .. && \
-	rm emsdk-portable.tar.gz
 
 # Clone some useful repositories into 'repo-snapshots' to reduce network
 # traffic.  Derived images can then just 'git pull' to get them up to date.
@@ -91,11 +98,11 @@ RUN echo "=== Prepare duktape-prep repo ===" && \
 # Initialize Emscripten cached bytecode files.
 RUN echo "=== Prepare Emscripten cached bytecode files ===" && \
 	cp -r duktape-prep /tmp/duktape-emcc-init && \
-	bash -c '. emsdk-portable/emsdk_env.sh && cd /tmp/duktape-emcc-init && make emscriptenluatest dukweb.js' && \
+	bash -c '. emsdk/emsdk_env.sh && cd /tmp/duktape-emcc-init && make emscriptenluatest dukweb.js' && \
 	rm -rf /tmp/duktape-emcc-init /tmp/duk-emcc*
 
 # Dump some versions.
 RUN echo "=== Versions ===" && \
 	echo "GCC:" && gcc -v && \
 	echo "CLANG:" && clang -v && \
-	bash -c 'echo "EMCC:" && . emsdk-portable/emsdk_env.sh && emcc -v'
+	bash -c 'echo "EMCC:" && . emsdk/emsdk_env.sh && emcc -v'
