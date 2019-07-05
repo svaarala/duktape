@@ -25,11 +25,13 @@ try {
 }
 
 /*===
-ReferenceError
+SyntaxError
 ReferenceError
 ===*/
 
-/* These parse as RegExp literals and cause an "invalid LHS" ReferenceError. */
+/* This is a SyntaxError, as the ++ has no base value.  (V8 seems to
+ * cause a ReferenceError for this.)
+ */
 
 try {
     eval("++/foo/");
@@ -37,6 +39,8 @@ try {
 } catch (e) {
     print(e.name);
 }
+
+/* This parses as a RegExp literal and causes an "invalid LHS" ReferenceError. */
 
 try {
     eval("/foo/++");
