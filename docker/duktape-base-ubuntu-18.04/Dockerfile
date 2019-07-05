@@ -85,9 +85,14 @@ RUN echo "=== Prepare duktape-prep repo ===" && \
 	cd duktape-prep && \
 	make runtestsdeps linenoise UglifyJS2 && \
 	make duktape-releases lz-string jquery-1.11.2.js && \
-	make emscripten && emscripten/emcc -s WASM=0 -o /tmp/test_mandel2.js misc/test_mandel2.c && ls -l /tmp/test_mandel2.js && rm /tmp/test_mandel2.* && \
 	make luajs underscore lodash bluebird.js closure-compiler && \
 	make clean
+
+# Initialize Emscripten cached bytecode files.
+RUN echo "=== Prepare Emscripten cached bytecode files ===" && \
+	cp -r duktape-prep /tmp/duktape-emcc-init && \
+	bash -c '. emsdk-portable/emsdk_env.sh && cd /tmp/duktape-emcc-init && make emscriptenluatest dukweb.js' && \
+	rm -rf /tmp/duktape-emcc-init /tmp/duk-emcc*
 
 # Dump some versions.
 RUN echo "=== Versions ===" && \

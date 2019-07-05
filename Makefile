@@ -196,15 +196,13 @@ else
 CCLIBS = -lm
 endif
 
-# Emscripten options:
-#   - --memory-init-file 0 to avoid a separate memory init file (this is
-#     not mandatory but keeps the result in a single file)
-#   - -DEMSCRIPTEN needed by Duktape for feature detection
-# https://github.com/kripken/emscripten/wiki/Optimizing-Code
-# http://mozakai.blogspot.fi/2013/08/outlining-workaround-for-jits-and-big.html
+# Rely on an external, configured 'emcc' command.  See docker/ for Docker
+# images for an example of building a working 'emcc' environment.  See
+# doc/emscripten-status.rst for the Emscripten options used.
 #
 # Reducing the TOTAL_MEMORY and TOTAL_STACK values is useful if you run
 # Duktape cmdline with resource limits (i.e. "duk -r test.js").
+EMCC = emcc
 #EMCCOPTS = -s TOTAL_MEMORY=2097152 -s TOTAL_STACK=524288 --memory-init-file 0
 EMCCOPTS = -O2 -std=c99 -Wall --memory-init-file 0 -s WASM=0 -s POLYFILL_OLD_MATH_FUNCTIONS
 EMCCOPTS_DUKVM = -O2 -std=c99 -Wall --memory-init-file 0 -DEMSCRIPTEN -s WASM=0
@@ -289,7 +287,6 @@ cleanall: clean
 	@rm -rf lodash
 	@rm -rf cbor-js
 	@rm -f d067d2f0ca30.tar.bz2
-	@rm -rf emscripten
 	@rm -rf JS-Interpreter
 	@rm -f compiler-latest.zip
 	@rm -f compiler.jar
@@ -574,8 +571,8 @@ dukd-low-norefc: linenoise prep/duklow-debug-norefc
 emduk: emduk.js
 	cat util/emduk_wrapper.sh | sed "s|WORKDIR|$(shell pwd)|" > $@
 	chmod ugo+x $@
-emduk.js: emscripten prep/emduk
-	emscripten/emcc $(EMCCOPTS) -Iprep/emduk -Iexamples/cmdline -Iextras/print-alert \
+emduk.js: prep/emduk
+	$(EMCC) $(EMCCOPTS) -Iprep/emduk -Iexamples/cmdline -Iextras/print-alert \
 		$(EMDUKOPTS) \
 		prep/emduk/duktape.c examples/cmdline/duk_cmdline.c extras/print-alert/duk_print_alert.c \
 		-o /tmp/duk-emduk.js
@@ -584,8 +581,8 @@ emduk.js: emscripten prep/emduk
 # This is a prototype of running Duktape in a web environment with Emscripten,
 # and providing an eval() facility from both sides.  This is a placeholder now
 # and doesn't do anything useful yet.
-dukweb.js: emscripten prep/dukweb
-	emscripten/emcc $(EMCCOPTS_DUKVM) $(EMCCOPTS_DUKWEB_EXPORT) \
+dukweb.js: prep/dukweb
+	$(EMCC) $(EMCCOPTS_DUKVM) $(EMCCOPTS_DUKWEB_EXPORT) \
 		-Iprep/dukweb prep/dukweb/duktape.c dukweb/dukweb.c -o dukweb.js
 	cat dukweb/dukweb_extra.js >> dukweb.js
 	@wc dukweb.js
@@ -725,20 +722,20 @@ test262cat: test262-es5-tests
 	@echo "NOTE: this Makefile target will print a 'No rule...' error, ignore it" >&2
 	-@cd $<; $(PYTHON) tools/packaging/test262.py --command "../duk {{path}}" --cat $(filter-out $@,$(MAKECMDGOALS))
 .PHONY: emscriptentest
-emscriptentest: emscripten duk
+emscriptentest: duk
 	@echo "### emscriptentest"
 	@rm -f /tmp/duk-emcc-test*
-	emscripten/emcc $(EMCCOPTS) tests/emscripten/helloworld.c -o /tmp/duk-emcc-test.js
+	$(EMCC) $(EMCCOPTS) tests/emscripten/helloworld.c -o /tmp/duk-emcc-test.js
 	cat /tmp/duk-emcc-test.js | $(PYTHON) util/fix_emscripten.py > /tmp/duk-emcc-test-fixed.js
 	@ls -l /tmp/duk-emcc-test*
 	#./duk /tmp/duk-emcc-test-fixed.js
 	./duk /tmp/duk-emcc-test.js | tee /tmp/duk-emcc-test.out
 	if [ `md5sum /tmp/duk-emcc-test.out | cut -f 1 -d ' '` != "59ca0efa9f5633cb0371bbc0355478d8" ]; then false; fi
 .PHONY: emscriptenmandeltest
-emscriptenmandeltest: emscripten duk
+emscriptenmandeltest: duk
 	@echo "### emscriptenmandeltest"
 	@rm -f /tmp/duk-emcc-test*
-	emscripten/emcc $(EMCCOPTS) tests/emscripten/mandelbrot.c -o /tmp/duk-emcc-test.js
+	$(EMCC) $(EMCCOPTS) tests/emscripten/mandelbrot.c -o /tmp/duk-emcc-test.js
 	cat /tmp/duk-emcc-test.js | $(PYTHON) util/fix_emscripten.py > /tmp/duk-emcc-test-fixed.js
 	@ls -l /tmp/duk-emcc-test*
 	#./duk /tmp/duk-emcc-test-fixed.js
@@ -747,10 +744,10 @@ emscriptenmandeltest: emscripten duk
 # Compile Duktape and hello.c using Emscripten and execute the result with
 # Duktape.
 .PHONY: emscripteninceptiontest
-emscripteninceptiontest: emscripten prep/nondebug duk
+emscripteninceptiontest: prep/nondebug duk
 	@echo "### emscripteninceptiontest"
 	@rm -f /tmp/duk-emcc-test*
-	emscripten/emcc $(EMCCOPTS) -Iprep/nondebug prep/nondebug/duktape.c examples/hello/hello.c -o /tmp/duk-emcc-test.js
+	$(EMCC) $(EMCCOPTS) -Iprep/nondebug prep/nondebug/duktape.c examples/hello/hello.c -o /tmp/duk-emcc-test.js
 	cat /tmp/duk-emcc-test.js | $(PYTHON) util/fix_emscripten.py > /tmp/duk-emcc-test-fixed.js
 	@ls -l /tmp/duk-emcc-test*
 	#./duk /tmp/duk-emcc-test-fixed.js
@@ -758,10 +755,10 @@ emscripteninceptiontest: emscripten prep/nondebug duk
 	if [ `md5sum /tmp/duk-emcc-test.out | cut -f 1 -d ' '` != "8521f9d969cdc0a2fa26661a151cef04" ]; then false; fi
 # Compile Duktape with Emscripten and execute it with NodeJS.
 .PHONY: emscriptenduktest
-emscriptenduktest: emscripten prep/emduk
+emscriptenduktest: prep/emduk
 	@echo "### emscriptenduktest"
 	@rm -f /tmp/duk-emcc-duktest.js
-	emscripten/emcc $(EMCCOPTS_DUKVM) -Iprep/emduk prep/emduk/duktape.c examples/eval/eval.c -o /tmp/duk-emcc-duktest.js
+	$(EMCC) $(EMCCOPTS_DUKVM) -Iprep/emduk prep/emduk/duktape.c examples/eval/eval.c -o /tmp/duk-emcc-duktest.js
 	"$(NODE)" /tmp/duk-emcc-duktest.js \
 		'print("Hello from Duktape running inside Emscripten/NodeJS");' \
 		'for(i=0;i++<100;)print((i%3?"":"Fizz")+(i%5?"":"Buzz")||i)' | tee /tmp/duk-emcc-duktest-1.out
@@ -775,10 +772,10 @@ LUASRC=	lapi.c lauxlib.c lbaselib.c lbitlib.c lcode.c lcorolib.c lctype.c \
 	lua.c lundump.c lvm.c lzio.c
 # Compile Lua 5.2.3 with Emscripten and run it with Duktape.
 .PHONY: emscriptenluatest
-emscriptenluatest: emscripten duk lua-5.2.3
+emscriptenluatest: duk lua-5.2.3
 	@echo "### emscriptenluatest"
 	@rm -f /tmp/duk-emcc-luatest*
-	emscripten/emcc $(EMCCOPTS) -Ilua-5.2.3/src/ $(patsubst %,lua-5.2.3/src/%,$(LUASRC)) -o /tmp/duk-emcc-luatest.js
+	$(EMCC) $(EMCCOPTS) -Ilua-5.2.3/src/ $(patsubst %,lua-5.2.3/src/%,$(LUASRC)) -o /tmp/duk-emcc-luatest.js
 	cat /tmp/duk-emcc-luatest.js | $(PYTHON) util/fix_emscripten.py > /tmp/duk-emcc-luatest-fixed.js
 	@ls -l /tmp/duk-emcc-luatest*
 	#./duk /tmp/duk-emcc-luatest-fixed.js
@@ -876,14 +873,6 @@ es5-tests.zip:
 test262-es5-tests: es5-tests.zip
 	unzip -q $<
 	touch $@
-emscripten:
-	# https://github.com/kripken/emscripten
-	# Master is OK because not a critical dependency
-	# Setup is complicated because needs matching fastcomp which
-	# you must provide yourself and add to ~/.emscripten:
-	# http://kripken.github.io/emscripten-site/docs/building_from_source/building_fastcomp_manually_from_source.html
-	$(GIT) clone --depth 1 https://github.com/kripken/emscripten.git
-	cd emscripten; ./emconfigure
 jquery-1.11.2.js:
 	$(WGET) http://code.jquery.com/jquery-1.11.2.js -O $@
 lua-5.2.3.tar.gz:
