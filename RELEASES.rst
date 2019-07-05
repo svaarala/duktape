@@ -3459,6 +3459,10 @@ Planned
 * Add --no-auto-complete option to 'duk' to disable linenoise auto
   completion (GH-2131)
 
+* Fix incorrect parsing of post-increment/post-decrement followed by
+  division (e.g. "z++ / 20"), the slash was interpreted as beginning
+  a regexp (GH-2140)
+
 * Fix incorrect handling of zero-length dynamic buffer in base-64 fast path
   decoder (GH-2027, GH-2088)
 
