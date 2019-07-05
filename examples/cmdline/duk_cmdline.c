@@ -121,6 +121,8 @@ static int debugger_reattach = 0;
 static int no_auto_complete = 0;
 #endif
 
+int duk_cmdline_stack_check(void);
+
 /*
  *  Misc helpers
  */

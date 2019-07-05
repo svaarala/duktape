@@ -1360,11 +1360,20 @@ DUK_INTERNAL void duk_heap_mark_and_sweep(duk_heap *heap, duk_small_uint_t flags
 	 *
 	 *  The object insertions go to the front of the list, so they do not
 	 *  cause an infinite loop (they are not compacted).
+	 *
+	 *  At present compaction is not allowed when mark-and-sweep runs
+	 *  during error handling because it involves a duk_safe_call()
+	 *  interfering with error state.
 	 */
 
 	if ((flags & DUK_MS_FLAG_EMERGENCY) &&
 	    !(flags & DUK_MS_FLAG_NO_OBJECT_COMPACTION)) {
-		duk__compact_objects(heap);
+		if (heap->lj.type != DUK_LJ_TYPE_UNKNOWN) {
+			DUK_D(DUK_DPRINT("lj.type (%ld) not DUK_LJ_TYPE_UNKNOWN, skip object compaction", (long) heap->lj.type));
+		} else {
+			DUK_D(DUK_DPRINT("object compaction"));
+			duk__compact_objects(heap);
+		}
 	}
 
 	/*

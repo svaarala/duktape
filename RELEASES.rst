@@ -3486,8 +3486,8 @@ Planned
   backstop when call handling triggers a Proxy trap (GH-2032, GH-2108)
 
 * Fix several assertion failures with possible memory unsafe behavior
-  (GH-2024, GH-2025, GH-2026, GH-2031, GH-2033, GH-2035, GH-2036, GH-2065,
-  GH-2115)
+  (GH-2022, GH-2024, GH-2025, GH-2026, GH-2031, GH-2033, GH-2035, GH-2036,
+  GH-2065, GH-2115, GH-2138)
 
 * Fix incorrect assertion with no underlying bug for resolving bound
   function chains with a Proxy object (rather than a plain function)

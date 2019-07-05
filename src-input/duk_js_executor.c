@@ -855,7 +855,7 @@ DUK_LOCAL void duk__set_catcher_regs_norz(duk_hthread *thr, duk_catcher *cat, du
 	DUK_TVAL_SET_U32_UPDREF_NORZ(thr, tv1, (duk_uint32_t) lj_type);
 }
 
-DUK_LOCAL void duk__handle_catch(duk_hthread *thr, duk_tval *tv_val_unstable, duk_small_uint_t lj_type) {
+DUK_LOCAL void duk__handle_catch_part1(duk_hthread *thr, duk_tval *tv_val_unstable, duk_small_uint_t lj_type, volatile duk_bool_t *out_delayed_catch_setup) {
 	duk_activation *act;
 	duk_catcher *cat;
 
@@ -864,8 +864,16 @@ DUK_LOCAL void duk__handle_catch(duk_hthread *thr, duk_tval *tv_val_unstable, du
 
 	act = thr->callstack_curr;
 	DUK_ASSERT(act != NULL);
+	DUK_DD(DUK_DDPRINT("handle catch, part 1; act=%!A, cat=%!C", act, act->cat));
+
 	DUK_ASSERT(act->cat != NULL);
 	DUK_ASSERT(DUK_CAT_GET_TYPE(act->cat) == DUK_CAT_TYPE_TCF);
+
+	/* The part1/part2 split could also be made here at the very top
+	 * of catch handling.  Value stack would be reconfigured inside
+	 * part2's protection.  Value stack reconfiguration should be free
+	 * of allocs, however.
+	 */
 
 	duk__set_catcher_regs_norz(thr, act->cat, tv_val_unstable, lj_type);
 
@@ -888,8 +896,44 @@ DUK_LOCAL void duk__handle_catch(duk_hthread *thr, duk_tval *tv_val_unstable, du
 	act->curr_pc = cat->pc_base + 0;  /* +0 = catch */
 
 	/*
-	 *  If entering a 'catch' block which requires an automatic
-	 *  catch variable binding, create the lexical environment.
+	 *  If the catch block has an automatic catch variable binding,
+	 *  we need to create a lexical environment for it which requires
+	 *  allocations.  Move out of "error handling state" before the
+	 *  allocations to avoid e.g. out-of-memory errors (leading to
+	 *  GH-2022 or similar).
+	 */
+
+	if (DUK_CAT_HAS_CATCH_BINDING_ENABLED(cat)) {
+		DUK_DDD(DUK_DDDPRINT("catcher has an automatic catch binding, handle in part 2"));
+		*out_delayed_catch_setup = 1;
+	} else {
+		DUK_DDD(DUK_DDDPRINT("catcher has no catch binding"));
+	}
+
+	DUK_CAT_CLEAR_CATCH_ENABLED(cat);
+}
+
+DUK_LOCAL void duk__handle_catch_part2(duk_hthread *thr) {
+	duk_activation *act;
+	duk_catcher *cat;
+	duk_hdecenv *new_env;
+
+	DUK_ASSERT(thr != NULL);
+
+	act = thr->callstack_curr;
+	DUK_ASSERT(act != NULL);
+	DUK_DD(DUK_DDPRINT("handle catch, part 2; act=%!A, cat=%!C", act, act->cat));
+
+	DUK_ASSERT(act->cat != NULL);
+	cat = act->cat;
+	DUK_ASSERT(cat != NULL);
+	DUK_ASSERT(DUK_CAT_GET_TYPE(cat) == DUK_CAT_TYPE_TCF);
+	DUK_ASSERT(DUK_CAT_HAS_CATCH_BINDING_ENABLED(cat));
+	DUK_ASSERT(thr->valstack + cat->idx_base < thr->valstack_top);
+
+	/*
+	 *  Create lexical environment for the catch clause, containing
+	 *  a binding for the caught value.
 	 *
 	 *  The binding is mutable (= writable) but not deletable.
 	 *  Step 4 for the catch production in E5 Section 12.14;
@@ -897,70 +941,56 @@ DUK_LOCAL void duk__handle_catch(duk_hthread *thr, duk_tval *tv_val_unstable, du
 	 *  which implies the binding is not deletable.
 	 */
 
-	if (DUK_CAT_HAS_CATCH_BINDING_ENABLED(cat)) {
-		duk_hdecenv *new_env;
+	if (act->lex_env == NULL) {
+		DUK_ASSERT(act->var_env == NULL);
+		DUK_DDD(DUK_DDDPRINT("delayed environment initialization"));
 
-		DUK_DDD(DUK_DDDPRINT("catcher has an automatic catch binding"));
-
-		DUK_ASSERT(thr->callstack_top >= 1);
+		duk_js_init_activation_environment_records_delayed(thr, act);
 		DUK_ASSERT(act == thr->callstack_curr);
 		DUK_ASSERT(act != NULL);
-
-		if (act->lex_env == NULL) {
-			DUK_ASSERT(act->var_env == NULL);
-			DUK_DDD(DUK_DDDPRINT("delayed environment initialization"));
-
-			duk_js_init_activation_environment_records_delayed(thr, act);
-			DUK_ASSERT(act == thr->callstack_curr);
-			DUK_ASSERT(act != NULL);
-		}
-		DUK_ASSERT(act->lex_env != NULL);
-		DUK_ASSERT(act->var_env != NULL);
-		DUK_ASSERT(DUK_ACT_GET_FUNC(act) != NULL);
-
-		/* XXX: If an out-of-memory happens here, longjmp state asserts
-		 * will be triggered at present and a try-catch fails to catch.
-		 * That's not sandboxing fatal (C API protected calls are what
-		 * matters), and script catch code can immediately throw anyway
-		 * for almost any operation.
-		 */
-		new_env = duk_hdecenv_alloc(thr,
-		                            DUK_HOBJECT_FLAG_EXTENSIBLE |
-		                            DUK_HOBJECT_CLASS_AS_FLAGS(DUK_HOBJECT_CLASS_DECENV));
-		DUK_ASSERT(new_env != NULL);
-		duk_push_hobject(thr, (duk_hobject *) new_env);
-		DUK_ASSERT(DUK_HOBJECT_GET_PROTOTYPE(thr->heap, (duk_hobject *) new_env) == NULL);
-		DUK_DDD(DUK_DDDPRINT("new_env allocated: %!iO", (duk_heaphdr *) new_env));
-
-		/* Note: currently the catch binding is handled without a register
-		 * binding because we don't support dynamic register bindings (they
-		 * must be fixed for an entire function).  So, there is no need to
-		 * record regbases etc.
-		 */
-
-		/* XXX: duk_xdef_prop() may cause an out-of-memory, see above. */
-		DUK_ASSERT(cat->h_varname != NULL);
-		duk_push_hstring(thr, cat->h_varname);
-		duk_push_tval(thr, thr->valstack + cat->idx_base);
-		duk_xdef_prop(thr, -3, DUK_PROPDESC_FLAGS_W);  /* writable, not configurable */
-
-		DUK_ASSERT(act == thr->callstack_curr);
-		DUK_ASSERT(act != NULL);
-		DUK_HOBJECT_SET_PROTOTYPE(thr->heap, (duk_hobject *) new_env, act->lex_env);
-		act->lex_env = (duk_hobject *) new_env;
-		DUK_HOBJECT_INCREF(thr, (duk_hobject *) new_env);  /* reachable through activation */
-		/* Net refcount change to act->lex_env is 0: incref for new_env's
-		 * prototype, decref for act->lex_env overwrite.
-		 */
-
-		DUK_CAT_SET_LEXENV_ACTIVE(cat);
-
-		duk_pop_unsafe(thr);
-
-		DUK_DDD(DUK_DDDPRINT("new_env finished: %!iO", (duk_heaphdr *) new_env));
 	}
+	DUK_ASSERT(act->lex_env != NULL);
+	DUK_ASSERT(act->var_env != NULL);
+	DUK_ASSERT(DUK_ACT_GET_FUNC(act) != NULL);
 
-	DUK_CAT_CLEAR_CATCH_ENABLED(cat);
+	new_env = duk_hdecenv_alloc(thr,
+	                            DUK_HOBJECT_FLAG_EXTENSIBLE |
+	                            DUK_HOBJECT_CLASS_AS_FLAGS(DUK_HOBJECT_CLASS_DECENV));
+	DUK_ASSERT(new_env != NULL);
+	duk_push_hobject(thr, (duk_hobject *) new_env);
+	DUK_ASSERT(DUK_HOBJECT_GET_PROTOTYPE(thr->heap, (duk_hobject *) new_env) == NULL);
+	DUK_DDD(DUK_DDDPRINT("new_env allocated: %!iO", (duk_heaphdr *) new_env));
+
+	/* Note: currently the catch binding is handled without a register
+	 * binding because we don't support dynamic register bindings (they
+	 * must be fixed for an entire function).  So, there is no need to
+	 * record regbases etc.
+	 */
+
+	/* [ ...env ] */
+
+	DUK_ASSERT(cat->h_varname != NULL);
+	duk_push_hstring(thr, cat->h_varname);
+	DUK_ASSERT(thr->valstack + cat->idx_base < thr->valstack_top);
+	duk_push_tval(thr, thr->valstack + cat->idx_base);
+	duk_xdef_prop(thr, -3, DUK_PROPDESC_FLAGS_W);  /* writable, not configurable */
+
+	/* [ ... env ] */
+
+	DUK_ASSERT(act == thr->callstack_curr);
+	DUK_ASSERT(act != NULL);
+	DUK_HOBJECT_SET_PROTOTYPE(thr->heap, (duk_hobject *) new_env, act->lex_env);
+	act->lex_env = (duk_hobject *) new_env;
+	DUK_HOBJECT_INCREF(thr, (duk_hobject *) new_env);  /* reachable through activation */
+	/* Net refcount change to act->lex_env is 0: incref for new_env's
+	 * prototype, decref for act->lex_env overwrite.
+	 */
+
+	DUK_CAT_SET_LEXENV_ACTIVE(cat);
+
+	duk_pop_unsafe(thr);
+
+	DUK_DDD(DUK_DDDPRINT("new_env finished: %!iO", (duk_heaphdr *) new_env));
 }
 
 DUK_LOCAL void duk__handle_finally(duk_hthread *thr, duk_tval *tv_val_unstable, duk_small_uint_t lj_type) {
@@ -1053,7 +1083,7 @@ DUK_LOCAL void duk__handle_yield(duk_hthread *thr, duk_hthread *resumer, duk_tva
 }
 #endif  /* DUK_USE_COROUTINE_SUPPORT */
 
-DUK_LOCAL duk_small_uint_t duk__handle_longjmp(duk_hthread *thr, duk_activation *entry_act) {
+DUK_LOCAL duk_small_uint_t duk__handle_longjmp(duk_hthread *thr, duk_activation *entry_act, volatile duk_bool_t *out_delayed_catch_setup) {
 	duk_small_uint_t retval = DUK__LONGJMP_RESTART;
 
 	DUK_ASSERT(thr != NULL);
@@ -1076,11 +1106,12 @@ DUK_LOCAL duk_small_uint_t duk__handle_longjmp(duk_hthread *thr, duk_activation 
 
  check_longjmp:
 
-	DUK_DD(DUK_DDPRINT("handling longjmp: type=%ld, value1=%!T, value2=%!T, iserror=%ld",
+	DUK_DD(DUK_DDPRINT("handling longjmp: type=%ld, value1=%!T, value2=%!T, iserror=%ld, top=%ld",
 	                   (long) thr->heap->lj.type,
 	                   (duk_tval *) &thr->heap->lj.value1,
 	                   (duk_tval *) &thr->heap->lj.value2,
-	                   (long) thr->heap->lj.iserror));
+	                   (long) thr->heap->lj.iserror,
+			   (long) duk_get_top(thr)));
 
 	switch (thr->heap->lj.type) {
 
@@ -1346,9 +1377,12 @@ DUK_LOCAL duk_small_uint_t duk__handle_longjmp(duk_hthread *thr, duk_activation 
 				if (DUK_CAT_HAS_CATCH_ENABLED(cat)) {
 					DUK_ASSERT(DUK_CAT_GET_TYPE(cat) == DUK_CAT_TYPE_TCF);
 
-					duk__handle_catch(thr,
-					                  &thr->heap->lj.value1,
-					                  DUK_LJ_TYPE_THROW);
+					DUK_DDD(DUK_DDDPRINT("before catch part 1: thr=%p, act=%p, cat=%p",
+					                     (void *) thr, (void *) act, (void *) act->cat));
+					duk__handle_catch_part1(thr,
+					                        &thr->heap->lj.value1,
+					                        DUK_LJ_TYPE_THROW,
+							        out_delayed_catch_setup);
 
 					DUK_DD(DUK_DDPRINT("-> throw caught by a 'catch' clause, restart execution"));
 					retval = DUK__LONGJMP_RESTART;
@@ -1430,7 +1464,8 @@ DUK_LOCAL duk_small_uint_t duk__handle_longjmp(duk_hthread *thr, duk_activation 
 	DUK_UNREACHABLE();
 
  wipe_and_return:
-	/* this is not strictly necessary, but helps debugging */
+	DUK_DD(DUK_DDPRINT("handling longjmp done, wipe-and-return, top=%ld",
+	                   (long) duk_get_top(thr)));
 	thr->heap->lj.type = DUK_LJ_TYPE_UNKNOWN;
 	thr->heap->lj.iserror = 0;
 
@@ -2816,7 +2851,8 @@ DUK_LOCAL duk_bool_t duk__executor_handle_call(duk_hthread *thr, duk_idx_t idx, 
 DUK_LOCAL void duk__handle_executor_error(duk_heap *heap,
                                           duk_activation *entry_act,
                                           duk_int_t entry_call_recursion_depth,
-                                          duk_jmpbuf *entry_jmpbuf_ptr) {
+                                          duk_jmpbuf *entry_jmpbuf_ptr,
+                                          volatile duk_bool_t *out_delayed_catch_setup) {
 	duk_small_uint_t lj_ret;
 
 	/* Longjmp callers are required to sync-and-null thr->ptr_curr_pc
@@ -2836,7 +2872,7 @@ DUK_LOCAL void duk__handle_executor_error(duk_heap *heap,
 	 */
 	heap->lj.jmpbuf_ptr = (duk_jmpbuf *) entry_jmpbuf_ptr;
 
-	lj_ret = duk__handle_longjmp(heap->curr_thread, entry_act);
+	lj_ret = duk__handle_longjmp(heap->curr_thread, entry_act, out_delayed_catch_setup);
 
 	/* Error handling complete, remove side effect protections.
 	 */
@@ -2875,6 +2911,7 @@ DUK_INTERNAL void duk_js_execute_bytecode(duk_hthread *exec_thr) {
 	duk_jmpbuf *entry_jmpbuf_ptr;
 	duk_jmpbuf our_jmpbuf;
 	duk_heap *heap;
+	volatile duk_bool_t delayed_catch_setup = 0;
 
 	DUK_ASSERT(exec_thr != NULL);
 	DUK_ASSERT(exec_thr->heap != NULL);
@@ -2913,6 +2950,17 @@ DUK_INTERNAL void duk_js_execute_bytecode(duk_hthread *exec_thr) {
 		DUK_ASSERT(heap->lj.jmpbuf_ptr == &our_jmpbuf);
 		if (DUK_SETJMP(our_jmpbuf.jb) == 0) {
 #endif
+			DUK_DDD(DUK_DDDPRINT("after setjmp, delayed catch setup: %ld\n", (long) delayed_catch_setup));
+
+			if (DUK_UNLIKELY(delayed_catch_setup)) {
+				duk_hthread *thr = entry_thread->heap->curr_thread;
+
+				delayed_catch_setup = 0;
+				duk__handle_catch_part2(thr);
+				DUK_ASSERT(delayed_catch_setup == 0);
+				DUK_DDD(DUK_DDDPRINT("top after delayed catch setup: %ld", (long) duk_get_top(entry_thread)));
+			}
+
 			/* Execute bytecode until returned or longjmp(). */
 			duk__js_execute_bytecode_inner(entry_thread, entry_act);
 
@@ -2934,7 +2982,8 @@ DUK_INTERNAL void duk_js_execute_bytecode(duk_hthread *exec_thr) {
 			duk__handle_executor_error(heap,
 			                           entry_act,
 			                           entry_call_recursion_depth,
-			                           entry_jmpbuf_ptr);
+			                           entry_jmpbuf_ptr,
+						   &delayed_catch_setup);
 		}
 #if defined(DUK_USE_CPP_EXCEPTIONS)
 		catch (duk_fatal_exception &exc) {
@@ -2957,7 +3006,8 @@ DUK_INTERNAL void duk_js_execute_bytecode(duk_hthread *exec_thr) {
 				duk__handle_executor_error(heap,
 				                           entry_act,
 				                           entry_call_recursion_depth,
-				                           entry_jmpbuf_ptr);
+				                           entry_jmpbuf_ptr,
+							   &delayed_catch_setup);
 			}
 		} catch (...) {
 			DUK_D(DUK_DPRINT("unexpected c++ exception (perhaps thrown by user code)"));
@@ -2972,7 +3022,8 @@ DUK_INTERNAL void duk_js_execute_bytecode(duk_hthread *exec_thr) {
 				duk__handle_executor_error(heap,
 				                           entry_act,
 				                           entry_call_recursion_depth,
-				                           entry_jmpbuf_ptr);
+				                           entry_jmpbuf_ptr,
+							   &delayed_catch_setup);
 			}
 		}
 #endif
