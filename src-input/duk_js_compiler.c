@@ -368,8 +368,8 @@ DUK_LOCAL const duk_uint8_t duk__token_lbp[] = {
 	DUK__MK_LBP(DUK__BP_MULTIPLICATIVE),                      /* DUK_TOK_DIV */
 	DUK__MK_LBP(DUK__BP_MULTIPLICATIVE),                      /* DUK_TOK_MOD */
 	DUK__MK_LBP(DUK__BP_EXPONENTIATION),                      /* DUK_TOK_EXP */
-	DUK__MK_LBP(DUK__BP_POSTFIX),                             /* DUK_TOK_INCREMENT */
-	DUK__MK_LBP(DUK__BP_POSTFIX),                             /* DUK_TOK_DECREMENT */
+	DUK__MK_LBP_FLAGS(DUK__BP_POSTFIX, DUK__TOKEN_LBP_FLAG_NO_REGEXP),  /* DUK_TOK_INCREMENT */
+	DUK__MK_LBP_FLAGS(DUK__BP_POSTFIX, DUK__TOKEN_LBP_FLAG_NO_REGEXP),  /* DUK_TOK_DECREMENT */
 	DUK__MK_LBP(DUK__BP_SHIFT),                               /* DUK_TOK_ALSHIFT */
 	DUK__MK_LBP(DUK__BP_SHIFT),                               /* DUK_TOK_ARSHIFT */
 	DUK__MK_LBP(DUK__BP_SHIFT),                               /* DUK_TOK_RSHIFT */
