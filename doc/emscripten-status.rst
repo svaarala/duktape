@@ -7,7 +7,7 @@ Hello world test
 
 Quick hello world test::
 
-  $ ./emcc --memory-init-file 0 \
+  $ emcc --memory-init-file 0 \
           -s WASM=0 -s POLYFILL_OLD_MATH_FUNCTIONS=1 \
           tests/hello_world.cpp -o /tmp/test.js
   $ duk /tmp/test.js
@@ -45,42 +45,14 @@ Changes in Duktape versions:
 
       $ python $DUKTAPE/util/fix_emscripten.py < /tmp/test.js > /tmp/test-fixed.js
 
-Setting up fastcomp for Duktape
-===============================
+Setting up emcc for Duktape
+===========================
 
-To build dukweb.js and to use Makefile targets like ``emscriptentest`` you
-need Emscripten "fastcomp".  Example steps to setup emscripten:
+See docker/ for Docker image files which set up a working ``emcc``.
 
-* Compile fastcomp manually:
+See also
+========
 
-  - https://kripken.github.io/emscripten-site/docs/building_from_source/building_fastcomp_manually_from_source.html
+* https://github.com/kripken/emscripten/wiki/Optimizing-Code
 
-  - The ``LLVM_ROOT`` path in the documentation seems to be outdated,
-    ``.../build/bin`` should apparently be ``.../build/Release/bin``
-
-* Checkout emscripten::
-
-      $ cd (duktape)
-      $ make emscripten  # duktape checkouts emscripten master
-
-* Create a ``~/.emscripten`` file which uses your manually compiled fastcomp.
-  You can create a default configuration as follows::
-
-      $ cd (duktape)/emscripten
-      $ ./emcc  # creates ~/.emscripten if it doesn't exist
-
-  Then change Emscripten to use the manually compiled fastcomp by changing
-  the LLVM_ROOT line in ``~/.emscripten`` to point to your fastcomp build::
-
-      LLVM_ROOT = '/home/user/myfastcomp/emscripten-fastcomp/build/Release/bin'
-
-You should now be able to build dukweb.js and run Emscripten Makefile
-targets::
-
-    $ make emscripteninceptiontest
-    [...]
-    emscripten/emcc -O2 -std=c99 -Wall --memory-init-file 0 -Idist/src dist/src/duktape.c dist/examples/hello/hello.c -o /tmp/duk-emcc-test.js
-    [...]
-    ./duk /tmp/duk-emcc-test-fixed.js
-    Hello world!
-    2+3=5
+* http://mozakai.blogspot.fi/2013/08/outlining-workaround-for-jits-and-big.html
