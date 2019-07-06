@@ -7,6 +7,10 @@ echo "WD: `pwd`"
 if [ -d duktape ]; then
 	echo "duktape/ already exists: use as is"
 	cd duktape
+elif [ -d duktape-host ]; then
+	echo "duktape-host/ exists: make a copy"
+	cp -r duktape-host duktape
+	cd duktape
 elif [ $STDIN_ZIP ]; then
 	echo "STDIN_ZIP set: unzip from STDIN"
 	cat > /tmp/duktape.zip

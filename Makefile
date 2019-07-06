@@ -1167,28 +1167,50 @@ massif-deepmerge: massif-test-dev-deepmerge
 massif-arcfour: massif-test-dev-arcfour
 
 # Docker targets for building images and running specific targets in a
-# docker container for easier reproducibility.
+# docker container for easier reproducibility.  Creating the images
+# initially takes a long time.
+.PHONY: docker-prepare
+docker-prepare:
+	cd docker && for subdir in duktape-*; do \
+		if [ -f ~/.gitconfig ]; then cp ~/.gitconfig $$subdir/gitconfig; else touch docker/$$subdir/gitconfig; fi; \
+		cp prepare_repo.sh $$subdir/; \
+	done
+
+.PHONY: docker-images-x64
+docker-images-x64: docker-prepare
+	docker build --build-arg UID=$(shell id -u) --build-arg GID=$(shell id -g) -t duktape-base-ubuntu-18.04-x64 docker/duktape-base-ubuntu-18.04-x64
+	docker build -t duktape-dist-ubuntu-18.04-x64 docker/duktape-dist-ubuntu-18.04-x64
+	docker build -t duktape-site-ubuntu-18.04-x64 docker/duktape-site-ubuntu-18.04-x64
+	docker build -t duktape-duk-ubuntu-18.04-x64 docker/duktape-duk-ubuntu-18.04-x64
+	docker build -t duktape-shell-ubuntu-18.04-x64 docker/duktape-shell-ubuntu-18.04-x64
+
+.PHONY: docker-images-s390x
+docker-images-s390x: docker-prepare
+	docker build --build-arg UID=$(shell id -u) --build-arg GID=$(shell id -g) -t duktape-base-ubuntu-18.04-s390x docker/duktape-base-ubuntu-18.04-s390x
+	docker build -t duktape-shell-ubuntu-18.04-s390x docker/duktape-shell-ubuntu-18.04-s390x
+
 .PHONY: docker-images
-docker-images:
-	if [ -f ~/.gitconfig ]; then cp ~/.gitconfig docker/duktape-base-ubuntu-18.04/gitconfig; else touch docker/duktape-base-ubuntu-18.04/gitconfig; fi
-	docker build --build-arg UID=$(shell id -u) --build-arg GID=$(shell id -g) -t duktape-base-ubuntu-18.04 docker/duktape-base-ubuntu-18.04
-	docker build -t duktape-dist-ubuntu-18.04 docker/duktape-dist-ubuntu-18.04
-	docker build -t duktape-site-ubuntu-18.04 docker/duktape-site-ubuntu-18.04
-	docker build -t duktape-shell-ubuntu-18.04 docker/duktape-shell-ubuntu-18.04
+docker-images: docker-images-x64
 
 .PHONY: docker-clean
 docker-clean:
-	-docker rmi duktape-shell-ubuntu-18.04:latest
-	-docker rmi duktape-site-ubuntu-18.04:latest
-	-docker rmi duktape-dist-ubuntu-18.04:latest
-	-docker rmi duktape-base-ubuntu-18.04:latest
+	-rm -f docker/*/gitconfig docker/*/prepare_repo.sh
+	-docker rmi \
+		duktape-shell-ubuntu-18.04-x64:latest \
+		duktape-duk-ubuntu-18.04-x64:latest \
+		duktape-site-ubuntu-18.04-x64:latest \
+		duktape-dist-ubuntu-18.04-x64:latest \
+		duktape-base-ubuntu-18.04-x64:latest
+	-docker rmi \
+		duktape-shell-ubuntu-18.04-s390x:latest \
+		duktape-base-ubuntu-18.04-s390x:latest
 	@echo ""
 	@echo "Now run 'docker system prune' to free disk space."
 
 .PHONY: docker-dist-src-master
 docker-dist-src-master:
 	rm -f docker-input.zip docker-output.zip
-	docker run --rm -i duktape-dist-ubuntu-18.04 > docker-output.zip
+	docker run --rm -i duktape-dist-ubuntu-18.04-x64 > docker-output.zip
 	unzip -t docker-output.zip ; true  # avoid failure due to leading garbage
 
 .PHONY: docker-dist-src-wd
@@ -1196,13 +1218,13 @@ docker-dist-src-wd:
 	rm -f docker-input.zip docker-output.zip
 	#git archive --format zip --output docker-input.zip HEAD
 	zip -1 -q -r docker-input.zip .
-	docker run --rm -i -e STDIN_ZIP=1 duktape-dist-ubuntu-18.04 < docker-input.zip > docker-output.zip
+	docker run --rm -i -e STDIN_ZIP=1 duktape-dist-ubuntu-18.04-x64 < docker-input.zip > docker-output.zip
 	unzip -t docker-output.zip ; true  # avoid failure due to leading garbage
 
 .PHONY: docker-dist-site-master
 docker-dist-site-master:
 	rm -f docker-input.zip docker-output.zip
-	docker run --rm -i duktape-site-ubuntu-18.04 > docker-output.zip
+	docker run --rm -i duktape-site-ubuntu-18.04-x64 > docker-output.zip
 	unzip -t docker-output.zip ; true  # avoid failure due to leading garbage
 
 .PHONY: docker-dist-site-wd
@@ -1210,13 +1232,33 @@ docker-dist-site-wd:
 	rm -f docker-input.zip docker-output.zip
 	#git archive --format zip --output docker-input.zip HEAD
 	zip -1 -q -r docker-input.zip .
-	docker run --rm -i -e STDIN_ZIP=1 duktape-site-ubuntu-18.04 < docker-input.zip > docker-output.zip
+	docker run --rm -i -e STDIN_ZIP=1 duktape-site-ubuntu-18.04-x64 < docker-input.zip > docker-output.zip
 	unzip -t docker-output.zip ; true  # avoid failure due to leading garbage
+
+.PHONY: docker-duk-wd
+docker-duk-wd:
+	rm -f docker-input.zip docker-output.zip
+	#git archive --format zip --output docker-input.zip HEAD
+	zip -1 -q -r docker-input.zip .
+	docker run --rm -i -e STDIN_ZIP=1 duktape-duk-ubuntu-18.04-x64 < docker-input.zip > docker-output.zip
+	unzip -t docker-output.zip ; true  # avoid failure due to leading garbage
+	unzip -o docker-output.zip ; true
+
+.PHONY: docker-duk-master
+docker-duk-master:
+	rm -f docker-input.zip docker-output.zip
+	docker run --rm -i duktape-duk-ubuntu-18.04-x64 > docker-output.zip
+	unzip -t docker-output.zip ; true  # avoid failure due to leading garbage
+	unzip -o docker-output.zip ; true
 
 .PHONY: docker-shell-master
 docker-shell-master:
-	docker run --rm -ti duktape-shell-ubuntu-18.04
+	docker run --rm -ti duktape-shell-ubuntu-18.04-x64
+
+.PHONY: docker-shell-wd
+docker-shell-wd:
+	docker run -v $(shell pwd):/work/duktape-host --rm -ti duktape-shell-ubuntu-18.04-x64
 
 .PHONY: docker-shell-wdmount
 docker-shell-wdmount:
-	docker run -v $(shell pwd):/work/duktape --rm -ti duktape-shell-ubuntu-18.04
+	docker run -v $(shell pwd):/work/duktape --rm -ti duktape-shell-ubuntu-18.04-x64
