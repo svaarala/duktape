@@ -76,7 +76,7 @@ The command line tool can also execute bytecode functions; it will just load
 a function and call it without arguments, as if a program function was being
 executed::
 
-    ./duk /tmp/program.bin
+    ./duk -b /tmp/program.bin
 
 When to use bytecode dump/load
 ==============================
