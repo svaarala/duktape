@@ -114,6 +114,7 @@
 static int main_argc = 0;
 static char **main_argv = NULL;
 static int interactive_mode = 0;
+static int allow_bytecode = 0;
 #if defined(DUK_CMDLINE_DEBUGGER_SUPPORT)
 static int debugger_reattach = 0;
 #endif
@@ -222,10 +223,14 @@ static duk_ret_t wrapped_compile_execute(duk_context *ctx, void *udata) {
 
 	if (src_data != NULL && src_len >= 1 && src_data[0] == (char) 0xbf) {
 		/* Bytecode. */
-		void *buf;
-		buf = duk_push_fixed_buffer(ctx, src_len);
-		memcpy(buf, (const void *) src_data, src_len);
-		duk_load_function(ctx);
+		if (allow_bytecode) {
+			void *buf;
+			buf = duk_push_fixed_buffer(ctx, src_len);
+			memcpy(buf, (const void *) src_data, src_len);
+			duk_load_function(ctx);
+		} else {
+			duk_type_error(ctx, "bytecode input rejected (use -b to allow bytecode inputs)");
+		}
 	} else {
 		/* Source code. */
 		comp_flags = DUK_COMPILE_SHEBANG;
@@ -1351,6 +1356,8 @@ int main(int argc, char *argv[]) {
 			memlimit_high = 0;
 		} else if (strcmp(arg, "-i") == 0) {
 			interactive = 1;
+		} else if (strcmp(arg, "-b") == 0) {
+			allow_bytecode = 1;
 		} else if (strcmp(arg, "-c") == 0) {
 			if (i == argc - 1) {
 				goto usage;
@@ -1532,9 +1539,10 @@ int main(int argc, char *argv[]) {
 	                "\n"
 	                "   -i                 enter interactive mode after executing argument file(s) / eval code\n"
 	                "   -e CODE            evaluate code\n"
-			"   -c FILE            compile into bytecode (use with only one file argument)\n"
-			"   --run-stdin        treat stdin like a file, i.e. compile full input (not line by line)\n"
-			"   --verbose          verbose messages to stderr\n"
+	                "   -c FILE            compile into bytecode and write to FILE (use with only one file argument)\n"
+	                "   -b                 allow bytecode input files (memory unsafe for invalid bytecode)\n"
+	                "   --run-stdin        treat stdin like a file, i.e. compile full input (not line by line)\n"
+	                "   --verbose          verbose messages to stderr\n"
 	                "   --restrict-memory  use lower memory limit (used by test runner)\n"
 	                "   --alloc-default    use Duktape default allocator\n"
 #if defined(DUK_CMDLINE_ALLOC_LOGGING)
@@ -1551,23 +1559,24 @@ int main(int argc, char *argv[]) {
 	                "   --lowmem-log       write alloc log to /tmp/lowmem-alloc-log.txt\n"
 #endif
 #if defined(DUK_CMDLINE_DEBUGGER_SUPPORT)
-			"   --debugger         start example debugger\n"
-			"   --reattach         automatically reattach debugger on detach\n"
+	                "   --debugger         start example debugger\n"
+	                "   --reattach         automatically reattach debugger on detach\n"
 #endif
-			"   --recreate-heap    recreate heap after every file\n"
-			"   --no-heap-destroy  force GC, but don't destroy heap at end (leak testing)\n"
+	                "   --recreate-heap    recreate heap after every file\n"
+	                "   --no-heap-destroy  force GC, but don't destroy heap at end (leak testing)\n"
 #if defined(DUK_CMDLINE_LINENOISE_COMPLETION)
-			"   --no-auto-complete disable linenoise auto completion\n"
+	                "   --no-auto-complete disable linenoise auto completion\n"
 #else
-			"   --no-auto-complete disable linenoise auto completion [ignored, not supported]\n"
+	                "   --no-auto-complete disable linenoise auto completion [ignored, not supported]\n"
 #endif
 	                "\n"
 	                "If <filename> is omitted, interactive mode is started automatically.\n"
-			"\n"
-	                "Input files can be either ECMAScript source files or bytecode files.\n"
-	                "Bytecode files are not validated prior to loading, so that incompatible\n"
-			"or crafted files can cause memory unsafe behavior.  See discussion in\n"
-			"https://github.com/svaarala/duktape/blob/master/doc/bytecode.rst#memory-safety-and-bytecode-validation.\n");
+	                "\n"
+	                "Input files can be either ECMAScript source files or bytecode files\n"
+	                "(if -b is given).  Bytecode files are not validated prior to loading,\n"
+	                "so that incompatible or crafted files can cause memory unsafe behavior.\n"
+	                "See discussion in\n"
+	                "https://github.com/svaarala/duktape/blob/master/doc/bytecode.rst#memory-safety-and-bytecode-validation.\n");
 	fflush(stderr);
 	exit(1);
 }
