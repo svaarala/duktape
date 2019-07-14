@@ -3459,6 +3459,11 @@ Planned
 * Add --no-auto-complete option to 'duk' to disable linenoise auto
   completion (GH-2131)
 
+* Add support for keeping an array's internal array part in
+  Object.defineProperty(), previously the array part was always
+  abandoned if an array index was defined using Object.defineProperty()
+  (even if property attributes were correct) (GH-2146)
+
 * Fix incorrect parsing of post-increment/post-decrement followed by
   division (e.g. "z++ / 20"), the slash was interpreted as beginning
   a regexp (GH-2140)
@@ -3490,8 +3495,8 @@ Planned
   backstop when call handling triggers a Proxy trap (GH-2032, GH-2108)
 
 * Fix several assertion failures with possible memory unsafe behavior
-  (GH-2022, GH-2024, GH-2025, GH-2026, GH-2031, GH-2033, GH-2035, GH-2036,
-  GH-2065, GH-2115, GH-2138)
+  (GH-2022, GH-2023, GH-2024, GH-2025, GH-2026, GH-2031, GH-2033, GH-2035,
+  GH-2036, GH-2065, GH-2115, GH-2138, GH-2146)
 
 * Fix incorrect assertion with no underlying bug for resolving bound
   function chains with a Proxy object (rather than a plain function)
