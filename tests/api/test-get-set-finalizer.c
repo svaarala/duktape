@@ -34,6 +34,8 @@ before forced gc
 finalizer called
 after forced gc
 ==> rc=0, result='undefined'
+*** test_nonextensible (duk_safe_call)
+==> rc=1, result='TypeError: not extensible'
 ===*/
 
 static duk_ret_t basic_finalizer(duk_context *ctx) {
@@ -204,10 +206,26 @@ static duk_ret_t test_finalizer_loop(duk_context *ctx, void *udata) {
 	return 0;
 }
 
+static duk_ret_t test_nonextensible(duk_context *ctx, void *udata) {
+	(void) udata;
+
+	/* Finalizer is stored as a hidden Symbol, with normal inheritance
+	 * behavior.  Because it's a normal (Symbol) property, a finalizer
+	 * cannot be set on a non-extensible (frozen or sealed) object.
+	 */
+	duk_eval_string(ctx, "(function () { var O = {}; Object.preventExtensions(O); return O; })()");
+	duk_eval_string(ctx, "(function (obj) { print('finalizer called'); })");
+	duk_set_finalizer(ctx, -2);
+
+	printf("never here\n");
+	return 0;
+}
+
 void test(duk_context *ctx) {
 	TEST_SAFE_CALL(test_basic);
 	TEST_SAFE_CALL(test_recursive_finalizer);
 	TEST_SAFE_CALL(test_get_nonobject);
 	TEST_SAFE_CALL(test_set_nonobject);
 	TEST_SAFE_CALL(test_finalizer_loop);
+	TEST_SAFE_CALL(test_nonextensible);
 }
