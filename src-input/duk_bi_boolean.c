@@ -30,7 +30,7 @@ DUK_INTERNAL duk_ret_t duk_bi_boolean_prototype_tostring_shared(duk_hthread *thr
 		DUK_ASSERT(h != NULL);
 
 		if (DUK_HOBJECT_GET_CLASS_NUMBER(h) == DUK_HOBJECT_CLASS_BOOLEAN) {
-			duk_get_prop_stridx_short(thr, -1, DUK_STRIDX_INT_VALUE);
+			duk_xget_owndataprop_stridx_short(thr, -1, DUK_STRIDX_INT_VALUE);
 			DUK_ASSERT(duk_is_boolean(thr, -1));
 			goto type_ok;
 		}

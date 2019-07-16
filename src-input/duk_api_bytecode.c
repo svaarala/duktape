@@ -86,7 +86,7 @@ DUK_LOCAL duk_uint8_t *duk__dump_string_prop(duk_hthread *thr, duk_uint8_t *p, d
 	duk_hstring *h_str;
 	duk_tval *tv;
 
-	tv = duk_hobject_find_existing_entry_tval_ptr(thr->heap, (duk_hobject *) func, DUK_HTHREAD_GET_STRING(thr, stridx));
+	tv = duk_hobject_find_entry_tval_ptr_stridx(thr->heap, (duk_hobject *) func, stridx);
 	if (tv != NULL && DUK_TVAL_IS_STRING(tv)) {
 		h_str = DUK_TVAL_GET_STRING(tv);
 		DUK_ASSERT(h_str != NULL);
@@ -103,7 +103,7 @@ DUK_LOCAL duk_uint8_t *duk__dump_string_prop(duk_hthread *thr, duk_uint8_t *p, d
 DUK_LOCAL duk_uint8_t *duk__dump_buffer_prop(duk_hthread *thr, duk_uint8_t *p, duk_bufwriter_ctx *bw_ctx, duk_hobject *func, duk_small_uint_t stridx) {
 	duk_tval *tv;
 
-	tv = duk_hobject_find_existing_entry_tval_ptr(thr->heap, (duk_hobject *) func, DUK_HTHREAD_GET_STRING(thr, stridx));
+	tv = duk_hobject_find_entry_tval_ptr_stridx(thr->heap, (duk_hobject *) func, stridx);
 	if (tv != NULL && DUK_TVAL_IS_BUFFER(tv)) {
 		duk_hbuffer *h_buf;
 		h_buf = DUK_TVAL_GET_BUFFER(tv);
@@ -122,7 +122,7 @@ DUK_LOCAL duk_uint8_t *duk__dump_uint32_prop(duk_hthread *thr, duk_uint8_t *p, d
 	duk_tval *tv;
 	duk_uint32_t val;
 
-	tv = duk_hobject_find_existing_entry_tval_ptr(thr->heap, (duk_hobject *) func, DUK_HTHREAD_GET_STRING(thr, stridx));
+	tv = duk_hobject_find_entry_tval_ptr_stridx(thr->heap, (duk_hobject *) func, stridx);
 	if (tv != NULL && DUK_TVAL_IS_NUMBER(tv)) {
 		val = (duk_uint32_t) DUK_TVAL_GET_NUMBER(tv);
 	} else {
@@ -134,15 +134,11 @@ DUK_LOCAL duk_uint8_t *duk__dump_uint32_prop(duk_hthread *thr, duk_uint8_t *p, d
 }
 
 DUK_LOCAL duk_uint8_t *duk__dump_varmap(duk_hthread *thr, duk_uint8_t *p, duk_bufwriter_ctx *bw_ctx, duk_hobject *func) {
-	duk_tval *tv;
+	duk_hobject *h;
 
-	tv = duk_hobject_find_existing_entry_tval_ptr(thr->heap, (duk_hobject *) func, DUK_HTHREAD_STRING_INT_VARMAP(thr));
-	if (tv != NULL && DUK_TVAL_IS_OBJECT(tv)) {
-		duk_hobject *h;
+	h = duk_hobject_get_varmap(thr, (duk_hobject *) func);
+	if (h != NULL) {
 		duk_uint_fast32_t i;
-
-		h = DUK_TVAL_GET_OBJECT(tv);
-		DUK_ASSERT(h != NULL);
 
 		/* We know _Varmap only has own properties so walk property
 		 * table directly.  We also know _Varmap is dense and all
@@ -180,11 +176,10 @@ DUK_LOCAL duk_uint8_t *duk__dump_varmap(duk_hthread *thr, duk_uint8_t *p, duk_bu
 }
 
 DUK_LOCAL duk_uint8_t *duk__dump_formals(duk_hthread *thr, duk_uint8_t *p, duk_bufwriter_ctx *bw_ctx, duk_hobject *func) {
-	duk_tval *tv;
+	duk_harray *h;
 
-	tv = duk_hobject_find_existing_entry_tval_ptr(thr->heap, (duk_hobject *) func, DUK_HTHREAD_STRING_INT_FORMALS(thr));
-	if (tv != NULL && DUK_TVAL_IS_OBJECT(tv)) {
-		duk_harray *h;
+	h = duk_hobject_get_formals(thr, (duk_hobject *) func);
+	if (h != NULL) {
 		duk_uint32_t i;
 
 		/* Here we rely on _Formals being a dense array containing
@@ -192,10 +187,6 @@ DUK_LOCAL duk_uint8_t *duk__dump_formals(duk_hthread *thr, duk_uint8_t *p, duk_b
 		 * tweaked by the application (which we don't support right
 		 * now).
 		 */
-		h = (duk_harray *) DUK_TVAL_GET_OBJECT(tv);
-		DUK_ASSERT(h != NULL);
-		DUK_ASSERT(DUK_HOBJECT_IS_ARRAY((duk_hobject *) h));
-		DUK_ASSERT(h->length <= DUK_HOBJECT_GET_ASIZE((duk_hobject *) h));
 
 		p = DUK_BW_ENSURE_RAW(thr, bw_ctx, 4U, p);
 		DUK_ASSERT(h->length != DUK__NO_FORMALS);  /* limits */

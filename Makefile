@@ -247,6 +247,7 @@ clean:
 	@rm -f libduktape*.so*
 	@rm -f duktape-*.tar.*
 	@rm -f duktape-*.iso
+	@rm -f docker-input.zip docker-output.zip
 	@rm -f doc/*.html
 	@rm -f src-input/*.pyc tools/*.pyc util/*.pyc
 	@rm -rf massif.out.* ms_print.tmp.*

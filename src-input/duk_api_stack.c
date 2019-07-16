@@ -4773,7 +4773,7 @@ DUK_EXTERNAL void duk_push_global_object(duk_hthread *thr) {
 
 /* XXX: size optimize */
 DUK_LOCAL void duk__push_stash(duk_hthread *thr) {
-	if (!duk_get_prop_stridx_short(thr, -1, DUK_STRIDX_INT_VALUE)) {
+	if (!duk_xget_owndataprop_stridx_short(thr, -1, DUK_STRIDX_INT_VALUE)) {
 		DUK_DDD(DUK_DDDPRINT("creating heap/global/thread stash on first use"));
 		duk_pop_unsafe(thr);
 		duk_push_bare_object(thr);
@@ -6818,7 +6818,7 @@ DUK_LOCAL const char *duk__push_string_tval_readable(duk_hthread *thr, duk_tval 
 				 * but traverse inheritance chain.
 				 */
 				duk_tval *tv_msg;
-				tv_msg = duk_hobject_find_existing_entry_tval_ptr(thr->heap, h, DUK_HTHREAD_STRING_MESSAGE(thr));
+				tv_msg = duk_hobject_find_entry_tval_ptr_stridx(thr->heap, h, DUK_STRIDX_MESSAGE);
 				if (tv_msg != NULL && DUK_TVAL_IS_STRING(tv_msg)) {
 					/* It's critical to avoid recursion so
 					 * only summarize a string .message.

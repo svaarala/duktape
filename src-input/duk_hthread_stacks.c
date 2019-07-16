@@ -181,7 +181,7 @@ DUK_LOCAL void duk__activation_unwind_nofree_norz(duk_hthread *thr) {
 		duk_tval tv_tmp;
 		duk_hobject *h_tmp;
 
-		tv_caller = duk_hobject_find_existing_entry_tval_ptr(thr->heap, func, DUK_HTHREAD_STRING_CALLER(thr));
+		tv_caller = duk_hobject_find_entry_tval_ptr_stridx(thr->heap, func, DUK_STRIDX_CALLER);
 
 		/* The act->prev_caller should only be set if the entry for 'caller'
 		 * exists (as it is only set in that case, and the property is not

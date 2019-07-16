@@ -127,6 +127,7 @@ void duk_js_push_closure(duk_hthread *thr,
                          duk_hobject *outer_lex_env,
                          duk_bool_t add_auto_proto) {
 	duk_hcompfunc *fun_clos;
+	duk_harray *formals;
 	duk_small_uint_t i;
 	duk_uint_t len_value;
 
@@ -335,6 +336,11 @@ void duk_js_push_closure(duk_hthread *thr,
 	 *
 	 *  The properties will be non-writable and non-enumerable, but
 	 *  configurable.
+	 *
+	 *  Function templates are bare objects, so inheritance of internal
+	 *  Symbols is not an issue here even when using ordinary property
+	 *  reads.  The function instance created is not bare, so internal
+	 *  Symbols must be defined without inheritance checks.
 	 */
 
 	/* [ ... closure template ] */
@@ -345,7 +351,7 @@ void duk_js_push_closure(duk_hthread *thr,
 
 	for (i = 0; i < (duk_small_uint_t) (sizeof(duk__closure_copy_proplist) / sizeof(duk_uint16_t)); i++) {
 		duk_small_int_t stridx = (duk_small_int_t) duk__closure_copy_proplist[i];
-		if (duk_get_prop_stridx_short(thr, -1, stridx)) {
+		if (duk_xget_owndataprop_stridx_short(thr, -1, stridx)) {
 			/* [ ... closure template val ] */
 			DUK_DDD(DUK_DDDPRINT("copying property, stridx=%ld -> found", (long) stridx));
 			duk_xdef_prop_stridx_short(thr, -3, stridx, DUK_PROPDESC_FLAGS_C);
@@ -364,18 +370,14 @@ void duk_js_push_closure(duk_hthread *thr,
 
 	/* [ ... closure template ] */
 
-	/* XXX: these lookups should be just own property lookups instead of
-	 * looking up the inheritance chain.
-	 */
-	if (duk_get_prop_stridx_short(thr, -1, DUK_STRIDX_INT_FORMALS)) {
-		/* [ ... closure template formals ] */
-		len_value = (duk_uint_t) duk_get_length(thr, -1);  /* could access duk_harray directly, not important */
+	formals = duk_hobject_get_formals(thr, (duk_hobject *) fun_temp);
+	if (formals) {
+		len_value = (duk_uint_t) formals->length;
 		DUK_DD(DUK_DDPRINT("closure length from _Formals -> %ld", (long) len_value));
 	} else {
 		len_value = fun_temp->nargs;
 		DUK_DD(DUK_DDPRINT("closure length defaulted from nargs -> %ld", (long) len_value));
 	}
-	duk_pop_unsafe(thr);
 
 	duk_push_uint(thr, len_value);  /* [ ... closure template len_value ] */
 	duk_xdef_prop_stridx_short(thr, -3, DUK_STRIDX_LENGTH, DUK_PROPDESC_FLAGS_C);
@@ -561,13 +563,9 @@ duk_hobject *duk_create_activation_environment_record(duk_hthread *thr,
 	DUK_ASSERT(env->regbase_byteoff == 0);
 	if (DUK_HOBJECT_IS_COMPFUNC(func)) {
 		duk_hobject *varmap;
-		duk_tval *tv;
 
-		tv = duk_hobject_find_existing_entry_tval_ptr(thr->heap, func, DUK_HTHREAD_STRING_INT_VARMAP(thr));
-		if (tv != NULL && DUK_TVAL_IS_OBJECT(tv)) {
-			DUK_ASSERT(DUK_TVAL_IS_OBJECT(tv));
-			varmap = DUK_TVAL_GET_OBJECT(tv);
-			DUK_ASSERT(varmap != NULL);
+		varmap = duk_hobject_get_varmap(thr, func);
+		if (varmap != NULL) {
 			env->varmap = varmap;
 			DUK_HOBJECT_INCREF(thr, varmap);
 			env->thread = thr;
@@ -789,7 +787,7 @@ duk_bool_t duk__getid_open_decl_env_regs(duk_hthread *thr,
 	}
 	DUK_ASSERT(env->varmap != NULL);
 
-	tv = duk_hobject_find_existing_entry_tval_ptr(thr->heap, env->varmap, name);
+	tv = duk_hobject_find_entry_tval_ptr(thr->heap, env->varmap, name);
 	if (DUK_UNLIKELY(tv == NULL)) {
 		return 0;
 	}
@@ -839,16 +837,13 @@ duk_bool_t duk__getid_activation_regs(duk_hthread *thr,
 		return 0;
 	}
 
-	/* XXX: move varmap to duk_hcompfunc struct field. */
-	tv = duk_hobject_find_existing_entry_tval_ptr(thr->heap, func, DUK_HTHREAD_STRING_INT_VARMAP(thr));
-	if (!tv) {
+	/* XXX: move varmap to duk_hcompfunc struct field? */
+	varmap = duk_hobject_get_varmap(thr, func);
+	if (!varmap) {
 		return 0;
 	}
-	DUK_ASSERT(DUK_TVAL_IS_OBJECT(tv));
-	varmap = DUK_TVAL_GET_OBJECT(tv);
-	DUK_ASSERT(varmap != NULL);
 
-	tv = duk_hobject_find_existing_entry_tval_ptr(thr->heap, varmap, name);
+	tv = duk_hobject_find_entry_tval_ptr(thr->heap, varmap, name);
 	if (!tv) {
 		return 0;
 	}
@@ -1006,7 +1001,7 @@ duk_bool_t duk__get_identifier_reference(duk_hthread *thr,
 				return 1;
 			}
 
-			tv = duk_hobject_find_existing_entry_tval_ptr_and_attrs(thr->heap, env, name, &attrs);
+			tv = duk_hobject_find_entry_tval_ptr_and_attrs(thr->heap, env, name, &attrs);
 			if (tv) {
 				out->value = tv;
 				out->attrs = attrs;
@@ -1624,7 +1619,7 @@ duk_bool_t duk__declvar_helper(duk_hthread *thr,
 		/* must be found: was found earlier, and cannot be inherited */
 		for (;;) {
 			DUK_ASSERT(holder != NULL);
-			if (duk_hobject_find_existing_entry(thr->heap, holder, name, &e_idx, &h_idx)) {
+			if (duk_hobject_find_entry(thr->heap, holder, name, &e_idx, &h_idx)) {
 				DUK_ASSERT(e_idx >= 0);
 				break;
 			}

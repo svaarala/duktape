@@ -2083,7 +2083,7 @@ DUK_LOCAL void duk__executor_recheck_debugger(duk_hthread *thr, duk_activation *
 	bp_active = heap->dbg_breakpoints_active;
 	act->flags &= ~DUK_ACT_FLAG_BREAKPOINT_ACTIVE;
 
-	tv_tmp = duk_hobject_find_existing_entry_tval_ptr(thr->heap, (duk_hobject *) fun, DUK_HTHREAD_STRING_FILE_NAME(thr));
+	tv_tmp = duk_hobject_find_entry_tval_ptr_stridx(thr->heap, (duk_hobject *) fun, DUK_STRIDX_FILE_NAME);
 	if (tv_tmp && DUK_TVAL_IS_STRING(tv_tmp)) {
 		filename = DUK_TVAL_GET_STRING(tv_tmp);
 

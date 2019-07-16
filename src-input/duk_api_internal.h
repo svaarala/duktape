@@ -226,6 +226,14 @@ DUK_INTERNAL_DECL duk_bool_t duk_get_prop_stridx_short_raw(duk_hthread *thr, duk
 	 duk_get_prop_stridx_short_raw((thr), (((duk_uint_t) (obj_idx)) << 16) + ((duk_uint_t) (stridx))))
 DUK_INTERNAL_DECL duk_bool_t duk_get_prop_stridx_boolean(duk_hthread *thr, duk_idx_t obj_idx, duk_small_uint_t stridx, duk_bool_t *out_has_prop);  /* [] -> [] */
 
+DUK_INTERNAL_DECL duk_bool_t duk_xget_owndataprop(duk_hthread *thr, duk_idx_t obj_idx);
+DUK_INTERNAL_DECL duk_bool_t duk_xget_owndataprop_stridx(duk_hthread *thr, duk_idx_t obj_idx, duk_small_uint_t stridx);
+DUK_INTERNAL_DECL duk_bool_t duk_xget_owndataprop_stridx_short_raw(duk_hthread *thr, duk_uint_t packed_args);
+#define duk_xget_owndataprop_stridx_short(thr,obj_idx,stridx) \
+	(DUK_ASSERT_EXPR((duk_int_t) (obj_idx) >= -0x8000L && (duk_int_t) (obj_idx) <= 0x7fffL), \
+	 DUK_ASSERT_EXPR((duk_int_t) (stridx) >= 0 && (duk_int_t) (stridx) <= 0xffffL), \
+	 duk_xget_owndataprop_stridx_short_raw((thr), (((duk_uint_t) (obj_idx)) << 16) + ((duk_uint_t) (stridx))))
+
 DUK_INTERNAL_DECL duk_bool_t duk_put_prop_stridx(duk_hthread *thr, duk_idx_t obj_idx, duk_small_uint_t stridx);     /* [val] -> [] */
 DUK_INTERNAL_DECL duk_bool_t duk_put_prop_stridx_short_raw(duk_hthread *thr, duk_uint_t packed_args);
 #define duk_put_prop_stridx_short(thr,obj_idx,stridx) \

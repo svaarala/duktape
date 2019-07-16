@@ -93,9 +93,9 @@ DUK_LOCAL void duk__err_augment_user(duk_hthread *thr, duk_small_uint_t stridx_c
 		DUK_DD(DUK_DDPRINT("error occurred when DUK_BIDX_DUKTAPE is NULL, ignoring"));
 		return;
 	}
-	tv_hnd = duk_hobject_find_existing_entry_tval_ptr(thr->heap,
-	                                                  thr->builtins[DUK_BIDX_DUKTAPE],
-	                                                  DUK_HTHREAD_GET_STRING(thr, stridx_cb));
+	tv_hnd = duk_hobject_find_entry_tval_ptr_stridx(thr->heap,
+	                                                thr->builtins[DUK_BIDX_DUKTAPE],
+	                                                stridx_cb);
 	if (tv_hnd == NULL) {
 		DUK_DD(DUK_DDPRINT("error handler does not exist or is not a plain value: %!T",
 		                   (duk_tval *) tv_hnd));
@@ -468,9 +468,9 @@ DUK_LOCAL void duk__err_augment_builtin_create(duk_hthread *thr, duk_hthread *th
 #if defined(DUK_USE_TRACEBACKS)
 	/* If tracebacks are enabled, the '_Tracedata' property is the only
 	 * thing we need: 'fileName' and 'lineNumber' are virtual properties
-	 * which use '_Tracedata'.
+	 * which use '_Tracedata'.  (Check _Tracedata only as own property.)
 	 */
-	if (duk_hobject_hasprop_raw(thr, obj, DUK_HTHREAD_STRING_INT_TRACEDATA(thr))) {
+	if (duk_hobject_find_entry_tval_ptr_stridx(thr->heap, obj, DUK_STRIDX_INT_TRACEDATA) != NULL) {
 		DUK_DDD(DUK_DDDPRINT("error value already has a '_Tracedata' property, not modifying it"));
 	} else {
 		duk__add_traceback(thr, thr_callstack, c_filename, c_line, flags);

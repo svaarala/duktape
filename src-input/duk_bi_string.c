@@ -246,7 +246,7 @@ DUK_INTERNAL duk_ret_t duk_bi_string_prototype_to_string(duk_hthread *thr) {
 			goto type_error;
 		}
 
-		duk_get_prop_stridx_short(thr, -1, DUK_STRIDX_INT_VALUE);
+		duk_xget_owndataprop_stridx_short(thr, -1, DUK_STRIDX_INT_VALUE);
 		DUK_ASSERT(duk_is_string(thr, -1));
 	} else {
 		goto type_error;

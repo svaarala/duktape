@@ -217,11 +217,11 @@ DUK_INTERNAL void duk_hobject_enumerator_create(duk_hthread *thr, duk_small_uint
 	 * real object to check against.
 	 */
 	duk_push_hobject(thr, enum_target);
-	duk_put_prop_stridx_short(thr, -2, DUK_STRIDX_INT_TARGET);
+	duk_put_prop_stridx_short(thr, -2, DUK_STRIDX_INT_TARGET);  /* Target is bare, plain put OK. */
 
 	/* Initialize index so that we skip internal control keys. */
 	duk_push_int(thr, DUK__ENUM_START_INDEX);
-	duk_put_prop_stridx_short(thr, -2, DUK_STRIDX_INT_NEXT);
+	duk_put_prop_stridx_short(thr, -2, DUK_STRIDX_INT_NEXT);  /* Target is bare, plain put OK. */
 
 	/*
 	 *  Proxy object handling
@@ -255,7 +255,7 @@ DUK_INTERNAL void duk_hobject_enumerator_create(duk_hthread *thr, duk_small_uint
 		enum_target = h_proxy_target;
 
 		duk_push_hobject(thr, enum_target);  /* -> [ ... enum_target res handler undefined target ] */
-		duk_put_prop_stridx_short(thr, -4, DUK_STRIDX_INT_TARGET);
+		duk_put_prop_stridx_short(thr, -4, DUK_STRIDX_INT_TARGET);  /* Target is bare, plain put OK. */
 
 		duk_pop_2(thr);  /* -> [ ... enum_target res ] */
 		goto skip_proxy;
@@ -582,7 +582,7 @@ DUK_INTERNAL duk_bool_t duk_hobject_enumerator_next(duk_hthread *thr, duk_bool_t
 	 * be the proxy, and checking key existence against the proxy is not
 	 * required (or sensible, as the keys may be fully virtual).
 	 */
-	duk_get_prop_stridx_short(thr, -1, DUK_STRIDX_INT_TARGET);
+	duk_xget_owndataprop_stridx_short(thr, -1, DUK_STRIDX_INT_TARGET);
 	enum_target = duk_require_hobject(thr, -1);
 	DUK_ASSERT(enum_target != NULL);
 #if defined(DUK_USE_ES6_PROXY)
