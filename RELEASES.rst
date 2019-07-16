@@ -3464,6 +3464,9 @@ Planned
   abandoned if an array index was defined using Object.defineProperty()
   (even if property attributes were correct) (GH-2146)
 
+* Rework some internal property handling call sites and helpers to e.g.
+  avoid inheriting internal properties when not intended (GH-2149)
+
 * Fix incorrect parsing of post-increment/post-decrement followed by
   division (e.g. "z++ / 20"), the slash was interpreted as beginning
   a regexp (GH-2140)
@@ -3474,6 +3477,9 @@ Planned
 * Fix Object.getOwnPropertySymbols() behavior for the virtual properties
   of arrays, Strings, and buffer objects: string keys were incorrectly
   included in the result (GH-1978, GH-1979)
+
+* Fix Date .setTime(), setYear(), etc behavior for a frozen Date instance;
+  they should be allowed, but were rejected with a TypeError (GH-2149)
 
 * Fix compile error (missing DUK_DCERROR_UNSUPPORTED macro) when compiling
   with RegExp support disabled (GH-1990, GH-1991)
