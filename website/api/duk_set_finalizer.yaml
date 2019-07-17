@@ -15,6 +15,9 @@ summary: |
 
   <div class="note">
   Finalizer on a Proxy object is currently unsupported.
+  At present the finalizer is stored as a hidden Symbol; a finalizer cannot
+  be set if the object is non-extensible (sealed or frozen), so set the
+  finalizer before sealing/freezing the object.
   </div>
 
 example: |
