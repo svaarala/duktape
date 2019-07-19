@@ -1310,7 +1310,7 @@ DUK_INTERNAL void duk_hobject_compact_props(duk_hthread *thr, duk_hobject *obj) 
  *  but there is no hash part, h_idx is set to -1.
  */
 
-DUK_INTERNAL duk_bool_t duk_hobject_find_existing_entry(duk_heap *heap, duk_hobject *obj, duk_hstring *key, duk_int_t *e_idx, duk_int_t *h_idx) {
+DUK_INTERNAL duk_bool_t duk_hobject_find_entry(duk_heap *heap, duk_hobject *obj, duk_hstring *key, duk_int_t *e_idx, duk_int_t *h_idx) {
 	DUK_ASSERT(obj != NULL);
 	DUK_ASSERT(key != NULL);
 	DUK_ASSERT(e_idx != NULL);
@@ -1327,7 +1327,7 @@ DUK_INTERNAL duk_bool_t duk_hobject_find_existing_entry(duk_heap *heap, duk_hobj
 		duk_uint_fast32_t i;
 		duk_uint_fast32_t n;
 		duk_hstring **h_keys_base;
-		DUK_DDD(DUK_DDDPRINT("duk_hobject_find_existing_entry() using linear scan for lookup"));
+		DUK_DDD(DUK_DDDPRINT("duk_hobject_find_entry() using linear scan for lookup"));
 
 		h_keys_base = DUK_HOBJECT_E_GET_KEY_BASE(heap, obj);
 		n = DUK_HOBJECT_GET_ENEXT(obj);
@@ -1348,7 +1348,7 @@ DUK_INTERNAL duk_bool_t duk_hobject_find_existing_entry(duk_heap *heap, duk_hobj
 		duk_uint32_t *h_base;
 		duk_uint32_t mask;
 
-		DUK_DDD(DUK_DDDPRINT("duk_hobject_find_existing_entry() using hash part for lookup"));
+		DUK_DDD(DUK_DDDPRINT("duk_hobject_find_entry() using hash part for lookup"));
 
 		h_base = DUK_HOBJECT_H_GET_BASE(heap, obj);
 		n = DUK_HOBJECT_GET_HSIZE(obj);
@@ -1394,7 +1394,7 @@ DUK_INTERNAL duk_bool_t duk_hobject_find_existing_entry(duk_heap *heap, duk_hobj
 }
 
 /* For internal use: get non-accessor entry value */
-DUK_INTERNAL duk_tval *duk_hobject_find_existing_entry_tval_ptr(duk_heap *heap, duk_hobject *obj, duk_hstring *key) {
+DUK_INTERNAL duk_tval *duk_hobject_find_entry_tval_ptr(duk_heap *heap, duk_hobject *obj, duk_hstring *key) {
 	duk_int_t e_idx;
 	duk_int_t h_idx;
 
@@ -1402,7 +1402,7 @@ DUK_INTERNAL duk_tval *duk_hobject_find_existing_entry_tval_ptr(duk_heap *heap, 
 	DUK_ASSERT(key != NULL);
 	DUK_UNREF(heap);
 
-	if (duk_hobject_find_existing_entry(heap, obj, key, &e_idx, &h_idx)) {
+	if (duk_hobject_find_entry(heap, obj, key, &e_idx, &h_idx)) {
 		DUK_ASSERT(e_idx >= 0);
 		if (!DUK_HOBJECT_E_SLOT_IS_ACCESSOR(heap, obj, e_idx)) {
 			return DUK_HOBJECT_E_GET_VALUE_TVAL_PTR(heap, obj, e_idx);
@@ -1411,8 +1411,12 @@ DUK_INTERNAL duk_tval *duk_hobject_find_existing_entry_tval_ptr(duk_heap *heap, 
 	return NULL;
 }
 
+DUK_INTERNAL duk_tval *duk_hobject_find_entry_tval_ptr_stridx(duk_heap *heap, duk_hobject *obj, duk_small_uint_t stridx) {
+	return duk_hobject_find_entry_tval_ptr(heap, obj, DUK_HEAP_GET_STRING(heap, stridx));
+}
+
 /* For internal use: get non-accessor entry value and attributes */
-DUK_INTERNAL duk_tval *duk_hobject_find_existing_entry_tval_ptr_and_attrs(duk_heap *heap, duk_hobject *obj, duk_hstring *key, duk_uint_t *out_attrs) {
+DUK_INTERNAL duk_tval *duk_hobject_find_entry_tval_ptr_and_attrs(duk_heap *heap, duk_hobject *obj, duk_hstring *key, duk_uint_t *out_attrs) {
 	duk_int_t e_idx;
 	duk_int_t h_idx;
 
@@ -1421,7 +1425,7 @@ DUK_INTERNAL duk_tval *duk_hobject_find_existing_entry_tval_ptr_and_attrs(duk_he
 	DUK_ASSERT(out_attrs != NULL);
 	DUK_UNREF(heap);
 
-	if (duk_hobject_find_existing_entry(heap, obj, key, &e_idx, &h_idx)) {
+	if (duk_hobject_find_entry(heap, obj, key, &e_idx, &h_idx)) {
 		DUK_ASSERT(e_idx >= 0);
 		if (!DUK_HOBJECT_E_SLOT_IS_ACCESSOR(heap, obj, e_idx)) {
 			*out_attrs = DUK_HOBJECT_E_GET_FLAGS(heap, obj, e_idx);
@@ -1433,7 +1437,7 @@ DUK_INTERNAL duk_tval *duk_hobject_find_existing_entry_tval_ptr_and_attrs(duk_he
 }
 
 /* For internal use: get array part value */
-DUK_INTERNAL duk_tval *duk_hobject_find_existing_array_entry_tval_ptr(duk_heap *heap, duk_hobject *obj, duk_uarridx_t i) {
+DUK_INTERNAL duk_tval *duk_hobject_find_array_entry_tval_ptr(duk_heap *heap, duk_hobject *obj, duk_uarridx_t i) {
 	duk_tval *tv;
 
 	DUK_ASSERT(obj != NULL);
@@ -1536,45 +1540,65 @@ DUK_LOCAL duk_int_t duk__hobject_alloc_entry_checked(duk_hthread *thr, duk_hobje
  *  to incref OR decref.  No proxies or accessors are invoked, no prototype walk.
  */
 
-DUK_INTERNAL duk_bool_t duk_hobject_get_internal_value(duk_heap *heap, duk_hobject *obj, duk_tval *tv_out) {
-	duk_int_t e_idx;
-	duk_int_t h_idx;
-
-	DUK_ASSERT(heap != NULL);
-	DUK_ASSERT(obj != NULL);
-	DUK_ASSERT(tv_out != NULL);
-
-	/* Always in entry part, no need to look up parents etc. */
-	if (duk_hobject_find_existing_entry(heap, obj, DUK_HEAP_STRING_INT_VALUE(heap), &e_idx, &h_idx)) {
-		DUK_ASSERT(e_idx >= 0);
-		DUK_ASSERT(!DUK_HOBJECT_E_SLOT_IS_ACCESSOR(heap, obj, e_idx));
-		DUK_TVAL_SET_TVAL(tv_out, DUK_HOBJECT_E_GET_VALUE_TVAL_PTR(heap, obj, e_idx));
-		return 1;
-	}
-	DUK_TVAL_SET_UNDEFINED(tv_out);
-	return 0;
+DUK_INTERNAL duk_tval *duk_hobject_get_internal_value_tval_ptr(duk_heap *heap, duk_hobject *obj) {
+	return duk_hobject_find_entry_tval_ptr_stridx(heap, obj, DUK_STRIDX_INT_VALUE);
 }
 
-DUK_INTERNAL duk_hstring *duk_hobject_get_internal_value_string(duk_heap *heap, duk_hobject *obj) {
-	duk_tval tv;
+DUK_LOCAL duk_heaphdr *duk_hobject_get_internal_value_heaphdr(duk_heap *heap, duk_hobject *obj) {
+	duk_tval *tv;
 
 	DUK_ASSERT(heap != NULL);
 	DUK_ASSERT(obj != NULL);
 
-	/* This is not strictly necessary, but avoids compiler warnings; e.g.
-	 * gcc won't reliably detect that no uninitialized data is read below.
-	 */
-	duk_memzero((void *) &tv, sizeof(duk_tval));
-
-	if (duk_hobject_get_internal_value(heap, obj, &tv)) {
-		duk_hstring *h;
-		DUK_ASSERT(DUK_TVAL_IS_STRING(&tv));
-		h = DUK_TVAL_GET_STRING(&tv);
-		/* No explicit check for string vs. symbol, accept both. */
+	tv = duk_hobject_get_internal_value_tval_ptr(heap, obj);
+	if (tv != NULL) {
+		duk_heaphdr *h = DUK_TVAL_GET_HEAPHDR(tv);
+		DUK_ASSERT(h != NULL);
 		return h;
 	}
 
 	return NULL;
+}
+
+DUK_INTERNAL duk_hstring *duk_hobject_get_internal_value_string(duk_heap *heap, duk_hobject *obj) {
+	duk_hstring *h;
+
+	h = (duk_hstring *) duk_hobject_get_internal_value_heaphdr(heap, obj);
+	if (h != NULL) {
+		DUK_ASSERT(DUK_HEAPHDR_IS_STRING((duk_heaphdr *) h));
+	}
+	return h;
+}
+
+DUK_LOCAL duk_hobject *duk__hobject_get_entry_object_stridx(duk_heap *heap, duk_hobject *obj, duk_small_uint_t stridx) {
+	duk_tval *tv;
+	duk_hobject *h;
+
+	tv = duk_hobject_find_entry_tval_ptr_stridx(heap, obj, stridx);
+	if (tv != NULL && DUK_TVAL_IS_OBJECT(tv)) {
+		h = DUK_TVAL_GET_OBJECT(tv);
+		DUK_ASSERT(h != NULL);
+		return h;
+	}
+	return NULL;
+}
+
+DUK_INTERNAL duk_harray *duk_hobject_get_formals(duk_hthread *thr, duk_hobject *obj) {
+	duk_harray *h;
+
+	h = (duk_harray *) duk__hobject_get_entry_object_stridx(thr->heap, obj, DUK_STRIDX_INT_FORMALS);
+	if (h != NULL) {
+		DUK_ASSERT(DUK_HOBJECT_IS_ARRAY((duk_hobject *) h));
+		DUK_ASSERT(h->length <= DUK_HOBJECT_GET_ASIZE((duk_hobject *) h));
+	}
+	return h;
+}
+
+DUK_INTERNAL duk_hobject *duk_hobject_get_varmap(duk_hthread *thr, duk_hobject *obj) {
+	duk_hobject *h;
+
+	h = duk__hobject_get_entry_object_stridx(thr->heap, obj, DUK_STRIDX_INT_VARMAP);
+	return h;
 }
 
 /*
@@ -1831,7 +1855,7 @@ DUK_LOCAL duk_bool_t duk__get_own_propdesc_raw(duk_hthread *thr, duk_hobject *ob
 	 *  same keys so the entry part vs. array part order doesn't matter.
 	 */
 
-	if (duk_hobject_find_existing_entry(thr->heap, obj, key, &out_desc->e_idx, &out_desc->h_idx)) {
+	if (duk_hobject_find_entry(thr->heap, obj, key, &out_desc->e_idx, &out_desc->h_idx)) {
 		duk_int_t e_idx = out_desc->e_idx;
 		DUK_ASSERT(out_desc->e_idx >= 0);
 		out_desc->a_idx = -1;

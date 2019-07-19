@@ -199,11 +199,10 @@ DUK_LOCAL void duk__create_arguments_object(duk_hthread *thr,
 	DUK_ASSERT(i_argbase >= 0);
 	DUK_ASSERT(num_stack_args >= 0);
 
-	duk_push_hobject(thr, func);
-	duk_get_prop_stridx_short(thr, -1, DUK_STRIDX_INT_FORMALS);
-	formals = duk_get_hobject(thr, -1);
+	formals = (duk_hobject *) duk_hobject_get_formals(thr, (duk_hobject *) func);
 	if (formals) {
-		n_formals = (duk_idx_t) duk_get_length(thr, -1);
+		n_formals = (duk_idx_t) ((duk_harray *) formals)->length;
+		duk_push_hobject(thr, formals);
 	} else {
 		/* This shouldn't happen without tampering of internal
 		 * properties: if a function accesses 'arguments', _Formals
@@ -212,8 +211,8 @@ DUK_LOCAL void duk__create_arguments_object(duk_hthread *thr,
 		 */
 		DUK_D(DUK_DPRINT("_Formals is undefined when creating arguments, use n_formals == 0"));
 		n_formals = 0;
+		duk_push_undefined(thr);
 	}
-	duk_remove_m2(thr);  /* leave formals on stack for later use */
 	i_formals = duk_require_top_index(thr);
 
 	DUK_ASSERT(n_formals >= 0);
@@ -1028,7 +1027,7 @@ DUK_LOCAL void duk__update_func_caller_prop(duk_hthread *thr, duk_hobject *func)
 	/* XXX: check .caller writability? */
 
 	/* Backup 'caller' property and update its value. */
-	tv_caller = duk_hobject_find_existing_entry_tval_ptr(thr->heap, func, DUK_HTHREAD_STRING_CALLER(thr));
+	tv_caller = duk_hobject_find_entry_tval_ptr_stridx(thr->heap, func, DUK_STRIDX_CALLER);
 	if (tv_caller) {
 		/* If caller is global/eval code, 'caller' should be set to
 		 * 'null'.
@@ -1348,7 +1347,7 @@ DUK_LOCAL duk_hobject *duk__resolve_target_func_and_this_binding(duk_hthread *th
 	 * (which would be dangerous).
 	 */
 	if (DUK_TVAL_IS_OBJECT(tv_func)) {
-		duk_tval *tv_wrap = duk_hobject_find_existing_entry_tval_ptr(thr->heap, DUK_TVAL_GET_OBJECT(tv_func), DUK_HTHREAD_STRING_INT_TARGET(thr));
+		duk_tval *tv_wrap = duk_hobject_find_entry_tval_ptr_stridx(thr->heap, DUK_TVAL_GET_OBJECT(tv_func), DUK_STRIDX_INT_TARGET);
 		if (tv_wrap != NULL) {
 			DUK_DD(DUK_DDPRINT("delayed error from GETPROPC: %!T", tv_wrap));
 			duk_push_tval(thr, tv_wrap);
@@ -2907,7 +2906,7 @@ DUK_INTERNAL DUK_NOINLINE DUK_COLD void duk_call_setup_propcall_error(duk_hthrea
 	duk_push_error_object(thr,
 	                      DUK_ERR_TYPE_ERROR | DUK_ERRCODE_FLAG_NOBLAME_FILELINE,
 	                      "%s not callable (property %s of %s)", str_targ, str_key, str_base);
-	duk_put_prop_stridx(thr, -2, DUK_STRIDX_INT_TARGET);  /* Marker property, reuse _Target. */
+	duk_xdef_prop_stridx(thr, -2, DUK_STRIDX_INT_TARGET, DUK_PROPDESC_FLAGS_NONE);  /* Marker property, reuse _Target. */
 	/* [ <nargs> target base key { _Target: error } ] */
 	duk_replace(thr, entry_top - 1);
 #else
@@ -2918,7 +2917,7 @@ DUK_INTERNAL DUK_NOINLINE DUK_COLD void duk_call_setup_propcall_error(duk_hthrea
 	                      DUK_ERR_TYPE_ERROR | DUK_ERRCODE_FLAG_NOBLAME_FILELINE,
 	                      "%s not callable (property %s of %s)", str_targ, str_key, str_base);
 	/* [ <nargs> target base key {} str_targ str_key str_base error ] */
-	duk_put_prop_stridx(thr, -5, DUK_STRIDX_INT_TARGET);  /* Marker property, reuse _Target. */
+	duk_xdef_prop_stridx(thr, -5, DUK_STRIDX_INT_TARGET, DUK_PROPDESC_FLAGS_NONE);  /* Marker property, reuse _Target. */
 	/* [ <nargs> target base key { _Target: error } str_targ str_key str_base ] */
 	duk_swap(thr, -4, entry_top - 1);
 	/* [ <nargs> { _Target: error } base key target str_targ str_key str_base ] */

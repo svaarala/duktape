@@ -900,7 +900,7 @@ DUK_LOCAL duk_double_t duk__push_this_get_timeval_tzoffset(duk_hthread *thr, duk
 		DUK_WO_NORETURN(return 0.0;);
 	}
 
-	duk_get_prop_stridx_short(thr, -1, DUK_STRIDX_INT_VALUE);
+	duk_xget_owndataprop_stridx_short(thr, -1, DUK_STRIDX_INT_VALUE);
 	d = duk_to_number_m1(thr);
 	duk_pop(thr);
 
@@ -947,9 +947,13 @@ DUK_LOCAL duk_ret_t duk__set_this_timeval_from_dparts(duk_hthread *thr, duk_doub
 	d = duk_bi_date_get_timeval_from_dparts(dparts, flags);
 	duk_push_number(thr, d);  /* -> [ ... this timeval_new ] */
 	duk_dup_top(thr);         /* -> [ ... this timeval_new timeval_new ] */
-	duk_put_prop_stridx_short(thr, -3, DUK_STRIDX_INT_VALUE);
 
-	/* stack top: new time value, return 1 to allow tail calls */
+	/* Must force write because e.g. .setYear() must work even when
+	 * the Date instance is frozen.
+	 */
+	duk_xdef_prop_stridx_short(thr, -3, DUK_STRIDX_INT_VALUE, DUK_PROPDESC_FLAGS_W);
+
+	/* Stack top: new time value, return 1 to allow tail calls. */
 	return 1;
 }
 
@@ -1718,7 +1722,11 @@ DUK_INTERNAL duk_ret_t duk_bi_date_prototype_set_time(duk_hthread *thr) {
 	d = duk__timeclip(duk_to_number(thr, 0));
 	duk_push_number(thr, d);
 	duk_dup_top(thr);
-	duk_put_prop_stridx_short(thr, -3, DUK_STRIDX_INT_VALUE); /* -> [ timeval this timeval ] */
+	/* Must force write because .setTime() must work even when
+	 * the Date instance is frozen.
+	 */
+	duk_xdef_prop_stridx_short(thr, -3, DUK_STRIDX_INT_VALUE, DUK_PROPDESC_FLAGS_W);
+	/* -> [ timeval this timeval ] */
 
 	return 1;
 }

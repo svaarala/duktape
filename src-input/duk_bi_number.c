@@ -25,7 +25,7 @@ DUK_LOCAL duk_double_t duk__push_this_number_plain(duk_hthread *thr) {
 		DUK_ERROR_TYPE(thr, "number expected");
 		DUK_WO_NORETURN(return 0.0;);
 	}
-	duk_get_prop_stridx_short(thr, -1, DUK_STRIDX_INT_VALUE);
+	duk_xget_owndataprop_stridx_short(thr, -1, DUK_STRIDX_INT_VALUE);
 	DUK_ASSERT(duk_is_number(thr, -1));
 	DUK_DDD(DUK_DDDPRINT("number object: %!T, internal value: %!T",
 	                     (duk_tval *) duk_get_tval(thr, -2), (duk_tval *) duk_get_tval(thr, -1)));

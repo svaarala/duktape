@@ -2087,7 +2087,7 @@ DUK_LOCAL duk_bool_t duk__enc_value(duk_json_enc_ctx *js_ctx, duk_idx_t idx_hold
 #endif
 		case DUK_HOBJECT_CLASS_BOOLEAN: {
 			DUK_DDD(DUK_DDDPRINT("value is a Boolean/Buffer/Pointer object -> get internal value"));
-			duk_get_prop_stridx_short(thr, -1, DUK_STRIDX_INT_VALUE);
+			duk_xget_owndataprop_stridx_short(thr, -1, DUK_STRIDX_INT_VALUE);
 			duk_remove_m2(thr);
 			break;
 		}

@@ -127,7 +127,7 @@ DUK_LOCAL duk_ret_t duk__error_getter_helper(duk_hthread *thr, duk_small_int_t o
 	DUK_ASSERT_TOP(thr, 0);  /* fixed arg count */
 
 	duk_push_this(thr);
-	duk_get_prop_stridx_short(thr, -1, DUK_STRIDX_INT_TRACEDATA);
+	duk_xget_owndataprop_stridx_short(thr, -1, DUK_STRIDX_INT_TRACEDATA);
 	idx_td = duk_get_top_index(thr);
 
 	duk_push_hstring_stridx(thr, DUK_STRIDX_NEWLINE_4SPACE);

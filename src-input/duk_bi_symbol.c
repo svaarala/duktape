@@ -73,7 +73,6 @@ DUK_INTERNAL duk_ret_t duk_bi_symbol_constructor_shared(duk_hthread *thr) {
 
 DUK_LOCAL duk_hstring *duk__auto_unbox_symbol(duk_hthread *thr, duk_tval *tv_arg) {
 	duk_tval *tv;
-	duk_tval tv_val;
 	duk_hobject *h_obj;
 	duk_hstring *h_str;
 
@@ -87,10 +86,10 @@ DUK_LOCAL duk_hstring *duk__auto_unbox_symbol(duk_hthread *thr, duk_tval *tv_arg
 		h_obj = DUK_TVAL_GET_OBJECT(tv);
 		DUK_ASSERT(h_obj != NULL);
 		if (DUK_HOBJECT_GET_CLASS_NUMBER(h_obj) == DUK_HOBJECT_CLASS_SYMBOL) {
-			if (!duk_hobject_get_internal_value(thr->heap, h_obj, &tv_val)) {
+			tv = duk_hobject_get_internal_value_tval_ptr(thr->heap, h_obj);
+			if (tv == NULL) {
 				return NULL;
 			}
-			tv = &tv_val;
 		} else {
 			return NULL;
 		}

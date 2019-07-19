@@ -718,7 +718,7 @@ DUK_LOCAL void duk__regexp_match_helper(duk_hthread *thr, duk_small_int_t force_
 	h_input = duk_to_hstring(thr, -1);
 	DUK_ASSERT(h_input != NULL);
 
-	duk_get_prop_stridx_short(thr, -2, DUK_STRIDX_INT_BYTECODE);  /* [ ... re_obj input ] -> [ ... re_obj input bc ] */
+	duk_xget_owndataprop_stridx_short(thr, -2, DUK_STRIDX_INT_BYTECODE);  /* [ ... re_obj input ] -> [ ... re_obj input bc ] */
 	h_bytecode = duk_require_hstring(thr, -1);  /* no regexp instance should exist without a non-configurable bytecode property */
 	DUK_ASSERT(h_bytecode != NULL);
 

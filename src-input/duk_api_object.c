@@ -108,6 +108,57 @@ DUK_INTERNAL duk_bool_t duk_get_prop_stridx_boolean(duk_hthread *thr, duk_idx_t 
 	return duk_to_boolean_top_pop(thr);
 }
 
+/* This get variant is for internal use, it differs from standard
+ * duk_get_prop() in that:
+ *   - Object argument must be an object (primitive values not supported).
+ *   - Key argument must be a string (no coercion).
+ *   - Only own properties are checked (no inheritance).  Only "entry part"
+ *     properties are checked (not array index properties).
+ *   - Property must be a plain data property, not a getter.
+ *   - Proxy traps are not triggered.
+ */
+DUK_INTERNAL duk_bool_t duk_xget_owndataprop(duk_hthread *thr, duk_idx_t obj_idx) {
+	duk_hobject *h_obj;
+	duk_hstring *h_key;
+	duk_tval *tv_val;
+
+	DUK_ASSERT_API_ENTRY(thr);
+
+	/* Note: copying tv_obj and tv_key to locals to shield against a valstack
+	 * resize is not necessary for a property get right now.
+	 */
+
+	h_obj = duk_get_hobject(thr, obj_idx);
+	if (h_obj == NULL) {
+		return 0;
+	}
+	h_key = duk_require_hstring(thr, -1);
+
+	tv_val = duk_hobject_find_entry_tval_ptr(thr->heap, h_obj, h_key);
+	if (tv_val == NULL) {
+		return 0;
+	}
+
+	duk_push_tval(thr, tv_val);
+	duk_remove_m2(thr);  /* remove key */
+
+	return 1;
+}
+
+DUK_INTERNAL duk_bool_t duk_xget_owndataprop_stridx(duk_hthread *thr, duk_idx_t obj_idx, duk_small_uint_t stridx) {
+	DUK_ASSERT_API_ENTRY(thr);
+	DUK_ASSERT_STRIDX_VALID(stridx);
+
+	obj_idx = duk_require_normalize_index(thr, obj_idx);
+	(void) duk_push_hstring(thr, DUK_HTHREAD_GET_STRING(thr, stridx));
+	return duk_xget_owndataprop(thr, obj_idx);
+}
+
+DUK_INTERNAL duk_bool_t duk_xget_owndataprop_stridx_short_raw(duk_hthread *thr, duk_uint_t packed_args) {
+	return duk_xget_owndataprop_stridx(thr, (duk_idx_t) (duk_int16_t) (packed_args >> 16),
+	                                   (duk_small_uint_t) (packed_args & 0xffffUL));
+}
+
 DUK_LOCAL duk_bool_t duk__put_prop_shared(duk_hthread *thr, duk_idx_t obj_idx, duk_idx_t idx_key) {
 	duk_tval *tv_obj;
 	duk_tval *tv_key;
@@ -565,9 +616,6 @@ DUK_EXTERNAL void duk_def_prop(duk_hthread *thr, duk_idx_t obj_idx, duk_uint_t f
 
 /*
  *  Object related
- *
- *  Note: seal() and freeze() are accessible through ECMAScript bindings,
- *  and are not exposed through the API.
  */
 
 DUK_EXTERNAL void duk_compact(duk_hthread *thr, duk_idx_t obj_idx) {
@@ -945,6 +993,10 @@ DUK_INTERNAL duk_bool_t duk_is_bare_object(duk_hthread *thr, duk_idx_t idx) {
 DUK_EXTERNAL void duk_get_finalizer(duk_hthread *thr, duk_idx_t idx) {
 	DUK_ASSERT_API_ENTRY(thr);
 
+	/* This get intentionally walks the inheritance chain at present,
+	 * which matches how the effective finalizer property is also
+	 * looked up in GC.
+	 */
 	duk_get_prop_stridx(thr, idx, DUK_STRIDX_INT_FINALIZER);
 }
 
@@ -956,6 +1008,12 @@ DUK_EXTERNAL void duk_set_finalizer(duk_hthread *thr, duk_idx_t idx) {
 
 	h = duk_require_hobject(thr, idx);  /* Get before 'put' so that 'idx' is correct. */
 	callable = duk_is_callable(thr, -1);
+
+	/* At present finalizer is stored as a hidden Symbol, with normal
+	 * inheritance and access control.  As a result, finalizer cannot
+	 * currently be set on a non-extensible (sealed or frozen) object.
+	 * It might be useful to allow it.
+	 */
 	duk_put_prop_stridx(thr, idx, DUK_STRIDX_INT_FINALIZER);
 
 	/* In addition to setting the finalizer property, keep a "have
