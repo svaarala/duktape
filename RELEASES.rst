@@ -3532,6 +3532,12 @@ Planned
 * Use GCC (>= 5.0) and Clang builtin bswap macros, add internal DUK_BSWAP64()
   macro (GH-2122)
 
+* Short term workaround for a noreturn-related issue with GCC 5+ (GH-2155)
+  where some internal duk_require_constructor_call() calls are entirely
+  missing in compiler output in certain circumstances (GCC 5+, noreturn
+  attributes enabled, debugger support enabled); the workaround is to
+  disable noreturn macros for GCC 5+ for now (GH-2156)
+
 * Improve assertion coverage for internal structures during mark-and-sweep
   (GH-2092)
 
