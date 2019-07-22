@@ -6,13 +6,17 @@
 #define DUK_VA_COPY(dest,src) __va_copy(dest,src)
 #endif
 
-#if defined(DUK_F_GCC_VERSION) && (DUK_F_GCC_VERSION >= 20500L)
-/* since gcc-2.5 */
+#if defined(DUK_F_GCC_VERSION) && (DUK_F_GCC_VERSION >= 20500L) && (DUK_F_GCC_VERSION < 50000L)
+/* Since gcc-2.5.
+ *
+ * Disabled temporarily in GCC 5+ because of an unresolved noreturn-related
+ * issue: https://github.com/svaarala/duktape/issues/2155.
+ */
 #define DUK_NORETURN(decl)  decl __attribute__((noreturn))
 #endif
 
 #if defined(DUK_F_GCC_VERSION) && (DUK_F_GCC_VERSION >= 40500L)
-/* since gcc-4.5 */
+/* Since gcc-4.5. */
 #define DUK_UNREACHABLE()  do { __builtin_unreachable(); } while (0)
 #endif
 
