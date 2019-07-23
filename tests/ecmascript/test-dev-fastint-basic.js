@@ -86,7 +86,7 @@ function printFastint(v) {
     }
 
     // The internal type tag depends on the duk_tval unpacked/packed layout.
-
+    // XXX: add to util.
     if (typeof Duktape !== 'object') {
         isfast = ' NOT-DUKTAPE';
     } else if (getValueInternalTag(true) >= 0xfff0) {

@@ -144,3 +144,7 @@ Decoding:
   so that revival can depend on tags present.
 
 * Option to compact decoded objects and arrays.
+
+* Improve fastint decoding support, e.g. decode non-optimally encoded
+  integers as fastints, decode compatible floating point values as
+  fastints.

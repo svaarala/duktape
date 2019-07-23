@@ -3443,9 +3443,10 @@ Planned
 * Minor changes to CBOR extra type handling: encode non-UTF-8 strings
   as CBOR byte strings (instead of text strings), encode Symbols as empty
   objects, refuse to decode Symbols, encode pointers as "(%p)" instead of
-  "%p" to match JX (GH-2121)
+  "%p" to match JX, decode integers in most cases to fastints when possible
+  (GH-2121, GH-2154)
 
-* Minor performance improvements to CBOR extra encoder (GH-2121)
+* Minor performance improvements to CBOR extra (GH-2121, GH-2154)
 
 * Add (untested) support for mixed endian targets to CBOR extra (GH-2121)
 
