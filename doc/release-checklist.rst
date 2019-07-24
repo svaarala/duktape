@@ -13,20 +13,6 @@ Checklist for ordinary releases
   - ``vN.N.N-release-post``: use this naming for bumping version number after
     release, checklist fixes after release, etc.
 
-* Git maintenance
-
-  - Ensure git commits are up-to-date
-
-  - Ensure branches are merged, unused branches deleted (also remotely)
-
-  - Ensure branches are rebased where applicable
-
-  - Check for uncommitted files
-
-  - git fsck --full
-
-  - git gc --aggressive
-
 * Finalize DUK_VERSION
 
   - Change previous development version (with patch level 99) to release
@@ -48,6 +34,8 @@ Checklist for ordinary releases
   - New release is in place
 
   - Release date is in place
+
+  - Check release entry ordering
 
 * Ensure tests/api/test-all-public-symbols.c is up-to-date
 

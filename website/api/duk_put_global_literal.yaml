@@ -18,7 +18,6 @@ example: |
 tags:
   - property
   - literal
-  - experimental
 
 seealso:
   - duk_put_global_string
