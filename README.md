@@ -83,6 +83,7 @@ For example, to enable fastint support (example for Linux):
 
 You can also clone this repository, make modifications, and build a source
 distributable on Linux, macOS, and Windows using `python util/dist.py`.
+You'll need Python 2 and Python YAML binding.
 
 Getting started: modifying and rebuilding the distributable
 -----------------------------------------------------------

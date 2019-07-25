@@ -213,17 +213,12 @@ MAND_BASE64 = dyA9IDgwOyBoID0gNDA7IGl0ZXIgPSAxMDA7IGZvciAoaSA9IDA7IGkgLSBoOyBpIC
 RUNTESTSOPTS = --prep-test-path util/prep_test.py --minify-uglifyjs2 UglifyJS2/bin/uglifyjs --util-include-path tests/ecmascript --known-issues doc/testcase-known-issues.yaml
 
 # Compile 'duk' only by default
-.PHONY:	all
-all:	checksetup duk
-
-# Check setup and warn about missing tools, libraries, etc.
-.PHONY: checksetup
-checksetup:
-	@util/check_setup.sh
+.PHONY: all
+all: duk
 
 # Clean targets: 'cleanall' also deletes downloaded third party packages
 # which we don't want to delete by default with 'clean'.
-.PHONY:	clean
+.PHONY: clean
 clean:
 	@rm -f *.gcda
 	@rm -f *.su
@@ -605,7 +600,7 @@ issuecount:
 	@echo "TODO:      `grep TODO: src-input/*.c src-input/*.h src-input/*.in | wc -l | tr -d ' '`"
 	@echo "NOTE:      `grep NOTE: src-input/*.c src-input/*.h src-input/*.in | wc -l | tr -d ' '`"
 	@echo "SCANBUILD: `grep SCANBUILD: src-input/*.c src-input/*.h src-input/*.in | wc -l | tr -d ' '`"
-cloc:	dist cloc-1.60.pl
+cloc: dist cloc-1.60.pl
 	@echo "CLOC report on combined duktape.c source file"
 	@perl cloc-1.60.pl --quiet dist/src/duktape.c
 .PHONY: gccpredefs
@@ -637,16 +632,16 @@ releasetest: configuretest xmldoctest closuretest bluebirdtest luajstest jsinter
 	@echo "### Release tests successful!"  # These tests now have output checks.
 
 # Runtests-based ECMAScript and API tests.
-.PHONY:	runtestsdeps
-runtestsdeps:	runtests/node_modules UglifyJS2
+.PHONY: runtestsdeps
+runtestsdeps: runtests/node_modules UglifyJS2
 runtests/node_modules:
 	@echo "Installing required NodeJS modules for runtests"
 	@cd runtests; npm install
-.PHONY:	ecmatest
+.PHONY: ecmatest
 ecmatest: runtestsdeps duk
 	@echo "### ecmatest"
 	"$(NODE)" runtests/runtests.js $(RUNTESTSOPTS) --run-duk --cmd-duk=$(shell pwd)/duk --num-threads 4 --log-file=/tmp/duk-test.log tests/ecmascript/
-.PHONY:	qecmatest
+.PHONY: qecmatest
 qecmatest: ecmatest
 .PHONY: ecmatest-comparison
 ecmatest-comparison: runtestsdeps duk
@@ -654,7 +649,7 @@ ecmatest-comparison: runtestsdeps duk
 	"$(NODE)" runtests/runtests.js $(RUNTESTSOPTS) --run-duk --cmd-duk=$(shell pwd)/duk --report-diff-to-other --run-nodejs --run-rhino --num-threads 4 --log-file=/tmp/duk-test.log tests/ecmascript/
 .PHONY: apiprep
 apiprep: runtestsdeps libduktape.so.1.0.0
-.PHONY:	apitest
+.PHONY: apitest
 apitest: apiprep
 	@echo "### apitest"
 	"$(NODE)" runtests/runtests.js $(RUNTESTSOPTS) --num-threads 1 --log-file=/tmp/duk-api-test.log tests/api/
@@ -675,7 +670,7 @@ dukwebtest: dukweb.js jquery-1.11.2.js
 
 # Third party tests.
 .PHONY: underscoretest
-underscoretest:	underscore duk
+underscoretest: underscore duk
 	@echo "### underscoretest"
 	@echo "Run underscore tests with underscore-test-shim.js"
 	-util/underscore_test.sh ./duk underscore/test/arrays.js
@@ -686,7 +681,7 @@ underscoretest:	underscore duk
 	# speed test disabled, requires JSLitmus
 	#-util/underscore_test.sh ./duk underscore/test/speed.js
 	-util/underscore_test.sh ./duk underscore/test/utility.js
-.PHONY:	regfuzztest
+.PHONY: regfuzztest
 regfuzztest: regfuzz-0.1.tar.gz duk
 	@echo "### regfuzztest"
 	# Spidermonkey test is pretty close, just lacks 'arguments'
@@ -981,13 +976,13 @@ references/ECMA-262\ 5.1\ edition\ June\ 2011.pdf:
 references/ECMA-262.pdf:
 	$(WGET) "http://www.ecma-international.org/ecma-262/6.0/ECMA-262.pdf" -O "$@"
 .PHONY: refs
-refs:	references/ECMA-262\ 5th\ edition\ December\ 2009.pdf \
+refs: references/ECMA-262\ 5th\ edition\ December\ 2009.pdf \
 	references/ECMA-262\ 5.1\ edition\ June\ 2011.pdf \
 	references/ECMA-262.pdf
 
 # Documentation.
-.PHONY:	doc
-doc:	$(patsubst %.txt,%.html,$(wildcard doc/*.txt))
+.PHONY: doc
+doc: $(patsubst %.txt,%.html,$(wildcard doc/*.txt))
 doc/%.html: doc/%.txt
 	rst2html $< $@
 
@@ -995,8 +990,8 @@ doc/%.html: doc/%.txt
 dist:
 	@make codepolicycheck
 	$(PYTHON) util/dist.py
-.PHONY:	dist-src
-dist-src:	dist
+.PHONY: dist-src
+dist-src: dist
 	rm -rf duktape-$(DUK_VERSION_FORMATTED)
 	rm -rf duktape-$(DUK_VERSION_FORMATTED).tar*
 	mkdir duktape-$(DUK_VERSION_FORMATTED)
@@ -1009,7 +1004,7 @@ dist-src:	dist
 	rm -rf duktape-$(DUK_VERSION_FORMATTED)
 # ISO target is useful with some system emulators with no network access.
 .PHONY: dist-iso
-dist-iso:	dist-src
+dist-iso: dist-src
 	mkisofs -input-charset utf-8 -o duktape-$(DUK_VERSION_FORMATTED)-$(BUILD_DATETIME)-$(GIT_INFO).iso duktape-$(DUK_VERSION_FORMATTED)-$(BUILD_DATETIME)-$(GIT_INFO).tar.gz
 
 # Website targets.
@@ -1024,8 +1019,8 @@ site: duktape-releases dukweb.js jquery-1.11.2.js lz-string
 	for i in site/*.html; do echo "tidy checking $$i"; tidy -q -e -xml -utf8 $$i; done
 	@rm -rf /tmp/site/
 	cp -r site /tmp/  # useful for quick preview
-.PHONY:	dist-site
-dist-site:	tidy-site site
+.PHONY: dist-site
+dist-site: tidy-site site
 	# When doing a final dist build, run html tidy
 	# Also pull binaries up-to-date
 	cd duktape-releases/; git pull --rebase  # get binaries up-to-date
