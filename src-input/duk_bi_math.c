@@ -53,7 +53,7 @@ DUK_LOCAL double duk__fmin_fixed(double x, double y) {
 	/* fmin() with args -0 and +0 is not guaranteed to return
 	 * -0 as ECMAScript requires.
 	 */
-	if (x == 0 && y == 0) {
+	if (duk_double_equals(x, 0.0) && duk_double_equals(y, 0.0)) {
 		duk_double_union du1, du2;
 		du1.d = x;
 		du2.d = y;
@@ -80,7 +80,7 @@ DUK_LOCAL double duk__fmax_fixed(double x, double y) {
 	/* fmax() with args -0 and +0 is not guaranteed to return
 	 * +0 as ECMAScript requires.
 	 */
-	if (x == 0 && y == 0) {
+	if (duk_double_equals(x, 0.0) && duk_double_equals(y, 0.0)) {
 		if (DUK_SIGNBIT(x) == 0 || DUK_SIGNBIT(y) == 0) {
 			return +0.0;
 		} else {
@@ -247,10 +247,11 @@ DUK_LOCAL double duk__atan2_fixed(double x, double y) {
 	}
 #else
 	/* Some ISO C assumptions. */
-	DUK_ASSERT(DUK_ATAN2(DUK_DOUBLE_INFINITY, DUK_DOUBLE_INFINITY) == 0.7853981633974483);
-	DUK_ASSERT(DUK_ATAN2(-DUK_DOUBLE_INFINITY, DUK_DOUBLE_INFINITY) == -0.7853981633974483);
-	DUK_ASSERT(DUK_ATAN2(DUK_DOUBLE_INFINITY, -DUK_DOUBLE_INFINITY) == 2.356194490192345);
-	DUK_ASSERT(DUK_ATAN2(-DUK_DOUBLE_INFINITY, -DUK_DOUBLE_INFINITY) == -2.356194490192345);
+
+	DUK_ASSERT(duk_double_equals(DUK_ATAN2(DUK_DOUBLE_INFINITY, DUK_DOUBLE_INFINITY), 0.7853981633974483));
+	DUK_ASSERT(duk_double_equals(DUK_ATAN2(-DUK_DOUBLE_INFINITY, DUK_DOUBLE_INFINITY), -0.7853981633974483));
+	DUK_ASSERT(duk_double_equals(DUK_ATAN2(DUK_DOUBLE_INFINITY, -DUK_DOUBLE_INFINITY), 2.356194490192345));
+	DUK_ASSERT(duk_double_equals(DUK_ATAN2(-DUK_DOUBLE_INFINITY, -DUK_DOUBLE_INFINITY), -2.356194490192345));
 #endif
 
 	return DUK_ATAN2(x, y);
@@ -390,13 +391,13 @@ DUK_INTERNAL duk_ret_t duk_bi_math_object_hypot(duk_hthread *thr) {
 	}
 
 	/* Early return cases. */
-	if (max == DUK_DOUBLE_INFINITY) {
+	if (duk_double_equals(max, DUK_DOUBLE_INFINITY)) {
 		duk_push_number(thr, DUK_DOUBLE_INFINITY);
 		return 1;
 	} else if (found_nan) {
 		duk_push_number(thr, DUK_DOUBLE_NAN);
 		return 1;
-	} else if (max == 0.0) {
+	} else if (duk_double_equals(max, 0.0)) {
 		duk_push_number(thr, 0.0);
 		/* Otherwise we'd divide by zero. */
 		return 1;
@@ -431,7 +432,7 @@ DUK_INTERNAL duk_ret_t duk_bi_math_object_sign(duk_hthread *thr) {
 		DUK_ASSERT(duk_is_nan(thr, -1));
 		return 1;  /* NaN input -> return NaN */
 	}
-	if (d == 0.0) {
+	if (duk_double_equals(d, 0.0)) {
 		/* Zero sign kept, i.e. -0 -> -0, +0 -> +0. */
 		return 1;
 	}

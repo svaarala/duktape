@@ -19,11 +19,11 @@ DUK_INTERNAL double duk_js_arith_mod(double d1, double d2) {
 		} else {
 			return d1;
 		}
-	} else if (d1 == 0.0) {
+	} else if (duk_double_equals(d1, 0.0)) {
 		/* d1 +/-0 is returned as is (preserving sign) except when
 		 * d2 is zero or NaN.
 		 */
-		if (d2 == 0.0 || DUK_ISNAN(d2)) {
+		if (duk_double_equals(d2, 0.0) || DUK_ISNAN(d2)) {
 			return DUK_DOUBLE_NAN;
 		} else {
 			return d1;
@@ -31,20 +31,20 @@ DUK_INTERNAL double duk_js_arith_mod(double d1, double d2) {
 	}
 #else
 	/* Some ISO C assumptions. */
-	DUK_ASSERT(DUK_FMOD(1.0, DUK_DOUBLE_INFINITY) == 1.0);
-	DUK_ASSERT(DUK_FMOD(-1.0, DUK_DOUBLE_INFINITY) == -1.0);
-	DUK_ASSERT(DUK_FMOD(1.0, -DUK_DOUBLE_INFINITY) == 1.0);
-	DUK_ASSERT(DUK_FMOD(-1.0, -DUK_DOUBLE_INFINITY) == -1.0);
+	DUK_ASSERT(duk_double_equals(DUK_FMOD(1.0, DUK_DOUBLE_INFINITY), 1.0));
+	DUK_ASSERT(duk_double_equals(DUK_FMOD(-1.0, DUK_DOUBLE_INFINITY), -1.0));
+	DUK_ASSERT(duk_double_equals(DUK_FMOD(1.0, -DUK_DOUBLE_INFINITY), 1.0));
+	DUK_ASSERT(duk_double_equals(DUK_FMOD(-1.0, -DUK_DOUBLE_INFINITY), -1.0));
 	DUK_ASSERT(DUK_ISNAN(DUK_FMOD(DUK_DOUBLE_INFINITY, DUK_DOUBLE_INFINITY)));
 	DUK_ASSERT(DUK_ISNAN(DUK_FMOD(DUK_DOUBLE_INFINITY, -DUK_DOUBLE_INFINITY)));
 	DUK_ASSERT(DUK_ISNAN(DUK_FMOD(-DUK_DOUBLE_INFINITY, DUK_DOUBLE_INFINITY)));
 	DUK_ASSERT(DUK_ISNAN(DUK_FMOD(-DUK_DOUBLE_INFINITY, -DUK_DOUBLE_INFINITY)));
-	DUK_ASSERT(DUK_FMOD(0.0, 1.0) == 0.0 && DUK_SIGNBIT(DUK_FMOD(0.0, 1.0)) == 0);
-	DUK_ASSERT(DUK_FMOD(-0.0, 1.0) == 0.0 && DUK_SIGNBIT(DUK_FMOD(-0.0, 1.0)) != 0);
-	DUK_ASSERT(DUK_FMOD(0.0, DUK_DOUBLE_INFINITY) == 0.0 && DUK_SIGNBIT(DUK_FMOD(0.0, DUK_DOUBLE_INFINITY)) == 0);
-	DUK_ASSERT(DUK_FMOD(-0.0, DUK_DOUBLE_INFINITY) == 0.0 && DUK_SIGNBIT(DUK_FMOD(-0.0, DUK_DOUBLE_INFINITY)) != 0);
-	DUK_ASSERT(DUK_FMOD(0.0, -DUK_DOUBLE_INFINITY) == 0.0 && DUK_SIGNBIT(DUK_FMOD(0.0, DUK_DOUBLE_INFINITY)) == 0);
-	DUK_ASSERT(DUK_FMOD(-0.0, -DUK_DOUBLE_INFINITY) == 0.0 && DUK_SIGNBIT(DUK_FMOD(-0.0, -DUK_DOUBLE_INFINITY)) != 0);
+	DUK_ASSERT(duk_double_equals(DUK_FMOD(0.0, 1.0), 0.0) && DUK_SIGNBIT(DUK_FMOD(0.0, 1.0)) == 0);
+	DUK_ASSERT(duk_double_equals(DUK_FMOD(-0.0, 1.0), 0.0) && DUK_SIGNBIT(DUK_FMOD(-0.0, 1.0)) != 0);
+	DUK_ASSERT(duk_double_equals(DUK_FMOD(0.0, DUK_DOUBLE_INFINITY), 0.0) && DUK_SIGNBIT(DUK_FMOD(0.0, DUK_DOUBLE_INFINITY)) == 0);
+	DUK_ASSERT(duk_double_equals(DUK_FMOD(-0.0, DUK_DOUBLE_INFINITY), 0.0) && DUK_SIGNBIT(DUK_FMOD(-0.0, DUK_DOUBLE_INFINITY)) != 0);
+	DUK_ASSERT(duk_double_equals(DUK_FMOD(0.0, -DUK_DOUBLE_INFINITY), 0.0) && DUK_SIGNBIT(DUK_FMOD(0.0, DUK_DOUBLE_INFINITY)) == 0);
+	DUK_ASSERT(duk_double_equals(DUK_FMOD(-0.0, -DUK_DOUBLE_INFINITY), 0.0) && DUK_SIGNBIT(DUK_FMOD(-0.0, -DUK_DOUBLE_INFINITY)) != 0);
 	DUK_ASSERT(DUK_ISNAN(DUK_FMOD(0.0, 0.0)));
 	DUK_ASSERT(DUK_ISNAN(DUK_FMOD(-0.0, 0.0)));
 	DUK_ASSERT(DUK_ISNAN(DUK_FMOD(0.0, -0.0)));
@@ -73,7 +73,7 @@ DUK_INTERNAL double duk_js_arith_pow(double x, double y) {
 	if (cy == DUK_FP_NAN) {
 		goto ret_nan;
 	}
-	if (DUK_FABS(x) == 1.0 && cy == DUK_FP_INFINITE) {
+	if (duk_double_equals(DUK_FABS(x), 1.0) && cy == DUK_FP_INFINITE) {
 		goto ret_nan;
 	}
 
@@ -115,7 +115,7 @@ DUK_INTERNAL double duk_js_arith_pow(double x, double y) {
 			}
 		}
 	} else if (cx == DUK_FP_NAN) {
-		if (y == 0.0) {
+		if (duk_double_equals(y, 0.0)) {
 			/* NaN ** +/- 0 should always be 1, but is NaN on
 			 * at least some Cygwin/MinGW versions.
 			 */
@@ -124,7 +124,7 @@ DUK_INTERNAL double duk_js_arith_pow(double x, double y) {
 	}
 #else
 	/* Some ISO C assumptions. */
-	DUK_ASSERT(DUK_POW(DUK_DOUBLE_NAN, 0.0) == 1.0);
+	DUK_ASSERT(duk_double_equals(DUK_POW(DUK_DOUBLE_NAN, 0.0), 1.0));
 	DUK_ASSERT(DUK_ISINF(DUK_POW(0.0, -1.0)) && DUK_SIGNBIT(DUK_POW(0.0, -1.0)) == 0);
 	DUK_ASSERT(DUK_ISINF(DUK_POW(-0.0, -2.0)) && DUK_SIGNBIT(DUK_POW(-0.0, -2.0)) == 0);
 	DUK_ASSERT(DUK_ISINF(DUK_POW(-0.0, -3.0)) && DUK_SIGNBIT(DUK_POW(-0.0, -3.0)) != 0);

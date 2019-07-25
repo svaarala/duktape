@@ -34,6 +34,7 @@ re_func_decl_or_def = re.compile(r'^(\w+)\s+(?:\w+\s+)*(\w+)\(.*?.*?$')  # may n
 re_cpp_comment = re.compile(r'^.*?//.*?$')
 re_longlong_constant_dec = re.compile(r'[0-9]+(LL|ULL)')
 re_longlong_constant_hex = re.compile(r'0x[0-9a-fA-F]+(LL|ULL)')
+re_float_compare = re.compile(r'==\s*\d*\.\d+')
 
 fixmeString = 'FIX' + 'ME'  # avoid triggering a code policy check warning :)
 
@@ -386,6 +387,11 @@ def checkCppComment(lines, idx, filename):
 
     raise Exception('c++ comment')
 
+def checkFloatCompare(lines, idx, filename):
+    line = lines[idx]
+    for m in re.finditer(re_float_compare, line):
+        raise Exception('float/double compare, use duk_{double,float}_equals()')
+
 def processFile(filename, checkersRaw, checkersNoCommentsOrLiterals, checkersNoCCommentsOrLiterals, checkersNoExpectStrings):
     f = open(filename, 'rb')
     dataRaw = f.read()
@@ -445,6 +451,7 @@ def main():
     parser.add_option('--check-tab-indent', dest='check_tab_indent', action='store_true', default=False, help='Check for tab indent')
     parser.add_option('--check-nonleading-tab', dest='check_nonleading_tab', action='store_true', default=False, help='Check for non-leading tab characters')
     parser.add_option('--check-cpp-comment', dest='check_cpp_comment', action='store_true', default=False, help='Check for c++ comments ("// ...")')
+    parser.add_option('--check-float-compare', dest='check_float_compare', action='store_true', default=False, help='Check for floating point comparisons (== 1.23)')
     parser.add_option('--check-ifdef-ifndef', dest='check_ifdef_ifndef', action='store_true', default=False, help='Check for #ifdef and #ifndef (prefer #if defined and #if !defined)')
     parser.add_option('--check-longlong-constants', dest='check_longlong_constants', action='store_true', default=False, help='Check for plain 123LL or 123ULL constants')
     parser.add_option('--fail-on-errors', dest='fail_on_errors', action='store_true', default=False, help='Fail on errors (exit code != 0)')
@@ -470,6 +477,8 @@ def main():
     checkersNoCCommentsOrLiterals = []
     if opts.check_cpp_comment:
         checkersNoCCommentsOrLiterals.append(checkCppComment)
+    if opts.check_float_compare:
+        checkersNoCCommentsOrLiterals.append(checkFloatCompare)
 
     checkersNoCommentsOrLiterals = []
     if opts.check_rejected_identifiers:

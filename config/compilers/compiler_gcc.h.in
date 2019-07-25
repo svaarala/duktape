@@ -79,6 +79,7 @@
 #define DUK_USE_FLEX_ZEROSIZE
 #endif
 
+/* Since 4.6 one can '#pragma GCC diagnostic push/pop'. */
 #if defined(DUK_F_GCC_VERSION) && (DUK_F_GCC_VERSION >= 40600)
 #define DUK_USE_GCC_PRAGMAS
 #else

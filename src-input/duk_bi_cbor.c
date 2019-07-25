@@ -194,7 +194,7 @@ DUK_LOCAL void duk__cbor_encode_double_fp(duk_cbor_encode_context *enc_ctx, doub
 		 * double: seeeeeee eeeemmmm mmmmmmmm mmmmmmmm mmmmmmmm mmmmmmmm mmmmmmmm mmmmmmmm
 		 * half:         seeeee mmmm mmmmmm00 00000000 00000000 00000000 00000000 00000000
 		 */
-		int use_half_float;
+		duk_bool_t use_half_float;
 
 		use_half_float =
 		    (u.uc[0] == 0 && u.uc[1] == 0 && u.uc[2] == 0 && u.uc[3] == 0 &&
@@ -225,7 +225,7 @@ DUK_LOCAL void duk__cbor_encode_double_fp(duk_cbor_encode_context *enc_ctx, doub
 		 * double: seeeeeee eeeemmmm mmmmmmmm mmmmmmmm mmmmmmmm mmmmmmmm mmmmmmmm mmmmmmmm
 		 * float:     seeee eeeemmmm mmmmmmmm mmmmmmmm mmm00000 00000000 00000000 00000000
 		 */
-		int use_float;
+		duk_bool_t use_float;
 		duk_float_t d_float;
 
 		/* We could do this explicit mantissa check, but doing
@@ -238,7 +238,7 @@ DUK_LOCAL void duk__cbor_encode_double_fp(duk_cbor_encode_context *enc_ctx, doub
 		    (u.uc[0] == 0 && u.uc[1] == 0 && u.uc[2] == 0 && (u.uc[3] & 0xe0U) == 0);
 #endif
 		d_float = (duk_float_t) d;
-		use_float = ((duk_double_t) d_float == d);
+		use_float = duk_double_equals((duk_double_t) d_float, d);
 		if (use_float) {
 			p = enc_ctx->ptr;
 			*p++ = 0xfaU;
@@ -351,7 +351,7 @@ DUK_LOCAL void duk__cbor_encode_double(duk_cbor_encode_context *enc_ctx, double 
 	 * for Inf too (but not NaN).
 	 */
 	d_floor = DUK_FLOOR(d);  /* identity if d is +/- 0.0, NaN, or +/- Infinity */
-	if (DUK_LIKELY(d_floor == d)) {
+	if (DUK_LIKELY(duk_double_equals(d_floor, d) != 0)) {
 		DUK_ASSERT(!DUK_ISNAN(d));  /* NaN == NaN compares false. */
 		if (DUK_SIGNBIT(d)) {
 			if (d >= -4294967296.0) {
@@ -443,7 +443,7 @@ DUK_LOCAL void duk__cbor_encode_string_top(duk_cbor_encode_context *enc_ctx) {
 	duk__cbor_encode_uint32(enc_ctx, (duk_uint32_t) len, 0x40U);
 #else
 	duk__cbor_encode_uint32(enc_ctx, (duk_uint32_t) len,
-	                        (DUK_LIKELY(duk_unicode_is_utf8_compatible(str, len)) ? 0x60U : 0x40U));
+	                        (DUK_LIKELY(duk_unicode_is_utf8_compatible(str, len) != 0) ? 0x60U : 0x40U));
 #endif
 	duk__cbor_encode_ensure(enc_ctx, len);
 	p = enc_ctx->ptr;

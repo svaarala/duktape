@@ -155,7 +155,7 @@ DUK_INTERNAL duk_ret_t duk_bi_array_constructor(duk_hthread *thr) {
 		/* XXX: expensive check (also shared elsewhere - so add a shared internal API call?) */
 		d = duk_get_number(thr, 0);
 		len = duk_to_uint32(thr, 0);
-		if (((duk_double_t) len) != d) {
+		if (!duk_double_equals((duk_double_t) len, d)) {
 			DUK_DCERROR_RANGE_INVALID_LENGTH(thr);
 		}
 

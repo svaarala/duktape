@@ -3712,12 +3712,12 @@ DUK_LOCAL void duk__expr_nud(duk_compiler_ctx *comp_ctx, duk_ivalue *res) {
 			if (DUK_TVAL_IS_NUMBER(tv_val)) {
 				duk_double_t d;
 				d = DUK_TVAL_GET_NUMBER(tv_val);
-				if (d == 0.0) {
+				if (duk_double_equals(d, 0.0)) {
 					/* Matches both +0 and -0 on purpose. */
 					DUK_DDD(DUK_DDDPRINT("inlined lnot: !0 -> true"));
 					DUK_TVAL_SET_BOOLEAN_TRUE(tv_val);
 					return;
-				} else if (d == 1.0) {
+				} else if (duk_double_equals(d, 1.0)) {
 					DUK_DDD(DUK_DDDPRINT("inlined lnot: !1 -> false"));
 					DUK_TVAL_SET_BOOLEAN_FALSE(tv_val);
 					return;

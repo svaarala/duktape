@@ -129,8 +129,7 @@ CCOPTS_SHARED += -Wcast-align
 CCOPTS_SHARED += -Wshadow
 CCOPTS_SHARED += -Wunreachable-code  # on some compilers unreachable code is an error
 CCOPTS_SHARED += -Wmissing-prototypes
-# -Wfloat-equal is too picky, there's no apparent way to compare floats
-# (even when you know it's safe) without triggering warnings
+CCOPTS_SHARED += -Wfloat-equal
 CCOPTS_SHARED += -Wsign-conversion
 CCOPTS_SHARED += -Wsuggest-attribute=noreturn
 CCOPTS_SHARED += -fmax-errors=3  # prevent floods of errors if e.g. parenthesis missing
@@ -1060,6 +1059,7 @@ codepolicycheck:
 		--check-mixed-indent \
 		--check-nonleading-tab \
 		--check-cpp-comment \
+		--check-float-compare \
 		--check-ifdef-ifndef \
 		--check-longlong-constants \
 		--dump-vim-commands \

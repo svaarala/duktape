@@ -362,7 +362,7 @@ DUK_INTERNAL duk_int32_t duk_js_toint32(duk_hthread *thr, duk_tval *tv) {
 	d = duk__toint32_touint32_helper(d, 1);
 	DUK_ASSERT(DUK_FPCLASSIFY(d) == DUK_FP_ZERO || DUK_FPCLASSIFY(d) == DUK_FP_NORMAL);
 	DUK_ASSERT(d >= -2147483648.0 && d <= 2147483647.0);  /* [-0x80000000,0x7fffffff] */
-	DUK_ASSERT(d == ((duk_double_t) ((duk_int32_t) d)));  /* whole, won't clip */
+	DUK_ASSERT(duk_double_equals(d, (duk_double_t) ((duk_int32_t) d)));  /* whole, won't clip */
 	return (duk_int32_t) d;
 }
 
@@ -380,7 +380,7 @@ DUK_INTERNAL duk_uint32_t duk_js_touint32(duk_hthread *thr, duk_tval *tv) {
 	d = duk__toint32_touint32_helper(d, 0);
 	DUK_ASSERT(DUK_FPCLASSIFY(d) == DUK_FP_ZERO || DUK_FPCLASSIFY(d) == DUK_FP_NORMAL);
 	DUK_ASSERT(d >= 0.0 && d <= 4294967295.0);  /* [0x00000000, 0xffffffff] */
-	DUK_ASSERT(d == ((duk_double_t) ((duk_uint32_t) d)));  /* whole, won't clip */
+	DUK_ASSERT(duk_double_equals(d, (duk_double_t) ((duk_uint32_t) d)));  /* whole, won't clip */
 	return (duk_uint32_t) d;
 
 }
@@ -439,7 +439,7 @@ DUK_LOCAL duk_bool_t duk__js_equals_number(duk_double_t x, duk_double_t y) {
 	 * equal regardless of sign.  Could also use a macro, but this inlines
 	 * already nicely (no difference on gcc, for instance).
 	 */
-	if (x == y) {
+	if (duk_double_equals(x, y)) {
 		/* IEEE requires that NaNs compare false */
 		DUK_ASSERT(DUK_FPCLASSIFY(x) != DUK_FP_NAN);
 		DUK_ASSERT(DUK_FPCLASSIFY(y) != DUK_FP_NAN);
@@ -486,7 +486,7 @@ DUK_LOCAL duk_bool_t duk__js_samevalue_number(duk_double_t x, duk_double_t y) {
 	duk_small_int_t cx = (duk_small_int_t) DUK_FPCLASSIFY(x);
 	duk_small_int_t cy = (duk_small_int_t) DUK_FPCLASSIFY(y);
 
-	if (x == y) {
+	if (duk_double_equals(x, y)) {
 		/* IEEE requires that NaNs compare false */
 		DUK_ASSERT(DUK_FPCLASSIFY(x) != DUK_FP_NAN);
 		DUK_ASSERT(DUK_FPCLASSIFY(y) != DUK_FP_NAN);

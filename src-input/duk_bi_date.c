@@ -622,7 +622,7 @@ DUK_INTERNAL void duk_bi_date_timeval_to_parts(duk_double_t d, duk_int_t *parts,
 
 	DUK_ASSERT(DUK_ISFINITE(d));    /* caller checks */
 	d = DUK_FLOOR(d);  /* remove fractions if present */
-	DUK_ASSERT(DUK_FLOOR(d) == d);
+	DUK_ASSERT(duk_double_equals(DUK_FLOOR(d), d));
 
 	/* The timevalue must be in valid ECMAScript range, but since a local
 	 * time offset can be applied, we need to allow a +/- 24h leeway to
@@ -641,13 +641,13 @@ DUK_INTERNAL void duk_bi_date_timeval_to_parts(duk_double_t d, duk_int_t *parts,
 		d1 += (duk_double_t) DUK_DATE_MSEC_DAY;
 	}
 	d2 = DUK_FLOOR((double) (d / (duk_double_t) DUK_DATE_MSEC_DAY));
-	DUK_ASSERT(d2 * ((duk_double_t) DUK_DATE_MSEC_DAY) + d1 == d);
+	DUK_ASSERT(duk_double_equals(d2 * ((duk_double_t) DUK_DATE_MSEC_DAY) + d1, d));
 	/* now expected to fit into a 32-bit integer */
 	t1 = (duk_int_t) d1;
 	t2 = (duk_int_t) d2;
 	day_since_epoch = t2;
-	DUK_ASSERT((duk_double_t) t1 == d1);
-	DUK_ASSERT((duk_double_t) t2 == d2);
+	DUK_ASSERT(duk_double_equals((duk_double_t) t1, d1));
+	DUK_ASSERT(duk_double_equals((duk_double_t) t2, d2));
 
 	/* t1 = milliseconds within day (fits 32 bit)
 	 * t2 = day number from epoch (fits 32 bit, may be negative)
@@ -1504,7 +1504,7 @@ DUK_INTERNAL duk_ret_t duk_bi_date_constructor_now(duk_hthread *thr) {
 	duk_double_t d;
 
 	d = duk_time_get_ecmascript_time_nofrac(thr);
-	DUK_ASSERT(duk__timeclip(d) == d);  /* TimeClip() should never be necessary */
+	DUK_ASSERT(duk_double_equals(duk__timeclip(d), d));  /* TimeClip() should never be necessary */
 	duk_push_number(thr, d);
 	return 1;
 }

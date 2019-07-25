@@ -60,7 +60,7 @@
 #define DUK_USE_FLEX_ZEROSIZE
 #endif
 
-#undef DUK_USE_GCC_PRAGMAS
+#define DUK_USE_CLANG_PRAGMAS
 #define DUK_USE_PACK_CLANG_ATTR
 
 #if defined(__clang__) && defined(__has_builtin)

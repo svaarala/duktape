@@ -150,7 +150,7 @@ DUK_INTERNAL duk_bool_t duk_double_is_integer(duk_double_t x) {
 	if (duk_double_is_nan_or_inf(x)) {
 		return 0;
 	} else {
-		return duk_js_tointeger_number(x) == x;
+		return duk_double_equals(duk_js_tointeger_number(x), x);
 	}
 }
 
@@ -170,7 +170,7 @@ DUK_INTERNAL duk_bool_t duk_is_whole_get_int32_nonegzero(duk_double_t x, duk_int
 	duk_int32_t t;
 
 	t = duk_double_to_int32_t(x);
-	if (!((duk_double_t) t == x)) {
+	if (!duk_double_equals((duk_double_t) t, x)) {
 		return 0;
 	}
 	if (t == 0) {
@@ -191,7 +191,7 @@ DUK_INTERNAL duk_bool_t duk_is_whole_get_int32(duk_double_t x, duk_int32_t *ival
 	duk_int32_t t;
 
 	t = duk_double_to_int32_t(x);
-	if (!((duk_double_t) t == x)) {
+	if (!duk_double_equals((duk_double_t) t, x)) {
 		return 0;
 	}
 	*ival = t;
@@ -204,7 +204,7 @@ DUK_INTERNAL duk_bool_t duk_is_whole_get_int32(duk_double_t x, duk_int32_t *ival
 
 DUK_INTERNAL DUK_INLINE duk_double_t duk_double_div(duk_double_t x, duk_double_t y) {
 #if !defined(DUK_USE_ALLOW_UNDEFINED_BEHAVIOR)
-	if (DUK_UNLIKELY(y == 0.0)) {
+	if (DUK_UNLIKELY(duk_double_equals(y, 0.0) != 0)) {
 		/* In C99+ division by zero is undefined behavior so
 		 * avoid it entirely.  Hopefully the compiler is
 		 * smart enough to avoid emitting any actual code
@@ -316,3 +316,28 @@ DUK_INTERNAL DUK_INLINE void duk_fltunion_host_to_big(duk_float_union *u) {
 DUK_INTERNAL DUK_INLINE void duk_fltunion_big_to_host(duk_float_union *u) {
 	duk_fltunion_host_to_big(u);
 }
+
+/* Comparison: ensures comparison operates on exactly correct types, avoiding
+ * some floating point comparison pitfalls (e.g. atan2() assertions failed on
+ * -m32 with direct comparison, even with explicit casts).
+ */
+#if defined(DUK_USE_GCC_PRAGMAS)
+#pragma GCC diagnostic push
+#pragma GCC diagnostic ignored "-Wfloat-equal"
+#elif defined(DUK_USE_CLANG_PRAGMAS)
+#pragma clang diagnostic push
+#pragma clang diagnostic ignored "-Wfloat-equal"
+#endif
+
+DUK_INTERNAL DUK_ALWAYS_INLINE duk_bool_t duk_double_equals(duk_double_t x, duk_double_t y) {
+	return x == y;
+}
+
+DUK_INTERNAL DUK_ALWAYS_INLINE duk_bool_t duk_float_equals(duk_float_t x, duk_float_t y) {
+	return x == y;
+}
+#if defined(DUK_USE_GCC_PRAGMAS)
+#pragma GCC diagnostic pop
+#elif defined(DUK_USE_CLANG_PRAGMAS)
+#pragma clang diagnostic pop
+#endif
