@@ -3585,4 +3585,5 @@ Planned
 3.0.0 (XXXX-XX-XX)
 ------------------
 
-* TBD
+* Remove prepared source variants other than src/ (matches Duktape 2.x
+  src-noline/) from the distributable (GH-2209)

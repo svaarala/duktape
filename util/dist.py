@@ -795,8 +795,8 @@ def main():
     with open(os.path.join(dist, 'duk_dist_meta.json'), 'wb') as f:
         f.write(json.dumps(doc, indent=4))
 
-    # Build prepared sources (src/, src-noline/, src-separate/) with default
-    # config.  This is done using tools and metadata in the dist directory.
+    # Build prepared sources with default config.  This is done using
+    # tools and metadata in the dist directory.
 
     logger.debug('Create prepared sources for default configuration')
 
@@ -821,9 +821,12 @@ def main():
         cmd += forward_loglevel
         exec_print_stdout(cmd)
 
-    prep_default_sources('src', [ '--line-directives' ])
-    prep_default_sources('src-noline', [])
-    prep_default_sources('src-separate', [ '--separate-sources' ])
+    prep_default_sources('src', [])
+
+    # Duktape 2.x:
+    #prep_default_sources('src', [ '--line-directives' ])
+    #prep_default_sources('src-noline', [])
+    #prep_default_sources('src-separate', [ '--separate-sources' ])
 
     # Clean up remaining temp files.
 
