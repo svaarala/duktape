@@ -3390,10 +3390,7 @@ Miscellaneous:
   https://github.com/svaarala/duktape/blob/master/misc/clang_aliasing.c),
   and the workaround is to use unpacked duk_tval prior to Clang 5.0 (GH-1764)
 
-Planned
-=======
-
-2.4.0 (XXXX-XX-XX)
+2.4.0 (2019-07-28)
 ------------------
 
 * Add duk_to_stacktrace() and duk_safe_to_stacktrace() to make it easier to
@@ -3468,6 +3465,9 @@ Planned
 * Rework some internal property handling call sites and helpers to e.g.
   avoid inheriting internal properties when not intended (GH-2149)
 
+* Improve assertion coverage for internal structures during mark-and-sweep
+  (GH-2092)
+
 * Fix incorrect parsing of post-increment/post-decrement followed by
   division (e.g. "z++ / 20"), the slash was interpreted as beginning
   a regexp (GH-2140)
@@ -3538,10 +3538,15 @@ Planned
   attributes enabled, debugger support enabled); the workaround is to
   disable noreturn macros for GCC 5+ for now (GH-2156)
 
-* Improve assertion coverage for internal structures during mark-and-sweep
-  (GH-2092)
-
 * Various portability fixes (GH-1931, GH-1976)
+
+Planned
+=======
+
+2.5.0 (XXXX-XX-XX)
+------------------
+
+* TBD
 
 3.0.0 (XXXX-XX-XX)
 ------------------

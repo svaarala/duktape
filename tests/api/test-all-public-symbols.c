@@ -312,6 +312,7 @@ static duk_ret_t test_func(duk_context *ctx, void *udata) {
 	(void) duk_resume(ctx, NULL);
 	(void) duk_safe_call(ctx, NULL, NULL, 0, 0);
 	(void) duk_safe_to_lstring(ctx, 0, NULL);
+	(void) duk_safe_to_stacktrace(ctx, 0);
 	(void) duk_safe_to_string(ctx, 0);
 	(void) duk_samevalue(ctx, 0, 0);
 	(void) duk_seal(ctx, 0);
@@ -343,6 +344,7 @@ static duk_ret_t test_func(duk_context *ctx, void *udata) {
 	(void) duk_to_object(ctx, 0);
 	(void) duk_to_pointer(ctx, 0);
 	(void) duk_to_primitive(ctx, 0, 0);
+	(void) duk_to_stacktrace(ctx, 0);
 	(void) duk_to_string(ctx, 0);
 	(void) duk_to_uint16(ctx, 0);
 	(void) duk_to_uint32(ctx, 0);

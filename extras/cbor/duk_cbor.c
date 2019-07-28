@@ -211,6 +211,7 @@ static DUK_CBOR_INLINE duk_uint16_t duk__cbor_read_uint16_big(const duk_uint8_t 
 		break;
 	default:
 		DUK_CBOR_ASSERT(0);
+		x = 0;
 	}
 	return x;
 }
@@ -260,6 +261,7 @@ static DUK_CBOR_INLINE duk_uint32_t duk__cbor_read_uint32_big(const duk_uint8_t 
 		break;
 	default:
 		DUK_CBOR_ASSERT(0);
+		x = 0;
 	}
 	return x;
 }

@@ -2,6 +2,12 @@
  *  Current CBOR decode fastint behavior.
  */
 
+/*---
+{
+    "skip": true
+}
+---*/
+
 /*===
 - top level integer
 17 fastint

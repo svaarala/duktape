@@ -63,6 +63,5 @@ example: |
 tags:
   - stack
   - literal
-  - experimental
 
 introduced: 2.3.0

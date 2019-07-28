@@ -33,6 +33,27 @@
   test: "ch09/9.7/S9.7_A3.2_T1"
   knownissue: "Duktape String.fromCharCode() intentionally accepts non-BMP codepoints"
 -
+  test: "ch10/10.6/10.6-13-b-1-s"
+  knownissue: "Revised behavior post-ES5.1: arguments.caller no longer present in strict mode"
+-
+  test: "ch10/10.6/10.6-13-b-2-s"
+  knownissue: "Revised behavior post-ES5.1: arguments.caller no longer present in strict mode"
+-
+  test: "ch10/10.6/10.6-13-b-3-s"
+  knownissue: "Revised behavior post-ES5.1: arguments.caller no longer present in strict mode"
+-
+  test: "ch10/10.6/10.6-14-1-s"
+  knownissue: "Revised behavior post-ES5.1: arguments.caller no longer present in strict mode"
+-
+  test: "ch10/10.6/10.6-14-b-1-s"
+  knownissue: "Revised behavior post-ES5.1: arguments.caller no longer present in strict mode"
+-
+  test: "ch10/10.6/10.6-14-b-4-s"
+  knownissue: "Revised behavior post-ES5.1: arguments.caller no longer present in strict mode"
+-
+  test: "ch13/13.2/S13.2.3_A1"
+  knownissue: "Revised behavior post-ES5.1: arguments.caller no longer present in strict mode"
+-
   test: "ch15/15.4/15.4.4/15.4.4.7/S15.4.4.7_A3"
   knownissue: "Duktape Array.prototype.push() doesn't allow Array length to grow beyond 2**32-1"
 -
@@ -79,9 +100,6 @@
 -
   test: "ch15/15.4/15.4.4/15.4.4.15/15.4.4.15-8-9"
   diagnosed: "probably Duktape bug: long array corner cases (C typing?)"
--
-  test: "ch15/15.4/15.4.4/15.4.4.6/S15.4.4.6_A4_T1"
-  diagnosed: "Array .pop() fast path (can be disabled) ignores inherited array index properties"
 -
   test: "ch15/15.5/15.5.4/15.5.4.7/S15.5.4.7_A1_T11"
   knownissue: "test case relies on locale specific Date format, Duktape uses ISO 8601 for Date toString()"

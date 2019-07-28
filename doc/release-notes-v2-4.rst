@@ -5,7 +5,7 @@ Duktape 2.4 release notes
 Release overview
 ================
 
-TBD.
+Main changes in this release (see RELEASES.rst for full details):
 
 * Symbol built-in is now enabled by default.
 
@@ -16,6 +16,10 @@ TBD.
   to get stacktraces in C code.
 
 * Add duk_require_constructable() and duk_require_constructor_call().
+
+* Various fixes and portability improvements.  Special thanks to Renata
+  Hodovan for several issues found using Fuzzinator
+  (https://github.com/renatahodovan/fuzzinator).
 
 Upgrading from Duktape 2.3
 ==========================

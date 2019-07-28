@@ -7,7 +7,7 @@ set -e
 #set -x
 
 ARCHOPT=-m32
-#ARCHOPT=-mthumb
+#ARCHOPT="-mthumb -march=armv7-a"
 
 echo ""
 echo "***"

@@ -22,7 +22,6 @@ example: |
 tags:
   - property
   - literal
-  - experimental
 
 seealso:
   - duk_get_global_string
