@@ -3546,7 +3546,7 @@ Planned
 2.5.0 (XXXX-XX-XX)
 ------------------
 
-* TBD
+* Fix compile warning when base64 support disabled (GH-2159)
 
 3.0.0 (XXXX-XX-XX)
 ------------------
