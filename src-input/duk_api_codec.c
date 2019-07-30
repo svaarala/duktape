@@ -688,7 +688,7 @@ DUK_EXTERNAL void duk_base64_decode(duk_hthread *thr, duk_idx_t idx) {
 DUK_EXTERNAL const char *duk_base64_encode(duk_hthread *thr, duk_idx_t idx) {
 	DUK_UNREF(idx);
 	DUK_ERROR_UNSUPPORTED(thr);
-	DUK_WO_NORETURN(return;);
+	DUK_WO_NORETURN(return NULL;);
 }
 
 DUK_EXTERNAL void duk_base64_decode(duk_hthread *thr, duk_idx_t idx) {
