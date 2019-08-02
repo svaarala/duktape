@@ -3546,6 +3546,10 @@ Planned
 2.5.0 (XXXX-XX-XX)
 ------------------
 
+* Rename the 'global' binding to 'globalThis' to match updated
+  proposal-global; enable the binding by default; update
+  polyfills/global.js (GH-2160)
+
 * Fix compile warning when base64 support disabled (GH-2159)
 
 3.0.0 (XXXX-XX-XX)
