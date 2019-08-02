@@ -1,11 +1,11 @@
 /*
- *  Duktape 2.1.0 adds a 'global' binding.  Polyfill for earlier versions.
+ *  Duktape 2.5.0 adds a 'globalThis' binding.  Polyfill for earlier versions.
  */
 
-if (typeof global === 'undefined') {
+if (typeof globalThis === 'undefined') {
     (function () {
         var global = new Function('return this;')();
-        Object.defineProperty(global, 'global', {
+        Object.defineProperty(global, 'globalThis', {
             value: global,
             writable: true,
             enumerable: false,

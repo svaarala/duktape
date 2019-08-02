@@ -1,5 +1,5 @@
 /*
- *  'global' binding based on https://github.com/tc39/proposal-global
+ *  'globalThis' binding based on https://github.com/tc39/proposal-global
  */
 
 /*===
@@ -18,12 +18,12 @@ function test() {
     // Standard trick to access global object.
     g = new Function('return this')();
 
-    // proposal-global provides 'global' for cleaner standard access.
-    print(typeof global);
-    print(g === global);
+    // proposal-global provides 'globalThis' for cleaner standard access.
+    print(typeof globalThis);
+    print(g === globalThis);
 
     // Attributes in current proposal.
-    pd = Object.getOwnPropertyDescriptor(g, 'global');
+    pd = Object.getOwnPropertyDescriptor(g, 'globalThis');
     print(typeof pd);
     if (pd) {
         print(pd.value === g);
