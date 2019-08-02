@@ -3,12 +3,6 @@
  *  encoded as CBOR text strings, other strings as CBOR byte strings.
  */
 
-/*---
-{
-    "skip": true
-}
----*/
-
 /*===
 66666f6f626172
 "foobar"

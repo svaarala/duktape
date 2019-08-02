@@ -2,12 +2,6 @@
  *  Full coverage for decoding all half-floats.  Compared against cbor-js.
  */
 
-/*---
-{
-    "skip": true
-}
----*/
-
 /*===
 f90000 0
 f90001 5.960464477539063e-8

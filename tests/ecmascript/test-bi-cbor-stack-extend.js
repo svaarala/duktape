@@ -4,12 +4,6 @@
  *  bug because value stack may be extended during compilation!
  */
 
-/*---
-{
-    "skip": true
-}
----*/
-
 function dec(hexInput, expect) {
     var t = CBOR.decode(Duktape.dec('hex', hexInput));
     print(hexInput, Duktape.enc('jx', t), Duktape.enc('jx', expect));
