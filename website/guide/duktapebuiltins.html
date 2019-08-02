@@ -14,7 +14,7 @@ objects, methods, and values.</p>
 </thead>
 <tbody>
 <tr>
-<td class="propname"><a href="#builtin-global">global</a></td>
+<td class="propname"><a href="#builtin-global">globalThis</a></td>
 <td>References the global object itself.
     See <a href="https://github.com/tc39/proposal-global">proposal-global</a>.</td>
 </tr>
@@ -42,17 +42,12 @@ objects, methods, and values.</p>
 </tbody>
 </table>
 
-<h2 id="builtin-global">global</h2>
+<h2 id="builtin-global">globalThis</h2>
 
 <p>References the global object itself, see
 <a href="https://github.com/tc39/proposal-global">proposal-global</a>.
-Disabled by default, enable using <code>DUK_USE_GLOBAL_BINDING</code>.</p>
-
-<div class="note">
-This binding might be removed as there is some concern whether the
-binding has too many backward compatibility issues for browsers, see
-<a href="https://github.com/tc39/proposal-global/issues/20">global breaks flickr.com</a>.
-</div>
+(The binding was initially named 'global' but this was changed due to
+some web sites breaking.).</p>
 
 <h2 id="builtin-duktape">The Duktape object</h2>
 
