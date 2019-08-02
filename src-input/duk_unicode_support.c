@@ -397,6 +397,90 @@ DUK_INTERNAL duk_size_t duk_unicode_unvalidated_utf8_length(const duk_uint8_t *d
 }
 #endif  /* DUK_USE_PREFER_SIZE */
 
+/* Check whether a string is UTF-8 compatible or not. */
+DUK_INTERNAL duk_bool_t duk_unicode_is_utf8_compatible(const duk_uint8_t *buf, duk_size_t len) {
+	duk_size_t i = 0;
+#if !defined(DUK_USE_PREFER_SIZE)
+	duk_size_t len_safe;
+#endif
+
+	/* Many practical strings are ASCII only, so use a fast path check
+	 * to check chunks of bytes at once with minimal branch cost.
+	 */
+#if !defined(DUK_USE_PREFER_SIZE)
+	len_safe = len & ~0x03UL;
+	for (; i < len_safe; i += 4) {
+		duk_uint8_t t = buf[i] | buf[i + 1] | buf[i + 2] | buf[i + 3];
+		if (DUK_UNLIKELY((t & 0x80U) != 0U)) {
+			/* At least one byte was outside 0x00-0x7f, break
+			 * out to slow path (and remain there).
+			 *
+			 * XXX: We could also deal with the problem character
+			 * and resume fast path later.
+			 */
+			break;
+		}
+	}
+#endif
+
+	for (; i < len;) {
+		duk_uint8_t t;
+		duk_size_t left;
+		duk_size_t ncont;
+		duk_uint32_t cp;
+		duk_uint32_t mincp;
+
+		t = buf[i++];
+		if (DUK_LIKELY((t & 0x80U) == 0U)) {
+			/* Fast path, ASCII. */
+			continue;
+		}
+
+		/* Non-ASCII start byte, slow path.
+		 *
+		 * 10xx xxxx          -> continuation byte
+		 * 110x xxxx + 1*CONT -> [0x80, 0x7ff]
+		 * 1110 xxxx + 2*CONT -> [0x800, 0xffff], must reject [0xd800,0xdfff]
+		 * 1111 0xxx + 3*CONT -> [0x10000, 0x10ffff]
+		 */
+		left = len - i;
+		if (t <= 0xdfU) {  /* 1101 1111 = 0xdf */
+			if (t <= 0xbfU) {  /* 1011 1111 = 0xbf */
+				return 0;
+			}
+			ncont = 1;
+			mincp = 0x80UL;
+			cp = t & 0x1fU;
+		} else if (t <= 0xefU) {  /* 1110 1111 = 0xef */
+			ncont = 2;
+			mincp = 0x800UL;
+			cp = t & 0x0fU;
+		} else if (t <= 0xf7U) {  /* 1111 0111 = 0xf7 */
+			ncont = 3;
+			mincp = 0x10000UL;
+			cp = t & 0x07U;
+		} else {
+			return 0;
+		}
+		if (left < ncont) {
+			return 0;
+		}
+		while (ncont > 0U) {
+			t = buf[i++];
+			if ((t & 0xc0U) != 0x80U) {  /* 10xx xxxx */
+				return 0;
+			}
+			cp = (cp << 6) + (t & 0x3fU);
+			ncont--;
+		}
+		if (cp < mincp || cp > 0x10ffffUL || (cp >= 0xd800UL && cp <= 0xdfffUL)) {
+			return 0;
+		}
+	}
+
+	return 1;
+}
+
 /*
  *  Unicode range matcher
  *

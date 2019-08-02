@@ -283,6 +283,13 @@ objects:
           id: bi_json
         present_if: DUK_USE_JSON_BUILTIN
 
+      # CBOR
+      - key: "CBOR"
+        value:
+          type: object
+          id: bi_cbor
+        present_if: DUK_USE_CBOR_BUILTIN
+
       # Duktape specific
       - key: "Duktape"
         value:
@@ -5340,6 +5347,30 @@ objects:
           length: 4
           varargs: false
         nodejs_buffer: true
+
+  #
+  #  CBOR
+  #
+
+  - id: bi_cbor
+    class: Object
+    internal_prototype: bi_object_prototype
+    bidx: false
+    present_if: DUK_USE_CBOR_BUILTIN
+
+    properties:
+      - key: "encode"
+        value:
+          type: function
+          native: duk_bi_cbor_encode
+          length: 1
+        attributes: "wc"
+      - key: "decode"
+        value:
+          type: function
+          native: duk_bi_cbor_decode
+          length: 1
+        attributes: "wc"
 
   #
   #  Encoding API

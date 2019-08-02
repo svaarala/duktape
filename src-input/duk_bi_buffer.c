@@ -2268,7 +2268,7 @@ DUK_INTERNAL duk_ret_t duk_bi_buffer_readfield(duk_hthread *thr) {
 	duk_small_int_t magic_bigendian;
 	duk_small_int_t magic_signed;
 	duk_small_int_t magic_typedarray;
-	duk_small_int_t endswap;
+	duk_small_uint_t endswap;
 	duk_hbufobj *h_this;
 	duk_bool_t no_assert;
 	duk_int_t offset_signed;
@@ -2320,7 +2320,7 @@ DUK_INTERNAL duk_ret_t duk_bi_buffer_readfield(duk_hthread *thr) {
 
 	DUK_DDD(DUK_DDDPRINT("readfield, buffer_length=%ld, offset=%ld, no_assert=%d, "
 	                     "magic=%04x, magic_fieldtype=%d, magic_bigendian=%d, magic_signed=%d, "
-	                     "endswap=%d",
+	                     "endswap=%u",
 	                     (long) buffer_length, (long) offset, (int) no_assert,
 	                     (unsigned int) magic, (int) magic_ftype, (int) (magic_bigendian >> 3),
 	                     (int) (magic_signed >> 4), (int) endswap));
@@ -2527,7 +2527,7 @@ DUK_INTERNAL duk_ret_t duk_bi_buffer_writefield(duk_hthread *thr) {
 	duk_small_int_t magic_bigendian;
 	duk_small_int_t magic_signed;
 	duk_small_int_t magic_typedarray;
-	duk_small_int_t endswap;
+	duk_small_uint_t endswap;
 	duk_hbufobj *h_this;
 	duk_bool_t no_assert;
 	duk_int_t offset_signed;
@@ -2598,7 +2598,7 @@ DUK_INTERNAL duk_ret_t duk_bi_buffer_writefield(duk_hthread *thr) {
 
 	DUK_DDD(DUK_DDDPRINT("writefield, value=%!T, buffer_length=%ld, offset=%ld, no_assert=%d, "
 	                     "magic=%04x, magic_fieldtype=%d, magic_bigendian=%d, magic_signed=%d, "
-	                     "endswap=%d",
+	                     "endswap=%u",
 	                     duk_get_tval(thr, 0), (long) buffer_length, (long) offset, (int) no_assert,
 	                     (unsigned int) magic, (int) magic_ftype, (int) (magic_bigendian >> 3),
 	                     (int) (magic_signed >> 4), (int) endswap));

@@ -412,6 +412,7 @@ def main():
         'duk_bi_array.c',
         'duk_bi_boolean.c',
         'duk_bi_buffer.c',
+        'duk_bi_cbor.c',
         'duk_bi_date.c',
         'duk_bi_date_unix.c',
         'duk_bi_date_windows.c',
@@ -448,6 +449,7 @@ def main():
         'duk_error_macros.c',
         'duk_error_misc.c',
         'duk_error_throw.c',
+        'duk_fltunion.h',
         'duk_forwdecl.h',
         'duk_harray.h',
         'duk_hboundfunc.h',
@@ -524,6 +526,7 @@ def main():
         'duk_util_double.c',
         'duk_util_cast.c',
         'duk_util_memory.c',
+        'duk_util_memrw.c',
         'duk_util_misc.c',
         'duk_selftest.c',
         'duk_selftest.h',
@@ -925,6 +928,7 @@ def main():
             'duk_builtins.c',
             'duk_error_macros.c',
             'duk_unicode_support.c',
+            'duk_util_memrw.c',
             'duk_util_misc.c',
             'duk_hobject_class.c'
         ]

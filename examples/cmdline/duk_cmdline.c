@@ -13,9 +13,6 @@
  *  - To enable Duktape.Logger, define DUK_CMDLINE_LOGGING_SUPPORT
  *    and add extras/logging/duk_logging.c to compilation.
  *
- *  - To enable CBOR, define DUK_CMDLINE_CBOR_SUPPORT and add
- *    extras/cbor/duk_cbor.c to compilation.
- *
  *  - To enable Duktape 1.x module loading support (require(),
  *    Duktape.modSearch() etc), define DUK_CMDLINE_MODULE_SUPPORT and add
  *    extras/module-duktape/duk_module_duktape.c to compilation.
@@ -76,9 +73,6 @@
 #endif
 #if defined(DUK_CMDLINE_MODULE_SUPPORT)
 #include "duk_module_duktape.h"
-#endif
-#if defined(DUK_CMDLINE_CBOR_SUPPORT)
-#include "duk_cbor.h"
 #endif
 #if defined(DUK_CMDLINE_FILEIO)
 #include <errno.h>
@@ -1161,11 +1155,6 @@ static duk_context *create_duktape_heap(int alloc_provider, int debugger, int lo
 	/* Register require() (removed in Duktape 2.x). */
 #if defined(DUK_CMDLINE_MODULE_SUPPORT)
 	duk_module_duktape_init(ctx);
-#endif
-
-	/* Register CBOR. */
-#if defined(DUK_CMDLINE_CBOR_SUPPORT)
-	duk_cbor_init(ctx, 0 /*flags*/);
 #endif
 
 	/* Trivial readFile/writeFile bindings for testing. */

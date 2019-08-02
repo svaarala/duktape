@@ -89,6 +89,9 @@ torture:
     Development time options to stress test corner case handling by e.g.
     causing a garbage collection on every allocation.
 
+cbor:
+  title: CBOR
+
 codec:
   title: Codecs
 

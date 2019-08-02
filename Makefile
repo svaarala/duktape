@@ -62,8 +62,7 @@ DUKTAPE_CMDLINE_SOURCES = \
 	extras/print-alert/duk_print_alert.c \
 	extras/console/duk_console.c \
 	extras/logging/duk_logging.c \
-	extras/module-duktape/duk_module_duktape.c \
-	extras/cbor/duk_cbor.c
+	extras/module-duktape/duk_module_duktape.c
 ifdef SYSTEMROOT  # Windows
 DUKTAPE_CMDLINE_SOURCES += examples/debug-trans-socket/duk_trans_socket_windows.c
 else
@@ -109,7 +108,6 @@ CCOPTS_SHARED += -DDUK_CMDLINE_PRINTALERT_SUPPORT
 CCOPTS_SHARED += -DDUK_CMDLINE_CONSOLE_SUPPORT
 CCOPTS_SHARED += -DDUK_CMDLINE_LOGGING_SUPPORT
 CCOPTS_SHARED += -DDUK_CMDLINE_MODULE_SUPPORT
-CCOPTS_SHARED += -DDUK_CMDLINE_CBOR_SUPPORT
 ifdef SYSTEMROOT  # Windows
 # Skip fancy (linenoise)
 else
@@ -146,7 +144,6 @@ CCOPTS_SHARED += -I./extras/print-alert
 CCOPTS_SHARED += -I./extras/console
 CCOPTS_SHARED += -I./extras/logging
 CCOPTS_SHARED += -I./extras/module-duktape
-CCOPTS_SHARED += -I./extras/cbor
 #CCOPTS_SHARED += -m32   # force 32-bit compilation on a 64-bit host
 #CCOPTS_SHARED += -mx32  # force X32 compilation on a 64-bit host
 #CCOPTS_SHARED += -fstack-usage  # enable manually, then e.g. $ make clean duk; python util/pretty_stack_usage.py duktape.su
@@ -168,9 +165,9 @@ CLANG_CCOPTS_NONDEBUG += -Wcomma
 GXXOPTS_SHARED = -pedantic -ansi -std=c++11 -fstrict-aliasing -Wall -Wextra -Wunused-result -Wunused-function
 GXXOPTS_SHARED += -DDUK_CMDLINE_PRINTALERT_SUPPORT
 GXXOPTS_NONDEBUG = $(GXXOPTS_SHARED) -Os -fomit-frame-pointer
-GXXOPTS_NONDEBUG += -I./examples/alloc-logging -I./examples/alloc-torture -I./examples/alloc-hybrid -I./extras/print-alert -I./extras/console -I./extras/logging -I./extras/module-duktape -I./extras/cbor
+GXXOPTS_NONDEBUG += -I./examples/alloc-logging -I./examples/alloc-torture -I./examples/alloc-hybrid -I./extras/print-alert -I./extras/console -I./extras/logging -I./extras/module-duktape
 GXXOPTS_DEBUG = $(GXXOPTS_SHARED) -O0 -g -ggdb
-GXXOPTS_DEBUG += -I./examples/alloc-logging -I./examples/alloc-torture -I./examples/alloc-hybrid -I./extras/print-alert -I./extras/console -I./extras/logging -I./extras/module-duktape -I./extras/cbor
+GXXOPTS_DEBUG += -I./examples/alloc-logging -I./examples/alloc-torture -I./examples/alloc-hybrid -I./extras/print-alert -I./extras/console -I./extras/logging -I./extras/module-duktape
 
 CCOPTS_DUKLOW = -m32
 CCOPTS_DUKLOW += -flto -fno-asynchronous-unwind-tables -ffunction-sections -Wl,--gc-sections

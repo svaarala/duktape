@@ -1,44 +1,15 @@
 /*
- *  CBOR bindings for Duktape.
+ *  CBOR bindings.
  *
+ *  http://cbor.io/
  *  https://tools.ietf.org/html/rfc7049
  */
 
-#include <math.h>
-#include <string.h>
-#include "duktape.h"
-#include "duk_cbor.h"
+#include "duk_internal.h"
 
-/* #define DUK_CBOR_DPRINT */
+#if defined(DUK_USE_CBOR_SUPPORT)
+
 /* #define DUK_CBOR_STRESS */
-
-#if 1
-#define DUK_CBOR_ASSERT(x) do {} while (0)
-#else
-#include <stdio.h>
-#include <stdlib.h>
-#define DUK_CBOR_ASSERT(x) do { \
-		if (!(x)) { \
-			fprintf(stderr, "ASSERT FAILED on %s:%d\n", __FILE__, __LINE__); \
-			fflush(stderr); \
-			abort(); \
-		} \
-	} while (0)
-#endif
-
-#if 0
-#define DUK_CBOR_LIKELY(x) __builtin_expect (!!(x), 1)
-#define DUK_CBOR_UNLIKELY(x) __builtin_expect (!!(x), 0)
-#define DUK_CBOR_INLINE inline
-#define DUK_CBOR_NOINLINE __attribute__((noinline))
-#else
-#define DUK_CBOR_LIKELY(x) (x)
-#define DUK_CBOR_UNLIKELY(x) (x)
-#define DUK_CBOR_INLINE
-#define DUK_CBOR_NOINLINE
-#endif
-
-/* #define DUK_CBOR_GCC_BUILTINS */
 
 /* Default behavior for encoding strings: use CBOR text string if string
  * is UTF-8 compatible, otherwise use CBOR byte string.  These defines
@@ -54,7 +25,7 @@
 /* #define DUK_CBOR_DECODE_FASTPATH */
 
 typedef struct {
-	duk_context *ctx;
+	duk_hthread *thr;
 	duk_uint8_t *ptr;
 	duk_uint8_t *buf;
 	duk_uint8_t *buf_end;
@@ -63,451 +34,50 @@ typedef struct {
 } duk_cbor_encode_context;
 
 typedef struct {
-	duk_context *ctx;
+	duk_hthread *thr;
 	const duk_uint8_t *buf;
 	duk_size_t off;
 	duk_size_t len;
 } duk_cbor_decode_context;
 
-typedef union {
-	duk_uint8_t x[8];
-	duk_uint16_t s[4];
-	duk_uint32_t i[2];
-#if 0
-	duk_uint64_t i64[1];
-#endif
-	double d;
-} duk_cbor_dblunion;
-
-typedef union {
-	duk_uint8_t x[4];
-	duk_uint16_t s[2];
-	duk_uint32_t i[1];
-	float f;
-} duk_cbor_fltunion;
-
-static void duk__cbor_encode_value(duk_cbor_encode_context *enc_ctx);
-static void duk__cbor_decode_value(duk_cbor_decode_context *dec_ctx);
+DUK_LOCAL void duk__cbor_encode_value(duk_cbor_encode_context *enc_ctx);
+DUK_LOCAL void duk__cbor_decode_value(duk_cbor_decode_context *dec_ctx);
 
 /*
  *  Misc
  */
 
-/* XXX: These are sometimes portability concerns and would be nice to expose
- * from Duktape itself as portability helpers.
- */
-
-static int duk__cbor_signbit(double d) {
-	return signbit(d);
-}
-
-static int duk__cbor_fpclassify(double d) {
-	return fpclassify(d);
-}
-
-static int duk__cbor_isnan(double d) {
-	return isnan(d);
-}
-
-static int duk__cbor_isinf(double d) {
-	return isinf(d);
-}
-
-static duk_uint32_t duk__cbor_double_to_uint32(double d) {
+DUK_LOCAL duk_uint32_t duk__cbor_double_to_uint32(double d) {
 	/* Out of range casts are undefined behavior, so caller must avoid. */
-	DUK_CBOR_ASSERT(d >= 0.0 && d <= 4294967295.0);
+	DUK_ASSERT(d >= 0.0 && d <= 4294967295.0);
 	return (duk_uint32_t) d;
-}
-
-/* Endian detection.  Technically happens at runtime, but in practice
- * resolves at compile time to a constant and gets inlined.
- */
-#define DUK__CBOR_LITTLE_ENDIAN  1
-#define DUK__CBOR_MIXED_ENDIAN   2
-#define DUK__CBOR_BIG_ENDIAN     3
-
-static int duk__cbor_check_endian(void) {
-	duk_cbor_dblunion u;
-
-	/* >>> struct.pack('>d', 1.23456789).encode('hex')
-	 * '3ff3c0ca4283de1b'
-	 */
-
-	u.d = 1.23456789;
-	if (u.x[0] == 0x1bU) {
-		return DUK__CBOR_LITTLE_ENDIAN;
-	} else if (u.x[0] == 0x3fU) {
-		return DUK__CBOR_BIG_ENDIAN;
-	} else if (u.x[0] == 0xcaU) {
-		return DUK__CBOR_MIXED_ENDIAN;
-	} else {
-		DUK_CBOR_ASSERT(0);
-	}
-	return 0;
-}
-
-static DUK_CBOR_INLINE duk_uint16_t duk__cbor_bswap16(duk_uint16_t x) {
-#if defined(DUK_CBOR_GCC_BUILTINS)
-	return __builtin_bswap16(x);
-#else
-	/* XXX: matches, DUK_BSWAP16(), use that if exposed. */
-	return (x >> 8) | (x << 8);
-#endif
-}
-
-static DUK_CBOR_INLINE duk_uint32_t duk__cbor_bswap32(duk_uint32_t x) {
-#if defined(DUK_CBOR_GCC_BUILTINS)
-	return __builtin_bswap32(x);
-#else
-	/* XXX: matches, DUK_BSWAP32(), use that if exposed. */
-	return (x >> 24) | ((x >> 8) & 0xff00UL) | ((x << 8) & 0xff0000UL) | (x << 24);
-#endif
-}
-
-#if 0
-static duk_uint64_t duk__cbor_bswap64(duk_uint64_t x) {
-	/* XXX */
-}
-#endif
-
-static DUK_CBOR_INLINE void duk__cbor_write_uint16_big(duk_uint8_t *p, duk_uint16_t x) {
-#if 0
-	*p++ = (duk_uint8_t) ((x >> 8) & 0xffU);
-	*p++ = (duk_uint8_t) (x & 0xffU);
-#endif
-	duk_uint16_t a;
-
-	switch (duk__cbor_check_endian()) {
-	case DUK__CBOR_LITTLE_ENDIAN:
-	case DUK__CBOR_MIXED_ENDIAN:
-		a = duk__cbor_bswap16(x);
-		(void) memcpy((void *) p, (const void *) &a, 2);
-		break;
-	case DUK__CBOR_BIG_ENDIAN:
-		a = x;
-		(void) memcpy((void *) p, (const void *) &a, 2);
-		break;
-	default:
-		DUK_CBOR_ASSERT(0);
-	}
-}
-
-static DUK_CBOR_INLINE duk_uint16_t duk__cbor_read_uint16_big(const duk_uint8_t *p) {
-	duk_uint16_t a, x;
-
-#if 0
-	x = (((duk_uint16_t) p[0]) << 8U) +
-	    ((duk_uint16_t) p[1]);
-#endif
-	switch (duk__cbor_check_endian()) {
-	case DUK__CBOR_LITTLE_ENDIAN:
-	case DUK__CBOR_MIXED_ENDIAN:
-		(void) memcpy((void *) &a, (const void *) p, 2);
-		x = duk__cbor_bswap16(a);
-		break;
-	case DUK__CBOR_BIG_ENDIAN:
-		(void) memcpy((void *) &a, (const void *) p, 2);
-		x = a;
-		break;
-	default:
-		DUK_CBOR_ASSERT(0);
-		x = 0;
-	}
-	return x;
-}
-
-static DUK_CBOR_INLINE void duk__cbor_write_uint32_big(duk_uint8_t *p, duk_uint32_t x) {
-#if 0
-	*p++ = (duk_uint8_t) ((x >> 24) & 0xffU);
-	*p++ = (duk_uint8_t) ((x >> 16) & 0xffU);
-	*p++ = (duk_uint8_t) ((x >> 8) & 0xffU);
-	*p++ = (duk_uint8_t) (x & 0xffU);
-#endif
-	duk_uint32_t a;
-
-	switch (duk__cbor_check_endian()) {
-	case DUK__CBOR_LITTLE_ENDIAN:
-	case DUK__CBOR_MIXED_ENDIAN:
-		a = duk__cbor_bswap32(x);
-		(void) memcpy((void *) p, (const void *) &a, 4);
-		break;
-	case DUK__CBOR_BIG_ENDIAN:
-		a = x;
-		(void) memcpy((void *) p, (const void *) &a, 4);
-		break;
-	default:
-		DUK_CBOR_ASSERT(0);
-	}
-}
-
-static DUK_CBOR_INLINE duk_uint32_t duk__cbor_read_uint32_big(const duk_uint8_t *p) {
-	duk_uint32_t a, x;
-
-#if 0
-	x = (((duk_uint32_t) p[0]) << 24U) +
-	    (((duk_uint32_t) p[1]) << 16U) +
-	    (((duk_uint32_t) p[2]) << 8U) +
-	    ((duk_uint32_t) p[3]);
-#endif
-	switch (duk__cbor_check_endian()) {
-	case DUK__CBOR_LITTLE_ENDIAN:
-	case DUK__CBOR_MIXED_ENDIAN:
-		(void) memcpy((void *) &a, (const void *) p, 4);
-		x = duk__cbor_bswap32(a);
-		break;
-	case DUK__CBOR_BIG_ENDIAN:
-		(void) memcpy((void *) &a, (const void *) p, 4);
-		x = a;
-		break;
-	default:
-		DUK_CBOR_ASSERT(0);
-		x = 0;
-	}
-	return x;
-}
-
-static DUK_CBOR_INLINE void duk__cbor_write_double_big(duk_uint8_t *p, double x) {
-	duk_cbor_dblunion u;
-	duk_uint32_t a, b;
-
-	u.d = x;
-
-	switch (duk__cbor_check_endian()) {
-	case DUK__CBOR_LITTLE_ENDIAN:
-#if 0
-		u.i64[0] = duk__cbor_bswap64(u.i64[0]);
-		(void) memcpy((void *) p, (const void *) u.x, 8);
-#endif
-		a = u.i[0];
-		b = u.i[1];
-		u.i[0] = duk__cbor_bswap32(b);
-		u.i[1] = duk__cbor_bswap32(a);
-		(void) memcpy((void *) p, (const void *) u.x, 8);
-		break;
-	case DUK__CBOR_MIXED_ENDIAN:
-		a = u.i[0];
-		b = u.i[1];
-		u.i[0] = duk__cbor_bswap32(a);
-		u.i[1] = duk__cbor_bswap32(b);
-		(void) memcpy((void *) p, (const void *) u.x, 8);
-		break;
-	case DUK__CBOR_BIG_ENDIAN:
-		(void) memcpy((void *) p, (const void *) u.x, 8);
-		break;
-	default:
-		DUK_CBOR_ASSERT(0);
-	}
-}
-
-static DUK_CBOR_INLINE void duk__cbor_write_float_big(duk_uint8_t *p, float x) {
-	duk_cbor_fltunion u;
-	duk_uint32_t a;
-
-	u.f = x;
-	switch (duk__cbor_check_endian()) {
-	case DUK__CBOR_LITTLE_ENDIAN:
-	case DUK__CBOR_MIXED_ENDIAN:
-		a = u.i[0];
-		u.i[0] = duk__cbor_bswap32(a);
-		(void) memcpy((void *) p, (const void *) u.x, 4);
-		break;
-	case DUK__CBOR_BIG_ENDIAN:
-		(void) memcpy((void *) p, (const void *) u.x, 4);
-		break;
-	default:
-		DUK_CBOR_ASSERT(0);
-	}
-}
-
-static DUK_CBOR_INLINE void duk__cbor_dblunion_host_to_little(duk_cbor_dblunion *u) {
-	duk_uint32_t a, b;
-
-	switch (duk__cbor_check_endian()) {
-	case DUK__CBOR_LITTLE_ENDIAN:
-		/* HGFEDCBA -> HGFEDCBA */
-		break;
-	case DUK__CBOR_MIXED_ENDIAN:
-		/* DCBAHGFE -> HGFEDCBA */
-		a = u->i[0];
-		b = u->i[1];
-		u->i[0] = b;
-		u->i[1] = a;
-		break;
-	case DUK__CBOR_BIG_ENDIAN:
-		/* ABCDEFGH -> HGFEDCBA */
-#if 0
-		u->i64[0] = duk__cbor_bswap64(u->i64[0]);
-#endif
-		a = u->i[0];
-		b = u->i[1];
-		u->i[0] = duk__cbor_bswap32(b);
-		u->i[1] = duk__cbor_bswap32(a);
-		break;
-	}
-}
-
-static DUK_CBOR_INLINE void duk__cbor_dblunion_little_to_host(duk_cbor_dblunion *u) {
-	duk__cbor_dblunion_host_to_little(u);
-}
-
-static DUK_CBOR_INLINE void duk__cbor_dblunion_host_to_big(duk_cbor_dblunion *u) {
-	duk_uint32_t a, b;
-
-	switch (duk__cbor_check_endian()) {
-	case DUK__CBOR_LITTLE_ENDIAN:
-		/* HGFEDCBA -> ABCDEFGH */
-#if 0
-		u->i64[0] = duk__cbor_bswap64(u->i64[0]);
-#else
-		a = u->i[0];
-		b = u->i[1];
-		u->i[0] = duk__cbor_bswap32(b);
-		u->i[1] = duk__cbor_bswap32(a);
-#endif
-		break;
-	case DUK__CBOR_MIXED_ENDIAN:
-		/* DCBAHGFE -> ABCDEFGH */
-		a = u->i[0];
-		b = u->i[1];
-		u->i[0] = duk__cbor_bswap32(a);
-		u->i[1] = duk__cbor_bswap32(b);
-		break;
-	case DUK__CBOR_BIG_ENDIAN:
-		/* ABCDEFGH -> ABCDEFGH */
-		break;
-	}
-}
-
-static DUK_CBOR_INLINE void duk__cbor_dblunion_big_to_host(duk_cbor_dblunion *u) {
-	duk__cbor_dblunion_host_to_big(u);
-}
-
-static DUK_CBOR_INLINE void duk__cbor_fltunion_host_to_big(duk_cbor_fltunion *u) {
-	switch (duk__cbor_check_endian()) {
-	case DUK__CBOR_LITTLE_ENDIAN:
-	case DUK__CBOR_MIXED_ENDIAN:
-		/* DCBA -> ABCD */
-		u->i[0] = duk__cbor_bswap32(u->i[0]);
-		break;
-	case DUK__CBOR_BIG_ENDIAN:
-		/* ABCD -> ABCD */
-		break;
-	}
-}
-
-static DUK_CBOR_INLINE void duk__cbor_fltunion_big_to_host(duk_cbor_fltunion *u) {
-	duk__cbor_fltunion_host_to_big(u);
 }
 
 /*
  *  Encoding
  */
 
-static void duk__cbor_encode_error(duk_cbor_encode_context *enc_ctx) {
-	(void) duk_type_error(enc_ctx->ctx, "cbor encode error");
-}
-
-/* Check whether a string is UTF-8 compatible or not. */
-static int duk__cbor_is_utf8_compatible(const duk_uint8_t *buf, duk_size_t len) {
-	duk_size_t i = 0;
-#if !defined(DUK_CBOR_PREFER_SIZE)
-	duk_size_t len_safe;
-#endif
-
-	/* Many practical strings are ASCII only, so use a fast path check
-	 * to check chunks of bytes at once with minimal branch cost.
-	 */
-#if !defined(DUK_CBOR_PREFER_SIZE)
-	len_safe = len & ~0x03UL;
-	for (; i < len_safe; i += 4) {
-		duk_uint8_t t = buf[i] | buf[i + 1] | buf[i + 2] | buf[i + 3];
-		if (DUK_CBOR_UNLIKELY((t & 0x80U) != 0U)) {
-			/* At least one byte was outside 0x00-0x7f, break
-			 * out to slow path (and remain there).
-			 *
-			 * XXX: We could also deal with the problem character
-			 * and resume fast path later.
-			 */
-			break;
-		}
-	}
-#endif
-
-	for (; i < len;) {
-		duk_uint8_t t;
-		duk_size_t left;
-		duk_size_t ncont;
-		duk_uint32_t cp;
-		duk_uint32_t mincp;
-
-		t = buf[i++];
-		if (DUK_CBOR_LIKELY((t & 0x80U) == 0U)) {
-			/* Fast path, ASCII. */
-			continue;
-		}
-
-		/* Non-ASCII start byte, slow path.
-		 *
-		 * 10xx xxxx          -> continuation byte
-		 * 110x xxxx + 1*CONT -> [0x80, 0x7ff]
-		 * 1110 xxxx + 2*CONT -> [0x800, 0xffff], must reject [0xd800,0xdfff]
-		 * 1111 0xxx + 3*CONT -> [0x10000, 0x10ffff]
-		 */
-		left = len - i;
-		if (t <= 0xdfU) {  /* 1101 1111 = 0xdf */
-			if (t <= 0xbfU) {  /* 1011 1111 = 0xbf */
-				return 0;
-			}
-			ncont = 1;
-			mincp = 0x80UL;
-			cp = t & 0x1fU;
-		} else if (t <= 0xefU) {  /* 1110 1111 = 0xef */
-			ncont = 2;
-			mincp = 0x800UL;
-			cp = t & 0x0fU;
-		} else if (t <= 0xf7U) {  /* 1111 0111 = 0xf7 */
-			ncont = 3;
-			mincp = 0x10000UL;
-			cp = t & 0x07U;
-		} else {
-			return 0;
-		}
-		if (left < ncont) {
-			return 0;
-		}
-		while (ncont > 0U) {
-			t = buf[i++];
-			if ((t & 0xc0U) != 0x80U) {  /* 10xx xxxx */
-				return 0;
-			}
-			cp = (cp << 6) + (t & 0x3fU);
-			ncont--;
-		}
-		if (cp < mincp || cp > 0x10ffffUL || (cp >= 0xd800UL && cp <= 0xdfffUL)) {
-			return 0;
-		}
-	}
-
-	return 1;
+DUK_LOCAL void duk__cbor_encode_error(duk_cbor_encode_context *enc_ctx) {
+	(void) duk_type_error(enc_ctx->thr, "cbor encode error");
 }
 
 /* Check that a size_t is in uint32 range to avoid out-of-range casts. */
-static void duk__cbor_encode_sizet_uint32_check(duk_cbor_encode_context *enc_ctx, duk_size_t len) {
-	if (DUK_CBOR_UNLIKELY(sizeof(duk_size_t) > sizeof(duk_uint32_t) && len > (duk_size_t) DUK_UINT32_MAX)) {
+DUK_LOCAL void duk__cbor_encode_sizet_uint32_check(duk_cbor_encode_context *enc_ctx, duk_size_t len) {
+	if (DUK_UNLIKELY(sizeof(duk_size_t) > sizeof(duk_uint32_t) && len > (duk_size_t) DUK_UINT32_MAX)) {
 		duk__cbor_encode_error(enc_ctx);
 	}
 }
 
-static DUK_CBOR_NOINLINE void duk__cbor_encode_ensure_slowpath(duk_cbor_encode_context *enc_ctx, duk_size_t len) {
+DUK_LOCAL DUK_NOINLINE void duk__cbor_encode_ensure_slowpath(duk_cbor_encode_context *enc_ctx, duk_size_t len) {
 	duk_size_t oldlen;
 	duk_size_t minlen;
 	duk_size_t newlen;
 	duk_uint8_t *p_new;
 	duk_size_t old_data_len;
 
-	DUK_CBOR_ASSERT(enc_ctx->ptr >= enc_ctx->buf);
-	DUK_CBOR_ASSERT(enc_ctx->buf_end >= enc_ctx->ptr);
-	DUK_CBOR_ASSERT(enc_ctx->buf_end >= enc_ctx->buf);
+	DUK_ASSERT(enc_ctx->ptr >= enc_ctx->buf);
+	DUK_ASSERT(enc_ctx->buf_end >= enc_ctx->ptr);
+	DUK_ASSERT(enc_ctx->buf_end >= enc_ctx->buf);
 
 	/* Overflow check.
 	 *
@@ -515,7 +85,7 @@ static DUK_CBOR_NOINLINE void duk__cbor_encode_ensure_slowpath(duk_cbor_encode_c
 	 */
 	oldlen = enc_ctx->len;
 	minlen = oldlen + len;
-	if (DUK_CBOR_UNLIKELY(oldlen > DUK_SIZE_MAX / 2U || minlen < oldlen)) {
+	if (DUK_UNLIKELY(oldlen > DUK_SIZE_MAX / 2U || minlen < oldlen)) {
 		duk__cbor_encode_error(enc_ctx);
 	}
 
@@ -524,21 +94,19 @@ static DUK_CBOR_NOINLINE void duk__cbor_encode_ensure_slowpath(duk_cbor_encode_c
 #else
 	newlen = oldlen * 2U;
 #endif
-	DUK_CBOR_ASSERT(newlen >= oldlen);
+	DUK_ASSERT(newlen >= oldlen);
 
 	if (minlen > newlen) {
 		newlen = minlen;
 	}
-	DUK_CBOR_ASSERT(newlen >= oldlen);
-	DUK_CBOR_ASSERT(newlen >= minlen);
-	DUK_CBOR_ASSERT(newlen > 0U);
+	DUK_ASSERT(newlen >= oldlen);
+	DUK_ASSERT(newlen >= minlen);
+	DUK_ASSERT(newlen > 0U);
 
-#if defined(DUK_CBOR_DPRINT)
-	fprintf(stderr, "cbor encode buffer resized to %ld\n", (long) newlen);
-#endif
+	DUK_DD(DUK_DDPRINT("cbor encode buffer resized to %ld", (long) newlen));
 
-	p_new = (duk_uint8_t *) duk_resize_buffer(enc_ctx->ctx, enc_ctx->idx_buf, newlen);
-	DUK_CBOR_ASSERT(p_new != NULL);
+	p_new = (duk_uint8_t *) duk_resize_buffer(enc_ctx->thr, enc_ctx->idx_buf, newlen);
+	DUK_ASSERT(p_new != NULL);
 	old_data_len = (duk_size_t) (enc_ctx->ptr - enc_ctx->buf);
 	enc_ctx->buf = p_new;
 	enc_ctx->buf_end = p_new + newlen;
@@ -546,71 +114,69 @@ static DUK_CBOR_NOINLINE void duk__cbor_encode_ensure_slowpath(duk_cbor_encode_c
 	enc_ctx->len = newlen;
 }
 
-static DUK_CBOR_INLINE void duk__cbor_encode_ensure(duk_cbor_encode_context *enc_ctx, duk_size_t len) {
-	if (DUK_CBOR_LIKELY((duk_size_t) (enc_ctx->buf_end - enc_ctx->ptr) >= len)) {
+DUK_LOCAL DUK_INLINE void duk__cbor_encode_ensure(duk_cbor_encode_context *enc_ctx, duk_size_t len) {
+	if (DUK_LIKELY((duk_size_t) (enc_ctx->buf_end - enc_ctx->ptr) >= len)) {
 		return;
 	}
 	duk__cbor_encode_ensure_slowpath(enc_ctx, len);
 }
 
-static duk_size_t duk__cbor_get_reserve(duk_cbor_encode_context *enc_ctx) {
-	DUK_CBOR_ASSERT(enc_ctx->ptr >= enc_ctx->buf);
-	DUK_CBOR_ASSERT(enc_ctx->ptr <= enc_ctx->buf_end);
+DUK_LOCAL duk_size_t duk__cbor_get_reserve(duk_cbor_encode_context *enc_ctx) {
+	DUK_ASSERT(enc_ctx->ptr >= enc_ctx->buf);
+	DUK_ASSERT(enc_ctx->ptr <= enc_ctx->buf_end);
 	return (duk_size_t) (enc_ctx->buf_end - enc_ctx->ptr);
 }
 
-static void duk__cbor_encode_uint32(duk_cbor_encode_context *enc_ctx, duk_uint32_t u, duk_uint8_t base) {
+DUK_LOCAL void duk__cbor_encode_uint32(duk_cbor_encode_context *enc_ctx, duk_uint32_t u, duk_uint8_t base) {
 	duk_uint8_t *p;
 
 	/* Caller must ensure space. */
-	DUK_CBOR_ASSERT(duk__cbor_get_reserve(enc_ctx) >= 1 + 4);
+	DUK_ASSERT(duk__cbor_get_reserve(enc_ctx) >= 1 + 4);
 
 	p = enc_ctx->ptr;
-	if (DUK_CBOR_LIKELY(u <= 23U)) {
+	if (DUK_LIKELY(u <= 23U)) {
 		*p++ = (duk_uint8_t) (base + (duk_uint8_t) u);
 	} else if (u <= 0xffUL) {
 		*p++ = base + 0x18U;
 		*p++ = (duk_uint8_t) u;
 	} else if (u <= 0xffffUL) {
 		*p++ = base + 0x19U;
-		duk__cbor_write_uint16_big(p, (duk_uint16_t) u);
-		p += 2;
+		DUK_RAW_WRITEINC_U16_BE(p, (duk_uint16_t) u);
 	} else {
 		*p++ = base + 0x1aU;
-		duk__cbor_write_uint32_big(p, u);
-		p += 4;
+		DUK_RAW_WRITEINC_U32_BE(p, u);
 	}
 	enc_ctx->ptr = p;
 }
 
 #if defined(DUK_CBOR_DOUBLE_AS_IS)
-static void duk__cbor_encode_double(duk_cbor_encode_context *enc_ctx, double d) {
+DUK_LOCAL void duk__cbor_encode_double(duk_cbor_encode_context *enc_ctx, double d) {
 	duk_uint8_t *p;
 
 	/* Caller must ensure space. */
-	DUK_CBOR_ASSERT(duk__cbor_get_reserve(enc_ctx) >= 1 + 8);
+	DUK_ASSERT(duk__cbor_get_reserve(enc_ctx) >= 1 + 8);
 
 	p = enc_ctx->ptr;
 	*p++ = 0xfbU;
-	duk__cbor_write_double_big(p, d);
+	DUK_RAW_WRITEINC_DOUBLE_BE(p, d);
 	p += 8;
 	enc_ctx->ptr = p;
 }
 #else  /* DUK_CBOR_DOUBLE_AS_IS */
-static void duk__cbor_encode_double_fp(duk_cbor_encode_context *enc_ctx, double d) {
-	duk_cbor_dblunion u;
+DUK_LOCAL void duk__cbor_encode_double_fp(duk_cbor_encode_context *enc_ctx, double d) {
+	duk_double_union u;
 	duk_uint16_t u16;
-	duk_int16_t exp;
+	duk_int16_t expt;
 	duk_uint8_t *p;
 
-	DUK_CBOR_ASSERT(duk__cbor_fpclassify(d) != FP_ZERO);
+	DUK_ASSERT(DUK_FPCLASSIFY(d) != DUK_FP_ZERO);
 
 	/* Caller must ensure space. */
-	DUK_CBOR_ASSERT(duk__cbor_get_reserve(enc_ctx) >= 1 + 8);
+	DUK_ASSERT(duk__cbor_get_reserve(enc_ctx) >= 1 + 8);
 
 	/* Organize into little endian (no-op if platform is little endian). */
 	u.d = d;
-	duk__cbor_dblunion_host_to_little(&u);
+	duk_dblunion_host_to_little(&u);
 
 	/* Check if 'd' can represented as a normal half-float.
 	 * Denormal half-floats could also be used, but that check
@@ -618,10 +184,10 @@ static void duk__cbor_encode_double_fp(duk_cbor_encode_context *enc_ctx, double 
 	 * So just check exponent range and that at most 10 significant
 	 * bits (excluding implicit leading 1) are used in 'd'.
 	 */
-	u16 = (((duk_uint16_t) u.x[7]) << 8) | ((duk_uint16_t) u.x[6]);
-	exp = (duk_int16_t) ((u16 & 0x7ff0U) >> 4) - 1023;
+	u16 = (((duk_uint16_t) u.uc[7]) << 8) | ((duk_uint16_t) u.uc[6]);
+	expt = (duk_int16_t) ((u16 & 0x7ff0U) >> 4) - 1023;
 
-	if (exp >= -14 && exp <= 15) {
+	if (expt >= -14 && expt <= 15) {
 		/* Half-float normal exponents (excl. denormals).
 		 *
 		 *          7        6        5        4        3        2        1        0  (LE index)
@@ -631,30 +197,29 @@ static void duk__cbor_encode_double_fp(duk_cbor_encode_context *enc_ctx, double 
 		int use_half_float;
 
 		use_half_float =
-		    (u.x[0] == 0 && u.x[1] == 0 && u.x[2] == 0 && u.x[3] == 0 &&
-		     u.x[4] == 0 && (u.x[5] & 0x03U) == 0);
+		    (u.uc[0] == 0 && u.uc[1] == 0 && u.uc[2] == 0 && u.uc[3] == 0 &&
+		     u.uc[4] == 0 && (u.uc[5] & 0x03U) == 0);
 
 		if (use_half_float) {
 			duk_uint32_t t;
 
-			exp += 15;
-			t = (duk_uint32_t) (u.x[7] & 0x80U) << 8;
-			t += (duk_uint32_t) exp << 10;
-			t += ((duk_uint32_t) u.x[6] & 0x0fU) << 6;
-			t += ((duk_uint32_t) u.x[5]) >> 2;
+			expt += 15;
+			t = (duk_uint32_t) (u.uc[7] & 0x80U) << 8;
+			t += (duk_uint32_t) expt << 10;
+			t += ((duk_uint32_t) u.uc[6] & 0x0fU) << 6;
+			t += ((duk_uint32_t) u.uc[5]) >> 2;
 
 			/* seeeeemm mmmmmmmm */
 			p = enc_ctx->ptr;
 			*p++ = 0xf9U;
-			duk__cbor_write_uint16_big(p, (duk_uint16_t) t);
-			p += 2;
+			DUK_RAW_WRITEINC_U16_BE(p, (duk_uint16_t) t);
 			enc_ctx->ptr = p;
 			return;
 		}
 	}
 
 	/* Same check for plain float.  Also no denormal support here. */
-	if (exp >= -126 && exp <= 127) {
+	if (expt >= -126 && expt <= 127) {
 		/* Float normal exponents (excl. denormals).
 		 *
 		 * double: seeeeeee eeeemmmm mmmmmmmm mmmmmmmm mmmmmmmm mmmmmmmm mmmmmmmm mmmmmmmm
@@ -670,15 +235,14 @@ static void duk__cbor_encode_double_fp(duk_cbor_encode_context *enc_ctx, double 
 		 */
 #if 0
 		use_float =
-		    (u.x[0] == 0 && u.x[1] == 0 && u.x[2] == 0 && (u.x[3] & 0xe0U) == 0);
+		    (u.uc[0] == 0 && u.uc[1] == 0 && u.uc[2] == 0 && (u.uc[3] & 0xe0U) == 0);
 #endif
 		d_float = (duk_float_t) d;
 		use_float = ((duk_double_t) d_float == d);
 		if (use_float) {
 			p = enc_ctx->ptr;
 			*p++ = 0xfaU;
-			duk__cbor_write_float_big(p, d_float);
-			p += 4;
+			DUK_RAW_WRITEINC_FLOAT_BE(p, d_float);
 			enc_ctx->ptr = p;
 			return;
 		}
@@ -687,11 +251,11 @@ static void duk__cbor_encode_double_fp(duk_cbor_encode_context *enc_ctx, double 
 	/* Special handling for NaN and Inf which we want to encode as
 	 * half-floats.  They share the same (maximum) exponent.
 	 */
-	if (exp == 1024) {
-		DUK_CBOR_ASSERT(duk__cbor_isnan(d) || duk__cbor_isinf(d));
+	if (expt == 1024) {
+		DUK_ASSERT(DUK_ISNAN(d) || DUK_ISINF(d));
 		p = enc_ctx->ptr;
 		*p++ = 0xf9U;
-		if (duk__cbor_isnan(d)) {
+		if (DUK_ISNAN(d)) {
 			/* Shortest NaN encoding is using a half-float.  Lose the
 			 * exact NaN bits in the process.  IEEE double would be
 			 * 7ff8 0000 0000 0000, i.e. a quiet NaN in most architectures
@@ -701,7 +265,7 @@ static void duk__cbor_encode_double_fp(duk_cbor_encode_context *enc_ctx, double 
 			*p++ = 0x7eU;
 		} else {
 			/* Shortest +/- Infinity encoding is using a half-float. */
-			if (duk__cbor_signbit(d)) {
+			if (DUK_SIGNBIT(d)) {
 				*p++ = 0xfcU;
 			} else {
 				*p++ = 0x7cU;
@@ -715,12 +279,11 @@ static void duk__cbor_encode_double_fp(duk_cbor_encode_context *enc_ctx, double 
 	/* Cannot use half-float or float, encode as full IEEE double. */
 	p = enc_ctx->ptr;
 	*p++ = 0xfbU;
-	duk__cbor_write_double_big(p, d);
-	p += 8;
+	DUK_RAW_WRITEINC_DOUBLE_BE(p, d);
 	enc_ctx->ptr = p;
 }
 
-static void duk__cbor_encode_double(duk_cbor_encode_context *enc_ctx, double d) {
+DUK_LOCAL void duk__cbor_encode_double(duk_cbor_encode_context *enc_ctx, double d) {
 	duk_uint8_t *p;
 	double d_floor;
 
@@ -782,19 +345,19 @@ static void duk__cbor_encode_double(duk_cbor_encode_context *enc_ctx, double d) 
 	 */
 
 	/* Caller must ensure space. */
-	DUK_CBOR_ASSERT(duk__cbor_get_reserve(enc_ctx) >= 1 + 8);
+	DUK_ASSERT(duk__cbor_get_reserve(enc_ctx) >= 1 + 8);
 
 	/* Most important path is integers.  The floor() test will be true
 	 * for Inf too (but not NaN).
 	 */
-	d_floor = floor(d);  /* identity if d is +/- 0.0, NaN, or +/- Infinity */
-	if (DUK_CBOR_LIKELY(d_floor == d)) {
-		DUK_CBOR_ASSERT(!duk__cbor_isnan(d));  /* NaN == NaN compares false. */
-		if (duk__cbor_signbit(d)) {
+	d_floor = DUK_FLOOR(d);  /* identity if d is +/- 0.0, NaN, or +/- Infinity */
+	if (DUK_LIKELY(d_floor == d)) {
+		DUK_ASSERT(!DUK_ISNAN(d));  /* NaN == NaN compares false. */
+		if (DUK_SIGNBIT(d)) {
 			if (d >= -4294967296.0) {
 				d = -1.0 - d;
 				if (d >= 0.0) {
-					DUK_CBOR_ASSERT(d >= 0.0);
+					DUK_ASSERT(d >= 0.0);
 					duk__cbor_encode_uint32(enc_ctx, duk__cbor_double_to_uint32(d), 0x20U);
 					return;
 				}
@@ -812,7 +375,7 @@ static void duk__cbor_encode_double(duk_cbor_encode_context *enc_ctx, double d) 
 		} else {
 			if (d <= 4294967295.0) {
 				/* Positive zero needs no special handling. */
-				DUK_CBOR_ASSERT(d >= 0.0);
+				DUK_ASSERT(d >= 0.0);
 				duk__cbor_encode_uint32(enc_ctx, duk__cbor_double_to_uint32(d), 0x00U);
 				return;
 			}
@@ -825,12 +388,12 @@ static void duk__cbor_encode_double(duk_cbor_encode_context *enc_ctx, double d) 
 	 * float.
 	 */
 
-	DUK_CBOR_ASSERT(duk__cbor_fpclassify(d) != FP_ZERO);
+	DUK_ASSERT(DUK_FPCLASSIFY(d) != DUK_FP_ZERO);
 	duk__cbor_encode_double_fp(enc_ctx, d);
 }
 #endif  /* DUK_CBOR_DOUBLE_AS_IS */
 
-static void duk__cbor_encode_string_top(duk_cbor_encode_context *enc_ctx) {
+DUK_LOCAL void duk__cbor_encode_string_top(duk_cbor_encode_context *enc_ctx) {
 	const duk_uint8_t *str;
 	duk_size_t len;
 	duk_uint8_t *p;
@@ -856,10 +419,10 @@ static void duk__cbor_encode_string_top(duk_cbor_encode_context *enc_ctx) {
 	 */
 
 	/* Caller must ensure space. */
-	DUK_CBOR_ASSERT(duk__cbor_get_reserve(enc_ctx) >= 1 + 8);
+	DUK_ASSERT(duk__cbor_get_reserve(enc_ctx) >= 1 + 8);
 
-	str = (const duk_uint8_t *) duk_require_lstring(enc_ctx->ctx, -1, &len);
-	if (duk_is_symbol(enc_ctx->ctx, -1)) {
+	str = (const duk_uint8_t *) duk_require_lstring(enc_ctx->thr, -1, &len);
+	if (duk_is_symbol(enc_ctx->thr, -1)) {
 		/* Symbols, encode as an empty table for now.  This matches
 		 * the behavior of cbor-js.
 		 *
@@ -880,16 +443,16 @@ static void duk__cbor_encode_string_top(duk_cbor_encode_context *enc_ctx) {
 	duk__cbor_encode_uint32(enc_ctx, (duk_uint32_t) len, 0x40U);
 #else
 	duk__cbor_encode_uint32(enc_ctx, (duk_uint32_t) len,
-	                        (DUK_CBOR_LIKELY(duk__cbor_is_utf8_compatible(str, len)) ? 0x60U : 0x40U));
+	                        (DUK_LIKELY(duk_unicode_is_utf8_compatible(str, len)) ? 0x60U : 0x40U));
 #endif
 	duk__cbor_encode_ensure(enc_ctx, len);
 	p = enc_ctx->ptr;
-	(void) memcpy((void *) p, (const void *) str, len);
+	duk_memcpy((void *) p, (const void *) str, len);
 	p += len;
 	enc_ctx->ptr = p;
 }
 
-static void duk__cbor_encode_object(duk_cbor_encode_context *enc_ctx) {
+DUK_LOCAL void duk__cbor_encode_object(duk_cbor_encode_context *enc_ctx) {
 	duk_uint8_t *buf;
 	duk_size_t len;
 	duk_uint8_t *p;
@@ -898,33 +461,33 @@ static void duk__cbor_encode_object(duk_cbor_encode_context *enc_ctx) {
 	duk_uint32_t count;
 
 	/* Caller must ensure space. */
-	DUK_CBOR_ASSERT(duk__cbor_get_reserve(enc_ctx) >= 1 + 8);
+	DUK_ASSERT(duk__cbor_get_reserve(enc_ctx) >= 1 + 8);
 
 	/* XXX: Support for specific built-ins like Date and RegExp. */
-	if (duk_is_array(enc_ctx->ctx, -1)) {
+	if (duk_is_array(enc_ctx->thr, -1)) {
 		/* Shortest encoding for arrays >= 256 in length is actually
 		 * the indefinite length one (3 or more bytes vs. 2 bytes).
 		 * We still use the definite length version because it is
 		 * more decoding friendly.
 		 */
-		len = duk_get_length(enc_ctx->ctx, -1);
+		len = duk_get_length(enc_ctx->thr, -1);
 		duk__cbor_encode_sizet_uint32_check(enc_ctx, len);
 		duk__cbor_encode_uint32(enc_ctx, (duk_uint32_t) len, 0x80U);
 		for (i = 0; i < len; i++) {
-			duk_get_prop_index(enc_ctx->ctx, -1, (duk_uarridx_t) i);
+			duk_get_prop_index(enc_ctx->thr, -1, (duk_uarridx_t) i);
 			duk__cbor_encode_value(enc_ctx);
 		}
-	} else if (duk_is_buffer_data(enc_ctx->ctx, -1)) {
+	} else if (duk_is_buffer_data(enc_ctx->thr, -1)) {
 		/* XXX: Tag buffer data?
 		 * XXX: Encode typed arrays as integer arrays rather
 		 * than buffer data as is?
 		 */
-		buf = (duk_uint8_t *) duk_require_buffer_data(enc_ctx->ctx, -1, &len);
+		buf = (duk_uint8_t *) duk_require_buffer_data(enc_ctx->thr, -1, &len);
 		duk__cbor_encode_sizet_uint32_check(enc_ctx, len);
 		duk__cbor_encode_uint32(enc_ctx, (duk_uint32_t) len, 0x40U);
 		duk__cbor_encode_ensure(enc_ctx, len);
 		p = enc_ctx->ptr;
-		(void) memcpy((void *) p, (const void *) buf, len);
+		duk_memcpy((void *) p, (const void *) buf, len);
 		p += len;
 		enc_ctx->ptr = p;
 	} else {
@@ -942,9 +505,9 @@ static void duk__cbor_encode_object(duk_cbor_encode_context *enc_ctx) {
 		p = enc_ctx->ptr;
 		*p++ = 0xa0U + 0x1fU;  /* indefinite length */
 		enc_ctx->ptr = p;
-		duk_enum(enc_ctx->ctx, -1, DUK_ENUM_OWN_PROPERTIES_ONLY);
-		while (duk_next(enc_ctx->ctx, -1, 1 /*get_value*/)) {
-			duk_insert(enc_ctx->ctx, -2);  /* [ ... key value ] -> [ ... value key ] */
+		duk_enum(enc_ctx->thr, -1, DUK_ENUM_OWN_PROPERTIES_ONLY);
+		while (duk_next(enc_ctx->thr, -1, 1 /*get_value*/)) {
+			duk_insert(enc_ctx->thr, -2);  /* [ ... key value ] -> [ ... value key ] */
 			duk__cbor_encode_value(enc_ctx);
 			duk__cbor_encode_value(enc_ctx);
 			count++;
@@ -952,9 +515,9 @@ static void duk__cbor_encode_object(duk_cbor_encode_context *enc_ctx) {
 				duk__cbor_encode_error(enc_ctx);
 			}
 		}
-		duk_pop(enc_ctx->ctx);
+		duk_pop(enc_ctx->thr);
 		if (count <= 0x17U) {
-			DUK_CBOR_ASSERT(off_ib < enc_ctx->len);
+			DUK_ASSERT(off_ib < enc_ctx->len);
 			enc_ctx->buf[off_ib] = 0xa0U + (duk_uint8_t) count;
 		} else {
 			duk__cbor_encode_ensure(enc_ctx, 1);
@@ -965,26 +528,26 @@ static void duk__cbor_encode_object(duk_cbor_encode_context *enc_ctx) {
 	}
 }
 
-static void duk__cbor_encode_buffer(duk_cbor_encode_context *enc_ctx) {
+DUK_LOCAL void duk__cbor_encode_buffer(duk_cbor_encode_context *enc_ctx) {
 	duk_uint8_t *buf;
 	duk_size_t len;
 	duk_uint8_t *p;
 
 	/* Caller must ensure space. */
-	DUK_CBOR_ASSERT(duk__cbor_get_reserve(enc_ctx) >= 1 + 8);
+	DUK_ASSERT(duk__cbor_get_reserve(enc_ctx) >= 1 + 8);
 
 	/* Tag buffer data? */
-	buf = (duk_uint8_t *) duk_require_buffer(enc_ctx->ctx, -1, &len);
+	buf = (duk_uint8_t *) duk_require_buffer(enc_ctx->thr, -1, &len);
 	duk__cbor_encode_sizet_uint32_check(enc_ctx, len);
 	duk__cbor_encode_uint32(enc_ctx, (duk_uint32_t) len, 0x40U);
 	duk__cbor_encode_ensure(enc_ctx, len);
 	p = enc_ctx->ptr;
-	(void) memcpy((void *) p, (const void *) buf, len);
+	duk_memcpy((void *) p, (const void *) buf, len);
 	p += len;
 	enc_ctx->ptr = p;
 }
 
-static void duk__cbor_encode_pointer(duk_cbor_encode_context *enc_ctx) {
+DUK_LOCAL void duk__cbor_encode_pointer(duk_cbor_encode_context *enc_ctx) {
 	/* Pointers (void *) are challenging to encode.  They can't
 	 * be relied to be even 64-bit integer compatible (there are
 	 * pointer models larger than that), nor can floats encode
@@ -1000,18 +563,18 @@ static void duk__cbor_encode_pointer(duk_cbor_encode_context *enc_ctx) {
 	 */
 	const char *ptr;
 
-	ptr = duk_to_string(enc_ctx->ctx, -1);
-	DUK_CBOR_ASSERT(ptr != NULL);
-	duk_push_sprintf(enc_ctx->ctx, "(%s)", ptr);
-	duk_remove(enc_ctx->ctx, -2);
+	ptr = duk_to_string(enc_ctx->thr, -1);
+	DUK_ASSERT(ptr != NULL);
+	duk_push_sprintf(enc_ctx->thr, "(%s)", ptr);
+	duk_remove(enc_ctx->thr, -2);
 	duk__cbor_encode_string_top(enc_ctx);
 }
 
-static void duk__cbor_encode_lightfunc(duk_cbor_encode_context *enc_ctx) {
+DUK_LOCAL void duk__cbor_encode_lightfunc(duk_cbor_encode_context *enc_ctx) {
 	duk_uint8_t *p;
 
 	/* Caller must ensure space. */
-	DUK_CBOR_ASSERT(duk__cbor_get_reserve(enc_ctx) >= 1 + 8);
+	DUK_ASSERT(duk__cbor_get_reserve(enc_ctx) >= 1 + 8);
 
 	/* For now encode as an empty object. */
 	p = enc_ctx->ptr;
@@ -1019,7 +582,7 @@ static void duk__cbor_encode_lightfunc(duk_cbor_encode_context *enc_ctx) {
 	enc_ctx->ptr = p;
 }
 
-static void duk__cbor_encode_value(duk_cbor_encode_context *enc_ctx) {
+DUK_LOCAL void duk__cbor_encode_value(duk_cbor_encode_context *enc_ctx) {
 	duk_uint8_t *p;
 
 	/* Encode/decode cycle currently loses some type information.
@@ -1029,7 +592,7 @@ static void duk__cbor_encode_value(duk_cbor_encode_context *enc_ctx) {
 	/* When working with deeply recursive structures, this is important
 	 * to ensure there's no effective depth limit.
 	 */
-	duk_require_stack(enc_ctx->ctx, 4);
+	duk_require_stack(enc_ctx->thr, 4);
 
 	/* Reserve space for up to 64-bit types (1 initial byte + 8
 	 * followup bytes).  This allows encoding of integers, floats,
@@ -1038,7 +601,7 @@ static void duk__cbor_encode_value(duk_cbor_encode_context *enc_ctx) {
 	 */
 	duk__cbor_encode_ensure(enc_ctx, 1 + 8);
 
-	switch (duk_get_type(enc_ctx->ctx, -1)) {
+	switch (duk_get_type(enc_ctx->thr, -1)) {
 	case DUK_TYPE_UNDEFINED: {
 		p = enc_ctx->ptr;
 		*p++ = 0xf7;
@@ -1052,14 +615,14 @@ static void duk__cbor_encode_value(duk_cbor_encode_context *enc_ctx) {
 		break;
 	}
 	case DUK_TYPE_BOOLEAN: {
-		duk_uint8_t u8 = duk_get_boolean(enc_ctx->ctx, -1) ? 0xf5U : 0xf4U;
+		duk_uint8_t u8 = duk_get_boolean(enc_ctx->thr, -1) ? 0xf5U : 0xf4U;
 		p = enc_ctx->ptr;
 		*p++ = u8;
 		enc_ctx->ptr = p;
 		break;
 	}
 	case DUK_TYPE_NUMBER: {
-		duk__cbor_encode_double(enc_ctx, duk_get_number(enc_ctx->ctx, -1));
+		duk__cbor_encode_double(enc_ctx, duk_get_number(enc_ctx->thr, -1));
 		break;
 	}
 	case DUK_TYPE_STRING: {
@@ -1087,7 +650,7 @@ static void duk__cbor_encode_value(duk_cbor_encode_context *enc_ctx) {
 		goto fail;
 	}
 
-	duk_pop(enc_ctx->ctx);
+	duk_pop(enc_ctx->thr);
 	return;
 
  fail:
@@ -1098,67 +661,69 @@ static void duk__cbor_encode_value(duk_cbor_encode_context *enc_ctx) {
  *  Decoding
  */
 
-static void duk__cbor_req_stack(duk_cbor_decode_context *dec_ctx) {
-	duk_require_stack(dec_ctx->ctx, 4);
+DUK_LOCAL void duk__cbor_req_stack(duk_cbor_decode_context *dec_ctx) {
+	duk_require_stack(dec_ctx->thr, 4);
 }
 
-static void duk__cbor_decode_error(duk_cbor_decode_context *dec_ctx) {
-	(void) duk_type_error(dec_ctx->ctx, "cbor decode error");
+DUK_LOCAL void duk__cbor_decode_error(duk_cbor_decode_context *dec_ctx) {
+	(void) duk_type_error(dec_ctx->thr, "cbor decode error");
 }
 
-static duk_uint8_t duk__cbor_decode_readbyte(duk_cbor_decode_context *dec_ctx) {
-	DUK_CBOR_ASSERT(dec_ctx->off <= dec_ctx->len);
-	if (DUK_CBOR_UNLIKELY(dec_ctx->len - dec_ctx->off < 1U)) {
+DUK_LOCAL duk_uint8_t duk__cbor_decode_readbyte(duk_cbor_decode_context *dec_ctx) {
+	DUK_ASSERT(dec_ctx->off <= dec_ctx->len);
+	if (DUK_UNLIKELY(dec_ctx->len - dec_ctx->off < 1U)) {
 		duk__cbor_decode_error(dec_ctx);
 	}
 	return dec_ctx->buf[dec_ctx->off++];
 }
 
-static duk_uint16_t duk__cbor_decode_read_u16(duk_cbor_decode_context *dec_ctx) {
+DUK_LOCAL duk_uint16_t duk__cbor_decode_read_u16(duk_cbor_decode_context *dec_ctx) {
 	duk_uint16_t res;
 
-	if (DUK_CBOR_UNLIKELY(dec_ctx->len - dec_ctx->off < 2U)) {
+	DUK_ASSERT(dec_ctx->off <= dec_ctx->len);
+	if (DUK_UNLIKELY(dec_ctx->len - dec_ctx->off < 2U)) {
 		duk__cbor_decode_error(dec_ctx);
 	}
-	res = duk__cbor_read_uint16_big(dec_ctx->buf + dec_ctx->off);
+	res = DUK_RAW_READ_U16_BE(dec_ctx->buf + dec_ctx->off);
 	dec_ctx->off += 2;
 	return res;
 }
 
-static duk_uint32_t duk__cbor_decode_read_u32(duk_cbor_decode_context *dec_ctx) {
+DUK_LOCAL duk_uint32_t duk__cbor_decode_read_u32(duk_cbor_decode_context *dec_ctx) {
 	duk_uint32_t res;
 
-	if (DUK_CBOR_UNLIKELY(dec_ctx->len - dec_ctx->off < 4U)) {
+	DUK_ASSERT(dec_ctx->off <= dec_ctx->len);
+	if (DUK_UNLIKELY(dec_ctx->len - dec_ctx->off < 4U)) {
 		duk__cbor_decode_error(dec_ctx);
 	}
-	res = duk__cbor_read_uint32_big(dec_ctx->buf + dec_ctx->off);
+	res = DUK_RAW_READ_U32_BE(dec_ctx->buf + dec_ctx->off);
 	dec_ctx->off += 4;
 	return res;
 }
 
-static duk_uint8_t duk__cbor_decode_peekbyte(duk_cbor_decode_context *dec_ctx) {
-	if (DUK_CBOR_UNLIKELY(dec_ctx->off >= dec_ctx->len)) {
+DUK_LOCAL duk_uint8_t duk__cbor_decode_peekbyte(duk_cbor_decode_context *dec_ctx) {
+	if (DUK_UNLIKELY(dec_ctx->off >= dec_ctx->len)) {
 		duk__cbor_decode_error(dec_ctx);
 	}
 	return dec_ctx->buf[dec_ctx->off];
 }
 
-static void duk__cbor_decode_rewind(duk_cbor_decode_context *dec_ctx, duk_size_t len) {
-	DUK_CBOR_ASSERT(len <= dec_ctx->off);  /* Caller must ensure. */
+DUK_LOCAL void duk__cbor_decode_rewind(duk_cbor_decode_context *dec_ctx, duk_size_t len) {
+	DUK_ASSERT(len <= dec_ctx->off);  /* Caller must ensure. */
 	dec_ctx->off -= len;
 }
 
 #if 0
-static void duk__cbor_decode_ensure(duk_cbor_decode_context *dec_ctx, duk_size_t len) {
+DUK_LOCAL void duk__cbor_decode_ensure(duk_cbor_decode_context *dec_ctx, duk_size_t len) {
 	if (dec_ctx->off + len > dec_ctx->len) {
 		duk__cbor_decode_error(dec_ctx);
 	}
 }
 #endif
 
-static const duk_uint8_t *duk__cbor_decode_consume(duk_cbor_decode_context *dec_ctx, duk_size_t len) {
-	DUK_CBOR_ASSERT(dec_ctx->off <= dec_ctx->len);
-	if (DUK_CBOR_LIKELY(dec_ctx->len - dec_ctx->off >= len)) {
+DUK_LOCAL const duk_uint8_t *duk__cbor_decode_consume(duk_cbor_decode_context *dec_ctx, duk_size_t len) {
+	DUK_ASSERT(dec_ctx->off <= dec_ctx->len);
+	if (DUK_LIKELY(dec_ctx->len - dec_ctx->off >= len)) {
 		const duk_uint8_t *res = dec_ctx->buf + dec_ctx->off;
 		dec_ctx->off += len;
 		return res;
@@ -1168,9 +733,9 @@ static const duk_uint8_t *duk__cbor_decode_consume(duk_cbor_decode_context *dec_
 	return NULL;
 }
 
-static int duk__cbor_decode_checkbreak(duk_cbor_decode_context *dec_ctx) {
+DUK_LOCAL int duk__cbor_decode_checkbreak(duk_cbor_decode_context *dec_ctx) {
 	if (duk__cbor_decode_peekbyte(dec_ctx) == 0xffU) {
-		DUK_CBOR_ASSERT(dec_ctx->off < dec_ctx->len);
+		DUK_ASSERT(dec_ctx->off < dec_ctx->len);
 		dec_ctx->off++;
 #if 0
 		(void) duk__cbor_decode_readbyte(dec_ctx);
@@ -1180,7 +745,7 @@ static int duk__cbor_decode_checkbreak(duk_cbor_decode_context *dec_ctx) {
 	return 0;
 }
 
-static void duk__cbor_decode_push_aival_int(duk_cbor_decode_context *dec_ctx, duk_uint8_t ib, duk_bool_t negative) {
+DUK_LOCAL void duk__cbor_decode_push_aival_int(duk_cbor_decode_context *dec_ctx, duk_uint8_t ib, duk_bool_t negative) {
 	duk_uint8_t ai;
 	duk_uint32_t t, t1, t2;
 #if 0
@@ -1215,7 +780,7 @@ static void duk__cbor_decode_push_aival_int(duk_cbor_decode_context *dec_ctx, du
 		t = (duk_uint32_t) duk__cbor_decode_read_u32(dec_ctx);
 		t1 = t;
 #if 0
-		t3 = (duk_uint64_t) t2 * 0x100000000ULL + (duk_uint64_t) t1;
+		t3 = (duk_uint64_t) t2 * DUK_U64_CONSTANT(0x100000000) + (duk_uint64_t) t1;
 		if (negative) {
 			if (t3 == DUK_UINT64_MAX) {
 				/* -(0xffff'ffff'ffff'ffffULL + 1) =
@@ -1226,14 +791,14 @@ static void duk__cbor_decode_push_aival_int(duk_cbor_decode_context *dec_ctx, du
 				 */
 				return -18446744073709551616.0;
 			} else {
-				return -((duk_double_t) (t3 + 1ULL));
+				return -((duk_double_t) (t3 + DUK_U64_CONSTANT(1)));
 			}
 		} else {
 			return (duk_double_t) t3;  /* XXX: cast helper */
 		}
 #endif
 #if 0
-		t3 = (duk_uint64_t) t2 * 0x100000000ULL + (duk_uint64_t) t1;
+		t3 = (duk_uint64_t) t2 * DUK_U64_CONSTANT(0x100000000) + (duk_uint64_t) t1;
 		if (negative) {
 			/* Simpler version: take advantage of the fact that
 			 * 0xffff'ffff'ffff'ffff and 0x1'0000'0000'0000'0000
@@ -1273,7 +838,7 @@ static void duk__cbor_decode_push_aival_int(duk_cbor_decode_context *dec_ctx, du
 		}
 #endif
 		/* XXX: a push and check for fastint API would be nice */
-		duk_push_number(dec_ctx->ctx, d);
+		duk_push_number(dec_ctx->thr, d);
 		return;
 	}
 
@@ -1284,16 +849,16 @@ static void duk__cbor_decode_push_aival_int(duk_cbor_decode_context *dec_ctx, du
 	if (negative) {
 		/* XXX: a push and check for fastint API would be nice */
 		if ((duk_uint_t) t <= (duk_uint_t) -(DUK_INT_MIN + 1)) {
-			duk_push_int(dec_ctx->ctx, -1 - ((duk_int_t) t));
+			duk_push_int(dec_ctx->thr, -1 - ((duk_int_t) t));
 		} else {
-			duk_push_number(dec_ctx->ctx, -1.0 - (duk_double_t) t);
+			duk_push_number(dec_ctx->thr, -1.0 - (duk_double_t) t);
 		}
 	} else {
-		duk_push_uint(dec_ctx->ctx, (duk_uint_t) t);
+		duk_push_uint(dec_ctx->thr, (duk_uint_t) t);
 	}
 }
 
-static void duk__cbor_decode_skip_aival_int(duk_cbor_decode_context *dec_ctx, duk_uint8_t ib) {
+DUK_LOCAL void duk__cbor_decode_skip_aival_int(duk_cbor_decode_context *dec_ctx, duk_uint8_t ib) {
 	const duk_int8_t skips[32] = {
 		0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
 		0, 0, 0, 0, 0, 0, 0, 0, 1, 2, 4, 8, -1, -1, -1, -1
@@ -1310,7 +875,7 @@ static void duk__cbor_decode_skip_aival_int(duk_cbor_decode_context *dec_ctx, du
 	return;
 }
 
-static duk_uint32_t duk__cbor_decode_aival_uint32(duk_cbor_decode_context *dec_ctx, duk_uint8_t ib) {
+DUK_LOCAL duk_uint32_t duk__cbor_decode_aival_uint32(duk_cbor_decode_context *dec_ctx, duk_uint8_t ib) {
 	duk_uint8_t ai;
 	duk_uint32_t t;
 
@@ -1342,7 +907,7 @@ static duk_uint32_t duk__cbor_decode_aival_uint32(duk_cbor_decode_context *dec_c
 	return 0U;
 }
 
-static void duk__cbor_decode_buffer(duk_cbor_decode_context *dec_ctx, duk_uint8_t expected_base) {
+DUK_LOCAL void duk__cbor_decode_buffer(duk_cbor_decode_context *dec_ctx, duk_uint8_t expected_base) {
 	duk_uint32_t len;
 	duk_uint8_t *buf;
 	const duk_uint8_t *inp;
@@ -1356,19 +921,19 @@ static void duk__cbor_decode_buffer(duk_cbor_decode_context *dec_ctx, duk_uint8_
 	len = duk__cbor_decode_aival_uint32(dec_ctx, ib);
 	inp = duk__cbor_decode_consume(dec_ctx, len);
 	/* XXX: duk_push_fixed_buffer_with_data() would be a nice API addition. */
-	buf = (duk_uint8_t *) duk_push_fixed_buffer(dec_ctx->ctx, (duk_size_t) len);
-	(void) memcpy((void *) buf, (const void *) inp, (size_t) len);
+	buf = (duk_uint8_t *) duk_push_fixed_buffer(dec_ctx->thr, (duk_size_t) len);
+	duk_memcpy((void *) buf, (const void *) inp, (size_t) len);
 }
 
-static void duk__cbor_decode_join_buffers(duk_cbor_decode_context *dec_ctx, duk_idx_t count) {
+DUK_LOCAL void duk__cbor_decode_join_buffers(duk_cbor_decode_context *dec_ctx, duk_idx_t count) {
 	duk_size_t total_size = 0;
-	duk_idx_t top = duk_get_top(dec_ctx->ctx);
+	duk_idx_t top = duk_get_top(dec_ctx->thr);
 	duk_idx_t base = top - count;  /* count is >= 1 */
 	duk_idx_t idx;
 	duk_uint8_t *p = NULL;
 
-	DUK_CBOR_ASSERT(count >= 1);
-	DUK_CBOR_ASSERT(top >= count);
+	DUK_ASSERT(count >= 1);
+	DUK_ASSERT(top >= count);
 
 	for (;;) {
 		/* First round: compute total size.
@@ -1378,15 +943,15 @@ static void duk__cbor_decode_join_buffers(duk_cbor_decode_context *dec_ctx, duk_
 			duk_uint8_t *buf_data;
 			duk_size_t buf_size;
 
-			buf_data = (duk_uint8_t *) duk_require_buffer(dec_ctx->ctx, idx, &buf_size);
+			buf_data = (duk_uint8_t *) duk_require_buffer(dec_ctx->thr, idx, &buf_size);
 			if (p != NULL) {
 				if (buf_size > 0U) {
-					(void) memcpy((void *) p, (const void *) buf_data, buf_size);
+					duk_memcpy((void *) p, (const void *) buf_data, buf_size);
 				}
 				p += buf_size;
 			} else {
 				total_size += buf_size;
-				if (DUK_CBOR_UNLIKELY(total_size < buf_size)) {  /* Wrap check. */
+				if (DUK_UNLIKELY(total_size < buf_size)) {  /* Wrap check. */
 					duk__cbor_decode_error(dec_ctx);
 				}
 			}
@@ -1395,22 +960,22 @@ static void duk__cbor_decode_join_buffers(duk_cbor_decode_context *dec_ctx, duk_
 		if (p != NULL) {
 			break;
 		} else {
-			p = (duk_uint8_t *) duk_push_fixed_buffer(dec_ctx->ctx, total_size);
-			DUK_CBOR_ASSERT(p != NULL);
+			p = (duk_uint8_t *) duk_push_fixed_buffer(dec_ctx->thr, total_size);
+			DUK_ASSERT(p != NULL);
 		}
 	}
 
-	duk_replace(dec_ctx->ctx, base);
-	duk_pop_n(dec_ctx->ctx, count - 1);
+	duk_replace(dec_ctx->thr, base);
+	duk_pop_n(dec_ctx->thr, count - 1);
 }
 
-static void duk__cbor_decode_and_join_strbuf(duk_cbor_decode_context *dec_ctx, duk_uint8_t expected_base) {
+DUK_LOCAL void duk__cbor_decode_and_join_strbuf(duk_cbor_decode_context *dec_ctx, duk_uint8_t expected_base) {
 	duk_idx_t count = 0;
 	for (;;) {
 		if (duk__cbor_decode_checkbreak(dec_ctx)) {
 			break;
 		}
-		duk_require_stack(dec_ctx->ctx, 1);
+		duk_require_stack(dec_ctx->thr, 1);
 		duk__cbor_decode_buffer(dec_ctx, expected_base);
 		count++;
 		if (DUK_UNLIKELY(count <= 0)) {  /* Wrap check. */
@@ -1418,36 +983,36 @@ static void duk__cbor_decode_and_join_strbuf(duk_cbor_decode_context *dec_ctx, d
 		}
 	}
 	if (count == 0) {
-		(void) duk_push_fixed_buffer(dec_ctx->ctx, 0);
+		(void) duk_push_fixed_buffer(dec_ctx->thr, 0);
 	} else if (count > 1) {
 		duk__cbor_decode_join_buffers(dec_ctx, count);
 	}
 }
 
-static duk_double_t duk__cbor_decode_half_float(duk_cbor_decode_context *dec_ctx) {
-	duk_cbor_dblunion u;
+DUK_LOCAL duk_double_t duk__cbor_decode_half_float(duk_cbor_decode_context *dec_ctx) {
+	duk_double_union u;
 	const duk_uint8_t *inp;
-	duk_int_t exp;
+	duk_int_t expt;
 	duk_uint_t u16;
 	duk_uint_t tmp;
 	duk_double_t res;
 
 	inp = duk__cbor_decode_consume(dec_ctx, 2);
 	u16 = ((duk_uint_t) inp[0] << 8) + (duk_uint_t) inp[1];
-	exp = (duk_int_t) ((u16 >> 10) & 0x1fU) - 15;
+	expt = (duk_int_t) ((u16 >> 10) & 0x1fU) - 15;
 
 	/* Reconstruct IEEE double into little endian order first, then convert
 	 * to host order.
 	 */
 
-	memset((void *) &u, 0, sizeof(u));
+	duk_memzero((void *) &u, sizeof(u));
 
-	if (exp == -15) {
+	if (expt == -15) {
 		/* Zero or denormal; but note that half float
 		 * denormals become double normals.
 		 */
 		if ((u16 & 0x03ffU) == 0) {
-			u.x[7] = inp[0] & 0x80U;
+			u.uc[7] = inp[0] & 0x80U;
 		} else {
 			/* Create denormal by first creating a double that
 			 * contains the denormal bits and a leading implicit
@@ -1459,48 +1024,48 @@ static duk_double_t duk__cbor_decode_half_float(duk_cbor_decode_context *dec_ctx
 			 *
 			 * Double exponent: -14 + 1023 = 0x3f1
 			 */
-			u.x[7] = 0x3fU;
-			u.x[6] = 0x10U + (duk_uint8_t) ((u16 >> 6) & 0x0fU);
-			u.x[5] = (duk_uint8_t) ((u16 << 2) & 0xffU);  /* Mask is really 0xfcU */
+			u.uc[7] = 0x3fU;
+			u.uc[6] = 0x10U + (duk_uint8_t) ((u16 >> 6) & 0x0fU);
+			u.uc[5] = (duk_uint8_t) ((u16 << 2) & 0xffU);  /* Mask is really 0xfcU */
 
-			duk__cbor_dblunion_little_to_host(&u);
+			duk_dblunion_little_to_host(&u);
 			res = u.d - 0.00006103515625;  /* 2^(-14) */
 			if (u16 & 0x8000U) {
 				res = -res;
 			}
 			return res;
 		}
-	} else if (exp == 16) {
+	} else if (expt == 16) {
 		/* +/- Inf or NaN. */
 		if ((u16 & 0x03ffU) == 0) {
-			u.x[7] = (inp[0] & 0x80U) + 0x7fU;
-			u.x[6] = 0xf0U;
+			u.uc[7] = (inp[0] & 0x80U) + 0x7fU;
+			u.uc[6] = 0xf0U;
 		} else {
 			/* Create a 'quiet NaN' with highest
 			 * bit set (there are some platforms
 			 * where the NaN payload convention is
 			 * the opposite).  Keep sign.
 			 */
-			u.x[7] = (inp[0] & 0x80U) + 0x7fU;
-			u.x[6] = 0xf8U;
+			u.uc[7] = (inp[0] & 0x80U) + 0x7fU;
+			u.uc[6] = 0xf8U;
 		}
 	} else {
 		/* Normal. */
 		tmp = (inp[0] & 0x80U) ? 0x80000000UL : 0UL;
-		tmp += (duk_uint_t) (exp + 1023) << 20;
+		tmp += (duk_uint_t) (expt + 1023) << 20;
 		tmp += (duk_uint_t) (inp[0] & 0x03U) << 18;
 		tmp += (duk_uint_t) (inp[1] & 0xffU) << 10;
-		u.x[7] = (tmp >> 24) & 0xffU;
-		u.x[6] = (tmp >> 16) & 0xffU;
-		u.x[5] = (tmp >> 8) & 0xffU;
-		u.x[4] = (tmp >> 0) & 0xffU;
+		u.uc[7] = (tmp >> 24) & 0xffU;
+		u.uc[6] = (tmp >> 16) & 0xffU;
+		u.uc[5] = (tmp >> 8) & 0xffU;
+		u.uc[4] = (tmp >> 0) & 0xffU;
 	}
 
-	duk__cbor_dblunion_little_to_host(&u);
+	duk_dblunion_little_to_host(&u);
 	return u.d;
 }
 
-static void duk__cbor_decode_string(duk_cbor_decode_context *dec_ctx, duk_uint8_t ib, duk_uint8_t ai) {
+DUK_LOCAL void duk__cbor_decode_string(duk_cbor_decode_context *dec_ctx, duk_uint8_t ib, duk_uint8_t ai) {
 	/* If the CBOR string data is not valid UTF-8 it is technically
 	 * invalid CBOR.  Possible behaviors at least:
 	 *
@@ -1523,18 +1088,18 @@ static void duk__cbor_decode_string(duk_cbor_decode_context *dec_ctx, duk_uint8_
 		duk_size_t buf_size;
 
 		duk__cbor_decode_and_join_strbuf(dec_ctx, 0x60U);
-		buf_data = (duk_uint8_t *) duk_require_buffer(dec_ctx->ctx, -1, &buf_size);
-		(void) duk_push_lstring(dec_ctx->ctx, (const char *) buf_data, buf_size);
-		duk_remove(dec_ctx->ctx, -2);
+		buf_data = (duk_uint8_t *) duk_require_buffer(dec_ctx->thr, -1, &buf_size);
+		(void) duk_push_lstring(dec_ctx->thr, (const char *) buf_data, buf_size);
+		duk_remove(dec_ctx->thr, -2);
 	} else {
 		duk_uint32_t len;
 		const duk_uint8_t *inp;
 
 		len = duk__cbor_decode_aival_uint32(dec_ctx, ib);
 		inp = duk__cbor_decode_consume(dec_ctx, len);
-		(void) duk_push_lstring(dec_ctx->ctx, (const char *) inp, (duk_size_t) len);
+		(void) duk_push_lstring(dec_ctx->thr, (const char *) inp, (duk_size_t) len);
 	}
-	if (duk_is_symbol(dec_ctx->ctx, -1)) {
+	if (duk_is_symbol(dec_ctx->thr, -1)) {
 		/* Refuse to create Symbols when decoding. */
 		duk__cbor_decode_error(dec_ctx);
 	}
@@ -1544,7 +1109,7 @@ static void duk__cbor_decode_string(duk_cbor_decode_context *dec_ctx, duk_uint8_
 	 */
 }
 
-static duk_bool_t duk__cbor_decode_array(duk_cbor_decode_context *dec_ctx, duk_uint8_t ib, duk_uint8_t ai) {
+DUK_LOCAL duk_bool_t duk__cbor_decode_array(duk_cbor_decode_context *dec_ctx, duk_uint8_t ib, duk_uint8_t ai) {
 	duk_uint32_t idx, len;
 
 	duk__cbor_req_stack(dec_ctx);
@@ -1562,7 +1127,7 @@ static duk_bool_t duk__cbor_decode_array(duk_cbor_decode_context *dec_ctx, duk_u
 	}
 
 	/* XXX: use bare array? */
-	duk_push_array(dec_ctx->ctx);
+	duk_push_array(dec_ctx->thr);
 	for (idx = 0U; ;) {
 		if (len == 0xffffffffUL && duk__cbor_decode_checkbreak(dec_ctx)) {
 			break;
@@ -1574,7 +1139,7 @@ static duk_bool_t duk__cbor_decode_array(duk_cbor_decode_context *dec_ctx, duk_u
 			break;
 		}
 		duk__cbor_decode_value(dec_ctx);
-		duk_put_prop_index(dec_ctx->ctx, -2, (duk_uarridx_t) idx);
+		duk_put_prop_index(dec_ctx->thr, -2, (duk_uarridx_t) idx);
 		idx++;
 		if (idx == 0U) {
 			return 0;  /* wrapped */
@@ -1584,7 +1149,7 @@ static duk_bool_t duk__cbor_decode_array(duk_cbor_decode_context *dec_ctx, duk_u
 	return 1;
 }
 
-static duk_bool_t duk__cbor_decode_map(duk_cbor_decode_context *dec_ctx, duk_uint8_t ib, duk_uint8_t ai) {
+DUK_LOCAL duk_bool_t duk__cbor_decode_map(duk_cbor_decode_context *dec_ctx, duk_uint8_t ib, duk_uint8_t ai) {
 	duk_uint32_t count;
 
 	duk__cbor_req_stack(dec_ctx);
@@ -1599,7 +1164,7 @@ static duk_bool_t duk__cbor_decode_map(duk_cbor_decode_context *dec_ctx, duk_uin
 	}
 
 	/* XXX: use bare object? */
-	duk_push_object(dec_ctx->ctx);
+	duk_push_object(dec_ctx->thr);
 	for (;;) {
 		if (count == 0xffffffffUL) {
 			if (duk__cbor_decode_checkbreak(dec_ctx)) {
@@ -1622,34 +1187,34 @@ static duk_bool_t duk__cbor_decode_map(duk_cbor_decode_context *dec_ctx, duk_uin
 		 */
 		duk__cbor_decode_value(dec_ctx);
 		duk__cbor_decode_value(dec_ctx);
-		duk_put_prop(dec_ctx->ctx, -3);
+		duk_put_prop(dec_ctx->thr, -3);
 	}
 
 	return 1;
 }
 
-static duk_double_t duk__cbor_decode_float(duk_cbor_decode_context *dec_ctx) {
-	duk_cbor_fltunion u;
+DUK_LOCAL duk_double_t duk__cbor_decode_float(duk_cbor_decode_context *dec_ctx) {
+	duk_float_union u;
 	const duk_uint8_t *inp;
 	inp = duk__cbor_decode_consume(dec_ctx, 4);
-	(void) memcpy((void *) u.x, (const void *) inp, 4);
-	duk__cbor_fltunion_big_to_host(&u);
+	duk_memcpy((void *) u.uc, (const void *) inp, 4);
+	duk_fltunion_big_to_host(&u);
 	return (duk_double_t) u.f;
 }
 
-static duk_double_t duk__cbor_decode_double(duk_cbor_decode_context *dec_ctx) {
-	duk_cbor_dblunion u;
+DUK_LOCAL duk_double_t duk__cbor_decode_double(duk_cbor_decode_context *dec_ctx) {
+	duk_double_union u;
 	const duk_uint8_t *inp;
 	inp = duk__cbor_decode_consume(dec_ctx, 8);
-	(void) memcpy((void *) u.x, (const void *) inp, 8);
-	duk__cbor_dblunion_big_to_host(&u);
+	duk_memcpy((void *) u.uc, (const void *) inp, 8);
+	duk_dblunion_big_to_host(&u);
 	return u.d;
 }
 
 #if defined(DUK_CBOR_DECODE_FASTPATH)
 #define DUK__CBOR_AI  (ib & 0x1fU)
 
-static void duk__cbor_decode_value(duk_cbor_decode_context *dec_ctx) {
+DUK_LOCAL void duk__cbor_decode_value(duk_cbor_decode_context *dec_ctx) {
 	duk_uint8_t ib;
 
 	/* Any paths potentially recursing back to duk__cbor_decode_value()
@@ -1658,9 +1223,7 @@ static void duk__cbor_decode_value(duk_cbor_decode_context *dec_ctx) {
 	 */
 
  reread_initial_byte:
-#if defined(DUK_CBOR_DPRINT)
-	fprintf(stderr, "cbor decode off=%ld len=%ld\n", (long) dec_ctx->off, (long) dec_ctx->len);
-#endif
+	DUK_DDD(DUK_DDDPRINT("cbor decode off=%ld len=%ld", (long) dec_ctx->off, (long) dec_ctx->len));
 
 	ib = duk__cbor_decode_readbyte(dec_ctx);
 
@@ -1671,7 +1234,7 @@ static void duk__cbor_decode_value(duk_cbor_decode_context *dec_ctx) {
 	case 0x00U: case 0x01U: case 0x02U: case 0x03U: case 0x04U: case 0x05U: case 0x06U: case 0x07U:
 	case 0x08U: case 0x09U: case 0x0aU: case 0x0bU: case 0x0cU: case 0x0dU: case 0x0eU: case 0x0fU:
 	case 0x10U: case 0x11U: case 0x12U: case 0x13U: case 0x14U: case 0x15U: case 0x16U: case 0x17U:
-		duk_push_uint(dec_ctx->ctx, ib);
+		duk_push_uint(dec_ctx->thr, ib);
 		break;
 	case 0x18U: case 0x19U: case 0x1aU: case 0x1bU:
 		duk__cbor_decode_push_aival_int(dec_ctx, ib, 0 /*negative*/);
@@ -1681,7 +1244,7 @@ static void duk__cbor_decode_value(duk_cbor_decode_context *dec_ctx) {
 	case 0x20U: case 0x21U: case 0x22U: case 0x23U: case 0x24U: case 0x25U: case 0x26U: case 0x27U:
 	case 0x28U: case 0x29U: case 0x2aU: case 0x2bU: case 0x2cU: case 0x2dU: case 0x2eU: case 0x2fU:
 	case 0x30U: case 0x31U: case 0x32U: case 0x33U: case 0x34U: case 0x35U: case 0x36U: case 0x37U:
-		duk_push_int(dec_ctx->ctx, -((duk_int_t) ((ib - 0x20U) + 1U)));
+		duk_push_int(dec_ctx->thr, -((duk_int_t) ((ib - 0x20U) + 1U)));
 		break;
 	case 0x38U: case 0x39U: case 0x3aU: case 0x3bU:
 		duk__cbor_decode_push_aival_int(dec_ctx, ib, 1 /*negative*/);
@@ -1692,13 +1255,13 @@ static void duk__cbor_decode_value(duk_cbor_decode_context *dec_ctx) {
 	case 0x48U: case 0x49U: case 0x4aU: case 0x4bU: case 0x4cU: case 0x4dU: case 0x4eU: case 0x4fU:
 	case 0x50U: case 0x51U: case 0x52U: case 0x53U: case 0x54U: case 0x55U: case 0x56U: case 0x57U:
 		/* XXX: Avoid rewind, we know the length already. */
-		DUK_CBOR_ASSERT(dec_ctx->off > 0U);
+		DUK_ASSERT(dec_ctx->off > 0U);
 		dec_ctx->off--;
 		duk__cbor_decode_buffer(dec_ctx, 0x40U);
 		break;
 	case 0x58U: case 0x59U: case 0x5aU: case 0x5bU:
 		/* XXX: Avoid rewind, decode length inline. */
-		DUK_CBOR_ASSERT(dec_ctx->off > 0U);
+		DUK_ASSERT(dec_ctx->off > 0U);
 		dec_ctx->off--;
 		duk__cbor_decode_buffer(dec_ctx, 0x40U);
 		break;
@@ -1725,38 +1288,38 @@ static void duk__cbor_decode_value(duk_cbor_decode_context *dec_ctx) {
 	case 0x80U: case 0x81U: case 0x82U: case 0x83U: case 0x84U: case 0x85U: case 0x86U: case 0x87U:
 	case 0x88U: case 0x89U: case 0x8aU: case 0x8bU: case 0x8cU: case 0x8dU: case 0x8eU: case 0x8fU:
 	case 0x90U: case 0x91U: case 0x92U: case 0x93U: case 0x94U: case 0x95U: case 0x96U: case 0x97U:
-		if (DUK_CBOR_UNLIKELY(duk__cbor_decode_array(dec_ctx, ib, DUK__CBOR_AI) == 0)) {
+		if (DUK_UNLIKELY(duk__cbor_decode_array(dec_ctx, ib, DUK__CBOR_AI) == 0)) {
 			goto format_error;
 		}
 		break;
 	case 0x98U: case 0x99U: case 0x9aU: case 0x9bU:
-		if (DUK_CBOR_UNLIKELY(duk__cbor_decode_array(dec_ctx, ib, DUK__CBOR_AI) == 0)) {
+		if (DUK_UNLIKELY(duk__cbor_decode_array(dec_ctx, ib, DUK__CBOR_AI) == 0)) {
 			goto format_error;
 		}
 		break;
 	case 0x9cU: case 0x9dU: case 0x9eU:
 		goto format_error;
 	case 0x9fU:
-		if (DUK_CBOR_UNLIKELY(duk__cbor_decode_array(dec_ctx, ib, DUK__CBOR_AI) == 0)) {
+		if (DUK_UNLIKELY(duk__cbor_decode_array(dec_ctx, ib, DUK__CBOR_AI) == 0)) {
 			goto format_error;
 		}
 		break;
 	case 0xa0U: case 0xa1U: case 0xa2U: case 0xa3U: case 0xa4U: case 0xa5U: case 0xa6U: case 0xa7U:
 	case 0xa8U: case 0xa9U: case 0xaaU: case 0xabU: case 0xacU: case 0xadU: case 0xaeU: case 0xafU:
 	case 0xb0U: case 0xb1U: case 0xb2U: case 0xb3U: case 0xb4U: case 0xb5U: case 0xb6U: case 0xb7U:
-		if (DUK_CBOR_UNLIKELY(duk__cbor_decode_map(dec_ctx, ib, DUK__CBOR_AI) == 0)) {
+		if (DUK_UNLIKELY(duk__cbor_decode_map(dec_ctx, ib, DUK__CBOR_AI) == 0)) {
 			goto format_error;
 		}
 		break;
 	case 0xb8U: case 0xb9U: case 0xbaU: case 0xbbU:
-		if (DUK_CBOR_UNLIKELY(duk__cbor_decode_map(dec_ctx, ib, DUK__CBOR_AI) == 0)) {
+		if (DUK_UNLIKELY(duk__cbor_decode_map(dec_ctx, ib, DUK__CBOR_AI) == 0)) {
 			goto format_error;
 		}
 		break;
 	case 0xbcU: case 0xbdU: case 0xbeU:
 		goto format_error;
 	case 0xbfU:
-		if (DUK_CBOR_UNLIKELY(duk__cbor_decode_map(dec_ctx, ib, DUK__CBOR_AI) == 0)) {
+		if (DUK_UNLIKELY(duk__cbor_decode_map(dec_ctx, ib, DUK__CBOR_AI) == 0)) {
 			goto format_error;
 		}
 		break;
@@ -1811,16 +1374,16 @@ static void duk__cbor_decode_value(duk_cbor_decode_context *dec_ctx) {
 	case 0xf3U:
 		goto format_error;
 	case 0xf4U:
-		duk_push_false(dec_ctx->ctx);
+		duk_push_false(dec_ctx->thr);
 		break;
 	case 0xf5U:
-		duk_push_true(dec_ctx->ctx);
+		duk_push_true(dec_ctx->thr);
 		break;
 	case 0xf6U:
-		duk_push_null(dec_ctx->ctx);
+		duk_push_null(dec_ctx->thr);
 		break;
 	case 0xf7U:
-		duk_push_undefined(dec_ctx->ctx);
+		duk_push_undefined(dec_ctx->thr);
 		break;
 	case 0xf8U:
 		/* Simple value 32-255, nothing defined yet, so reject. */
@@ -1828,19 +1391,19 @@ static void duk__cbor_decode_value(duk_cbor_decode_context *dec_ctx) {
 	case 0xf9U: {
 		duk_double_t d;
 		d = duk__cbor_decode_half_float(dec_ctx);
-		duk_push_number(dec_ctx->ctx, d);
+		duk_push_number(dec_ctx->thr, d);
 		break;
 	}
 	case 0xfaU: {
 		duk_double_t d;
 		d = duk__cbor_decode_float(dec_ctx);
-		duk_push_number(dec_ctx->ctx, d);
+		duk_push_number(dec_ctx->thr, d);
 		break;
 	}
 	case 0xfbU: {
 		duk_double_t d;
 		d = duk__cbor_decode_double(dec_ctx);
-		duk_push_number(dec_ctx->ctx, d);
+		duk_push_number(dec_ctx->thr, d);
 		break;
 	}
 	case 0xfcU:
@@ -1856,7 +1419,7 @@ static void duk__cbor_decode_value(duk_cbor_decode_context *dec_ctx) {
 	duk__cbor_decode_error(dec_ctx);
 }
 #else  /* DUK_CBOR_DECODE_FASTPATH */
-static void duk__cbor_decode_value(duk_cbor_decode_context *dec_ctx) {
+DUK_LOCAL void duk__cbor_decode_value(duk_cbor_decode_context *dec_ctx) {
 	duk_uint8_t ib, mt, ai;
 
 	/* Any paths potentially recursing back to duk__cbor_decode_value()
@@ -1865,9 +1428,7 @@ static void duk__cbor_decode_value(duk_cbor_decode_context *dec_ctx) {
 	 */
 
  reread_initial_byte:
-#if defined(DUK_CBOR_DPRINT)
-	fprintf(stderr, "cbor decode off=%ld len=%ld\n", (long) dec_ctx->off, (long) dec_ctx->len);
-#endif
+	DUK_DDD(DUK_DDDPRINT("cbor decode off=%ld len=%ld", (long) dec_ctx->off, (long) dec_ctx->len));
 
 	ib = duk__cbor_decode_readbyte(dec_ctx);
 	mt = ib >> 5U;
@@ -1904,13 +1465,13 @@ static void duk__cbor_decode_value(duk_cbor_decode_context *dec_ctx) {
 		break;
 	}
 	case 4U: {  /* array of data items */
-		if (DUK_CBOR_UNLIKELY(duk__cbor_decode_array(dec_ctx, ib, ai) == 0)) {
+		if (DUK_UNLIKELY(duk__cbor_decode_array(dec_ctx, ib, ai) == 0)) {
 			goto format_error;
 		}
 		break;
 	}
 	case 5U: {  /* map of pairs of data items */
-		if (DUK_CBOR_UNLIKELY(duk__cbor_decode_map(dec_ctx, ib, ai) == 0)) {
+		if (DUK_UNLIKELY(duk__cbor_decode_map(dec_ctx, ib, ai) == 0)) {
 			goto format_error;
 		}
 		break;
@@ -1926,19 +1487,19 @@ static void duk__cbor_decode_value(duk_cbor_decode_context *dec_ctx) {
 	case 7U: {  /* floating point numbers, simple data types, break; other */
 		switch (ai) {
 		case 0x14U: {
-			duk_push_false(dec_ctx->ctx);
+			duk_push_false(dec_ctx->thr);
 			break;
 		}
 		case 0x15U: {
-			duk_push_true(dec_ctx->ctx);
+			duk_push_true(dec_ctx->thr);
 			break;
 		}
 		case 0x16U: {
-			duk_push_null(dec_ctx->ctx);
+			duk_push_null(dec_ctx->thr);
 			break;
 		}
 		case 0x17U: {
-			duk_push_undefined(dec_ctx->ctx);
+			duk_push_undefined(dec_ctx->thr);
 			break;
 		}
 		case 0x18U: {  /* more simple values (1 byte) */
@@ -1955,19 +1516,19 @@ static void duk__cbor_decode_value(duk_cbor_decode_context *dec_ctx) {
 		case 0x19U: {  /* half-float (2 bytes) */
 			duk_double_t d;
 			d = duk__cbor_decode_half_float(dec_ctx);
-			duk_push_number(dec_ctx->ctx, d);
+			duk_push_number(dec_ctx->thr, d);
 			break;
 		}
 		case 0x1aU: {  /* float (4 bytes) */
 			duk_double_t d;
 			d = duk__cbor_decode_float(dec_ctx);
-			duk_push_number(dec_ctx->ctx, d);
+			duk_push_number(dec_ctx->thr, d);
 			break;
 		}
 		case 0x1bU: {  /* double (8 bytes) */
 			duk_double_t d;
 			d = duk__cbor_decode_double(dec_ctx);
-			duk_push_number(dec_ctx->ctx, d);
+			duk_push_number(dec_ctx->thr, d);
 			break;
 		}
 		case 0xffU:  /* unexpected break */
@@ -1989,87 +1550,113 @@ static void duk__cbor_decode_value(duk_cbor_decode_context *dec_ctx) {
 }
 #endif  /* DUK_CBOR_DECODE_FASTPATH */
 
-/*
- *  Public APIs
- */
-
-static duk_ret_t duk__cbor_encode_binding(duk_context *ctx) {
-	/* Produce an ArrayBuffer by first decoding into a plain buffer which
-	 * mimics a Uint8Array and gettings its .buffer property.
-	 */
-	duk_cbor_encode(ctx, -1, 0);
-	duk_get_prop_string(ctx, -1, "buffer");
-	return 1;
-}
-
-static duk_ret_t duk__cbor_decode_binding(duk_context *ctx) {
-	/* Lenient: accept any buffer like. */
-	duk_cbor_decode(ctx, -1, 0);
-	return 1;
-}
-
-void duk_cbor_init(duk_context *ctx, duk_uint_t flags) {
-	(void) flags;
-	duk_push_global_object(ctx);
-	duk_push_string(ctx, "CBOR");
-	duk_push_object(ctx);
-	duk_push_string(ctx, "encode");
-	duk_push_c_function(ctx, duk__cbor_encode_binding, 1);
-	duk_def_prop(ctx, -3, DUK_DEFPROP_ATTR_WC | DUK_DEFPROP_HAVE_VALUE);
-	duk_push_string(ctx, "decode");
-	duk_push_c_function(ctx, duk__cbor_decode_binding, 1);
-	duk_def_prop(ctx, -3, DUK_DEFPROP_ATTR_WC | DUK_DEFPROP_HAVE_VALUE);
-	duk_def_prop(ctx, -3, DUK_DEFPROP_ATTR_WC | DUK_DEFPROP_HAVE_VALUE);
-	duk_pop(ctx);
-}
-
-void duk_cbor_encode(duk_context *ctx, duk_idx_t idx, duk_uint_t encode_flags) {
+DUK_LOCAL void duk__cbor_encode(duk_hthread *thr, duk_idx_t idx, duk_uint_t encode_flags) {
 	duk_cbor_encode_context enc_ctx;
 	duk_uint8_t *buf;
 
-	(void) encode_flags;
+	DUK_UNREF(encode_flags);
 
-	idx = duk_require_normalize_index(ctx, idx);
+	idx = duk_require_normalize_index(thr, idx);
 
-	enc_ctx.ctx = ctx;
-	enc_ctx.idx_buf = duk_get_top(ctx);
+	enc_ctx.thr = thr;
+	enc_ctx.idx_buf = duk_get_top(thr);
 
 	enc_ctx.len = 64;
-	buf = (duk_uint8_t *) duk_push_dynamic_buffer(ctx, enc_ctx.len);
+	buf = (duk_uint8_t *) duk_push_dynamic_buffer(thr, enc_ctx.len);
 	enc_ctx.ptr = buf;
 	enc_ctx.buf = buf;
 	enc_ctx.buf_end = buf + enc_ctx.len;
 
-	duk_dup(ctx, idx);
+	duk_dup(thr, idx);
 	duk__cbor_encode_value(&enc_ctx);
-	duk_resize_buffer(enc_ctx.ctx, enc_ctx.idx_buf, (duk_size_t) (enc_ctx.ptr - enc_ctx.buf));
-	duk_replace(ctx, idx);
+	duk_resize_buffer(enc_ctx.thr, enc_ctx.idx_buf, (duk_size_t) (enc_ctx.ptr - enc_ctx.buf));
+	duk_replace(thr, idx);
 }
 
-void duk_cbor_decode(duk_context *ctx, duk_idx_t idx, duk_uint_t decode_flags) {
+DUK_LOCAL void duk__cbor_decode(duk_hthread *thr, duk_idx_t idx, duk_uint_t decode_flags) {
 	duk_cbor_decode_context dec_ctx;
 
-	(void) decode_flags;
+	DUK_UNREF(decode_flags);
 
 	/* Suppress compile warnings for functions only needed with e.g.
 	 * asserts enabled.
 	 */
-	(void) duk__cbor_get_reserve;
-	(void) duk__cbor_isinf;
-	(void) duk__cbor_fpclassify;
+	DUK_UNREF(duk__cbor_get_reserve);
 
-	idx = duk_require_normalize_index(ctx, idx);
+	idx = duk_require_normalize_index(thr, idx);
 
-	dec_ctx.ctx = ctx;
-	dec_ctx.buf = (const duk_uint8_t *) duk_require_buffer_data(ctx, idx, &dec_ctx.len);
+	dec_ctx.thr = thr;
+	dec_ctx.buf = (const duk_uint8_t *) duk_require_buffer_data(thr, idx, &dec_ctx.len);
 	dec_ctx.off = 0;
 	/* dec_ctx.len: set above */
 
 	duk__cbor_req_stack(&dec_ctx);
 	duk__cbor_decode_value(&dec_ctx);
 	if (dec_ctx.off != dec_ctx.len) {
-		(void) duk_type_error(ctx, "trailing garbage");
+		(void) duk_type_error(thr, "trailing garbage");
 	}
 
-	duk_replace(ctx, idx);
+	duk_replace(thr, idx);
 }
+
+#else  /* DUK_USE_CBOR_SUPPORT */
+
+DUK_LOCAL void duk__cbor_encode(duk_hthread *thr, duk_idx_t idx, duk_uint_t encode_flags) {
+	DUK_UNREF(idx);
+	DUK_UNREF(encode_flags);
+	DUK_ERROR_UNSUPPORTED(thr);
+}
+
+DUK_LOCAL void duk__cbor_decode(duk_hthread *thr, duk_idx_t idx, duk_uint_t decode_flags) {
+	DUK_UNREF(idx);
+	DUK_UNREF(decode_flags);
+	DUK_ERROR_UNSUPPORTED(thr);
+}
+
+#endif  /* DUK_USE_CBOR_SUPPORT */
+
+/*
+ *  Public APIs
+ */
+
+DUK_EXTERNAL void duk_cbor_encode(duk_hthread *thr, duk_idx_t idx, duk_uint_t encode_flags) {
+	DUK_ASSERT_API_ENTRY(thr);
+	duk__cbor_encode(thr, idx, encode_flags);
+}
+DUK_EXTERNAL void duk_cbor_decode(duk_hthread *thr, duk_idx_t idx, duk_uint_t decode_flags) {
+	DUK_ASSERT_API_ENTRY(thr);
+	duk__cbor_decode(thr, idx, decode_flags);
+}
+
+#if defined(DUK_USE_CBOR_BUILTIN)
+#if defined(DUK_USE_CBOR_SUPPORT)
+DUK_INTERNAL duk_ret_t duk_bi_cbor_encode(duk_hthread *thr) {
+	DUK_ASSERT_TOP(thr, 1);
+
+	duk__cbor_encode(thr, -1, 0 /*flags*/);
+
+	/* Produce an ArrayBuffer by first decoding into a plain buffer which
+	 * mimics a Uint8Array and gettings its .buffer property.
+	 */
+	/* XXX: shortcut */
+	(void) duk_get_prop_stridx(thr, -1, DUK_STRIDX_LC_BUFFER);
+	return 1;
+}
+
+DUK_INTERNAL duk_ret_t duk_bi_cbor_decode(duk_hthread *thr) {
+	DUK_ASSERT_TOP(thr, 1);
+
+	duk__cbor_decode(thr, -1, 0 /*flags*/);
+	return 1;
+}
+#else  /* DUK_USE_CBOR_SUPPORT */
+DUK_INTERNAL duk_ret_t duk_bi_cbor_encode(duk_hthread *thr) {
+	DUK_ERROR_UNSUPPORTED(thr);
+	DUK_WO_NORETURN(return 0;);
+}
+DUK_INTERNAL duk_ret_t duk_bi_cbor_decode(duk_hthread *thr) {
+	DUK_ERROR_UNSUPPORTED(thr);
+	DUK_WO_NORETURN(return 0;);
+}
+#endif  /* DUK_USE_CBOR_SUPPORT */
+#endif  /* DUK_USE_CBOR_BUILTIN */

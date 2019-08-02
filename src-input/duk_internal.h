@@ -35,6 +35,7 @@
  */
 
 #include "duk_dblunion.h"
+#include "duk_fltunion.h"
 #include "duk_replacements.h"
 #include "duk_jmpbuf.h"
 #include "duk_exception.h"
