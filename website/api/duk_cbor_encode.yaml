@@ -1,0 +1,41 @@
+name: duk_cbor_encode
+
+proto: |
+  void duk_cbor_encode(duk_context *ctx, duk_idx_t idx, duk_uint_t encode_flags);
+
+stack: |
+  [ ... val! ... ] -> [ ... cbor_val! ... ]
+
+summary: |
+  <p>Encodes an arbitrary value into its CBOR representation as an in-place
+  operation.  The resulting value is an ArrayBuffer (for now).  No flags are
+  defined at present, so pass in a <code>0</code> for flags.</p>
+
+  <div class="note">
+  Mapping from ECMAScript values to CBOR is experimental and the encoding
+  result may change over time.  For example, custom CBOR tags will be added
+  to improve encode-decode roundtripping of ECMAScript values.  Also the
+  result type (ArrayBuffer) may change later.
+  </div>
+
+example: |
+  unsigned char *buf;
+  duk_size_t len;
+
+  duk_push_object(ctx);
+  duk_push_int(ctx, 42);
+  duk_put_prop_string(ctx, -2, "meaningOfLife");
+  duk_cbor_encode(ctx, -1, 0);
+  buf = duk_require_buffer_data(ctx, -1, &len);
+  /* CBOR data is in buf[0] ... buf[len - 1]. */
+  duk_pop(ctx);
+
+tags:
+  - codec
+  - cbor
+  - experimental
+
+seealso:
+  - duk_cbor_decode
+
+introduced: 2.5.0

@@ -10,8 +10,8 @@ Duktape supports the full E5/E5.1 feature set (with some semantics updated
 from ES2015+) including errors, Unicode strings, and regular expressions,
 a subset of ECMAScript 2015 (E6) and ECMAScript 2016 (E7) features (e.g.
 computed property names, Proxy objects, exponentiation operator, Reflect),
-ES2015 ArrayBuffer/TypedView, Node.js Buffer, performance.now(), and WHATWG
-Encoding API living standard.
+ES2015 ArrayBuffer/TypedView, Node.js Buffer, performance.now(), CBOR, and
+WHATWG Encoding API living standard.
 
 Duktape also provides a number of custom features such as error tracebacks,
 additional data types for better C integration, combined reference counting
