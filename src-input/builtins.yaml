@@ -174,9 +174,9 @@ objects:
     bidx: true
 
     properties:
-      # 'global' binding giving easy to access to the global object.
+      # 'globalThis' binding giving easy to access to the global object.
       # Not yet standard, see https://github.com/tc39/proposal-global.
-      - key: "global"
+      - key: "globalThis"
         value:
           type: object
           id: bi_global
