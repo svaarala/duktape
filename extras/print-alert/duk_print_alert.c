@@ -45,7 +45,7 @@ static duk_ret_t duk__print_alert_helper(duk_context *ctx, FILE *fh) {
 	duk_idx_t nargs;
 	const duk_uint8_t *buf;
 	duk_size_t sz_buf;
-	const char nl = (const char) '\n';
+	const char nl = '\n';
 	duk_uint8_t buf_stack[256];
 
 	nargs = duk_get_top(ctx);
