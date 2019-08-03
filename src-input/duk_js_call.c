@@ -2769,6 +2769,7 @@ DUK_INTERNAL duk_int_t duk_handle_safe_call(duk_hthread *thr,
 #if defined(DUK_USE_CPP_EXCEPTIONS)
 	catch (duk_fatal_exception &exc) {
 		DUK_D(DUK_DPRINT("rethrow duk_fatal_exception"));
+		DUK_UNREF(exc);
 		throw;
 	} catch (std::exception &exc) {
 		const char *what = exc.what();

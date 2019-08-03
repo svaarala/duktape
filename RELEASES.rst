@@ -3552,6 +3552,8 @@ Planned
 
 * Fix compile warning when base64 support disabled (GH-2159)
 
+* Fix some C++ compile warnings (GH-2161)
+
 3.0.0 (XXXX-XX-XX)
 ------------------
 

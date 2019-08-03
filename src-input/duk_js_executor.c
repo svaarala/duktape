@@ -2988,6 +2988,7 @@ DUK_INTERNAL void duk_js_execute_bytecode(duk_hthread *exec_thr) {
 #if defined(DUK_USE_CPP_EXCEPTIONS)
 		catch (duk_fatal_exception &exc) {
 			DUK_D(DUK_DPRINT("rethrow duk_fatal_exception"));
+			DUK_UNREF(exc);
 			throw;
 		} catch (std::exception &exc) {
 			const char *what = exc.what();
