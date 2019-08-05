@@ -3554,6 +3554,8 @@ Planned
 
 * Fix some C++ compile warnings (GH-2161)
 
+* Include "end of input" in error message if SyntaxError occurs at end of file (GH-2152)
+
 3.0.0 (XXXX-XX-XX)
 ------------------
 
