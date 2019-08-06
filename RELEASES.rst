@@ -3554,6 +3554,10 @@ Planned
 
 * Move CBOR extra into an actual Duktape built-in, enabled by default (GH-2163)
 
+* Fix a harmless assert in Math.atan2() when compiling with gcc -m32 (GH-2164)
+
+* Fix (suppress) -Wfloat-equal warnings for GCC and Clang (GH-234, GH-2164)
+
 * Fix compile warning when base64 support disabled (GH-2159)
 
 * Fix some C++ compile warnings (GH-2161)
