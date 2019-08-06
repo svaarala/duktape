@@ -1,0 +1,31 @@
+name: duk_cbor_decode
+
+proto: |
+  void duk_cbor_decode(duk_context *ctx, duk_idx_t idx, duk_uint_t decode_flags);
+
+stack: |
+  [ ... cbor_val! ... ] -> [ ... val! ... ]
+
+summary: |
+  <p>Decodes a CBOR encoded value (given in any buffer type) as an in-place
+  operation.  The resulting value can be any ECMAScript value.  No flags are
+  defined at present, so pass in a <code>0</code> for flags.</p>
+
+  <div class="note">
+  Mapping from CBOR to ECMAScript values is experimental and the decoding
+  result may change over time.  For example, custom CBOR tags will be added
+  to improve encode-decode roundtripping of ECMAScript values.
+  </div>
+
+example: |
+  duk_cbor_decode(ctx, -1, 0);
+
+tags:
+  - codec
+  - cbor
+  - experimental
+
+seealso:
+  - duk_cbor_encode
+
+introduced: 2.5.0

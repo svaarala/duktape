@@ -2,12 +2,6 @@
  *  Decoding non-BMP, valid UTF-8 strings.
  */
 
-/*---
-{
-    "skip": true
-}
----*/
-
 /*===
 "foo"
 "A\U0010fedcB"

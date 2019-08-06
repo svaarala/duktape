@@ -8,12 +8,6 @@
  * rejected on decode, at least for now.
  */
 
-/*---
-{
-    "skip": true
-}
----*/
-
 /*===
 TypeError
 ===*/

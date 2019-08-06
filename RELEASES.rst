@@ -3550,6 +3550,10 @@ Planned
   proposal-global; enable the binding by default; update
   polyfills/global.js (GH-2160)
 
+* Add experimental duk_cbor_encode() and duk_cbor_decode() API calls (GH-2163)
+
+* Move CBOR extra into an actual Duktape built-in, enabled by default (GH-2163)
+
 * Fix compile warning when base64 support disabled (GH-2159)
 
 * Fix some C++ compile warnings (GH-2161)

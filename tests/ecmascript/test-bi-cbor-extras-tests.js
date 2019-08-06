@@ -2,12 +2,6 @@
  *  Some CBOR testcases converted from extras/cbor Makefile
  */
 
-/*---
-{
-    "skip": true
-}
----*/
-
 function dec(hexInput, expect) {
     var t1 = CBOR.decode(Duktape.dec('hex', hexInput));
     var t2 = Duktape.enc('jx', t1);

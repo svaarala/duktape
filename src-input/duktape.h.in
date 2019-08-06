@@ -895,6 +895,8 @@ DUK_EXTERNAL_DECL const char *duk_hex_encode(duk_context *ctx, duk_idx_t idx);
 DUK_EXTERNAL_DECL void duk_hex_decode(duk_context *ctx, duk_idx_t idx);
 DUK_EXTERNAL_DECL const char *duk_json_encode(duk_context *ctx, duk_idx_t idx);
 DUK_EXTERNAL_DECL void duk_json_decode(duk_context *ctx, duk_idx_t idx);
+DUK_EXTERNAL_DECL void duk_cbor_encode(duk_context *ctx, duk_idx_t idx, duk_uint_t encode_flags);
+DUK_EXTERNAL_DECL void duk_cbor_decode(duk_context *ctx, duk_idx_t idx, duk_uint_t decode_flags);
 
 DUK_EXTERNAL_DECL const char *duk_buffer_to_string(duk_context *ctx, duk_idx_t idx);
 

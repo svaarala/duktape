@@ -235,6 +235,7 @@ DUK_INTERNAL_DECL duk_small_int_t duk_unicode_encode_cesu8(duk_ucodepoint_t cp, 
 DUK_INTERNAL_DECL duk_small_int_t duk_unicode_decode_xutf8(duk_hthread *thr, const duk_uint8_t **ptr, const duk_uint8_t *ptr_start, const duk_uint8_t *ptr_end, duk_ucodepoint_t *out_cp);
 DUK_INTERNAL_DECL duk_ucodepoint_t duk_unicode_decode_xutf8_checked(duk_hthread *thr, const duk_uint8_t **ptr, const duk_uint8_t *ptr_start, const duk_uint8_t *ptr_end);
 DUK_INTERNAL_DECL duk_size_t duk_unicode_unvalidated_utf8_length(const duk_uint8_t *data, duk_size_t blen);
+DUK_INTERNAL_DECL duk_bool_t duk_unicode_is_utf8_compatible(const duk_uint8_t *buf, duk_size_t len);
 DUK_INTERNAL_DECL duk_small_int_t duk_unicode_is_whitespace(duk_codepoint_t cp);
 DUK_INTERNAL_DECL duk_small_int_t duk_unicode_is_line_terminator(duk_codepoint_t cp);
 DUK_INTERNAL_DECL duk_small_int_t duk_unicode_is_identifier_start(duk_codepoint_t cp);

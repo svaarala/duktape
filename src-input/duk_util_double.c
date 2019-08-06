@@ -232,3 +232,87 @@ DUK_INTERNAL DUK_INLINE duk_double_t duk_double_div(duk_double_t x, duk_double_t
 
 	return x / y;
 }
+
+/* Double and float byteorder changes. */
+
+DUK_INTERNAL DUK_INLINE void duk_dblunion_host_to_little(duk_double_union *u) {
+#if defined(DUK_USE_DOUBLE_LE)
+	/* HGFEDCBA -> HGFEDCBA */
+	DUK_UNREF(u);
+#elif defined(DUK_USE_DOUBLE_ME)
+	duk_uint32_t a, b;
+
+	/* DCBAHGFE -> HGFEDCBA */
+	a = u->ui[0];
+	b = u->ui[1];
+	u->ui[0] = b;
+	u->ui[1] = a;
+#elif defined(DUK_USE_DOUBLE_BE)
+	/* ABCDEFGH -> HGFEDCBA */
+#if defined(DUK_USE_64BIT_OPS)
+	u->ull[0] = DUK_BSWAP64(u->ull[0]);
+#else
+	duk_uint32_t a, b;
+
+	a = u->ui[0];
+	b = u->ui[1];
+	u->ui[0] = DUK_BSWAP32(b);
+	u->ui[1] = DUK_BSWAP32(a);
+#endif
+#else
+#error internal error
+#endif
+}
+
+DUK_INTERNAL DUK_INLINE void duk_dblunion_little_to_host(duk_double_union *u) {
+	duk_dblunion_host_to_little(u);
+}
+
+DUK_INTERNAL DUK_INLINE void duk_dblunion_host_to_big(duk_double_union *u) {
+#if defined(DUK_USE_DOUBLE_LE)
+	/* HGFEDCBA -> ABCDEFGH */
+#if defined(DUK_USE_64BIT_OPS)
+	u->ull[0] = DUK_BSWAP64(u->ull[0]);
+#else
+	duk_uint32_t a, b;
+
+	a = u->ui[0];
+	b = u->ui[1];
+	u->ui[0] = DUK_BSWAP32(b);
+	u->ui[1] = DUK_BSWAP32(a);
+#endif
+#elif defined(DUK_USE_DOUBLE_ME)
+	duk_uint32_t a, b;
+
+	/* DCBAHGFE -> ABCDEFGH */
+	a = u->ui[0];
+	b = u->ui[1];
+	u->ui[0] = DUK_BSWAP32(a);
+	u->ui[1] = DUK_BSWAP32(b);
+#elif defined(DUK_USE_DOUBLE_BE)
+	/* ABCDEFGH -> ABCDEFGH */
+	DUK_UNREF(u);
+#else
+#error internal error
+#endif
+}
+
+DUK_INTERNAL DUK_INLINE void duk_dblunion_big_to_host(duk_double_union *u) {
+	duk_dblunion_host_to_big(u);
+}
+
+DUK_INTERNAL DUK_INLINE void duk_fltunion_host_to_big(duk_float_union *u) {
+#if defined(DUK_USE_DOUBLE_LE) || defined(DUK_USE_DOUBLE_ME)
+	/* DCBA -> ABCD */
+	u->ui[0] = DUK_BSWAP32(u->ui[0]);
+#elif defined(DUK_USE_DOUBLE_BE)
+	/* ABCD -> ABCD */
+	DUK_UNREF(u);
+#else
+#error internal error
+#endif
+}
+
+DUK_INTERNAL DUK_INLINE void duk_fltunion_big_to_host(duk_float_union *u) {
+	duk_fltunion_host_to_big(u);
+}

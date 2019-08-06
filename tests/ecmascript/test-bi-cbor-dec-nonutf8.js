@@ -3,12 +3,6 @@
  *  (technically invalid CBOR).
  */
 
-/*---
-{
-    "skip": true
-}
----*/
-
 /*===
 "foo"
 "foo\ud800"

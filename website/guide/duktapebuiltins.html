@@ -23,6 +23,10 @@ objects, methods, and values.</p>
 <td>The Duktape built-in object.  Contains miscellaneous implementation specific stuff.</td>
 </tr>
 <tr>
+<td class="propname"><a href="#builtin-cbor">CBOR</a></td>
+<td>Experimental <a href="http://cbor.io/">CBOR</a> API based on <a href="https://github.com/paroga/cbor-js">cbor-js</a>.</td>
+</tr>
+<tr>
 <td class="propname"><a href="#builtin-textencoder">TextEncoder</a></td>
 <td>TextEncoder() from <a href="https://encoding.spec.whatwg.org/">WHATWG Encoding API</a>.
     Converts a string into a buffer using UTF-8 encoding.</td>
@@ -418,6 +422,38 @@ cases:</p>
 <tr><td colspan="2">No properties at the moment.</td></tr>
 </tbody>
 </table>
+
+<h2 id="builtin-cbor">CBOR</h2>
+
+<p>CBOR (Concise Binary Object Representation) is a compact binary encoding
+for arbitrary structured values.  It is faster than JSON and can encode some
+ECMAScript values more accurately.  It is suitable as an alternative to JSON
+for state serialization, IPC, etc.  See:</p>
+<ul>
+<li><a href="http://cbor.io/">CBOR &#8212; Concise Binary Object Representation (cbor.io)</a></li>
+<li><a href="https://tools.ietf.org/html/rfc7049">Concise Binary Object Representation (CBOR) (RFC 7049)</a></li>
+</ul>
+
+<p>The <code>CBOR</code> object provides encode/decode functions to convert
+arbitrary ECMAScript values to CBOR and vice versa.  There's no official
+CBOR API yet, so the API is based, for now, on
+<a href="https://github.com/paroga/cbor-js">cbor-js</a>.
+There's also a <a href="api.html#taglist-cbor">C API for CBOR</a>.</p>
+
+<div class="note">
+The binding is currently experimental, and details are likely to change over
+time.  For example, custom CBOR tags are being registered to serialize ECMAScript
+values more accurately.
+</div>
+
+<p>Example:</p>
+
+<pre class="ecmascript-code">
+var enc = CBOR.encode([ 'foo', 'bar', { quux: true } ]);
+print(Duktape.enc('hex', enc));  // = 8363666f6f63626172a16471757578f5
+var dec = CBOR.decode(enc);
+print(Duktape.enc('jx', dec));   // = ["foo","bar",{quux:true}]
+</pre>
 
 <h2 id="builtin-textencoder">TextEncoder</h2>
 

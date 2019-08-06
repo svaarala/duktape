@@ -35,6 +35,8 @@ static duk_ret_t test_func(duk_context *ctx, void *udata) {
 	(void) duk_call_method(ctx, 0);
 	(void) duk_call_prop(ctx, 0, 0);
 	(void) duk_call(ctx, 0);
+	(void) duk_cbor_decode(ctx, 0, 0);
+	(void) duk_cbor_encode(ctx, 0, 0);
 	(void) duk_char_code_at(ctx, 0, 0);
 	(void) duk_check_stack_top(ctx, 0);
 	(void) duk_check_stack(ctx, 0);

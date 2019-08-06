@@ -5,12 +5,6 @@
  *  padded inputs are rejected.
  */
 
-/*---
-{
-    "skip": true
-}
----*/
-
 /*===
 - Major type 0x00-0x1f: unsigned integer
 - Major type 0x20-0x3f: negative integer (not -0)

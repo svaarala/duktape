@@ -4,12 +4,6 @@
  *  Encoding is not unique, so this demonstrates current output.
  */
 
-/*---
-{
-    "skip": true
-}
----*/
-
 /*===
 done
 ===*/
