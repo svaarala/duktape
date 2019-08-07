@@ -174,7 +174,7 @@ DUK_LOCAL duk_uint_t duk__selftest_byte_order(void) {
 		DUK__FAILED("duk_uint32_t byte order");
 	}
 
-	if (u2.d != (double) 102030405060.0) {
+	if (!duk_double_equals(u2.d, 102030405060.0)) {
 		DUK__FAILED("double byte order");
 	}
 
@@ -549,7 +549,7 @@ DUK_LOCAL duk_uint_t duk__selftest_cast_double_to_small_uint(void) {
 	u = (duk_small_uint_t) d1;
 	d2 = (duk_double_t) u;
 
-	if (!(d1 == 1.0 && u == 1 && d2 == 1.0 && d1 == d2)) {
+	if (!(duk_double_equals(d1, 1.0) && u == 1 && duk_double_equals(d2, 1.0) && duk_double_equals(d1, d2))) {
 		DUK__FAILED("double to duk_small_uint_t cast failed");
 	}
 
@@ -559,7 +559,7 @@ DUK_LOCAL duk_uint_t duk__selftest_cast_double_to_small_uint(void) {
 	uv = (duk_small_uint_t) d1v;
 	d2v = (duk_double_t) uv;
 
-	if (!(d1v == 1.0 && uv == 1 && d2v == 1.0 && d1v == d2v)) {
+	if (!(duk_double_equals(d1v, 1.0) && uv == 1 && duk_double_equals(d2v, 1.0) && duk_double_equals(d1v, d2v))) {
 		DUK__FAILED("double to duk_small_uint_t cast failed");
 	}
 

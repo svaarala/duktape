@@ -102,7 +102,7 @@ DUK_LOCAL duk_uint32_t duk__tval_number_to_arr_idx(duk_tval *tv) {
 	 */
 	dbl = DUK_TVAL_GET_NUMBER(tv);
 	idx = (duk_uint32_t) dbl;
-	if ((duk_double_t) idx == dbl) {
+	if (duk_double_equals((duk_double_t) idx, dbl)) {
 	        /* Is whole and within 32 bit range.  If the value happens to be 0xFFFFFFFF,
 		 * it's not a valid array index but will then match DUK__NO_ARRAY_INDEX.
 		 */
@@ -3185,7 +3185,7 @@ DUK_LOCAL duk_uint32_t duk__to_new_array_length_checked(duk_hthread *thr, duk_tv
 	 * 32-bit range.  Negative zero is accepted as zero.
 	 */
 	res = duk_double_to_uint32_t(d);
-	if ((duk_double_t) res != d) {
+	if (!duk_double_equals((duk_double_t) res, d)) {
 		goto fail_range;
 	}
 

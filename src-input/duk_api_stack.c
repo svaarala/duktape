@@ -3004,7 +3004,7 @@ DUK_INTERNAL duk_uint8_t duk_to_uint8clamped(duk_hthread *thr, duk_idx_t idx) {
 	}
 
 	t = d - DUK_FLOOR(d);
-	if (t == 0.5) {
+	if (duk_double_equals(t, 0.5)) {
 		/* Exact halfway, round to even. */
 		ret = (duk_uint8_t) d;
 		ret = (ret + 1) & 0xfe;  /* Example: d=3.5, t=0.5 -> ret = (3 + 1) & 0xfe = 4 & 0xfe = 4

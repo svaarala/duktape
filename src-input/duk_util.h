@@ -708,6 +708,8 @@ DUK_INTERNAL_DECL duk_uint_t duk_double_to_uint_t(duk_double_t x);
 DUK_INTERNAL_DECL duk_int32_t duk_double_to_int32_t(duk_double_t x);
 DUK_INTERNAL_DECL duk_uint32_t duk_double_to_uint32_t(duk_double_t x);
 DUK_INTERNAL_DECL duk_float_t duk_double_to_float_t(duk_double_t x);
+DUK_INTERNAL_DECL duk_bool_t duk_double_equals(duk_double_t x, duk_double_t y);
+DUK_INTERNAL_DECL duk_bool_t duk_float_equals(duk_float_t x, duk_float_t y);
 
 /*
  *  Miscellaneous

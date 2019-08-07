@@ -1594,8 +1594,8 @@ DUK_LOCAL DUK_NOINLINE void duk__numconv_stringify_raw(duk_hthread *thr, duk_sma
 	 */
 
 	uval = duk_double_to_uint32_t(x);
-	if (((double) uval) == x &&  /* integer number in range */
-	    flags == 0) {            /* no special formatting */
+	if (duk_double_equals((double) uval, x) &&  /* integer number in range */
+	    flags == 0) {                           /* no special formatting */
 		/* use bigint area as a temp */
 		duk_uint8_t *buf = (duk_uint8_t *) (&nc_ctx->f);
 		duk_uint8_t *p = buf;
