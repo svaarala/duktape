@@ -433,11 +433,28 @@ DUK_LOCAL void duk__add_compiler_error_line(duk_hthread *thr) {
 	                     (duk_tval *) duk_get_tval(thr, -1)));
 
 	if (duk_get_prop_stridx_short(thr, -1, DUK_STRIDX_MESSAGE)) {
-                if (thr->compile_ctx->curr_token.start_offset + 1 >= thr->compile_ctx->lex.input_length) {
-			duk_push_sprintf(thr, " (line %ld, end of input)", (long) thr->compile_ctx->curr_token.start_line);
-		} else {
-			duk_push_sprintf(thr, " (line %ld)", (long) thr->compile_ctx->curr_token.start_line);
-		}
+		duk_bool_t at_end;
+
+		/* Best guesstimate that error occurred at end of input, token
+		 * truncated by end of input, etc.
+		 */
+#if 0
+		at_end = (thr->compile_ctx->curr_token.start_offset + 1 >= thr->compile_ctx->lex.input_length);
+		at_end = (thr->compile_ctx->lex.window[0].codepoint < 0 || thr->compile_ctx->lex.window[1].codepoint < 0);
+#endif
+		at_end = (thr->compile_ctx->lex.window[0].codepoint < 0);
+
+		DUK_D(DUK_DPRINT("syntax error, determined at_end=%ld; curr_token.start_offset=%ld, "
+		                 "lex.input_length=%ld, window[0].codepoint=%ld, window[1].codepoint=%ld",
+		                 (long) at_end,
+		                 (long) thr->compile_ctx->curr_token.start_offset,
+		                 (long) thr->compile_ctx->lex.input_length,
+		                 (long) thr->compile_ctx->lex.window[0].codepoint,
+		                 (long) thr->compile_ctx->lex.window[1].codepoint));
+
+		duk_push_sprintf(thr, " (line %ld%s)",
+		                 (long) thr->compile_ctx->curr_token.start_line,
+		                 at_end ? ", end of input" : "");
 		duk_concat(thr, 2);
 		duk_put_prop_stridx_short(thr, -2, DUK_STRIDX_MESSAGE);
 	} else {
