@@ -10,7 +10,7 @@ return value is: '123'
 compile rc=0
 myFile.js
 return value is: '234'
-compile rc=1 -> SyntaxError: invalid object literal (line 1)
+compile rc=1 -> SyntaxError: invalid object literal (line 1, end of input)
 top: 0
 ==> rc=0, result='undefined'
 *** test_lstring (duk_safe_call)
@@ -24,7 +24,7 @@ return value is: '123'
 compile rc=0
 myFile.js
 return value is: '234'
-compile rc=1 -> SyntaxError: invalid object literal (line 1)
+compile rc=1 -> SyntaxError: invalid object literal (line 1, end of input)
 top: 0
 ==> rc=0, result='undefined'
 ===*/

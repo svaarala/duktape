@@ -21,7 +21,10 @@ function test(inp) {
         print('never here');
     } catch (e) {
         // Match against current syntax
-        res = /^.*\(line (\d+)\)$/.exec(e.message);
+        res = /^.*\(line (\d+), end of input\)$/.exec(e.message);
+        if (!res) {
+            res = /^.*\(line (\d+)\)$/.exec(e.message);
+        }
         print('line', res ? res[1] : 'n/a');
     }
 }

@@ -433,7 +433,11 @@ DUK_LOCAL void duk__add_compiler_error_line(duk_hthread *thr) {
 	                     (duk_tval *) duk_get_tval(thr, -1)));
 
 	if (duk_get_prop_stridx_short(thr, -1, DUK_STRIDX_MESSAGE)) {
-		duk_push_sprintf(thr, " (line %ld)", (long) thr->compile_ctx->curr_token.start_line);
+                if (thr->compile_ctx->curr_token.start_offset + 1 >= thr->compile_ctx->lex.input_length) {
+			duk_push_sprintf(thr, " (line %ld, end of input)", (long) thr->compile_ctx->curr_token.start_line);
+		} else {
+			duk_push_sprintf(thr, " (line %ld)", (long) thr->compile_ctx->curr_token.start_line);
+		}
 		duk_concat(thr, 2);
 		duk_put_prop_stridx_short(thr, -2, DUK_STRIDX_MESSAGE);
 	} else {
