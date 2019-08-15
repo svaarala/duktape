@@ -3565,6 +3565,8 @@ Planned
 * Include "end of input" in error message if SyntaxError occurs at end of
   file (GH-2152, GH-2165)
 
+* Minor performance and footprint improvements (GH-2167)
+
 3.0.0 (XXXX-XX-XX)
 ------------------
 

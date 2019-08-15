@@ -1,19 +1,19 @@
 summary: "unterminated hex escapes should be parsed leniently, e.g. '\\uX' -> 'uX' but Duktape now refuses to parse them"
 ---
 \u
-SyntaxError: invalid escape (line 1)
+SyntaxError: invalid escape (line 1, end of input)
 \u1
-SyntaxError: invalid escape (line 1)
+SyntaxError: invalid escape (line 1, end of input)
 \u12
-SyntaxError: invalid escape (line 1)
+SyntaxError: invalid escape (line 1, end of input)
 \u123
-SyntaxError: invalid escape (line 1)
+SyntaxError: invalid escape (line 1, end of input)
 \u123G
 SyntaxError: invalid escape (line 1)
 \x
-SyntaxError: invalid escape (line 1)
+SyntaxError: invalid escape (line 1, end of input)
 \x1
-SyntaxError: invalid escape (line 1)
+SyntaxError: invalid escape (line 1, end of input)
 \x1G
 SyntaxError: invalid escape (line 1)
 SyntaxError

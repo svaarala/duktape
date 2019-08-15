@@ -14,15 +14,6 @@ DUK_LOCAL_DECL void duk__js_execute_bytecode_inner(duk_hthread *entry_thread, du
  *  Misc helpers.
  */
 
-/* Forced inline declaration, only applied for performance oriented build. */
-#if defined(DUK_USE_EXEC_PREFER_SIZE)
-#define DUK__INLINE_PERF
-#define DUK__NOINLINE_PERF
-#else
-#define DUK__INLINE_PERF DUK_ALWAYS_INLINE
-#define DUK__NOINLINE_PERF DUK_NOINLINE
-#endif
-
 /* Replace value stack top to value at 'tv_ptr'.  Optimize for
  * performance by only applying the net refcount change.
  */
@@ -74,17 +65,17 @@ DUK_LOCAL void duk__push_tvals_incref_only(duk_hthread *thr, duk_tval *tv_src, d
  *  possible.
  */
 
-DUK_LOCAL DUK__INLINE_PERF duk_double_t duk__compute_mod(duk_double_t d1, duk_double_t d2) {
+DUK_LOCAL DUK_EXEC_ALWAYS_INLINE_PERF duk_double_t duk__compute_mod(duk_double_t d1, duk_double_t d2) {
 	return (duk_double_t) duk_js_arith_mod((double) d1, (double) d2);
 }
 
 #if defined(DUK_USE_ES7_EXP_OPERATOR)
-DUK_LOCAL DUK__INLINE_PERF duk_double_t duk__compute_exp(duk_double_t d1, duk_double_t d2) {
+DUK_LOCAL DUK_EXEC_ALWAYS_INLINE_PERF duk_double_t duk__compute_exp(duk_double_t d1, duk_double_t d2) {
 	return (duk_double_t) duk_js_arith_pow((double) d1, (double) d2);
 }
 #endif
 
-DUK_LOCAL DUK__INLINE_PERF void duk__vm_arith_add(duk_hthread *thr, duk_tval *tv_x, duk_tval *tv_y, duk_small_uint_fast_t idx_z) {
+DUK_LOCAL DUK_EXEC_ALWAYS_INLINE_PERF void duk__vm_arith_add(duk_hthread *thr, duk_tval *tv_x, duk_tval *tv_y, duk_small_uint_fast_t idx_z) {
 	/*
 	 *  Addition operator is different from other arithmetic
 	 *  operations in that it also provides string concatenation.
@@ -191,7 +182,7 @@ DUK_LOCAL DUK__INLINE_PERF void duk__vm_arith_add(duk_hthread *thr, duk_tval *tv
 	duk_replace(thr, (duk_idx_t) idx_z);  /* side effects */
 }
 
-DUK_LOCAL DUK__INLINE_PERF void duk__vm_arith_binary_op(duk_hthread *thr, duk_tval *tv_x, duk_tval *tv_y, duk_uint_fast_t idx_z, duk_small_uint_fast_t opcode) {
+DUK_LOCAL DUK_EXEC_ALWAYS_INLINE_PERF void duk__vm_arith_binary_op(duk_hthread *thr, duk_tval *tv_x, duk_tval *tv_y, duk_uint_fast_t idx_z, duk_small_uint_fast_t opcode) {
 	/*
 	 *  Arithmetic operations other than '+' have number-only semantics
 	 *  and are implemented here.  The separate switch-case here means a
@@ -349,7 +340,7 @@ DUK_LOCAL DUK__INLINE_PERF void duk__vm_arith_binary_op(duk_hthread *thr, duk_tv
 #endif  /* DUK_USE_EXEC_PREFER_SIZE */
 }
 
-DUK_LOCAL DUK__INLINE_PERF void duk__vm_bitwise_binary_op(duk_hthread *thr, duk_tval *tv_x, duk_tval *tv_y, duk_small_uint_fast_t idx_z, duk_small_uint_fast_t opcode) {
+DUK_LOCAL DUK_EXEC_ALWAYS_INLINE_PERF void duk__vm_bitwise_binary_op(duk_hthread *thr, duk_tval *tv_x, duk_tval *tv_y, duk_small_uint_fast_t idx_z, duk_small_uint_fast_t opcode) {
 	/*
 	 *  Binary bitwise operations use different coercions (ToInt32, ToUint32)
 	 *  depending on the operation.  We coerce the arguments first using
@@ -477,7 +468,7 @@ DUK_LOCAL DUK__INLINE_PERF void duk__vm_bitwise_binary_op(duk_hthread *thr, duk_
 }
 
 /* In-place unary operation. */
-DUK_LOCAL DUK__INLINE_PERF void duk__vm_arith_unary_op(duk_hthread *thr, duk_uint_fast_t idx_src, duk_uint_fast_t idx_dst, duk_small_uint_fast_t opcode) {
+DUK_LOCAL DUK_EXEC_ALWAYS_INLINE_PERF void duk__vm_arith_unary_op(duk_hthread *thr, duk_uint_fast_t idx_src, duk_uint_fast_t idx_dst, duk_small_uint_fast_t opcode) {
 	/*
 	 *  Arithmetic operations other than '+' have number-only semantics
 	 *  and are implemented here.  The separate switch-case here means a
@@ -554,7 +545,7 @@ DUK_LOCAL DUK__INLINE_PERF void duk__vm_arith_unary_op(duk_hthread *thr, duk_uin
 	DUK_TVAL_SET_NUMBER_UPDREF(thr, tv, du.d);
 }
 
-DUK_LOCAL DUK__INLINE_PERF void duk__vm_bitwise_not(duk_hthread *thr, duk_uint_fast_t idx_src, duk_uint_fast_t idx_dst) {
+DUK_LOCAL DUK_EXEC_ALWAYS_INLINE_PERF void duk__vm_bitwise_not(duk_hthread *thr, duk_uint_fast_t idx_src, duk_uint_fast_t idx_dst) {
 	/*
 	 *  E5 Section 11.4.8
 	 */
@@ -588,7 +579,7 @@ DUK_LOCAL DUK__INLINE_PERF void duk__vm_bitwise_not(duk_hthread *thr, duk_uint_f
 	DUK_TVAL_SET_I32_UPDREF(thr, tv, i2);  /* side effects */
 }
 
-DUK_LOCAL DUK__INLINE_PERF void duk__vm_logical_not(duk_hthread *thr, duk_uint_fast_t idx_src, duk_uint_fast_t idx_dst) {
+DUK_LOCAL DUK_EXEC_ALWAYS_INLINE_PERF void duk__vm_logical_not(duk_hthread *thr, duk_uint_fast_t idx_src, duk_uint_fast_t idx_dst) {
 	/*
 	 *  E5 Section 11.4.9
 	 */
@@ -616,7 +607,7 @@ DUK_LOCAL DUK__INLINE_PERF void duk__vm_logical_not(duk_hthread *thr, duk_uint_f
 }
 
 /* XXX: size optimized variant */
-DUK_LOCAL DUK__INLINE_PERF void duk__prepost_incdec_reg_helper(duk_hthread *thr, duk_tval *tv_dst, duk_tval *tv_src, duk_small_uint_t op) {
+DUK_LOCAL DUK_EXEC_ALWAYS_INLINE_PERF void duk__prepost_incdec_reg_helper(duk_hthread *thr, duk_tval *tv_dst, duk_tval *tv_src, duk_small_uint_t op) {
 	duk_double_t x, y, z;
 
 	/* Two lowest bits of opcode are used to distinguish
@@ -692,7 +683,7 @@ DUK_LOCAL DUK__INLINE_PERF void duk__prepost_incdec_reg_helper(duk_hthread *thr,
 	DUK_TVAL_SET_NUMBER_UPDREF(thr, tv_dst, z);  /* side effects */
 }
 
-DUK_LOCAL DUK__INLINE_PERF void duk__prepost_incdec_var_helper(duk_hthread *thr, duk_small_uint_t idx_dst, duk_tval *tv_id, duk_small_uint_t op, duk_small_uint_t is_strict) {
+DUK_LOCAL DUK_EXEC_ALWAYS_INLINE_PERF void duk__prepost_incdec_var_helper(duk_hthread *thr, duk_small_uint_t idx_dst, duk_tval *tv_id, duk_small_uint_t op, duk_small_uint_t is_strict) {
 	duk_activation *act;
 	duk_double_t x, y;
 	duk_hstring *name;
@@ -1490,9 +1481,9 @@ DUK_LOCAL duk_small_uint_t duk__handle_longjmp(duk_hthread *thr, duk_activation 
  * handling because it has a measurable performance impact in ordinary
  * environments and an extreme impact in Emscripten (GH-342).
  */
-DUK_LOCAL DUK__NOINLINE_PERF void duk__handle_break_or_continue(duk_hthread *thr,
-                                                                duk_uint_t label_id,
-                                                                duk_small_uint_t lj_type) {
+DUK_LOCAL DUK_EXEC_NOINLINE_PERF void duk__handle_break_or_continue(duk_hthread *thr,
+                                                                    duk_uint_t label_id,
+                                                                    duk_small_uint_t lj_type) {
 	duk_activation *act;
 	duk_catcher *cat;
 
@@ -1943,7 +1934,7 @@ DUK_LOCAL void duk__interrupt_handle_debugger(duk_hthread *thr, duk_bool_t *out_
 }
 #endif  /* DUK_USE_DEBUGGER_SUPPORT */
 
-DUK_LOCAL DUK__NOINLINE_PERF DUK_COLD duk_small_uint_t duk__executor_interrupt(duk_hthread *thr) {
+DUK_LOCAL DUK_EXEC_NOINLINE_PERF DUK_COLD duk_small_uint_t duk__executor_interrupt(duk_hthread *thr) {
 	duk_int_t ctr;
 	duk_activation *act;
 	duk_hcompfunc *fun;
@@ -2196,7 +2187,7 @@ DUK_LOCAL void duk__executor_recheck_debugger(duk_hthread *thr, duk_activation *
  *  rare; NOINLINE to reduce amount of code in main bytecode dispatcher.
  */
 
-DUK_LOCAL DUK__NOINLINE_PERF void duk__handle_op_initset_initget(duk_hthread *thr, duk_uint_fast32_t ins) {
+DUK_LOCAL DUK_EXEC_NOINLINE_PERF void duk__handle_op_initset_initget(duk_hthread *thr, duk_uint_fast32_t ins) {
 	duk_bool_t is_set = (DUK_DEC_OP(ins) == DUK_OP_INITSET);
 	duk_uint_fast_t idx;
 	duk_uint_t defprop_flags;
@@ -2229,7 +2220,7 @@ DUK_LOCAL DUK__NOINLINE_PERF void duk__handle_op_initset_initget(duk_hthread *th
 	duk_def_prop(thr, (duk_idx_t) DUK_DEC_A(ins), defprop_flags);
 }
 
-DUK_LOCAL DUK__NOINLINE_PERF void duk__handle_op_trycatch(duk_hthread *thr, duk_uint_fast32_t ins, duk_instr_t *curr_pc) {
+DUK_LOCAL DUK_EXEC_NOINLINE_PERF void duk__handle_op_trycatch(duk_hthread *thr, duk_uint_fast32_t ins, duk_instr_t *curr_pc) {
 	duk_activation *act;
 	duk_catcher *cat;
 	duk_tval *tv1;
@@ -2394,7 +2385,7 @@ DUK_LOCAL DUK__NOINLINE_PERF void duk__handle_op_trycatch(duk_hthread *thr, duk_
 	duk_pop_unsafe(thr);
 }
 
-DUK_LOCAL DUK__NOINLINE_PERF duk_instr_t *duk__handle_op_endtry(duk_hthread *thr, duk_uint_fast32_t ins) {
+DUK_LOCAL DUK_EXEC_NOINLINE_PERF duk_instr_t *duk__handle_op_endtry(duk_hthread *thr, duk_uint_fast32_t ins) {
 	duk_activation *act;
 	duk_catcher *cat;
 	duk_tval *tv1;
@@ -2438,7 +2429,7 @@ DUK_LOCAL DUK__NOINLINE_PERF duk_instr_t *duk__handle_op_endtry(duk_hthread *thr
 	return pc_base + 1;  /* new curr_pc value */
 }
 
-DUK_LOCAL DUK__NOINLINE_PERF duk_instr_t *duk__handle_op_endcatch(duk_hthread *thr, duk_uint_fast32_t ins) {
+DUK_LOCAL DUK_EXEC_NOINLINE_PERF duk_instr_t *duk__handle_op_endcatch(duk_hthread *thr, duk_uint_fast32_t ins) {
 	duk_activation *act;
 	duk_catcher *cat;
 	duk_tval *tv1;
@@ -2499,7 +2490,7 @@ DUK_LOCAL DUK__NOINLINE_PERF duk_instr_t *duk__handle_op_endcatch(duk_hthread *t
 	return pc_base + 1;  /* new curr_pc value */
 }
 
-DUK_LOCAL DUK__NOINLINE_PERF duk_small_uint_t duk__handle_op_endfin(duk_hthread *thr, duk_uint_fast32_t ins, duk_activation *entry_act) {
+DUK_LOCAL DUK_EXEC_NOINLINE_PERF duk_small_uint_t duk__handle_op_endfin(duk_hthread *thr, duk_uint_fast32_t ins, duk_activation *entry_act) {
 	duk_activation *act;
 	duk_tval *tv1;
 	duk_uint_t reg_catch;
@@ -2600,7 +2591,7 @@ DUK_LOCAL DUK__NOINLINE_PERF duk_small_uint_t duk__handle_op_endfin(duk_hthread 
 	return 0;
 }
 
-DUK_LOCAL DUK__NOINLINE_PERF void duk__handle_op_initenum(duk_hthread *thr, duk_uint_fast32_t ins) {
+DUK_LOCAL DUK_EXEC_NOINLINE_PERF void duk__handle_op_initenum(duk_hthread *thr, duk_uint_fast32_t ins) {
 	duk_small_uint_t b;
 	duk_small_uint_t c;
 
@@ -2628,7 +2619,7 @@ DUK_LOCAL DUK__NOINLINE_PERF void duk__handle_op_initenum(duk_hthread *thr, duk_
 	}
 }
 
-DUK_LOCAL DUK__NOINLINE_PERF duk_small_uint_t duk__handle_op_nextenum(duk_hthread *thr, duk_uint_fast32_t ins) {
+DUK_LOCAL DUK_EXEC_NOINLINE_PERF duk_small_uint_t duk__handle_op_nextenum(duk_hthread *thr, duk_uint_fast32_t ins) {
 	duk_small_uint_t b;
 	duk_small_uint_t c;
 	duk_small_uint_t pc_skip = 0;
