@@ -1,3 +1,5 @@
+# Base x64 image for all targets.
+
 FROM ubuntu:18.04
 
 # Username is assumed to be 'duktape' for now, change only UID/GID if required.
@@ -9,17 +11,18 @@ ARG GID=1000
 # first to avoid interactive prompts in tzdata install.
 RUN echo "=== Timezone setup ===" && \
 	echo "Europe/Helsinki" > /etc/timezone && \
+	rm -f /etc/localtime && \
 	ln -s /usr/share/zoneinfo/Europe/Helsinki /etc/localtime
 
 # Node.js and packages.  This set should cover everything necessary to build
 # Duktape, the duktape.org website, run tests, etc.
 RUN echo "=== Node.js and package install ===" && \
-	apt-get update && apt-get install -qy curl && \
+	apt-get update && apt-get install -qqy curl && \
 	curl -sL https://deb.nodesource.com/setup_10.x | bash - && \
 	dpkg --add-architecture i386 && \
 	apt-get update && \
-	apt-get install -qy \
-		build-essential llvm valgrind libc6-dbg libc6-dbg:i386 \
+	apt-get install -qqy \
+		build-essential llvm valgrind strace libc6-dbg libc6-dbg:i386 \
 		gcc gcc-multilib g++-multilib gcc-4.8 gcc-5 gcc-6 \
 		clang clang-tools clang-3.9 clang-4.0 clang-5.0 clang-6.0 clang-7 \
 		libncurses5-dev libncurses5 \
@@ -40,28 +43,19 @@ RUN echo "=== User setup, /work directory creation ===" && \
 	echo "PS1='\033[40;37mDOCKER\033[0;34m \u@\h [\w] >>>\033[0m '" > /root/.profile && \
 	echo "PS1='\033[40;37mDOCKER\033[0;34m \u@\h [\w] >>>\033[0m '" > /home/$USERNAME/.profile && \
 	chown $UID:$GID /home/$USERNAME/.profile
-COPY --chown=duktape:duktape gitconfig /home/$USERNAME/.gitconfig
-RUN chmod 644 /home/$USERNAME/.gitconfig
 
 # Switch to non-root user.  (Note that COPY will still copy files as root,
 # so use COPY --chown for files copied.)
-#RUN echo "WHOAMI: `whoami`, UID: `id -u`, GID: `id -g`, HOME: $HOME"
 USER $USERNAME
-#RUN echo "WHOAMI: `whoami`, UID: `id -u`, GID: `id -g`, HOME: $HOME"
 
 # Use /work for builds, temporaries, etc.
 WORKDIR /work
 
-# Emscripten.  Source emsdk-portable/emsdk_env.sh to get 'emcc' into PATH.
-#RUN echo "=== Emscripten (emsdk-portable) ===" && \
-#	wget https://s3.amazonaws.com/mozilla-games/emscripten/releases/emsdk-portable.tar.gz && \
-#	tar xvfz emsdk-portable.tar.gz && \
-#	cd emsdk-portable && \
-#	./emsdk update && \
-#	./emsdk install latest && \
-#	./emsdk activate latest && \
-#	cd .. && \
-#	rm emsdk-portable.tar.gz
+# Shared script for setting up the duktape/ directory, .gitconfig.
+COPY --chown=duktape:duktape prepare_repo.sh .
+COPY --chown=duktape:duktape gitconfig /home/$USERNAME/.gitconfig
+RUN chmod 755 prepare_repo.sh && \
+    chmod 644 /home/$USERNAME/.gitconfig
 
 # Emscripten.  Source emsdk/emsdk_env.sh to get 'emcc' into PATH.
 RUN echo "=== Emscripten (emsdk) ===" && \
@@ -69,10 +63,6 @@ RUN echo "=== Emscripten (emsdk) ===" && \
 	cd emsdk && \
 	./emsdk install latest && \
 	./emsdk activate latest
-
-# Shared script for setting up the duktape/ directory.
-COPY --chown=duktape:duktape prepare_repo.sh .
-RUN chmod 755 prepare_repo.sh
 
 # Clone some useful repositories into 'repo-snapshots' to reduce network
 # traffic.  Derived images can then just 'git pull' to get them up to date.
