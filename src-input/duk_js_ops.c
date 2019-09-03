@@ -119,6 +119,7 @@ DUK_INTERNAL duk_bool_t duk_js_toboolean(duk_tval *tv) {
 	}
 	}
 	DUK_UNREACHABLE();
+	DUK_WO_UNREACHABLE(return 0;);
 }
 
 /*
@@ -260,6 +261,7 @@ DUK_INTERNAL duk_double_t duk_js_tonumber(duk_hthread *thr, duk_tval *tv) {
 	}
 
 	DUK_UNREACHABLE();
+	DUK_WO_UNREACHABLE(return 0.0;);
 }
 
 /*
@@ -611,7 +613,7 @@ DUK_INTERNAL duk_bool_t duk_js_equals_helper(duk_hthread *thr, duk_tval *tv_x, d
 			DUK_ASSERT(DUK_TVAL_IS_NUMBER(tv_x));
 			DUK_ASSERT(DUK_TVAL_IS_NUMBER(tv_y));
 			DUK_UNREACHABLE();
-			return 0;
+			DUK_WO_UNREACHABLE(return 0;);
 		}
 		}
 	}
@@ -1175,11 +1177,9 @@ DUK_LOCAL duk_bool_t duk__js_instanceof_helper(duk_hthread *thr, duk_tval *tv_x,
 		val = DUK_HOBJECT_GET_PROTOTYPE(thr->heap, val);
 	} while (--sanity > 0);
 
-	if (DUK_UNLIKELY(sanity == 0)) {
-		DUK_ERROR_RANGE(thr, DUK_STR_PROTOTYPE_CHAIN_LIMIT);
-		DUK_WO_NORETURN(return 0;);
-	}
-	DUK_UNREACHABLE();
+	DUK_ASSERT(sanity == 0);
+	DUK_ERROR_RANGE(thr, DUK_STR_PROTOTYPE_CHAIN_LIMIT);
+	DUK_WO_NORETURN(return 0;);
 
  pop2_and_false:
 	duk_pop_2_unsafe(thr);
