@@ -103,20 +103,16 @@ print(URIError.prototype.name);
 print(JSON.name);
 
 /*===
-ThrowTypeError
+
 ===*/
 
 /* Name of the "type error thrower" of E5 Section 13.2.3.  This is not
- * defined in the specification; V8 uses "ThrowTypeError" which we also
- * use.
+ * defined in the specification; older V8 uses "ThrowTypeError", newer
+ * uses empty string which we also use.
  */
 
-function func() {
-    'use strict';
-}
-
 try {
-    var desc = Object.getOwnPropertyDescriptor(func, 'caller');
+    var desc = Object.getOwnPropertyDescriptor(Function.prototype, 'caller');
     print(desc.get.name);
 } catch (e) {
     print(e.name, e);

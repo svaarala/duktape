@@ -510,14 +510,28 @@ DUK_INTERNAL void duk_hthread_create_builtin_objects(duk_hthread *thr) {
 
 				c_func_getter = duk_bi_native_functions[natidx_getter];
 				if (c_func_getter != NULL) {
-					duk_push_c_function_builtin_noconstruct(thr, c_func_getter, 0); /* always 0 args */
-					duk_set_magic(thr, -1, (duk_int_t) accessor_magic);
+					/* Deal with Function.prototype .caller and .arguments, ensure
+					 * all share the same thrower function instance.
+					 */
+					if (c_func_getter == duk_bi_type_error_thrower) {
+						duk_dup(thr, DUK_BIDX_TYPE_ERROR_THROWER);
+					} else {
+						duk_push_c_function_builtin_noconstruct(thr, c_func_getter, 0); /* always 0 args */
+						duk_set_magic(thr, -1, (duk_int_t) accessor_magic);
+					}
 					defprop_flags |= DUK_DEFPROP_HAVE_GETTER;
 				}
 				c_func_setter = duk_bi_native_functions[natidx_setter];
 				if (c_func_setter != NULL) {
-					duk_push_c_function_builtin_noconstruct(thr, c_func_setter, 1); /* always 1 arg */
-					duk_set_magic(thr, -1, (duk_int_t) accessor_magic);
+					/* Deal with Function.prototype .caller and .arguments, ensure
+					 * all share the same thrower function instance.
+					 */
+					if (c_func_setter == duk_bi_type_error_thrower) {
+						duk_dup(thr, DUK_BIDX_TYPE_ERROR_THROWER);
+					} else {
+						duk_push_c_function_builtin_noconstruct(thr, c_func_setter, 1); /* always 1 arg */
+						duk_set_magic(thr, -1, (duk_int_t) accessor_magic);
+					}
 					defprop_flags |= DUK_DEFPROP_HAVE_SETTER;
 				}
 

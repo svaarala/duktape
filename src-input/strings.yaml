@@ -737,10 +737,6 @@ strings:
     duktape: true
     class_name: true
 
-  # non-standard built-in object names
-  - str: "ThrowTypeError"  # implementation specific, matches V8
-    duktape: true
-
   # non-standard error object (or Error.prototype) properties
   - str: "stack"
     duktape: true

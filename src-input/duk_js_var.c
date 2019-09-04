@@ -410,26 +410,36 @@ void duk_js_push_closure(duk_hthread *thr,
 
 	/*
 	 *  "arguments" and "caller" must be mapped to throwers for strict
-	 *  mode and bound functions (E5 Section 15.3.5).
+	 *  mode and bound functions in ES5.1 (E5 Section 15.3.5).  This is
+	 *  no longer required in ES2015+ for any functions; instead .arguments
+	 *  and .caller are throwing accessors in Function.prototype for all
+	 *  function types.
 	 *
-	 *  XXX: This is expensive to have for every strict function instance.
-	 *  Try to implement as virtual properties or on-demand created properties.
+	 *  V8 provides .caller and .arguments own properties (null) for
+	 *  non-strict functions.  We omit these and rely on the throwing
+	 *  accessors to reduce function size.  Both behaviors are compliant.
 	 */
 
 	/* [ ... closure template ] */
 
-	if (DUK_HOBJECT_HAS_STRICT(&fun_clos->obj)) {
-		duk_xdef_prop_stridx_thrower(thr, -2, DUK_STRIDX_CALLER);
-		duk_xdef_prop_stridx_thrower(thr, -2, DUK_STRIDX_LC_ARGUMENTS);
-	} else {
 #if defined(DUK_USE_NONSTD_FUNC_CALLER_PROPERTY)
+	if (!DUK_HOBJECT_HAS_STRICT(&fun_clos->obj)) {
 		DUK_DDD(DUK_DDDPRINT("function is non-strict and non-standard 'caller' property in use, add initial 'null' value"));
 		duk_push_null(thr);
 		duk_xdef_prop_stridx_short(thr, -3, DUK_STRIDX_CALLER, DUK_PROPDESC_FLAGS_NONE);
-#else
-		DUK_DDD(DUK_DDDPRINT("function is non-strict and non-standard 'caller' property not used"));
-#endif
 	}
+#endif
+
+#if 0 /* V8 provides immutable null value .caller and .arguments for non-strict functions. */
+	if (DUK_HOBJECT_HAS_STRICT(&fun_clos->obj)) {
+		;
+	} else {
+		duk_push_null(thr);
+		duk_xdef_prop_stridx_short(thr, -3, DUK_STRIDX_CALLER, DUK_PROPDESC_FLAGS_NONE);
+		duk_push_null(thr);
+		duk_xdef_prop_stridx_short(thr, -3, DUK_STRIDX_LC_ARGUMENTS, DUK_PROPDESC_FLAGS_NONE);
+	}
+#endif
 
 	/*
 	 *  "name" used to be non-standard but is now defined by ES2015.
@@ -469,7 +479,7 @@ void duk_js_push_closure(duk_hthread *thr,
 	duk_compact(thr, -2);
 
 	/*
-	 *  Some assertions (E5 Section 13.2).
+	 *  Some assertions.
 	 */
 
 	DUK_ASSERT(DUK_HOBJECT_GET_CLASS_NUMBER(&fun_clos->obj) == DUK_HOBJECT_CLASS_FUNCTION);
@@ -478,8 +488,8 @@ void duk_js_push_closure(duk_hthread *thr,
 	DUK_ASSERT(duk_has_prop_stridx(thr, -2, DUK_STRIDX_LENGTH) != 0);
 	DUK_ASSERT(add_auto_proto == 0 || duk_has_prop_stridx(thr, -2, DUK_STRIDX_PROTOTYPE) != 0);
 	/* May be missing .name */
-	DUK_ASSERT(!DUK_HOBJECT_HAS_STRICT(&fun_clos->obj) || duk_has_prop_stridx(thr, -2, DUK_STRIDX_CALLER) != 0);
-	DUK_ASSERT(!DUK_HOBJECT_HAS_STRICT(&fun_clos->obj) || duk_has_prop_stridx(thr, -2, DUK_STRIDX_LC_ARGUMENTS) != 0);
+	DUK_ASSERT(duk_has_prop_stridx(thr, -2, DUK_STRIDX_CALLER) != 0);
+	DUK_ASSERT(duk_has_prop_stridx(thr, -2, DUK_STRIDX_LC_ARGUMENTS) != 0);
 
 	/*
 	 *  Finish
