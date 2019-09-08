@@ -3565,6 +3565,9 @@ Planned
 
 * Fix some compile warnings (GH-2161, GH-2172)
 
+* Add RISC-V architecture detection in duk_config.h; previous versions
+  also compiled on RISC-V but identified as "generic" (GH-2174)
+
 * Minor performance and footprint improvements (GH-2167)
 
 3.0.0 (XXXX-XX-XX)

@@ -46,6 +46,14 @@ autodetect:
     check: DUK_F_SPARC64
     include: architecture_sparc64.h.in
   -
+    name: RISC-V 32-bit
+    check: DUK_F_RISCV32
+    include: architecture_riscv32.h.in
+  -
+    name: RISC-V 64-bit
+    check: DUK_F_RISCV64
+    include: architecture_riscv64.h.in
+  -
     name: SuperH
     check: DUK_F_SUPERH
     include: architecture_superh.h.in
