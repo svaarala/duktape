@@ -4187,6 +4187,13 @@ DUK_EXTERNAL duk_bool_t duk_is_symbol(duk_hthread *thr, duk_idx_t idx) {
 	return 0;
 }
 
+DUK_INTERNAL duk_bool_t duk_is_array_hobject(duk_hobject *h) {
+	DUK_ASSERT(h != NULL);
+	h = duk_hobject_resolve_proxy_target(h);
+	return (DUK_HOBJECT_GET_CLASS_NUMBER(h) == DUK_HOBJECT_CLASS_ARRAY ? 1 : 0);
+}
+
+/* IsArray(), returns true for Array instance or Proxy of Array instance. */
 DUK_EXTERNAL duk_bool_t duk_is_array(duk_hthread *thr, duk_idx_t idx) {
 	duk_hobject *obj;
 
@@ -4194,7 +4201,7 @@ DUK_EXTERNAL duk_bool_t duk_is_array(duk_hthread *thr, duk_idx_t idx) {
 
 	obj = duk_get_hobject(thr, idx);
 	if (obj) {
-		return (DUK_HOBJECT_GET_CLASS_NUMBER(obj) == DUK_HOBJECT_CLASS_ARRAY ? 1 : 0);
+		return duk_is_array_hobject(obj);
 	}
 	return 0;
 }

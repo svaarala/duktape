@@ -3557,6 +3557,9 @@ Planned
 * Include "end of input" in error message if SyntaxError occurs at end of
   file (GH-2152, GH-2165)
 
+* Fix behavior of proxied Array objects for Array.isArray(), duk_is_array(),
+  Object.prototype.toString(), and JSON.stringify() (GH-2041, GH-2175)
+
 * Fix a harmless assert in Math.atan2() when compiling with gcc -m32 (GH-2164)
 
 * Fix (suppress) -Wfloat-equal warnings for GCC and Clang (GH-234, GH-2164)
