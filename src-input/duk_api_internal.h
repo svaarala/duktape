@@ -122,8 +122,6 @@ DUK_INTERNAL_DECL duk_bool_t duk_is_callable_tval(duk_hthread *thr, duk_tval *tv
 
 DUK_INTERNAL_DECL duk_bool_t duk_is_bare_object(duk_hthread *thr, duk_idx_t idx);
 
-DUK_INTERNAL_DECL duk_bool_t duk_is_array_hobject(duk_hobject *h);
-
 DUK_INTERNAL_DECL duk_hstring *duk_get_hstring(duk_hthread *thr, duk_idx_t idx);
 DUK_INTERNAL_DECL duk_hstring *duk_get_hstring_notsymbol(duk_hthread *thr, duk_idx_t idx);
 DUK_INTERNAL_DECL const char *duk_get_string_notsymbol(duk_hthread *thr, duk_idx_t idx);

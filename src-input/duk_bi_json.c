@@ -972,7 +972,7 @@ DUK_LOCAL void duk__dec_reviver_walk(duk_json_dec_ctx *js_ctx) {
 
 	h = duk_get_hobject(thr, -1);
 	if (h != NULL) {
-		if (duk_is_array_hobject(h)) {
+		if (duk_js_isarray_hobject(h)) {
 			arr_len = (duk_uarridx_t) duk_get_length(thr, -1);
 			for (i = 0; i < arr_len; i++) {
 				/* [ ... holder name val ] */
@@ -2175,7 +2175,7 @@ DUK_LOCAL duk_bool_t duk__enc_value(duk_json_enc_ctx *js_ctx, duk_idx_t idx_hold
 		 */
 		DUK_ASSERT(!DUK_HOBJECT_IS_CALLABLE(h));
 
-		if (duk_is_array_hobject(h)) {
+		if (duk_js_isarray_hobject(h)) {
 			duk__enc_array(js_ctx);
 		} else {
 			duk__enc_object(js_ctx);
@@ -3011,7 +3011,7 @@ void duk_bi_json_stringify_helper(duk_hthread *thr,
 	if (h != NULL) {
 		if (DUK_HOBJECT_IS_CALLABLE(h)) {
 			js_ctx->h_replacer = h;
-		} else if (DUK_HOBJECT_GET_CLASS_NUMBER(h) == DUK_HOBJECT_CLASS_ARRAY) {
+		} else if (duk_js_isarray_hobject(h)) {
 			/* Here the specification requires correct array index enumeration
 			 * which is a bit tricky for sparse arrays (it is handled by the
 			 * enum setup code).  We now enumerate ancestors too, although the

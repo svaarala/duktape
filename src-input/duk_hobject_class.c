@@ -7,13 +7,13 @@
 #if (DUK_STRIDX_UC_ARGUMENTS > 255)
 #error constant too large
 #endif
-#if (DUK_STRIDX_ARRAY > 255)
+#if (DUK_STRIDX_UC_ARRAY > 255)
 #error constant too large
 #endif
 #if (DUK_STRIDX_UC_BOOLEAN > 255)
 #error constant too large
 #endif
-#if (DUK_STRIDX_DATE > 255)
+#if (DUK_STRIDX_UC_DATE > 255)
 #error constant too large
 #endif
 #if (DUK_STRIDX_UC_ERROR > 255)
@@ -96,11 +96,11 @@
 DUK_INTERNAL duk_uint8_t duk_class_number_to_stridx[32] = {
 	DUK_STRIDX_EMPTY_STRING,  /* NONE, intentionally empty */
 	DUK_STRIDX_UC_OBJECT,
-	DUK_STRIDX_ARRAY,
+	DUK_STRIDX_UC_ARRAY,
 	DUK_STRIDX_UC_FUNCTION,
 	DUK_STRIDX_UC_ARGUMENTS,
 	DUK_STRIDX_UC_BOOLEAN,
-	DUK_STRIDX_DATE,
+	DUK_STRIDX_UC_DATE,
 	DUK_STRIDX_UC_ERROR,
 	DUK_STRIDX_JSON,
 	DUK_STRIDX_MATH,

@@ -8,13 +8,6 @@
 DUK_INTERNAL duk_ret_t duk_bi_object_prototype_to_string(duk_hthread *thr) {
 	duk_tval *tv;
 
-	duk_push_this(thr);
-	if (duk_is_array(thr, -1)) {
-		/* Proxied Array is handled here. */
-		(void) duk_push_literal(thr, "[object Array]");
-		return 1;
-	}
-
 	tv = DUK_HTHREAD_THIS_PTR(thr);
 	duk_push_class_string_tval(thr, tv, 0 /*avoid_side_effects*/);
 	return 1;
