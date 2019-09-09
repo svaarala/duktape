@@ -8,8 +8,9 @@ stack: |
 
 summary: |
   <p>Returns 1 if value at <code>idx</code> is an object and is an ECMAScript array
-  (has the internal class <code>Array</code>), otherwise returns 0.  If <code>idx</code>
-  is invalid, also returns 0.</p>
+  (has the internal class <code>Array</code>), otherwise returns 0.  Also returns 1
+  if the value is a Proxy wrapping an Array.  If <code>idx</code> is invalid, also
+  returns 0.</p>
 
   <p>This function returns 1 when the following ECMAScript expression is true:</p>
   <pre class="ecmascript-code">
