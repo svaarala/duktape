@@ -179,10 +179,7 @@ DUK_INTERNAL duk_ret_t duk_bi_array_constructor(duk_hthread *thr) {
  */
 
 DUK_INTERNAL duk_ret_t duk_bi_array_constructor_is_array(duk_hthread *thr) {
-	duk_hobject *h;
-
-	h = duk_get_hobject_with_class(thr, 0, DUK_HOBJECT_CLASS_ARRAY);
-	duk_push_boolean(thr, (h != NULL));
+	duk_push_boolean(thr, duk_is_array(thr, 0));
 	return 1;
 }
 
