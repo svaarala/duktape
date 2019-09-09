@@ -14,6 +14,10 @@
 [object JSON]
 [object Math]
 [object Function]
+proxied
+[object Array]
+[object Object]
+[object Function]
 ===*/
 
 function basicTest() {
@@ -36,6 +40,11 @@ function basicTest() {
     test(JSON);
     test(Math);
     test(function f() { var indirect = eval; return indirect('this'); });  // indirect eval -> this=global
+    print('proxied');
+    test(new Proxy([ 1, 2, 3 ], {}));
+    //test(new Proxy(new Proxy([ 1, 2, 3 ], {}), {}));
+    test(new Proxy({ foo: 'bar' }, {}));
+    test(new Proxy(Math.cos, {}));
 }
 
 try {
