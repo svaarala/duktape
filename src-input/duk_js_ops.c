@@ -1346,6 +1346,24 @@ DUK_INTERNAL duk_small_uint_t duk_js_typeof_stridx(duk_tval *tv_x) {
 }
 
 /*
+ *  IsArray()
+ */
+
+DUK_INTERNAL duk_bool_t duk_js_isarray_hobject(duk_hobject *h) {
+	DUK_ASSERT(h != NULL);
+	h = duk_hobject_resolve_proxy_target(h);
+	return (DUK_HOBJECT_GET_CLASS_NUMBER(h) == DUK_HOBJECT_CLASS_ARRAY ? 1 : 0);
+}
+
+DUK_INTERNAL duk_bool_t duk_js_isarray(duk_tval *tv) {
+	DUK_ASSERT(tv != NULL);
+	if (DUK_TVAL_IS_OBJECT(tv)) {
+		return duk_js_isarray_hobject(DUK_TVAL_GET_OBJECT(tv));
+	}
+	return 0;
+}
+
+/*
  *  Array index and length
  *
  *  Array index: E5 Section 15.4

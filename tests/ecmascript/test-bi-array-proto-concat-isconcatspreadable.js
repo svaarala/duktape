@@ -34,6 +34,8 @@ has 2
 get @@isConcatSpreadable
 [1,2,3,["foo","bar"]]
 [1,2,3,"foobar"]
+[1,2,3,4,5,6,[7,8]]
+[1,2,3,4,5,6,[7,8]]
 ===*/
 
 function printJson(x) {
@@ -209,6 +211,14 @@ function basicTest() {
         configurable: true
     });
     res = arr.concat(arg);
+    printJson(res);
+
+    // IsArray() is used for detecting arrays, and must follow proxy chains
+    arr = [ 1, 2, 3 ];
+    res = arr.concat([ 4, 5, 6, [ 7, 8 ] ]);
+    printJson(res);
+    arr = [ 1, 2, 3 ];
+    res = arr.concat(new Proxy([ 4, 5, 6, [ 7, 8 ] ], {}));
     printJson(res);
 }
 

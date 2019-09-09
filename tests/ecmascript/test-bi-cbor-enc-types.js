@@ -43,6 +43,7 @@ test(Math.cos.bind(123, 234), 'a0');  // bound function
 test(new Date(2019, 1, 2, 3, 4, 5), 'a0');
 test(/foobar/g, 'a0');
 test(new Proxy({}, {}), 'a0');
+test(new Proxy([ 1, 2, 3 ], {}), '83010203');
 // Cover null pointer only, encodes to "(null)" now.
 // XXX: non-null pointers
 test(Duktape.Pointer(null), '66286e756c6c29');
