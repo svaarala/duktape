@@ -112,6 +112,8 @@ function arrayFastWriteTest() {
 
     print('sparse array');
     arr = [];
+    arr[1e6] = 123;
+    arr.length = 20;
     arr[20] = 'quux';
     print(arr[17], arr[18]);
 
