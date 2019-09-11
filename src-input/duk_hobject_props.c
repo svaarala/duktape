@@ -326,6 +326,8 @@ DUK_LOCAL duk_bool_t duk__abandon_array_density_check(duk_uint32_t a_used, duk_u
 
 /* Fast check for extending array: check whether or not a slow density check is required. */
 DUK_LOCAL duk_bool_t duk__abandon_array_slow_check_required(duk_uint32_t arr_idx, duk_uint32_t old_size) {
+	duk_uint32_t new_size_min;
+
 	/*
 	 *  In a fast check we assume old_size equals old_used (i.e., existing
 	 *  array is fully dense).
@@ -347,7 +349,9 @@ DUK_LOCAL duk_bool_t duk__abandon_array_slow_check_required(duk_uint32_t arr_idx
 	 *    arr_idx > limit'' * ((old_size + 7) / 8)
 	 */
 
-	return (arr_idx > DUK_USE_HOBJECT_ARRAY_FAST_RESIZE_LIMIT * ((old_size + 7) >> 3));
+	new_size_min = arr_idx + 1;
+	return (new_size_min >= DUK_USE_HOBJECT_ARRAY_ABANDON_MINSIZE) &&
+	       (arr_idx > DUK_USE_HOBJECT_ARRAY_FAST_RESIZE_LIMIT * ((old_size + 7) >> 3));
 }
 
 DUK_LOCAL duk_bool_t duk__abandon_array_check(duk_hthread *thr, duk_uint32_t arr_idx, duk_hobject *obj) {

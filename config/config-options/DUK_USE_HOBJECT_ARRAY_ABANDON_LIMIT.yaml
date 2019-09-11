@@ -5,7 +5,8 @@ tags:
   - performance
   - lowmemory
 description: >
-  Abandon array part if its density is below L.  The limit L is expressed as
+  Abandon array part if its density is below L and array is larger than
+  DUK_USE_HOBJECT_ARRAY_ABANDON_MINSIZE.  The limit L is expressed as
   a .3 fixed point point, e.g. 2 means 2/8 = 25%.
 
   The default limit is quite low: one array entry with packed duk_tval is 8

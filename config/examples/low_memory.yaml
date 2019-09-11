@@ -81,6 +81,8 @@ DUK_USE_HSTRING_LAZY_CLEN: false  # non-lazy charlen is smaller
 # lower memory targets usually drop hash part support entirely.
 DUK_USE_HOBJECT_HASH_PROP_LIMIT: 64
 
+DUK_USE_HOBJECT_ARRAY_ABANDON_MINSIZE: 32
+
 # Disable freelist caching.
 DUK_USE_CACHE_ACTIVATION: false
 DUK_USE_CACHE_CATCHER: false
