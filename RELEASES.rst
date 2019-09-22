@@ -3572,6 +3572,8 @@ Planned
 * Add RISC-V architecture detection in duk_config.h; previous versions
   also compiled on RISC-V but identified as "generic" (GH-2174)
 
+* Avoid ast/endian.h header on Solaris (GH-2180)
+
 * Minor performance and footprint improvements (GH-2167, GH-2177)
 
 3.0.0 (XXXX-XX-XX)
