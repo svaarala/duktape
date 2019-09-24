@@ -12,7 +12,7 @@ summary: |
 
 example: |
   duk_push_string(ctx, "1.2.3");
-  (void) duk_put_global_lstring(ctx, "internal" "\x00" "nul");
+  (void) duk_put_global_lstring(ctx, "internal" "\x00" "nul", 12);
 
 tags:
   - property

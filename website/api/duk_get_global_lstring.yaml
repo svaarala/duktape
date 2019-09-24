@@ -12,7 +12,7 @@ summary: |
   but the key is given as a string with explicit length.</p>
 
 example: |
-  (void) duk_get_global_lstring(ctx, "internal" "\x00" "nul");
+  (void) duk_get_global_lstring(ctx, "internal" "\x00" "nul", 12);
 
 tags:
   - property

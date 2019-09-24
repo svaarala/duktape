@@ -13,7 +13,7 @@ summary: |
 example: |
   duk_bool_t rc;
 
-  rc = duk_del_prop_lstring(ctx, -3, "internal" "\x00" "nul");
+  rc = duk_del_prop_lstring(ctx, -3, "internal" "\x00" "nul", 12);
   printf("delete obj.internal[00]nul -> rc=%d\n", (int) rc);
 
 tags:
