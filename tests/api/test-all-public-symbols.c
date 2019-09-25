@@ -23,8 +23,7 @@ static duk_ret_t test_func(duk_context *ctx, void *udata) {
 		return 0;
 	}
 
-	/* Up-to-date for Duktape 1.3.0, alphabetical order:
-	 * $ cd website/api; ls *.yaml
+	/* $ cd website/api; ls *.yaml
 	 */
 
 	(void) duk_alloc_raw(ctx, 0);
@@ -223,6 +222,7 @@ static duk_ret_t test_func(duk_context *ctx, void *udata) {
 	(void) duk_pop_3(ctx);
 	(void) duk_pop_n(ctx, 0);
 	(void) duk_pop(ctx);
+	(void) duk_pull(ctx, 0);
 	(void) duk_push_array(ctx);
 	(void) duk_push_bare_object(ctx);
 	(void) duk_push_boolean(ctx, 0);
