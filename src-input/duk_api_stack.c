@@ -1172,7 +1172,7 @@ DUK_EXTERNAL void duk_insert(duk_hthread *thr, duk_idx_t to_idx) {
 	 * => [ ... | q | p | x | x ]
 	 */
 
-	nbytes = (duk_size_t) (((duk_uint8_t *) q) - ((duk_uint8_t *) p));  /* Note: 'q' is top-1 */
+	nbytes = (duk_size_t) (((duk_uint8_t *) q) - ((duk_uint8_t *) p));
 
 	DUK_DDD(DUK_DDDPRINT("duk_insert: to_idx=%ld, p=%p, q=%p, nbytes=%lu",
 	                     (long) to_idx, (void *) p, (void *) q, (unsigned long) nbytes));
@@ -1206,6 +1206,40 @@ DUK_INTERNAL void duk_insert_undefined_n(duk_hthread *thr, duk_idx_t idx, duk_id
 		DUK_TVAL_SET_UNDEFINED(tv);
 		tv++;
 	}
+}
+
+DUK_EXTERNAL void duk_pull(duk_hthread *thr, duk_idx_t from_idx) {
+	duk_tval *p;
+	duk_tval *q;
+	duk_tval tv_tmp;
+	duk_size_t nbytes;
+
+	DUK_ASSERT_API_ENTRY(thr);
+
+	/*                         nbytes
+	 *                       <--------->
+	 *    [ ... | x | x | p | y | y | q ]
+	 * => [ ... | x | x | y | y | q | p ]
+	 */
+
+	p = duk_require_tval(thr, from_idx);
+	DUK_ASSERT(p != NULL);
+	q = duk_require_tval(thr, -1);
+	DUK_ASSERT(q != NULL);
+
+	DUK_ASSERT(q >= p);
+
+	nbytes = (duk_size_t) (((duk_uint8_t *) q) - ((duk_uint8_t *) p));
+
+	DUK_DDD(DUK_DDDPRINT("duk_pull: from_idx=%ld, p=%p, q=%p, nbytes=%lu",
+	                     (long) from_idx, (void *) p, (void *) q, (unsigned long) nbytes));
+
+	/* No net refcount changes.  No need to special case nbytes == 0
+	 * (p == q).
+	 */
+	DUK_TVAL_SET_TVAL(&tv_tmp, p);
+	duk_memmove((void *) p, (const void *) (p + 1), (size_t) nbytes);
+	DUK_TVAL_SET_TVAL(q, &tv_tmp);
 }
 
 DUK_EXTERNAL void duk_replace(duk_hthread *thr, duk_idx_t to_idx) {

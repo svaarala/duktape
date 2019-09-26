@@ -3550,6 +3550,8 @@ Planned
   proposal-global; enable the binding by default; update
   polyfills/global.js (GH-2160)
 
+* Add duk_pull() API call (GH-2184)
+
 * Add experimental duk_cbor_encode() and duk_cbor_decode() API calls (GH-2163)
 
 * Move CBOR extra into an actual Duktape built-in, enabled by default (GH-2163)

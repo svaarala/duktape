@@ -28,6 +28,7 @@ tags:
   - stack
 
 seealso:
+  - duk_pull
   - duk_replace
 
 introduced: 1.0.0
