@@ -3559,6 +3559,10 @@ Planned
 * Include "end of input" in error message if SyntaxError occurs at end of
   file (GH-2152, GH-2165)
 
+* Add missing DUK_DEFPROP_xxx convenience constants for the 'EC' combination
+  (like DUK_DEFPROP_EC, DUK_DEFPROP_HAVE_EC, etc) which were accidentally
+  missing from the API header (GH-2187)
+
 * Fix behavior of proxied Array objects for: Array.isArray(), duk_is_array(),
   Object.prototype.toString(), JSON.stringify(), Array.prototype.concat()
   (GH-2041, GH-2175, GH-2176)
