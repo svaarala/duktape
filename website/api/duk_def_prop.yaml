@@ -123,27 +123,27 @@ summary: |
   <td>Set or clear the 'configurable' attribute.</td>
   </tr>
   <tr>
-  <td>DUK_DEFPROP_SET_{W,E,C,WE,WC,WEC}</td>
+  <td>DUK_DEFPROP_SET_{W,E,C,WE,WC,EC,WEC}</td>
   <td>Set one or more attributes, don't touch other attributes.</td>
   </tr>
   <tr>
-  <td>DUK_DEFPROP_CLEAR_{W,E,C,WE,WC,WEC}</td>
+  <td>DUK_DEFPROP_CLEAR_{W,E,C,WE,WC,EC,WEC}</td>
   <td>Clear one or more attributes, don't touch other attributes.</td>
   </tr>
   <tr>
-  <td>DUK_DEFPROP_ATTR_{W,E,C,WE,WC,WEC}</td>
+  <td>DUK_DEFPROP_ATTR_{W,E,C,WE,WC,EC,WEC}</td>
   <td>Set or clear writable, enumerable, and configurable attributes.
       For example, DUK_DEFPROP_ATTR_WC sets writable and configurable,
       and clears enumerable.</td>
   </tr>
   <tr>
-  <td>DUK_DEFPROP_HAVE_{W,E,C,WE,WC,WEC}</td>
+  <td>DUK_DEFPROP_HAVE_{W,E,C,WE,WC,EC,WEC}</td>
   <td>Indicate one or more attributes are set/cleared, e.g.
       DUK_DEFPROP_HAVE_WC is equivalent to
       DUK_DEFPROP_HAVE_WRITABLE | DUK_DEFPROP_HAVE_CONFIGURABLE.</td>
   </tr>
   <tr>
-  <td>DUK_DEFPROP_{W,E,C,WE,WC,WEC}</td>
+  <td>DUK_DEFPROP_{W,E,C,WE,WC,EC,WEC}</td>
   <td>Provide attribute values (effective if matching "have" flag is
       set), e.g. DUK_DEFPROP_WE is equivalent to
       DUK_DEFPROP_WRITABLE | DUK_DEFPROP_ENUMERABLE.</td>
