@@ -264,6 +264,24 @@ struct duk_catcher {
 	 */
 };
 
+//FIXME (jc) promote as public API, add public `void duk_set_extval_handlers(duk_context *ctx, duk_extval_handlers handlers)`,
+// initialize the pointers to their default implementations in duk_thread
+typedef duk_size_t (*duk_extval_size_function) (duk_hthread *thr, duk_small_uint_t proto_id, void *udata);
+typedef duk_int_t (*duk_extval_int_function) (duk_hthread *thr, duk_small_uint_t proto_id, void *udata);
+typedef void (*duk_extval_void_function) (duk_hthread *thr, duk_small_uint_t proto_id, void *udata);
+
+struct duk_extval_handlers {
+    duk_extval_int_function get_type_func;
+    duk_extval_size_function get_length_func;
+    duk_extval_void_function push_class_name_func;
+    duk_extval_void_function to_primitive_func;
+    duk_extval_void_function to_string_func;
+    duk_extval_void_function to_number_func;
+    duk_extval_void_function to_boolean_func;
+    duk_extval_void_function to_object_func;
+};
+//----
+
 struct duk_hthread {
 	/* Shared object part */
 	duk_hobject obj;
@@ -334,6 +352,9 @@ struct duk_hthread {
 
 	/* Current compiler state (if any), used for augmenting SyntaxErrors. */
 	duk_compiler_ctx *compile_ctx;
+
+	/* Handlers for external values */
+	struct duk_extval_handlers extval_handlers;
 
 #if defined(DUK_USE_INTERRUPT_COUNTER)
 	/* Interrupt counter for triggering a slow path check for execution

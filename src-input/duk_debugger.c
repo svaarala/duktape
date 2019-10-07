@@ -898,9 +898,9 @@ DUK_INTERNAL void duk_debug_write_tval(duk_hthread *thr, duk_tval *tv) {
 	case DUK_TAG_UNDEFINED:
 		duk_debug_write_byte(thr, DUK_DBG_IB_UNDEFINED);
 		break;
-	case DUK_TAG_UNUSED:
-		duk_debug_write_byte(thr, DUK_DBG_IB_UNUSED);
-		break;
+	//case DUK_TAG_UNUSED:
+	//	duk_debug_write_byte(thr, DUK_DBG_IB_UNUSED);
+	//	break;
 	case DUK_TAG_NULL:
 		duk_debug_write_byte(thr, DUK_DBG_IB_NULL);
 		break;

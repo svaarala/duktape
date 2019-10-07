@@ -538,6 +538,10 @@ DUK_LOCAL duk_bool_t duk__init_heap_thread(duk_heap *heap) {
 		return 0;
 	}
 	thr->state = DUK_HTHREAD_STATE_INACTIVE;
+
+	//FIXME(jc) initialize function pointers with default implementations
+	thr->extval_handlers.get_length_func = NULL;
+
 #if defined(DUK_USE_ROM_STRINGS)
 	/* No strs[] pointer. */
 #else  /* DUK_USE_ROM_STRINGS */

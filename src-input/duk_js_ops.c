@@ -522,6 +522,7 @@ DUK_LOCAL duk_bool_t duk__js_samevalue_number(duk_double_t x, duk_double_t y) {
 #endif  /* DUK_USE_PARANOID_MATH */
 }
 
+//FIXME (jc) handle external values
 DUK_INTERNAL duk_bool_t duk_js_equals_helper(duk_hthread *thr, duk_tval *tv_x, duk_tval *tv_y, duk_small_uint_t flags) {
 	duk_uint_t type_mask_x;
 	duk_uint_t type_mask_y;
@@ -631,8 +632,8 @@ DUK_INTERNAL duk_bool_t duk_js_equals_helper(duk_hthread *thr, duk_tval *tv_x, d
 	 *  code size.
 	 */
 
-	type_mask_x = duk_get_type_mask_tval(tv_x);
-	type_mask_y = duk_get_type_mask_tval(tv_y);
+	type_mask_x = duk_get_type_mask_tval(thr, tv_x);
+	type_mask_y = duk_get_type_mask_tval(thr, tv_y);
 
 	/* Undefined/null are considered equal (e.g. "null == undefined" -> true). */
 	if ((type_mask_x & (DUK_TYPE_MASK_UNDEFINED | DUK_TYPE_MASK_NULL)) &&

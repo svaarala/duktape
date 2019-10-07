@@ -72,7 +72,7 @@ DUK_EXTERNAL void duk_inspect_value(duk_hthread *thr, duk_idx_t idx) {
 	tv = duk_get_tval_or_unused(thr, idx);
 	h = (DUK_TVAL_IS_HEAP_ALLOCATED(tv) ? DUK_TVAL_GET_HEAPHDR(tv) : NULL);
 
-	vals[DUK__IDX_TYPE] = duk_get_type_tval(tv);
+	vals[DUK__IDX_TYPE] = duk_get_type_tval(thr, tv);
 	vals[DUK__IDX_ITAG] = (duk_int_t) DUK_TVAL_GET_TAG(tv);
 
 	duk_push_bare_object(thr);  /* Invalidates 'tv'. */

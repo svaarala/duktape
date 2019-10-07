@@ -344,7 +344,8 @@ typedef struct {
 #define DUK_TAG_BOOLEAN               4
 #define DUK_TAG_POINTER               5
 #define DUK_TAG_LIGHTFUNC             6
-#define DUK_TAG_UNUSED                7  /* marker; not actual tagged type */
+#define DUK_TAG_EXTVAL                7  /* externally handled stack value */
+#define DUK_TAG_UNUSED                DUK_TAG_UNDEFINED
 #define DUK_TAG_STRING                8  /* first heap allocated, match bit boundary */
 #define DUK_TAG_OBJECT                9
 #define DUK_TAG_BUFFER                10
@@ -510,6 +511,14 @@ typedef struct {
 		duk__tv->v.d = DUK_DOUBLE_NAN; \
 	} while (0)
 
+#define DUK_TVAL_SET_EXTVAL(tv,proto_id,udata)  do { \
+		duk_tval *duk__tv; \
+		duk__tv = (tv); \
+		duk__tv->t = DUK_TAG_EXTVAL; \
+		duk__tv->v_extra = (proto_id); \
+		duk__tv->v.voidptr = (udata); \
+	} while (0)
+
 #define DUK_TVAL_SET_TVAL(tv,x)            do { *(tv) = *(x); } while (0)
 
 /* getters */
@@ -545,6 +554,8 @@ typedef struct {
 #define DUK_TVAL_GET_OBJECT(tv)            ((tv)->v.hobject)
 #define DUK_TVAL_GET_BUFFER(tv)            ((tv)->v.hbuffer)
 #define DUK_TVAL_GET_HEAPHDR(tv)           ((tv)->v.heaphdr)
+#define DUK_TVAL_GET_EXTVAL_PROTO_ID(tv)   ((duk_small_uint_t) ((tv)->v_extra))
+#define DUK_TVAL_GET_EXTVAL_UDATA(tv)      ((tv)->v.voidptr)
 
 /* decoding */
 #define DUK_TVAL_GET_TAG(tv)               ((tv)->t)
@@ -568,6 +579,7 @@ typedef struct {
 #define DUK_TVAL_IS_STRING(tv)             ((tv)->t == DUK_TAG_STRING)
 #define DUK_TVAL_IS_OBJECT(tv)             ((tv)->t == DUK_TAG_OBJECT)
 #define DUK_TVAL_IS_BUFFER(tv)             ((tv)->t == DUK_TAG_BUFFER)
+#define DUK_TVAL_IS_EXTVAL(tv)             ((tv)->t == DUK_TAG_EXTVAL)
 
 /* This is performance critical because it's needed for every DECREF.
  * Take advantage of the fact that the first heap allocated tag is 8,

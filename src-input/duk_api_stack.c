@@ -44,7 +44,7 @@ DUK_LOCAL const duk_uint_t duk__type_from_tag[] = {
 	DUK_TYPE_BOOLEAN,
 	DUK_TYPE_POINTER,
 	DUK_TYPE_LIGHTFUNC,
-	DUK_TYPE_NONE,
+    DUK_TYPE_NUMBER, /* external value */
 	DUK_TYPE_STRING,
 	DUK_TYPE_OBJECT,
 	DUK_TYPE_BUFFER,
@@ -57,7 +57,7 @@ DUK_LOCAL const duk_uint_t duk__type_mask_from_tag[] = {
 	DUK_TYPE_MASK_BOOLEAN,
 	DUK_TYPE_MASK_POINTER,
 	DUK_TYPE_MASK_LIGHTFUNC,
-	DUK_TYPE_MASK_NONE,
+    DUK_TYPE_MASK_NUMBER, /* external value */
 	DUK_TYPE_MASK_STRING,
 	DUK_TYPE_MASK_OBJECT,
 	DUK_TYPE_MASK_BUFFER,
@@ -2595,6 +2595,11 @@ DUK_EXTERNAL duk_size_t duk_get_length(duk_hthread *thr, duk_idx_t idx) {
 		DUK_ASSERT(h != NULL);
 		return (duk_size_t) duk_hobject_get_length(thr, h);
 	}
+    case DUK_TAG_EXTVAL: {
+        duk_small_uint_t proto_id = DUK_TVAL_GET_EXTVAL_PROTO_ID(tv);
+        void *udata = DUK_TVAL_GET_EXTVAL_UDATA(tv);
+        return thr->extval_handlers.get_length_func(thr, proto_id, udata);
+    }
 #if defined(DUK_USE_FASTINT)
 	case DUK_TAG_FASTINT:
 #endif
@@ -3219,7 +3224,7 @@ DUK_INTERNAL void duk_push_class_string_tval(duk_hthread *thr, duk_tval *tv, duk
 	duk_push_literal(thr, "[object ");  /* -> [ ... "[object" ] */
 
 	switch (DUK_TVAL_GET_TAG(tv)) {
-	case DUK_TAG_UNUSED:  /* Treat like 'undefined', shouldn't happen. */
+	//case DUK_TAG_UNUSED:  /* Treat like 'undefined', shouldn't happen. */
 	case DUK_TAG_UNDEFINED: {
 		duk_push_hstring_stridx(thr, DUK_STRIDX_UC_UNDEFINED);
 		goto finish;
@@ -3228,6 +3233,12 @@ DUK_INTERNAL void duk_push_class_string_tval(duk_hthread *thr, duk_tval *tv, duk
 		duk_push_hstring_stridx(thr, DUK_STRIDX_UC_NULL);
 		goto finish;
 	}
+    case DUK_TAG_EXTVAL: {
+        duk_small_uint_t proto_id = DUK_TVAL_GET_EXTVAL_PROTO_ID(tv);
+        void *udata = DUK_TVAL_GET_EXTVAL_UDATA(tv);
+        thr->extval_handlers.push_class_name_func(thr, proto_id, udata);
+        goto finish;
+    }
 	}
 
 	duk_push_tval(thr, tv);
@@ -3423,6 +3434,12 @@ DUK_EXTERNAL const char *duk_to_string(duk_hthread *thr, duk_idx_t idx) {
 		duk_push_lightfunc_tostring(thr, tv);
 		break;
 	}
+    case DUK_TAG_EXTVAL: {
+        duk_small_uint_t proto_id = DUK_TVAL_GET_EXTVAL_PROTO_ID(tv);
+        void* udata = DUK_TVAL_GET_EXTVAL_UDATA(tv);
+        thr->extval_handlers.to_string_func(thr, proto_id, udata);
+        break;
+    }
 #if defined(DUK_USE_FASTINT)
 	case DUK_TAG_FASTINT:
 #endif
@@ -3567,6 +3584,7 @@ DUK_EXTERNAL void *duk_to_pointer(duk_hthread *thr, duk_idx_t idx) {
 	case DUK_TAG_UNDEFINED:
 	case DUK_TAG_NULL:
 	case DUK_TAG_BOOLEAN:
+	case DUK_TAG_EXTVAL: //FIXME(jc) for now just treat external values as null pointers, perhaps add a handler later?
 		res = NULL;
 		break;
 	case DUK_TAG_POINTER:
@@ -3691,6 +3709,12 @@ DUK_EXTERNAL void duk_to_object(duk_hthread *thr, duk_idx_t idx) {
 		/* nop */
 		break;
 	}
+	case DUK_TAG_EXTVAL: {
+        duk_small_uint_t proto_id = DUK_TVAL_GET_EXTVAL_PROTO_ID(tv);
+        void *udata = DUK_TVAL_GET_EXTVAL_UDATA(tv);
+        thr->extval_handlers.to_object_func(thr, proto_id, udata);
+        goto replace_value;
+    }
 #if defined(DUK_USE_BUFFEROBJECT_SUPPORT)
 	case DUK_TAG_BUFFER: {
 		/* A plain buffer object coerces to a full ArrayBuffer which
@@ -3782,10 +3806,42 @@ DUK_INTERNAL duk_hobject *duk_to_hobject(duk_hthread *thr, duk_idx_t idx) {
 
 DUK_LOCAL duk_bool_t duk__tag_check(duk_hthread *thr, duk_idx_t idx, duk_small_uint_t tag) {
 	duk_tval *tv;
+    duk_small_uint_t t;
 
 	tv = duk_get_tval_or_unused(thr, idx);
 	DUK_ASSERT(tv != NULL);
-	return (DUK_TVAL_GET_TAG(tv) == tag);
+	t = DUK_TVAL_GET_TAG(tv);
+	if (t == tag) {
+	    return 1;
+	} else if (DUK_UNLIKELY(t == DUK_TAG_EXTVAL)) {
+	    duk_small_uint_t proto_id = DUK_TVAL_GET_EXTVAL_PROTO_ID(tv);
+	    void *udata = DUK_TVAL_GET_EXTVAL_UDATA(tv);
+        duk_int_t ty = thr->extval_handlers.get_type_func(thr, proto_id, udata);
+        switch (ty) {
+        case DUK_TYPE_UNDEFINED:
+            return DUK_TVAL_IS_UNDEFINED(tv);
+        case DUK_TYPE_NULL:
+            return DUK_TVAL_IS_NULL(tv);
+        case DUK_TYPE_BOOLEAN:
+            return DUK_TVAL_IS_BOOLEAN(tv);
+        case DUK_TYPE_NUMBER:
+            return DUK_TVAL_IS_NUMBER(tv);
+        case DUK_TYPE_STRING:
+            return DUK_TVAL_IS_STRING(tv);
+        case DUK_TYPE_OBJECT:
+            return DUK_TVAL_IS_OBJECT(tv);
+        case DUK_TYPE_BUFFER:
+            return DUK_TVAL_IS_BUFFER(tv);
+        case DUK_TYPE_POINTER:
+            return DUK_TVAL_IS_POINTER(tv);
+        case DUK_TYPE_LIGHTFUNC:
+            return DUK_TVAL_IS_LIGHTFUNC(tv);
+        default:
+            return 0;
+        }
+	} else {
+	    return 0;
+	}
 }
 
 DUK_LOCAL duk_bool_t duk__obj_flag_any_default_false(duk_hthread *thr, duk_idx_t idx, duk_uint_t flag_mask) {
@@ -3800,8 +3856,10 @@ DUK_LOCAL duk_bool_t duk__obj_flag_any_default_false(duk_hthread *thr, duk_idx_t
 	return 0;
 }
 
-DUK_INTERNAL duk_int_t duk_get_type_tval(duk_tval *tv) {
-	DUK_ASSERT(tv != NULL);
+DUK_INTERNAL duk_int_t duk_get_type_tval(duk_hthread *thr, duk_tval *tv) {
+    duk_small_uint_t tag;
+
+    DUK_ASSERT(tv != NULL);
 
 #if defined(DUK_USE_PACKED_TVAL)
 	switch (DUK_TVAL_GET_TAG(tv)) {
@@ -3835,7 +3893,14 @@ DUK_INTERNAL duk_int_t duk_get_type_tval(duk_tval *tv) {
 #else  /* DUK_USE_PACKED_TVAL */
 	DUK_ASSERT(DUK_TVAL_IS_VALID_TAG(tv));
 	DUK_ASSERT(sizeof(duk__type_from_tag) / sizeof(duk_uint_t) == DUK_TAG_MAX - DUK_TAG_MIN + 1);
-	return (duk_int_t) duk__type_from_tag[DUK_TVAL_GET_TAG(tv) - DUK_TAG_MIN];
+	tag = DUK_TVAL_GET_TAG(tv);
+	if (DUK_UNLIKELY(tag == DUK_TAG_EXTVAL)) {
+        duk_small_uint_t proto_id = DUK_TVAL_GET_EXTVAL_PROTO_ID(tv);
+        void *udata = DUK_TVAL_GET_EXTVAL_UDATA(tv);
+        return thr->extval_handlers.get_type_func(thr, proto_id, udata);
+    } else {
+	    return (duk_int_t) duk__type_from_tag[tag - DUK_TAG_MIN];
+	}
 #endif  /* DUK_USE_PACKED_TVAL */
 }
 
@@ -3847,7 +3912,7 @@ DUK_EXTERNAL duk_int_t duk_get_type(duk_hthread *thr, duk_idx_t idx) {
 	tv = duk_get_tval_or_unused(thr, idx);
 	DUK_ASSERT(tv != NULL);
 
-	return duk_get_type_tval(tv);
+	return duk_get_type_tval(thr, tv);
 }
 
 #if defined(DUK_USE_VERBOSE_ERRORS) && defined(DUK_USE_PARANOID_ERRORS)
@@ -3909,7 +3974,9 @@ DUK_EXTERNAL duk_bool_t duk_check_type(duk_hthread *thr, duk_idx_t idx, duk_int_
 	return (duk_get_type(thr, idx) == type) ? 1 : 0;
 }
 
-DUK_INTERNAL duk_uint_t duk_get_type_mask_tval(duk_tval *tv) {
+DUK_INTERNAL duk_uint_t duk_get_type_mask_tval(duk_hthread *thr, duk_tval *tv) {
+    duk_small_uint_t tag;
+
 	DUK_ASSERT(tv != NULL);
 
 #if defined(DUK_USE_PACKED_TVAL)
@@ -3944,7 +4011,15 @@ DUK_INTERNAL duk_uint_t duk_get_type_mask_tval(duk_tval *tv) {
 #else  /* DUK_USE_PACKED_TVAL */
 	DUK_ASSERT(DUK_TVAL_IS_VALID_TAG(tv));
 	DUK_ASSERT(sizeof(duk__type_mask_from_tag) / sizeof(duk_uint_t) == DUK_TAG_MAX - DUK_TAG_MIN + 1);
-	return duk__type_mask_from_tag[DUK_TVAL_GET_TAG(tv) - DUK_TAG_MIN];
+	tag = DUK_TVAL_GET_TAG(tv);
+	if (DUK_UNLIKELY(tag == DUK_TAG_EXTVAL)) {
+        duk_small_uint_t proto_id = DUK_TVAL_GET_EXTVAL_PROTO_ID(tv);
+        void *udata = DUK_TVAL_GET_EXTVAL_UDATA(tv);
+        duk_int_t ty = thr->extval_handlers.get_type_func(thr, proto_id, udata);
+        return (1U << ty);
+	} else {
+        return duk__type_mask_from_tag[tag - DUK_TAG_MIN];
+    }
 #endif  /* DUK_USE_PACKED_TVAL */
 }
 
@@ -3956,7 +4031,7 @@ DUK_EXTERNAL duk_uint_t duk_get_type_mask(duk_hthread *thr, duk_idx_t idx) {
 	tv = duk_get_tval_or_unused(thr, idx);
 	DUK_ASSERT(tv != NULL);
 
-	return duk_get_type_mask_tval(tv);
+	return duk_get_type_mask_tval(thr, tv);
 }
 
 DUK_EXTERNAL duk_bool_t duk_check_type_mask(duk_hthread *thr, duk_idx_t idx, duk_uint_t mask) {

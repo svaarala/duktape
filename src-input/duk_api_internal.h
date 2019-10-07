@@ -64,8 +64,8 @@ DUK_INTERNAL_DECL void duk_remove_m2(duk_hthread *thr);
 DUK_INTERNAL_DECL void duk_remove_n(duk_hthread *thr, duk_idx_t idx, duk_idx_t count);
 DUK_INTERNAL_DECL void duk_remove_n_unsafe(duk_hthread *thr, duk_idx_t idx, duk_idx_t count);
 
-DUK_INTERNAL_DECL duk_int_t duk_get_type_tval(duk_tval *tv);
-DUK_INTERNAL_DECL duk_uint_t duk_get_type_mask_tval(duk_tval *tv);
+DUK_INTERNAL_DECL duk_int_t duk_get_type_tval(duk_hthread *thr, duk_tval *tv);
+DUK_INTERNAL_DECL duk_uint_t duk_get_type_mask_tval(duk_hthread *thr, duk_tval *tv);
 
 #if defined(DUK_USE_VERBOSE_ERRORS) && defined(DUK_USE_PARANOID_ERRORS)
 DUK_INTERNAL_DECL const char *duk_get_type_name(duk_hthread *thr, duk_idx_t idx);
