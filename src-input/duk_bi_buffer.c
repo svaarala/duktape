@@ -2263,11 +2263,11 @@ DUK_INTERNAL duk_ret_t duk_bi_nodejs_buffer_concat(duk_hthread *thr) {
 
 /* XXX: split into separate functions for each field type? */
 DUK_INTERNAL duk_ret_t duk_bi_buffer_readfield(duk_hthread *thr) {
-	duk_small_int_t magic = (duk_small_int_t) duk_get_current_magic(thr);
-	duk_small_int_t magic_ftype;
-	duk_small_int_t magic_bigendian;
-	duk_small_int_t magic_signed;
-	duk_small_int_t magic_typedarray;
+	duk_small_uint_t magic = (duk_small_uint_t) duk_get_current_magic(thr);
+	duk_small_uint_t magic_ftype;
+	duk_small_uint_t magic_bigendian;
+	duk_small_uint_t magic_signed;
+	duk_small_uint_t magic_typedarray;
 	duk_small_uint_t endswap;
 	duk_hbufobj *h_this;
 	duk_bool_t no_assert;
@@ -2278,10 +2278,10 @@ DUK_INTERNAL duk_ret_t duk_bi_buffer_readfield(duk_hthread *thr) {
 	duk_uint8_t *buf;
 	duk_double_union du;
 
-	magic_ftype = magic & 0x0007;
-	magic_bigendian = magic & 0x0008;
-	magic_signed = magic & 0x0010;
-	magic_typedarray = magic & 0x0020;
+	magic_ftype = magic & 0x0007U;
+	magic_bigendian = magic & 0x0008U;
+	magic_signed = magic & 0x0010U;
+	magic_typedarray = magic & 0x0020U;
 
 	h_this = duk__require_bufobj_this(thr);  /* XXX: very inefficient for plain buffers */
 	DUK_ASSERT(h_this != NULL);
@@ -2522,11 +2522,11 @@ DUK_INTERNAL duk_ret_t duk_bi_buffer_readfield(duk_hthread *thr) {
 #if defined(DUK_USE_BUFFEROBJECT_SUPPORT)
 /* XXX: split into separate functions for each field type? */
 DUK_INTERNAL duk_ret_t duk_bi_buffer_writefield(duk_hthread *thr) {
-	duk_small_int_t magic = (duk_small_int_t) duk_get_current_magic(thr);
-	duk_small_int_t magic_ftype;
-	duk_small_int_t magic_bigendian;
-	duk_small_int_t magic_signed;
-	duk_small_int_t magic_typedarray;
+	duk_small_uint_t magic = (duk_small_uint_t) duk_get_current_magic(thr);
+	duk_small_uint_t magic_ftype;
+	duk_small_uint_t magic_bigendian;
+	duk_small_uint_t magic_signed;
+	duk_small_uint_t magic_typedarray;
 	duk_small_uint_t endswap;
 	duk_hbufobj *h_this;
 	duk_bool_t no_assert;
@@ -2538,10 +2538,10 @@ DUK_INTERNAL duk_ret_t duk_bi_buffer_writefield(duk_hthread *thr) {
 	duk_double_union du;
 	duk_int_t nbytes = 0;
 
-	magic_ftype = magic & 0x0007;
-	magic_bigendian = magic & 0x0008;
-	magic_signed = magic & 0x0010;
-	magic_typedarray = magic & 0x0020;
+	magic_ftype = magic & 0x0007U;
+	magic_bigendian = magic & 0x0008U;
+	magic_signed = magic & 0x0010U;
+	magic_typedarray = magic & 0x0020U;
 	DUK_UNREF(magic_signed);
 
 	h_this = duk__require_bufobj_this(thr);  /* XXX: very inefficient for plain buffers */
@@ -2581,7 +2581,7 @@ DUK_INTERNAL duk_ret_t duk_bi_buffer_writefield(duk_hthread *thr) {
 	 * (offset + nbytes) even when write fails due to invalid offset.
 	 */
 	if (magic_ftype != DUK__FLD_VARINT) {
-		DUK_ASSERT(magic_ftype >= 0 && magic_ftype < (duk_small_int_t) (sizeof(duk__buffer_nbytes_from_fldtype) / sizeof(duk_uint8_t)));
+		DUK_ASSERT(magic_ftype < (duk_small_uint_t) (sizeof(duk__buffer_nbytes_from_fldtype) / sizeof(duk_uint8_t)));
 		nbytes = duk__buffer_nbytes_from_fldtype[magic_ftype];
 	} else {
 		nbytes = duk_get_int(thr, 2);
