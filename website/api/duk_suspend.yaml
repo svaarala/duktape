@@ -70,7 +70,7 @@ example: |
       duk_resume(ctx, &st);
 
       if (!success) {
-          duk_error(ctx, DUK_ERR_ERROR, "failed to connect");
+          duk_type_error(ctx, "failed to connect");
       }
       return 0;
   }

@@ -77,7 +77,8 @@ some web sites breaking.).</p>
         of a value in a version specific format.  The C API equivalent
         is <code>duk_inspect_value()</code>.</td></tr>
 <tr><td class="propname"><a href="#builtin-duktape-act">act</a></td>
-    <td>Get information about call stack entry.</td></tr>
+    <td>Get information about call stack entry.  The C API equivalent
+        is <code>duk_inspect_callstack_entry()</code>.</td></tr>
 <tr><td class="propname"><a href="#builtin-duktape-gc">gc</a></td>
     <td>Trigger mark-and-sweep garbage collection.</td></tr>
 <tr><td class="propname"><a href="#builtin-duktape-compact">compact</a></td>
@@ -101,12 +102,12 @@ will also be numerically higher.  For example:</p>
 <pre class="ecmascript-code">
 if (typeof Duktape !== 'object') {
     print('not Duktape');
-} else if (Duktape.version &gt;= 10203) {
-    print('Duktape 1.2.3 or higher');
-} else if (Duktape.version &gt;= 800) {
-    print('Duktape 0.8.0 or higher (but lower than 1.2.3)');
+} else if (Duktape.version &gt;= 20403) {
+    print('Duktape 2.4.3 or higher');
+} else if (Duktape.version &gt;= 10500) {
+    print('Duktape 1.5.0 or higher (but lower than 2.4.3)');
 } else {
-    print('Duktape lower than 0.8.0');
+    print('Duktape lower than 1.5.0');
 }
 </pre>
 
@@ -316,7 +317,7 @@ a non-object argument, this call is a no-op.  The argument value is returned by
 the function, which allows code such as:</p>
 <pre class="ecmascript-code">
 var obj = {
-    foo: Duktape.compact({ bar:123 })
+    foo: Duktape.compact({ bar: 123 })
 }
 </pre>
 

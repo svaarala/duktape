@@ -121,18 +121,6 @@ you prefer.  Some examples of additional syntax supported:</p>
   /\u0024/     // same, ES5 compliant
 </pre>
 
-<h2>Array.prototype.splice() when deleteCount not given</h2>
-
-<p>When deleteCount (the 2nd argument) is not given to <code>Array.prototype.splice()</code>,
-the standard behavior is to work as if the 2nd argument was <code>undefined</code>
-(or 0, which has the same behavior after coercions).  A more real world compatible
-behavior is to treat the missing argument like positive infinity, i.e. to extend
-the splice operation to the end of the array.</p>
-
-<p>Because the non-standard real world behavior is expected by much existing code,
-Duktape uses this behavior by default.  The strict standards compliant behavior can
-be enabled by disabling the config option <code>DUK_USE_NONSTD_ARRAY_SPLICE_DELCOUNT</code>.</p>
-
 <h2>Setter/getter key argument</h2>
 
 <p>ECMAScript standard behavior is that setters and getters are not given

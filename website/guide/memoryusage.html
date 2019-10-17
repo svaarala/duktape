@@ -1,7 +1,7 @@
 <h1 id="memoryusage">Memory usage</h1>
 
 <p>Duktape allocates memory on demand and doesn't require a pre-allocated heap.
-When you create a heap on a 32-bit system, Duktape needs about 70kB for the
+When you create a heap on a 32-bit system, Duktape needs about 80kB for the
 built-in ECMAScript objects.  With specific
 <a href="#memory-constrained-options">low memory options</a> initial memory
 usage is about 27kB.  This can be further reduced to about 3kB when moving
@@ -10,7 +10,7 @@ possible to move custom native bindings fully into ROM.</p>
 
 <p>After heap creation additional memory is then allocated as needed for
 executing application scripts.  Reference counting ensures there is very
-little unused allocated memory, the only exception being objects which
+little unused allocated memory, the only major exception being objects which
 participate in reference loops; these are collected eventually by mark-and-sweep.</p>
 
 <p>The memory allocations needed by Duktape fall into two basic categories.

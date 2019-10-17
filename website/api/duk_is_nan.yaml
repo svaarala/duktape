@@ -11,9 +11,9 @@ summary: |
   number value), otherwise returns 0.  If <code>idx</code> is invalid,
   also returns 0.</p>
 
-  <p>IEEE has a large number of different <code>NaN</code> values.  Duktape
-  normalizes <code>NaN</code> values internally.  This function returns 1
-  for any kind of a <code>NaN</code>.</p>
+  <p>IEEE doubles have a large number of different <code>NaN</code> values.
+  Duktape may normalize <code>NaN</code> values internally.  This function
+  returns 1 for any kind of a <code>NaN</code>.</p>
 
 example: |
   if (duk_is_nan(ctx, -3)) {

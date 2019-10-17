@@ -16,8 +16,8 @@ summary: |
   <code>get_value</code> is non-zero, and the function returns non-zero.
   </p>
 
-  <p>Note that getting the value may invoke a getter which may have arbitrary
-  side effects (and may throw an error).</p>
+  <p>Note that getting the value may invoke a getter or trigger a Proxy trap
+  which may have arbitrary side effects (and may throw an error).</p>
 
 example: |
   while (duk_next(ctx, enum_idx, 1)) {

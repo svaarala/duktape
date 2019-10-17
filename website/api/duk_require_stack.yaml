@@ -18,7 +18,7 @@ example: |
   nargs = duk_get_top(ctx);  /* number or arguments */
 
   /* reserve space for one temporary for each input argument */
-  duk_require_stack(ctx, nargs * 2);
+  duk_require_stack(ctx, nargs);
 
 tags:
   - stack

@@ -43,7 +43,7 @@ example: |
   duk_idx_t nargs = duk_get_top(ctx);  /* number or arguments */
 
   /* reserve space for one temporary for each input argument */
-  if (!duk_check_stack(ctx, nargs * 2)) {
+  if (!duk_check_stack(ctx, nargs)) {
       /* return 'undefined' if cannot allocate space */
       printf("failed to reserve enough stack space\n");
       return 0;

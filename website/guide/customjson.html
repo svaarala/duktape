@@ -253,6 +253,7 @@ encoding:</p>
 <li>Only enumerable own properties are serialized in any of the formats.</li>
 <li>Array properties (other than the entries) are not serialized.  This would
     be useful in e.g. logging, e.g. as <code>[1,2,3,"type":"point"]</code>.</li>
+<li>Array gaps are not preserved, and parse back as <code>undefined</code>.</li>
 <li>There is no automatic revival of special values when parsing JC data.</li>
 <li>There is no canonical encoding.  This would be easy to arrange with a simple
     option to sort object keys during encoding.</li>

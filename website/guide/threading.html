@@ -15,10 +15,6 @@
 <li>Duktape heaps are completely isolated from each other.  Multiple native
     threads can execute code at the same time, as long as there is only one
     active native thread per Duktape heap.</li>
-<li>The <code><a href="api.html#duk_suspend">duk_suspend()</a></code> and
-    <code><a href="api.html#duk_resume">duk_resume()</a></code> API calls
-    (introduced in Duktape 1.6.0) allow a native thread to suspend while
-    another native thread executes calls into a Duktape heap.</li>
 </ul>
 
 <p>For some background, a Duktape heap is a single memory management region

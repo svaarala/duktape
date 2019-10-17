@@ -11,7 +11,8 @@ summary: |
   <ul>
   <li>String: character length of string (<i>not</i> byte length)</li>
   <li>Object: <code>Math.floor(ToNumber(obj.length))</code> if result within
-              <code>duk_size_t</code> unsigned range; otherwise 0</li>
+              <code>duk_size_t</code> unsigned range, otherwise 0 (for
+              Arrays the result is Array <code>.length</code>)</li>
   <li>Buffer: byte length of buffer</li>
   <li>Other type or invalid stack index: 0</li>
   </ul>

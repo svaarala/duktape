@@ -12,7 +12,7 @@ summary: |
   recreating the original ECMAScript function (with some limitations).  You <b>must</b>
   ensure that the bytecode has been dumped with a compatible Duktape version and that the
   bytecode has not been modified since.  <b>Loading bytecode from an untrusted source is
-  memory unsafe and may load to exploitable vulnerabilities.</b></p>
+  memory unsafe and may lead to exploitable vulnerabilities.</b></p>
 
   <p include="bytecode-moreinfo.html" />
 

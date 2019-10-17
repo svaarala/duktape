@@ -3540,10 +3540,7 @@ Miscellaneous:
 
 * Various portability fixes (GH-1931, GH-1976)
 
-Planned
-=======
-
-2.5.0 (XXXX-XX-XX)
+2.5.0 (2019-11-24)
 ------------------
 
 * Rename the 'global' binding to 'globalThis' to match updated
@@ -3581,6 +3578,9 @@ Planned
 * Avoid ast/endian.h header on Solaris (GH-2180)
 
 * Minor performance and footprint improvements (GH-2167, GH-2177)
+
+Planned
+=======
 
 3.0.0 (XXXX-XX-XX)
 ------------------

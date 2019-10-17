@@ -13,7 +13,7 @@ summary: |
 
   <p>This is a shorthand for:</p>
   <pre class="c-code">
-  /* to_index must be normalize in case it is negative and would change its
+  /* to_index must be normalized in case it is negative and would change its
    * meaning after duk_dup().
    */
   to_idx = duk_normalize_idx(ctx, to_idx);

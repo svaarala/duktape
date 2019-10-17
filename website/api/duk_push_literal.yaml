@@ -42,7 +42,7 @@ summary: |
       multiple addresses with the same literal data.</li>
   <li>Because the string data is assumed to be immutable, the internal
       string representation could just point to the data instead of
-      making a copy.  (This optimization is not done as of Duktape 2.3.)</li>
+      making a copy.  (This optimization is not done as of Duktape 2.5.)</li>
   </ul>
 
   <p>If input string might contain internal NUL characters, use

@@ -8,7 +8,7 @@ stack: |
 
 summary: |
   <p>Call target function <code>func</code> with an explicit <code>this</code>
-  binding and <code>nargs</code> arguments (not counting the function and
+  binding and <code>nargs</code> arguments (not counting the function or
   the <code>this</code> binding value).  The function object, the <code>this</code>
   binding value, and the function arguments are replaced by a single
   return value.  An error thrown during the function call is not
@@ -39,7 +39,7 @@ example: |
   duk_push_int(ctx, 123);
   duk_push_int(ctx, 2);
   duk_push_int(ctx, 3);
-  duk_call_method(ctx, 2);  /* [ ... func 123 2 3 ] -> [ 5 ] */
+  duk_call_method(ctx, 2);  /* [ ... func 123 2 3 ] -> [ ... 5 ] */
   printf("2+3=%ld\n", (long) duk_get_int(ctx, -1));  /* prints 5 */
   duk_pop(ctx);
 

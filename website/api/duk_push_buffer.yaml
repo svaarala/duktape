@@ -29,9 +29,9 @@ summary: |
   </div>
 
   <div class="note">
-  Duktape can be compiled with a feature option which disables automatic zeroing
-  of allocated buffer data.  If this is the case, you need to zero the buffer
-  manually if necessary.
+  Duktape can be compiled with a config option which disables automatic zeroing
+  of allocated buffer data (zeroing is the default).  If this is the case, you
+  need to zero the buffer manually if necessary.
   </div>
 
 example: |
