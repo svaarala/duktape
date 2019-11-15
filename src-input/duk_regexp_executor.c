@@ -162,6 +162,22 @@ DUK_LOCAL const duk_uint8_t *duk__match_regexp(duk_re_matcher_ctx *re_ctx, const
 		}
 		re_ctx->steps_count++;
 
+#if defined(DUK_USE_EXEC_TIMEOUT_CHECK)
+		/* Ensure that timeouts still operate while parsing a regular expression.
+		 * without this in place a large DUK_RE_EXECUTE_STEPS value will lock up the
+		 * parser for many seconds, even if the user is trying to enforce a much lower
+		 * time limit using an interrupt.
+		 */
+		if (DUK_USE_EXEC_TIMEOUT_CHECK(re_ctx->thr->heap->heap_udata)) {
+			DUK_D(DUK_DPRINT("execution timeout within regexp parsing, throwing a RangeError"));
+			re_ctx->thr->interrupt_init = 0;
+			re_ctx->thr->interrupt_counter = 0;
+			DUK_HEAP_CLEAR_INTERRUPT_RUNNING(re_ctx->thr->heap);
+			DUK_ERROR_RANGE(re_ctx->thr, "execution timeout");
+			DUK_WO_NORETURN(return NULL;);
+		}
+#endif  /* DUK_USE_EXEC_TIMEOUT_CHECK */
+
 		/* Opcodes are at most 7 bits now so they encode to one byte.  If this
 		 * were not the case or 'pc' is invalid here (due to a bug etc) we'll
 		 * still fail safely through the switch default case.
