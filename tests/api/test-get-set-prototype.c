@@ -45,7 +45,7 @@ obj0.bar=123
 
 /* Multiple basic tests in one: test duk_set_prototype() and duk_get_prototype()
  * stack top changes, and object/undefined for duk_set_prototype().  Also checks
- * how a naked object works.
+ * how a bare object works.
  */
 static duk_ret_t test_basic(duk_context *ctx, void *udata) {
 	(void) udata;
@@ -59,7 +59,7 @@ static duk_ret_t test_basic(duk_context *ctx, void *udata) {
 	duk_push_int(ctx, 123);
 	duk_put_prop_string(ctx, -2, "foo");
 
-	/* The prototype object is "naked", read back its prototype. */
+	/* The prototype object is "bare", read back its prototype. */
 	printf("top before get: %ld\n", (long) duk_get_top(ctx));
 	duk_get_prototype(ctx, 0);
 	printf("top after get: %ld\n", (long) duk_get_top(ctx));
@@ -88,7 +88,7 @@ static duk_ret_t test_basic(duk_context *ctx, void *udata) {
 	duk_set_prototype(ctx, -2);
 	printf("top after set: %ld\n", (long) duk_get_top(ctx));
 
-	/* Read back the prototype.  The object is "naked" and doesn't have
+	/* Read back the prototype.  The object is "bare" and doesn't have
 	 * valueOf() or toString(), so that the string coercion will fail
 	 * here on purpose.  Unfortunately this check depends on the specific
 	 * error message and is brittle.

@@ -14,8 +14,7 @@ summary: |
   and their reallocation variants.</p>
 
   <div class="note">
-  Currently a <code>duk_free()</code> cannot cause a garbage collection
-  pass but does update internal GC trigger counters.
+  Currently a <code>duk_free()</code> never causes a garbage collection pass.
   </div>
 
 example: |

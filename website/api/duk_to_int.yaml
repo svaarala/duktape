@@ -4,7 +4,7 @@ proto: |
   duk_int_t duk_to_int(duk_context *ctx, duk_int_t index);
 
 stack: |
-  [ ... val! ... ] -> [ ... ToNumber(val)! ... ]
+  [ ... val! ... ] -> [ ... ToInteger(val)! ... ]
 
 summary: |
   <p>Replace the value at <code>index</code> with an ECMAScript

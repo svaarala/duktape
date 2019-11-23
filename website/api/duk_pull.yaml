@@ -4,7 +4,7 @@ proto: |
   void duk_pull(duk_context *ctx, duk_idx_t from_idx);
 
 stack: |
-  [ ... val! ... ] -> [ ... val! ]
+  [ ... val! ... ] -> [ ... ... val! ]
 
 summary: |
   <p>Remove value at <code>from_idx</code> and push it on the value stack top.</p>

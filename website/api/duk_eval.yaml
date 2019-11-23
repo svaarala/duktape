@@ -8,11 +8,11 @@ stack: |
 
 summary: |
   <p>Evaluate the ECMAScript source code at the top of the stack, and leave a single
-  return value on top of the stack.  May throw an error, errors are not caught
-  automatically.  The filename associated with the temporary eval function is
+  return value on top of the stack.  May throw an error; such errors are not
+  automatically caught.  The filename associated with the temporary eval function is
   <code>"eval"</code>.</p>
 
-  <p>This is essentially a shortcut for:</p>
+  <p>This API call is essentially a shortcut for:</p>
   <pre class="c-code">
   duk_push_string(ctx, "eval");
   duk_compile(ctx, DUK_COMPILE_EVAL);  /* [ ... source filename ] -> [ function ] */

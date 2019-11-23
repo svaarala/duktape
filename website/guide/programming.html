@@ -165,13 +165,13 @@ currently used element.  The following diagram illustrates this:</p>
 | 12 |      Active stack frame (indices
 | 11 |      relative to stack bottom)
 | 10 |
-|  9 |      .---.
-|  8 |      | 5 |   API index 0 is bottom (at value stack index 3).
+|  9 |      .---.   Stack top is 6 (relative to stack bottom).
+|  8 | &lt;--- | 5 |   API index 5 is highest used (at value stack index 8).
 |  7 |      | 4 |
-|  6 |      | 3 |   API index 5 is highest used (at value stack index 8).
+|  6 |      | 3 |
 |  5 |      | 2 |
-|  4 |      | 1 |   Stack top is 6 (relative to stack bottom).
-|  3 | &lt;--- | 0 |
+|  4 |      | 1 |
+|  3 | &lt;--- | 0 |   API index 0 is bottom (at value stack index 3).
 |  2 |      `---'
 |  1 |
 |  0 |
@@ -271,10 +271,11 @@ into account and should never rely on any additional elements being available.</
 
 <h2>ECMAScript array index</h2>
 
-<p>ECMAScript object and array keys can only be strings.  Array indices
-(e.g. 0, 1, 2) are represented as canonical string representations of the
-respective numbers.  More technically, all canonical string representations
-of the integers in the range [0, 2**32-1] are valid array indices.</p>
+<p>ECMAScript object and array keys can only be strings or Symbols.  Array
+indices (e.g. 0, 1, 2) are represented as canonical string representations of
+the respective numbers (e.g. "0", "1", "2").  More technically, all canonical
+string representations of the integers in the range [0, 2**32-2] are valid
+array indices.</p>
 
 <p>To illustrate the ECMAScript array index handling, consider the following
 example:</p>
@@ -340,17 +341,17 @@ duk_ret_t my_func(duk_context *ctx) {
 }
 </pre>
 
-<p>The function gets ECMAScript call argument in the value stack of
+<p>The function gets ECMAScript call arguments in the value stack of
 <code>ctx</code>, with
 <code><a href="api.html#duk_get_top">duk_get_top()</a></code>
 indicating the number of
 arguments present on the value stack.  The <code>this</code> binding is not
 automatically pushed to the value stack; use
 <code><a href="api.html#duk_push_this">duk_push_this()</a></code>
-to access it.  When creating an ECMAScript function object associated with a
-Duktape/C function, one can select the desired number of arguments.  Extra
-arguments are dropped and missing arguments are replaced with
-<code>undefined</code>.  A function can also be registered as a vararg
+to access it if necessary.  When creating an ECMAScript function object
+associated with a Duktape/C function, one can select the desired number
+of arguments.  Extra arguments are dropped and missing arguments are replaced
+with <code>undefined</code>.  A function can also be registered as a vararg
 function (by giving <code>DUK_VARARGS</code> as the argument count) in
 which case call arguments are not modified prior to C function entry.</p>
 
@@ -363,12 +364,17 @@ which case call arguments are not modified prior to C function entry.</p>
 <li>A negative return value indicates that an error is to be automatically
     thrown.  Error codes named <code>DUK_RET_xxx</code> map to specific kinds
     of errors (do not confuse these with <code>DUK_ERR_xxx</code> which are
-    positive values).</li>
+    positive values).  This is an optional shorthand which has a small
+    footprint but also some drawbacks (e.g. no error message).</li>
 <li>A return value higher than 1 is currently undefined, as ECMAScript
     doesn't support multiple return values in Edition 5.1.  (Values higher
     than 1 may be taken into to support multiple return values in ECMAScript
     Edition 6.)</li>
 </ul>
+
+<p>When a Duktape/C function returns, the value stack is automatically
+unwound so there is no need to manually clean up the value stack when
+the function returns.</p>
 
 <p>A negative error return value is intended to simplify common error
 handling, and is an alternative to constructing and throwing an error
@@ -576,12 +582,12 @@ Calling code can use this define for Duktape version specific code.</p>
 
 <p>For C code:</p>
 <pre class="c-code">
-#if (DUK_VERSION &gt;= 10203)
-/* Duktape 1.2.3 or later */
-#elif (DUK_VERSION &gt;= 800)
-/* Duktape 0.8.0 or later */
+#if (DUK_VERSION &gt;= 20403)
+/* Duktape 2.4.3 or later */
+#elif (DUK_VERSION &gt;= 10500)
+/* Duktape 1.5.0 or later */
 #else
-/* Duktape lower than 0.8.0 */
+/* Duktape lower than 1.5.0 */
 #endif
 </pre>
 
@@ -589,12 +595,12 @@ Calling code can use this define for Duktape version specific code.</p>
 <pre class="ecmascript-code">
 if (typeof Duktape !== 'object') {
     print('not Duktape');
-} else if (Duktape.version &gt;= 10203) {
-    print('Duktape 1.2.3 or higher');
-} else if (Duktape.version &gt;= 800) {
-    print('Duktape 0.8.0 or higher (but lower than 1.2.3)');
+} else if (Duktape.version &gt;= 20403) {
+    print('Duktape 2.4.3 or higher');
+} else if (Duktape.version &gt;= 10500) {
+    print('Duktape 1.5.0 or higher (but lower than 2.4.3)');
 } else {
-    print('Duktape lower than 0.8.0');
+    print('Duktape lower than 1.5.0');
 }
 </pre>
 
@@ -695,7 +701,7 @@ from a protected API call.  These should only happen in abnormal conditions
 and are not considered recoverable.  To handle also these cases well, a
 production quality application should always have a fatal error handler with
 a reasonable strategy for dealing with fatal errors.  Such a strategy is
-necessarily context dependent, but could be something like:</p>
+necessarily application dependent, but could be something like:</p>
 <ul>
 <li>On an embedded device the fatal error handler could write the fatal
     error information to a flash file and reboot the device.  After the
@@ -811,9 +817,10 @@ is based on a C++ exception throw.  The protected call uses a C++ try-catch
 to establish a catch site; note that this happens inside Duktape, and is not
 visible to the application.  The error throw site throws a
 <code>duk_internal_exception</code> which is caught by the (nearest) Duktape
-catch site.  <b>Application code must not catch the exception.</b>  To minimize
-that risk, the exception doesn't inherit from any standard exception class so
-it won't be caught by a boilerplate <code>std::exception</code> catch site.</p>
+catch site.  <b>Application code must not catch (or throw) the exception.</b>
+To minimize that risk, the exception doesn't inherit from any standard exception
+class so it won't be caught by a boilerplate <code>std::exception</code> catch
+site.</p>
 
 <p>For fatal errors, e.g. uncaught errors, a <code>duk_fatal_exception</code>
 is thrown by the default fatal error handler.  The exception inherits from

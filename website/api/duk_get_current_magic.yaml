@@ -12,7 +12,7 @@ summary: |
   magic field.  This is less expensive than having behavior related flags or
   properties in the function object as normal properties.</p>
 
-  <p>If you need an unsigned 16-bit value, simply AND the result:</p>
+  <p>If you need an unsigned 16-bit value, simply bitwise AND the result:</p>
   <pre class="c-code">
   unsigned int my_flags = ((unsigned int) duk_get_current_magic(ctx)) & 0xffffU;
   </pre>

@@ -21,7 +21,8 @@ official releases:</p>
 
 <p>The following are not part of the "public API" versioning guarantees:</p>
 <ul>
-<li>Duktape API calls tagged <code>experimental</code>.</li>
+<li>Duktape API calls tagged <code>experimental</code>, and any other features
+    documented as experimental.</li>
 <li>Internal calls made by API macros.  While API calls implemented as macros
     are part of the public API, any internal calls the macros make are not,
     even if their symbol visibility is public.</li>
@@ -110,12 +111,11 @@ previous release.</p>
 <th>DUK_VERSION &amp;<br />Duktape.version</th>
 <th>Notes</th>
 </tr>
-<tr><td>0.12.0</td><td>1200</td><td>Development build before 1.0 release.</td></tr>
+<tr><td>0.12.0</td><td>1200</td><td></td></tr>
 <tr><td>1.0.0</td><td>10000</td><td></td></tr>
 <tr><td>1.2.99</td><td>10299</td><td>Development build before 1.3 release.</td></tr>
 <tr><td>1.3.0</td><td>10300</td><td></td></tr>
 <tr><td>1.3.2</td><td>10302</td><td></td></tr>
-<tr><td>1.3.3</td><td>10303</td><td></td></tr>
 <tr><td>2.0.0</td><td>20000</td><td></td></tr>
 </table>
 
@@ -137,4 +137,4 @@ build fail rather than to be silently broken.  This means for example that:</p>
     will cause a build failure.</li>
 </ul>
 
-<p>This is not a hard rule, but the default guideline.</p>
+<p>This is not a hard rule, and it cannot be achieved in all cases.</p>

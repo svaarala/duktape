@@ -1351,7 +1351,9 @@ DUK_INTERNAL duk_small_uint_t duk_js_typeof_stridx(duk_tval *tv_x) {
 
 DUK_INTERNAL duk_bool_t duk_js_isarray_hobject(duk_hobject *h) {
 	DUK_ASSERT(h != NULL);
+#if defined(DUK_USE_ES6_PROXY)
 	h = duk_hobject_resolve_proxy_target(h);
+#endif
 	return (DUK_HOBJECT_GET_CLASS_NUMBER(h) == DUK_HOBJECT_CLASS_ARRAY ? 1 : 0);
 }
 

@@ -54,7 +54,7 @@ summary: |
   <code>nrets</code> values starting at the "base index" established before the call.</p>
 
   <p>Note that since <code>func</code> has full access to the value stack, it may modify
-  the stack below the indended arguments and even pop elements below the "base index"
+  the stack below the intended arguments and even pop elements below the "base index"
   off the stack.  Such elements are restored with <code>undefined</code> values before
   returning, to ensure that the stack is always in a consistent state upon returning.</p>
 
@@ -62,7 +62,7 @@ summary: |
   the first of such values is the error, and the remaining values are <code>undefined</code>.
   If <code>nrets</code> is zero, the error will not be present on the stack (the return stack
   top will equal the "base index"), so calling this function with <code>nrets</code> as 0
-  is not very useful.</p>
+  may not be very useful as the cause of a possible error is lost.</p>
 
   <p>Example value stack behavior with <code>nargs = 3</code>, <code>nrets = 2</code>,
   <code>func</code> returns 4.  Pipe chars indicate logical value stack boundaries:</p>

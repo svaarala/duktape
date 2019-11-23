@@ -13,8 +13,8 @@ summary: |
   <ul>
   <li>If the property exists, <code>1</code> is returned.</li>
   <li>If the property doesn't exist, 0 is returned.</li>
-  <li>If the value at <code>obj_idx</code> is not an object, throws an error.</li>
-  <li>If <code>obj_idx</code> is invalid, throws an error.</li>
+  <li>If the value at <code>obj_idx</code> is not an object, an error is thrown.</li>
+  <li>If <code>obj_idx</code> is invalid, an error is thrown.</li>
   </ul>
 
   <p>The property existence check is equivalent to the ECMAScript expression
@@ -22,11 +22,8 @@ summary: |
   <a href="http://www.ecma-international.org/ecma-262/5.1/#sec-11.2.1">Property Accessors</a>,
   <a href="http://www.ecma-international.org/ecma-262/5.1/#sec-11.8.7">The in operator</a>,
   and <a href="http://www.ecma-international.org/ecma-262/5.1/#sec-8.12.6">[[HasProperty]] (P)</a>.
-  Both the target value and the <code>key</code> are coerced:</p>
+  The <code>key</code> is coerced:</p>
   <ul>
-  <li>The target value is automatically coerced to an object.  For instance,
-      a string is converted to a <code>String</code> and you can check for its
-      <code>"length"</code> property.</li>
   <li>The <code>key</code> argument is internally coerced using ToPropertyKey()
       coercion which results in a string or a Symbol.  There is an internal
       fast path for arrays and numeric indices which avoids an explicit string
@@ -47,8 +44,6 @@ summary: |
   <code><a href="#duk_has_prop_string">duk_has_prop_string()</a></code> variant.
   Similarly, if the key is an array index, you can use the
   <code><a href="#duk_has_prop_index">duk_has_prop_index()</a></code> variant.</p>
-
-  <div include="object-can-be-any-value.html" />
 
 example: |
   duk_push_string(ctx, "myProperty");

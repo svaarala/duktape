@@ -15,7 +15,9 @@ summary: |
 
   <p>The caller is responsible for ensuring that the argument <code>ptr</code>
   is still valid (not freed by Duktape garbage collection) when it is pushed.
-  There are two basic ways to ensure this:</p>
+  Failure to do so results in unpredictable and memory unsafe behavior.</p>
+
+  <p>There are two basic ways to ensure this:</p>
   <ul>
   <li><b>Strong backing reference:</b> ensure that the related heap object is
       always reachable for Duktape garbage collection between duk_get_heapptr()

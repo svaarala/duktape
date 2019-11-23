@@ -24,7 +24,9 @@
 
 <ul>
 <li>String: a single allocation contains a combined heap and string header,
-    followed by the immutable string data.</li>
+    followed by the immutable string data.  When external strings are used
+    (not enabled by default, typically in low memory environments) the string
+    data may also be external.</li>
 <li>Object: one allocation is used for a combined heap and object header,
     and another allocation is used for object properties.  The property
     allocation contains both array entries and normal properties, and if
@@ -36,7 +38,7 @@
     a user buffer.</li>
 </ul>
  
-<p>Note that while strings and buffers are considered a primitive (pass-by-value)
+<p>While strings and buffers are considered a primitive (pass-by-value)
 types, they are a heap allocated type from a memory allocation viewpoint.</p>
 
 <h2 id="type-pointer-stability">Pointer stability</h2>
@@ -65,9 +67,7 @@ buffer is allocated separately and potentially relocated when the buffer
 is resized.  It is thus unsafe to hold a pointer to a dynamic buffer's data
 area across a buffer resize, and it's probably best not to hold a pointer
 after a Duktape/C function returns (as there would be no easy way of being
-sure that the buffer hadn't been resized).  The data area of an external
-buffer also has a potentially changing pointer, but the pointer is only
-changed by an explicit user API call.</p>
+sure that the buffer hadn't been resized).</p>
 
 <p>For external buffers the stability of the data pointer is up to the user
 code which sets and updates the pointer.</p>
@@ -237,7 +237,7 @@ the leading byte will be <code>0xFE</code> which conflicts with Unicode byte ord
 marker encoding.  This is not a practical concern in Duktape's internal use.</p>
 
 <p>Finally, invalid extended UTF-8 byte sequences are used for special purposes
-such as representing Symbol values.  Invalid extened UTF-8/CESU-8 byte sequences
+such as representing Symbol values.  Invalid extended UTF-8/CESU-8 byte sequences
 never conflict with standard ECMAScript strings (which are CESU-8) and will remain
 cleanly separated within object property tables.  For more information see
 <a href="#symbols">Symbols</a> and
@@ -264,8 +264,8 @@ and an arbitrary value (including <b>undefined</b>).</p>
 
 <h2 id="type-buffer">Buffer</h2>
 
-<p>The plain <b>buffer</b> type is a raw buffer for user data.  It's much
-more memory efficient than standard buffer object types like Uint8Array
+<p>The plain <b>buffer</b> type is a raw buffer for user data.  It's more
+memory efficient than standard buffer object types like Uint8Array
 or Node.js Buffer.  There are three plain buffer sub-types:</p>
 <table>
 <tr>

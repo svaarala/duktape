@@ -627,7 +627,7 @@ test: apitest ecmatest
 
 # Set of miscellaneous tests for release.
 .PHONY: releasetest
-releasetest: configuretest xmldoctest closuretest bluebirdtest luajstest jsinterpretertest lodashtest underscoretest emscriptenluatest emscriptenduktest emscripteninceptiontest emscriptenmandeltest emscriptentest errorinjecttest
+releasetest: configuretest xmldoctest closuretest bluebirdtest luajstest jsinterpretertest lodashtest underscoretest emscriptenluatest emscriptenduktest emscriptenmandeltest emscriptentest errorinjecttest
 	@echo ""
 	@echo "### Release tests successful!"  # These tests now have output checks.
 
@@ -1183,6 +1183,7 @@ docker-images-x64: docker-prepare
 	docker build -t duktape-site-ubuntu-18.04-x64 docker/duktape-site-ubuntu-18.04-x64
 	docker build -t duktape-duk-ubuntu-18.04-x64 docker/duktape-duk-ubuntu-18.04-x64
 	docker build -t duktape-shell-ubuntu-18.04-x64 docker/duktape-shell-ubuntu-18.04-x64
+	docker build -t duktape-release-1-ubuntu-18.04-x64 docker/duktape-release-1-ubuntu-18.04-x64
 
 .PHONY: docker-images-s390x
 docker-images-s390x: docker-prepare
@@ -1196,6 +1197,7 @@ docker-images: docker-images-x64
 docker-clean:
 	-rm -f docker/*/gitconfig docker/*/prepare_repo.sh
 	-docker rmi \
+		duktape-release-1-ubuntu-18.04-x64:latest \
 		duktape-shell-ubuntu-18.04-x64:latest \
 		duktape-duk-ubuntu-18.04-x64:latest \
 		duktape-site-ubuntu-18.04-x64:latest \
@@ -1262,3 +1264,10 @@ docker-shell-wd:
 .PHONY: docker-shell-wdmount
 docker-shell-wdmount:
 	docker run -v $(shell pwd):/work/duktape --rm -ti duktape-shell-ubuntu-18.04-x64
+
+.PHONY: docker-release-1-wd
+docker-release-1-wd:
+	rm -f docker-input.zip docker-output.zip
+	#git archive --format zip --output docker-input.zip HEAD
+	zip -1 -q -r docker-input.zip .
+	docker run --rm -i -e STDIN_ZIP=1 duktape-release-1-ubuntu-18.04-x64 < docker-input.zip

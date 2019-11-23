@@ -9,8 +9,7 @@ stack: |
 summary: |
   <p>Like
   <code><a href="#duk_eval">duk_eval()</a></code>, but the eval input
-  is given as a C string.  The filename associated with the temporary
-  eval function is <code>"eval"</code>.</p>
+  is given as a C string.</p>
 
   <div include="no-string-intern.html" />
 

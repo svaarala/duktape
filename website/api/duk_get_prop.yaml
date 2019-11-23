@@ -12,15 +12,14 @@ summary: |
   Return code and error throwing behavior:</p>
   <ul>
   <li>If the property exists, <code>1</code> is returned and <code>key</code>
-      is replaced by the property value on the value stack.  However,
-      if the property is an accessor, the "getter" function may throw
-      an error.</li>
+      is replaced by the property value on the value stack.  If the property
+      is an accessor, the "getter" function may throw an error.</li>
   <li>If the property does not exist, 0 is returned and <code>key</code>
       is replaced by <code>undefined</code> on the value stack.</li>
   <li>If the value at <code>obj_idx</code> is not
       <a href="http://www.ecma-international.org/ecma-262/5.1/#sec-9.10">object coercible</a>,
-      throws an error.</li>
-  <li>If <code>obj_idx</code> is invalid, throws an error.</li>
+      an error is thrown.</li>
+  <li>If <code>obj_idx</code> is invalid, an error is thrown.</li>
   </ul>
 
   <p>The property read is equivalent to the ECMAScript expression

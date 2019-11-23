@@ -133,6 +133,9 @@ These are also **intended for Linux only**.  For example:
     # shell running in the container.
     $ make docker-shell-wdmount
 
+    # For non-native images you may need:
+    # https://github.com/multiarch/qemu-user-static
+
 Branch policy
 -------------
 

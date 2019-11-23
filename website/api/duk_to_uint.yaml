@@ -4,7 +4,7 @@ proto: |
   duk_uint_t duk_to_uint(duk_context *ctx, duk_idx_t idx);
 
 stack: |
-  [ ... val! ... ] -> [ ... ToNumber(val)! ... ]
+  [ ... val! ... ] -> [ ... ToInteger(val)! ... ]
 
 summary: |
   <p>Like <code><a href="#duk_to_int">duk_to_int()</a></code> but the return value

@@ -9,8 +9,8 @@ stack: |
 summary: |
   <p>Push a new Proxy object for target and handler table given on the value
   stack, equivalent to <code>new Proxy(target, handler)</code>.  The
-  <code>proxy_flags</code> argument is currently (Duktape 2.2) unused, calling
-  code must pass in a zero.</p>
+  <code>proxy_flags</code> argument is currently (up to Duktape 2.5) unused,
+  calling code must pass in a zero.</p>
 
 example: |
   duk_idx_t proxy_idx;

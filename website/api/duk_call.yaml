@@ -40,7 +40,7 @@ example: |
   duk_dup(ctx, func_idx);
   duk_push_int(ctx, 2);
   duk_push_int(ctx, 3);
-  duk_call(ctx, 2);  /* [ ... func 2 3 ] -> [ 5 ] */
+  duk_call(ctx, 2);  /* [ ... func 2 3 ] -> [ ... 5 ] */
   printf("2+3=%ld\n", (long) duk_get_int(ctx, -1));
   duk_pop(ctx);
 

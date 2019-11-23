@@ -14,7 +14,7 @@ summary: |
   <p>The caller can safely use this function to coerce a value to a string,
   which is useful in C code to print out a return value safely with
   <code>printf()</code>.  The only uncaught errors possible are out-of-memory
-  and other internal errors which trigger fatal error handling anyway.</p>
+  and other internal errors.</p>
 
 example: |
   const char *ptr;

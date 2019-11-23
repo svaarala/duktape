@@ -161,7 +161,7 @@ summary: |
   </li>
   <li>To clear the writable attribute (leaving other attributes untouched), set flags to:
     <ul>
-    <li>Base flags: <code>DUK_DEFPROP_HAVE_WRITABLE; or</li>
+    <li>Base flags: <code>DUK_DEFPROP_HAVE_WRITABLE</code>; or</li>
     <li>Convenience: <code>DUK_DEFPROP_CLEAR_WRITABLE</code>; or</li>
     <li>Convenience: <code>DUK_DEFPROP_CLEAR_W</code>.</li>
     </ul>

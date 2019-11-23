@@ -9,7 +9,7 @@ stack: |
 summary: |
   <p>Get the internal prototype of the value at <code>idx</code>.  If the
   value is not an object, an error is thrown.  If the object has no prototype
-  (which is possible for "naked objects") <code>undefined</code> is pushed to
+  (which is possible for "bare objects") <code>undefined</code> is pushed to
   the stack instead.</p>
 
 example: |

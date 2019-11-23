@@ -42,7 +42,7 @@ current stack frame, relative to the frame bottom:</p>
 
 <p>The special constant <code>DUK_INVALID_INDEX</code> is a negative integer
 which denotes an invalid stack index.  It can be returned from API calls
-and can also be given to API calls to indicate a "no value".</p>
+and can also be given to some API calls to indicate a "no value".</p>
 
 <p>The <i>value stack top</i> (or just "top") is the non-negative index of
 an imaginary element just above the highest used index.  For instance, above
@@ -113,13 +113,14 @@ if (duk_check_type_mask(ctx, -3, DUK_TYPE_MASK_NUMBER |
 <p>ECMAScript object and array keys can only be strings; this includes
 array indices (0, 1, 2, ...) which are expressed as canonical string
 representations ("0", "1", "2", ...) of the respective numbers for all
-integers in the range [0, 2**32-1].  Conceptually any key used in a
+integers in the range [0, 2**32-2].  Conceptually any key used in a
 property lookup is first coerced to a string, so that <code>obj[123]</code>
 is really just a shorthand for <code>obj["123"]</code>.</p>
 
 <p>Duktape tries to avoid explicit number-to-string conversions for array
 accesses whenever possible, so it is preferable to use numeric array
-indices in both ECMAScript code and C code using the Duktape API.</p>
+indices in both ECMAScript code and C code using the Duktape API.  There
+are typically API call variants accepting strings and numeric indices.</p>
 
 <h2>Duktape/C function</h2>
 
@@ -127,7 +128,7 @@ indices in both ECMAScript code and C code using the Duktape API.</p>
 ECMAScript function object or a lightfunc value, and gets called when
 the associated value is called from ECMAScript code.  Example:</p>
 <pre class="c-code">
-int my_func(duk_context *ctx) {
+duk_ret_t my_func(duk_context *ctx) {
     duk_push_int(ctx, 123);
     return 1;
 }
@@ -135,11 +136,15 @@ int my_func(duk_context *ctx) {
 
 <p>Argument count given in value stack is specified when the corresponding
 ECMAScript function object is created: either a fixed number of arguments
-of <code>DUK_VARARGS</code> for getting arguments "as is".  Extra arguments
-are dropped and missing arguments padded with <code>undefined</code> as necessary.
-Use <code><a href="#duk_get_top">duk_get_top()</a></code> to determine number of
-actual arguments.
-</p>
+of <code>DUK_VARARGS</code> for getting arguments "as is":
+<p>
+<ul>
+<li>When using a fixed number of arguments, extra arguments are dropped and
+    missing arguments padded with <code>undefined</code> as necessary.</li>
+<li>When using <code>DUK_VARARGS</code>, use
+    <code><a href="#duk_get_top">duk_get_top()</a></code> to determine the
+    number of actual arguments.</li>
+</ul>
 
 <p>Function return values:</p>
 <ul>
@@ -152,7 +157,7 @@ actual arguments.
 
 <p>No error message can be given when using the error shorthand:</p>
 <pre class="c-code">
-int my_func(duk_context *ctx) {
+duk_ret_t my_func(duk_context *ctx) {
     if (duk_get_top(ctx) == 0) {
         /* throw TypeError if no arguments given */
         return DUK_RET_TYPE_ERROR;
