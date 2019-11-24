@@ -216,9 +216,9 @@ Checklist for ordinary releases
 
   - ``git tag -l -n1`` to list current tags
 
-  - ``git tag -s -m "<one line release description>" vN.N.N`` to set tag
+  - ``git tag -m "<one line release description>" vN.N.N`` to set tag
 
-  - ``git tag -f -s -m "<one line release description>" vN.N.N`` to forcibly
+  - ``git tag -f -m "<one line release description>" vN.N.N`` to forcibly
     reset tag if it needs to be moved
 
 * If release is a stable major/minor release (e.g. 1.1.0), create a maintenance

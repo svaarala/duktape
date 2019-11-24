@@ -606,7 +606,7 @@ DUK_LOCAL void duk__dump_type_sizes(void) {
 	DUK__DUMPSZ(void *);
 	DUK__DUMPSZ(size_t);
 
-	/* basic types from duk_features.h */
+	/* basic types from duk_config.h */
 	DUK__DUMPSZ(duk_uint8_t);
 	DUK__DUMPSZ(duk_int8_t);
 	DUK__DUMPSZ(duk_uint16_t);

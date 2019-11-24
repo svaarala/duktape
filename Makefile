@@ -1195,16 +1195,14 @@ docker-images: docker-images-x64
 .PHONY: docker-clean
 docker-clean:
 	-rm -f docker/*/gitconfig docker/*/prepare_repo.sh
-	-docker rmi \
-		duktape-release-1-ubuntu-18.04-x64:latest \
-		duktape-shell-ubuntu-18.04-x64:latest \
-		duktape-duk-ubuntu-18.04-x64:latest \
-		duktape-site-ubuntu-18.04-x64:latest \
-		duktape-dist-ubuntu-18.04-x64:latest \
-		duktape-base-ubuntu-18.04-x64:latest
-	-docker rmi \
-		duktape-shell-ubuntu-18.04-s390x:latest \
-		duktape-base-ubuntu-18.04-s390x:latest
+	-docker rmi duktape-release-1-ubuntu-18.04-x64:latest
+	-docker rmi duktape-shell-ubuntu-18.04-x64:latest
+	-docker rmi duktape-duk-ubuntu-18.04-x64:latest
+	-docker rmi duktape-site-ubuntu-18.04-x64:latest
+	-docker rmi duktape-dist-ubuntu-18.04-x64:latest
+	-docker rmi duktape-base-ubuntu-18.04-x64:latest
+	-docker rmi duktape-shell-ubuntu-18.04-s390x:latest
+	-docker rmi duktape-base-ubuntu-18.04-s390x:latest
 	@echo ""
 	@echo "Now run 'docker system prune' to free disk space."
 

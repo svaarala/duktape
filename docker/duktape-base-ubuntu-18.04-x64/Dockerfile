@@ -86,10 +86,10 @@ RUN echo "=== Prepare duktape-prep repo ===" && \
 	make clean
 
 # Initialize Emscripten cached bytecode files.
-RUN echo "=== Prepare Emscripten cached bytecode files ===" && \
-	cp -r duktape-prep /tmp/duktape-emcc-init && \
-	bash -c '. emsdk/emsdk_env.sh && cd /tmp/duktape-emcc-init && make emscriptenluatest dukweb.js' && \
-	rm -rf /tmp/duktape-emcc-init /tmp/duk-emcc*
+#RUN echo "=== Prepare Emscripten cached bytecode files ===" && \
+#	cp -r duktape-prep /tmp/duktape-emcc-init && \
+#	bash -c '. emsdk/emsdk_env.sh && cd /tmp/duktape-emcc-init && make emscriptenluatest dukweb.js' && \
+#	rm -rf /tmp/duktape-emcc-init /tmp/duk-emcc*
 
 # Dump some versions.
 RUN echo "=== Versions ===" && \
