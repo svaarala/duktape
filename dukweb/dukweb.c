@@ -9,6 +9,10 @@
 #include <emscripten.h>
 #include "duktape.h"
 
+#if defined(__cplusplus)
+extern "C" {
+#endif
+
 static duk_context *dukweb_ctx = NULL;
 static char duk__evalbuf[1024 * 1024];
 
@@ -17,7 +21,7 @@ static int dukweb__emscripten_run_script(duk_context *ctx) {
 	if (!code) {
 		return DUK_RET_TYPE_ERROR;
 	}
-	/* FIXME: return value */
+	/* XXX: return value */
 	emscripten_run_script(code);
 	return 0;
 }
@@ -108,7 +112,7 @@ void dukweb_close(void) {
  * output (eval result or error, coerced with ToString()).  Data marshalling
  * needs to be implemented on top of this.
  *
- * FIXME: proper return value model which identifies errors from success values
+ * XXX: proper return value model which identifies errors from success values
  */
 const char *dukweb_eval(const char *code) {
 	const char *res;
@@ -158,4 +162,9 @@ const char *dukweb_eval(const char *code) {
 
 int main(int argc, char *argv[]) {
 	printf("main()\n");
+	emscripten_run_script("Duktape.initialize();");
 }
+
+#if defined(__cplusplus)
+}
+#endif

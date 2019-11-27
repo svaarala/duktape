@@ -77,25 +77,10 @@ Duktape.escapeString = function(x) {
 }
 
 /*
- *  Raw C function bindings.
- *
- *  The dukweb_eval() binding is a very raw binding which provides an
- *  interface to eval one string, and to get one string output (ToString
- *  coerced result or error).
- */
-
-// FIXME: not sure about the memory use here (leaks?), check
-Duktape.dukweb_is_open = Module.cwrap('dukweb_is_open', 'number', [ ]);
-Duktape.dukweb_open = Module.cwrap('dukweb_open', 'void', [ ]);
-Duktape.dukweb_close = Module.cwrap('dukweb_close', 'void', [ ]);
-Duktape.dukweb_eval = Module.cwrap('dukweb_eval', 'string', [ 'string' ]);
-Duktape.logOwnProperties();
-
-/*
  *  Duktape.eval: run code inside Duktape, encode output value using JSON.
  */
 
-// FIXME: errors should probably be promoted to work better
+// XXX: errors should probably be promoted to work better
 Duktape.eval = function(code) {
     // Code escape into a Javascript string
     var escapedString = JSON.stringify(String(code));
@@ -129,76 +114,97 @@ Duktape.alertHandler = function(msg) {
     log(msg);
 }
 
-/*
- *  Initialize Duktape heap automatically (not closed for now), and use
- *  Duktape.eval() to pull in some convenience properties like Duktape
- *  version.
- */
+// Asynchronous init, triggered from C main().
+Duktape.initialize = function initialize() {
+    console.log('Duktape.initialize() start');
 
-Duktape.dukweb_open();
-Duktape.version = Duktape.eval('Duktape.version');
-Duktape.env = Duktape.eval('Duktape.env');
-Duktape.logOwnProperties();
+    /*
+     *  Raw C function bindings.
+     *
+     *  The dukweb_eval() binding is a very raw binding which provides an
+     *  interface to eval one string, and to get one string output (ToString
+     *  coerced result or error).
+     */
 
-/*
- *  Initialize a 'Dukweb' instance inside Duktape for interfacing with the
- *  browser side.
- */
+    Duktape.dukweb_is_open = Module.cwrap('dukweb_is_open', 'number', [ ]);
+    Duktape.dukweb_open = Module.cwrap('dukweb_open', null, [ ]);
+    Duktape.dukweb_close = Module.cwrap('dukweb_close', null, [ ]);
+    Duktape.dukweb_eval = Module.cwrap('dukweb_eval', 'string', [ 'string' ]);
+    Duktape.logOwnProperties();
 
-// Minimal console object.
-var DUKWEB_CONSOLE_INIT =
-    'Dukweb.console = (function () {\n' +
-    '    var useProxyWrapper = true;\n' +
-    '    var c = {};\n' +
-    '    function console_log(args, errName) {\n' +
-    '        var msg = Array.prototype.map.call(args, function (v) {\n' +
-    '            if (typeof v === "object" && v !== null) { return console.format(v); };\n' +
-    '            return v;\n' +
-    '        }).join(" ");\n' +
-    '        if (errName) {\n' +
-    '            var err = new Error(msg);\n' +
-    '            err.name = "Trace";\n' +
-    '            Dukweb.print(err.stack || err);\n' +
-    '        } else {\n' +
-    '            Dukweb.print(msg);\n' +
-    '        }\n' +
-    '    };\n' +
-    '    c.format = function format(v) { try { return Duktape.enc("jx", v); } catch (e) { return String(v); } };\n' +
-    '    c.assert = function assert(v) {\n' +
-    '        if (arguments[0]) { return; }\n' +
-    '        console_log(arguments.length > 1 ? Array.prototype.slice.call(arguments, 1) : [ "false == true" ], "AssertionError");\n' +
-    '    };\n'+
-    '    c.log = function log() { console_log(arguments, null); };\n' +
-    '    c.debug = function debug() { console_log(arguments, null); };\n' +
-    '    c.trace = function trace() { console_log(arguments, "Trace"); };\n' +
-    '    c.info = function info() { console_log(arguments, null); };\n' +
-    '    c.warn = function warn() { console_log(arguments, null); };\n' +
-    '    c.error = function error() { console_log(arguments, "Error"); };\n' +
-    '    c.exception = function exception() { console_log(arguments, "Error"); };\n' +
-    '    c.dir = function dir() { console_log(arguments, null); };\n' +
-    '    if (typeof Proxy === "function" && useProxyWrapper) {\n' +
-    '        var orig = c;\n' +
-    '        var dummy = function () {};\n' +
-    '        c = new Proxy(orig, {\n' +
-    '            get: function (targ, key, recv) {\n' +
-    '                var v = targ[key];\n' +
-    '                return typeof v === "function" ? v : dummy;\n' +
-    '            }\n' +
-    '        });\n' +
-    '    }\n' +
-    '    return c;\n' +
-    '})();';
+    /*
+     *  Initialize Duktape heap automatically (not closed for now), and use
+     *  Duktape.eval() to pull in some convenience properties like Duktape
+     *  version.
+     */
 
-Duktape.eval('Dukweb = {};');
-Duktape.eval('Dukweb.userAgent = ' + (JSON.stringify(navigator.userAgent.toString()) || '"unknown"') + ';');
-Duktape.eval('Dukweb.emscripten_run_script = this.emscripten_run_script; delete this.emscripten_run_script;');
-Duktape.eval('Dukweb.eval = Dukweb.emscripten_run_script;')  // FIXME: better binding
-Duktape.eval('Dukweb.print = function() { Dukweb.eval("Duktape.printHandler(" + JSON.stringify(Array.prototype.join.call(arguments, " ")) + ")") };');
-Duktape.eval('Dukweb.alert = function() { Dukweb.eval("Duktape.alertHandler(" + JSON.stringify(Array.prototype.join.call(arguments, " ")) + ")") };');
-Duktape.eval(DUKWEB_CONSOLE_INIT);
-Duktape.eval('print = Dukweb.print;');
-Duktape.eval('alert = Dukweb.print;');  // intentionally bound to print()
-Duktape.eval('console = Dukweb.console;');
+    Duktape.dukweb_open();
+    Duktape.version = Duktape.eval('Duktape.version');
+    Duktape.env = Duktape.eval('Duktape.env');
+    Duktape.logOwnProperties();
 
-Duktape.initSuccess = !!Duktape.dukweb_is_open();
-//console.log('=== ' + Duktape.eval('Duktape.enc("jx", { env: Duktape.env, version: Duktape.version })') + ' ===');
+    /*
+     *  Initialize a 'Dukweb' instance inside Duktape for interfacing with the
+     *  browser side.
+     */
+
+    // Minimal console object.
+    var DUKWEB_CONSOLE_INIT =
+        'Dukweb.console = (function () {\n' +
+        '    var useProxyWrapper = true;\n' +
+        '    var c = {};\n' +
+        '    function console_log(args, errName) {\n' +
+        '        var msg = Array.prototype.map.call(args, function (v) {\n' +
+        '            if (typeof v === "object" && v !== null) { return console.format(v); };\n' +
+        '            return v;\n' +
+        '        }).join(" ");\n' +
+        '        if (errName) {\n' +
+        '            var err = new Error(msg);\n' +
+        '            err.name = "Trace";\n' +
+        '            Dukweb.print(err.stack || err);\n' +
+        '        } else {\n' +
+        '            Dukweb.print(msg);\n' +
+        '        }\n' +
+        '    };\n' +
+        '    c.format = function format(v) { try { return Duktape.enc("jx", v); } catch (e) { return String(v); } };\n' +
+        '    c.assert = function assert(v) {\n' +
+        '        if (arguments[0]) { return; }\n' +
+        '        console_log(arguments.length > 1 ? Array.prototype.slice.call(arguments, 1) : [ "false == true" ], "AssertionError");\n' +
+        '    };\n'+
+        '    c.log = function log() { console_log(arguments, null); };\n' +
+        '    c.debug = function debug() { console_log(arguments, null); };\n' +
+        '    c.trace = function trace() { console_log(arguments, "Trace"); };\n' +
+        '    c.info = function info() { console_log(arguments, null); };\n' +
+        '    c.warn = function warn() { console_log(arguments, null); };\n' +
+        '    c.error = function error() { console_log(arguments, "Error"); };\n' +
+        '    c.exception = function exception() { console_log(arguments, "Error"); };\n' +
+        '    c.dir = function dir() { console_log(arguments, null); };\n' +
+        '    if (typeof Proxy === "function" && useProxyWrapper) {\n' +
+        '        var orig = c;\n' +
+        '        var dummy = function () {};\n' +
+        '        c = new Proxy(orig, {\n' +
+        '            get: function (targ, key, recv) {\n' +
+        '                var v = targ[key];\n' +
+        '                return typeof v === "function" ? v : dummy;\n' +
+        '            }\n' +
+        '        });\n' +
+        '    }\n' +
+        '    return c;\n' +
+        '})();';
+
+    Duktape.eval('Dukweb = {};');
+    Duktape.eval('Dukweb.userAgent = ' + (JSON.stringify(navigator.userAgent.toString()) || '"unknown"') + ';');
+    Duktape.eval('Dukweb.emscripten_run_script = this.emscripten_run_script; delete this.emscripten_run_script;');
+    Duktape.eval('Dukweb.eval = Dukweb.emscripten_run_script;')  // XXX: better binding
+    Duktape.eval('Dukweb.print = function() { Dukweb.eval("Duktape.printHandler(" + JSON.stringify(Array.prototype.join.call(arguments, " ")) + ")") };');
+    Duktape.eval('Dukweb.alert = function() { Dukweb.eval("Duktape.alertHandler(" + JSON.stringify(Array.prototype.join.call(arguments, " ")) + ")") };');
+    Duktape.eval(DUKWEB_CONSOLE_INIT);
+    Duktape.eval('print = Dukweb.print;');
+    Duktape.eval('alert = Dukweb.print;');  // intentionally bound to print()
+    Duktape.eval('console = Dukweb.console;');
+
+    Duktape.initSuccess = !!Duktape.dukweb_is_open();
+    //console.log('=== ' + Duktape.eval('Duktape.enc("jx", { env: Duktape.env, version: Duktape.version })') + ' ===');
+
+    console.log('Duktape.initialize() end');
+}
