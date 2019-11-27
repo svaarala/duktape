@@ -750,7 +750,7 @@ struct duk_hobject {
 	 *  'props' contains {key,value,flags} entries, optional array entries, and
 	 *  an optional hash lookup table for non-array entries in a single 'sliced'
 	 *  allocation.  There are several layout options, which differ slightly in
-	 *  generated code size/speed and alignment/padding; duk_features.h selects
+	 *  generated code size/speed and alignment/padding; duk_config.h selects
 	 *  the layout used.
 	 *
 	 *  Layout 1 (DUK_USE_HOBJECT_LAYOUT_1):
