@@ -14,24 +14,6 @@ test_combined_source_compilation() {
 	make clean dist
 	cd dist
 	cat Makefile.cmdline
-	rm -rf src-separate
-	make -f Makefile.cmdline
-	ls -l duk; size duk
-	./duk mandel.js > /tmp/out.txt
-	cat /tmp/out.txt
-	if [ `md5sum /tmp/out.txt | cut -f 1 -d ' '` != "627cd86f0a4255e018c564f86c6d0ab3" ]; then
-		echo "Combined source compilation failed!"
-		exit 1
-	fi
-}
-
-test_separate_source_compilation() {
-	make clean dist
-	cd dist
-	sed -i 's/DUKTAPE_SOURCES = src\/duktape.c/DUKTAPE_SOURCES = src-separate\/*.c/' Makefile.cmdline
-	sed -i 's/-I.\/src/-I.\/src-separate/' Makefile.cmdline
-	cat Makefile.cmdline
-	rm -rf src
 	make -f Makefile.cmdline
 	ls -l duk; size duk
 	./duk mandel.js > /tmp/out.txt
@@ -90,12 +72,6 @@ echo "*** Test compilation from combined sources"
 echo ""
 cd $ROOT
 test_combined_source_compilation
-
-echo ""
-echo "*** Test compilation from separate sources"
-echo ""
-cd $ROOT
-test_separate_source_compilation
 
 echo ""
 echo "*** Test clang compilation (duk-clang)"
