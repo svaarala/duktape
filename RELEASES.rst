@@ -3587,3 +3587,7 @@ Planned
 
 * Remove prepared source variants other than src/ (matches Duktape 2.x
   src-noline/) from the distributable (GH-2209)
+
+* Accept unlabelled function statements outside of top level for strict
+  functions (using hoist semantics), previously they were rejected with
+  a SyntaxError (GH-2213)
