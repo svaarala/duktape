@@ -6,9 +6,8 @@
  *
  *  This is the E5 standards compliant behavior.  However, this test
  *  case tests for the default Duktape behavior (modelled after V8):
- *  function declarations are allowed outside top level in non-strict
- *  mode, and are treated like ordinary function declarations.  In
- *  strict mode they are not allowed.
+ *  function declarations are allowed outside top level and are
+ *  treated like ordinary function declarations.
  */
 
 /*---
@@ -41,9 +40,10 @@ try {
 }
 
 try {
-    /* Strict mode should have no effect on this, but this test
-     * illustrates V8 behavior (i.e. V8 gives a SyntaxError here
-     * but only in strict mode).
+    /* This test illustrates V8 behavior, i.e. V8 gives a SyntaxError
+     * here but only in strict mode, even in Node.js v12.7.0:
+     * SyntaxError: In strict mode code, functions can only be declared
+     * at top level or inside a block.
      */
     eval("function f1() { 'use strict'; mylabel: function f2() {} }");
     print("try finished");
