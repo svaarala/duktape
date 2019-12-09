@@ -6385,10 +6385,13 @@ DUK_LOCAL void duk__parse_stmt(duk_compiler_ctx *comp_ctx, duk_ivalue *res, duk_
 		 */
 		test_func_decl = allow_source_elem;
 #if defined(DUK_USE_NONSTD_FUNC_STMT)
-		/* Lenient: allow function declarations outside top level in
-		 * non-strict mode but reject them in strict mode.
+		/* Lenient: allow function declarations outside top level in both
+		 * strict and non-strict modes.  However, don't allow labelled
+		 * function declarations in strict mode.
 		 */
-		test_func_decl = test_func_decl || !comp_ctx->curr_func.is_strict;
+		test_func_decl = test_func_decl ||
+		                 !comp_ctx->curr_func.is_strict ||
+		                 label_id < 0;
 #endif  /* DUK_USE_NONSTD_FUNC_STMT */
 		/* Strict: never allow function declarations outside top level. */
 		if (test_func_decl) {
