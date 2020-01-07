@@ -93,12 +93,12 @@ DUK_LOCAL void duk__bi_print(const char *name, duk__bigint *x) {
 	duk_small_int_t i;
 
 	/* No NUL term checks in this debug code. */
-	p += DUK_SPRINTF(p, "%p n=%ld", (void *) x, (long) x->n);
+	p += DUK_SNPRINTF(p, sizeof(buf), "%p n=%ld", (void *) x, (long) x->n);
 	if (x->n == 0) {
-		p += DUK_SPRINTF(p, " 0");
+		p += DUK_SNPRINTF(p, 3, " 0");
 	}
 	for (i = x->n - 1; i >= 0; i--) {
-		p += DUK_SPRINTF(p, " %08lx", (unsigned long) x->v[i]);
+		p += DUK_SNPRINTF(p, 10, " %08lx", (unsigned long) x->v[i]);
 	}
 
 	DUK_DDD(DUK_DDDPRINT("%s: %s", (const char *) name, (const char *) buf));
