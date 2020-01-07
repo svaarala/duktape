@@ -1,0 +1,73 @@
+#include <endian.h>
+#include <stdint.h>
+#include <sys/types.h>
+#include <mbusafecrt.h>
+
+/**
+ * Intel SGX enclaves are completely isolated from the underlying
+ * kernel and therefore syscalls are not allowed by default. This
+ * means that getting the current time and locale information is
+ * impossible unless there is intervention by the enclave developers.
+ *
+ * Thus enclave developers must define DUK_USE_DATE_GET_NOW and
+ * DUK_USE_DATE_GET_LOCAL_TZOFFSET for their enclave either manually
+ * in duk_config.h or via other means (other config header, compiler
+ * flags). If these are not defined compilation will fail with a
+ * preprocessor error.
+ *
+ * DUK_USE_DATE_GET_NOW should return a duk_double_t value containing
+ * the current ECMASCript time.
+ * DUK_USE_DATE_GET_LOCAL_TZOFFSET should return a duk_int_t value
+ * containing the offset from UTC in seconds of the current time.
+ * See the datetime.rst file for more information, as well as the
+ * duk_bi_date.c, duk_bi_date_unix.c files for inspiration.
+ *
+ * DUK_USE_DATE_FORMAT_STRING and DUK_USE_DATE_PARSE_STRING macros are
+ * not mandatory and are therefore not defined here, but enclave
+ * developers are free to define them via duk_config.h or other means
+ * if they are implementing platform or locale scpecific date parsing
+ * and formatting.
+ *
+ * All related Duktape provided implementations regarding date and
+ * time are intentionally disabled.
+ *
+ * Similarly, any file I/O APIs are disabled since file I/O is not
+ * available in the enclave.
+ *
+ * DUK_USE_JX needs to be undefined since JX uses sscanf to parse out
+ * pointers from strings, and sscanf is not available in Intel SGX
+ * enclaves.
+ */
+
+#undef DUK_USE_DATE_FMT_STRFTIME
+#undef DUK_USE_DATE_NOW_GETTIMEOFDAY
+#undef DUK_USE_DATE_NOW_TIME
+#undef DUK_USE_DATE_NOW_WINDOWS
+#undef DUK_USE_DATE_NOW_WINDOWS_SUBMS
+#undef DUK_USE_DATE_PRS_GETDATE
+#undef DUK_USE_DATE_PRS_STRPTIME
+#undef DUK_USE_DATE_TZO_GMTIME
+#undef DUK_USE_DATE_TZO_GMTIME_R
+#undef DUK_USE_DATE_TZO_GMTIME_S
+#undef DUK_USE_DATE_TZO_WINDOWS
+#undef DUK_USE_DATE_TZO_WINDOWS_NO_DST
+
+#define DUK_SNPRINTF(a,b,c,...) _snprintf_s(a,b,b,c,__VA_ARGS__)
+#define DUK_VSNPRINTF(a,b,c,...) _vsnprintf_s(a,b,b,c,__VA_ARGS__)
+
+#if defined(DUK_F_WINDOWS)
+/* On Windows, assume we're little endian.  Even Itanium which has a
+ * configurable endianness runs little endian in Windows.
+ */
+#if !defined(DUK_USE_BYTEORDER)
+#define DUK_USE_BYTEORDER 1
+#endif
+#endif
+
+#if defined(DUK_F_WINDOWS)
+#define DUK_USE_OS_STRING "intelsgx-windows"
+#elif defined(DUK_F_LINUX)
+#define DUK_USE_OS_STRING "intelsgx-linux"
+#else
+#error Intel SGX is supported only on Linux or Windows.
+#endif

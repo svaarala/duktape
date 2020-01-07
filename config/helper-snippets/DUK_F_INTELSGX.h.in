@@ -1,0 +1,11 @@
+/**
+ * Automatic Intel SGX detection is not possible at compile time.
+ * Therefore Intel SGX enclave developers wanting to use Duktape
+ * should either manually specify --platform=intelsgx to configure.py
+ * or manually define the DUK_F_INTELSGX macro.
+ */
+#if defined(DUK_F_INTELSGX)
+/* Trick genconfig.py that we've autodetected it. */
+#undef DUK_F_INTELSGX
+#define DUK_F_INTELSGX
+#endif

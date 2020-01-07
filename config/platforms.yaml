@@ -32,6 +32,10 @@ autodetect:
     check: DUK_F_DURANGO
     include: platform_durango.h.in
   -
+    name: Intel SGX # Keep this above Linux or Windows.
+    check: DUK_F_INTELSGX
+    include: platform_intelsgx.h.in
+  -
     name: Windows
     check: DUK_F_WINDOWS
     include: platform_windows.h.in
