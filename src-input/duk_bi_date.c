@@ -957,8 +957,7 @@ DUK_LOCAL duk_ret_t duk__set_this_timeval_from_dparts(duk_hthread *thr, duk_doub
 	return 1;
 }
 
-/* 'out_buf' must be at least DUK_BI_DATE_ISO8601_BUFSIZE long. */
-DUK_LOCAL void duk__format_parts_iso8601(duk_int_t *parts, duk_int_t tzoffset, duk_small_uint_t flags, duk_uint8_t *out_buf) {
+DUK_LOCAL void duk__format_parts_iso8601(duk_int_t *parts, duk_int_t tzoffset, duk_small_uint_t flags, duk_uint8_t *out_buf, duk_size_t bufsize) {
 	char yearstr[8];   /* "-123456\0" */
 	char tzstr[8];     /* "+11:22\0" */
 	char sep = (flags & DUK_DATE_FLAG_SEP_T) ? DUK_ASC_UC_T : DUK_ASC_SPACE;
@@ -1008,16 +1007,16 @@ DUK_LOCAL void duk__format_parts_iso8601(duk_int_t *parts, duk_int_t tzoffset, d
 	 * is portable.
 	 */
 	if ((flags & DUK_DATE_FLAG_TOSTRING_DATE) && (flags & DUK_DATE_FLAG_TOSTRING_TIME)) {
-		DUK_SPRINTF((char *) out_buf, "%s-%02d-%02d%c%02d:%02d:%02d.%03d%s",
+		DUK_SNPRINTF((char *) out_buf, bufsize, "%s-%02d-%02d%c%02d:%02d:%02d.%03d%s",
 		            (const char *) yearstr, (int) parts[DUK_DATE_IDX_MONTH], (int) parts[DUK_DATE_IDX_DAY], (int) sep,
 		            (int) parts[DUK_DATE_IDX_HOUR], (int) parts[DUK_DATE_IDX_MINUTE],
 		            (int) parts[DUK_DATE_IDX_SECOND], (int) parts[DUK_DATE_IDX_MILLISECOND], (const char *) tzstr);
 	} else if (flags & DUK_DATE_FLAG_TOSTRING_DATE) {
-		DUK_SPRINTF((char *) out_buf, "%s-%02d-%02d",
+		DUK_SNPRINTF((char *) out_buf, bufsize, "%s-%02d-%02d",
 		            (const char *) yearstr, (int) parts[DUK_DATE_IDX_MONTH], (int) parts[DUK_DATE_IDX_DAY]);
 	} else {
 		DUK_ASSERT(flags & DUK_DATE_FLAG_TOSTRING_TIME);
-		DUK_SPRINTF((char *) out_buf, "%02d:%02d:%02d.%03d%s",
+		DUK_SNPRINTF((char *) out_buf, bufsize, "%02d:%02d:%02d.%03d%s",
 		            (int) parts[DUK_DATE_IDX_HOUR], (int) parts[DUK_DATE_IDX_MINUTE],
 		            (int) parts[DUK_DATE_IDX_SECOND], (int) parts[DUK_DATE_IDX_MILLISECOND],
 		            (const char *) tzstr);
@@ -1074,7 +1073,7 @@ DUK_LOCAL duk_ret_t duk__to_string_helper(duk_hthread *thr, duk_small_uint_t fla
 	/* Different calling convention than above used because the helper
 	 * is shared.
 	 */
-	duk__format_parts_iso8601(parts, tzoffset, flags, buf);
+	duk__format_parts_iso8601(parts, tzoffset, flags, buf, sizeof(buf));
 	duk_push_string(thr, (const char *) buf);
 	return 1;
 }
