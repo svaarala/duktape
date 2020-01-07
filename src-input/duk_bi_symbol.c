@@ -50,7 +50,7 @@ DUK_INTERNAL duk_ret_t duk_bi_symbol_constructor_shared(duk_hthread *thr) {
 		if (++thr->heap->sym_counter[0] == 0) {
 			thr->heap->sym_counter[1]++;
 		}
-		p += DUK_SPRINTF((char *) p, "\xFF" "%lx-%lx",
+		p += DUK_SNPRINTF((char *) p, 1 + 17 + 1 /* 1 + len lost above */, "\xFF" "%lx-%lx",
 		                 (unsigned long) thr->heap->sym_counter[1],
 		                 (unsigned long) thr->heap->sym_counter[0]);
 		if (desc == NULL) {
