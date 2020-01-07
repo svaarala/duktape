@@ -1419,7 +1419,7 @@ DUK_LOCAL void duk__enc_fastint_tval(duk_json_enc_ctx *js_ctx, duk_tval *tv) {
 	 * "long long" type exists.  Could also rely on C99 directly but that
 	 * won't work for older MSVC.
 	 */
-	DUK_SPRINTF((char *) buf, "%lld", (long long) v);
+	DUK_SNPRINTF((char *) buf, sizeof(buf), "%lld", (long long) v);
 	DUK__EMIT_CSTR(js_ctx, (const char *) buf);
 }
 #endif
@@ -1591,14 +1591,14 @@ DUK_LOCAL void duk__enc_buffer_json_fastpath(duk_json_enc_ctx *js_ctx, duk_hbuff
 		for (i = 0; i < n; i++) {
 			duk__enc_newline_indent(js_ctx, js_ctx->recursion_depth + 1);
 			q = DUK_BW_ENSURE_GETPTR(js_ctx->thr, &js_ctx->bw, 32);
-			q += DUK_SPRINTF((char *) q, "\"%lu\": %u,", (unsigned long) i, (unsigned int) buf[i]);
+      q += DUK_SNPRINTF((char *) q, 32, "\"%lu\": %u,", (unsigned long) i, (unsigned int) buf[i]);
 			DUK_BW_SET_PTR(js_ctx->thr, &js_ctx->bw, q);
 		}
 	} else {
 		q = DUK_BW_GET_PTR(js_ctx->thr, &js_ctx->bw);
 		for (i = 0; i < n; i++) {
 			q = DUK_BW_ENSURE_RAW(js_ctx->thr, &js_ctx->bw, 32, q);
-			q += DUK_SPRINTF((char *) q, "\"%lu\":%u,", (unsigned long) i, (unsigned int) buf[i]);
+			q += DUK_SNPRINTF((char *) q, 32, "\"%lu\":%u,", (unsigned long) i, (unsigned int) buf[i]);
 		}
 		DUK_BW_SET_PTR(js_ctx->thr, &js_ctx->bw, q);
 	}
@@ -2749,7 +2749,7 @@ DUK_LOCAL duk_bool_t duk__json_stringify_fast_value(duk_json_enc_ctx *js_ctx, du
 
 		DUK_ASSERT(DUK_TVAL_IS_DOUBLE(tv));
 		d = DUK_TVAL_GET_DOUBLE(tv);
-		DUK_SPRINTF(buf, "%lg", d);
+		DUK_SNPRINTF(buf, sizeof(buf), "%lg", d);
 		DUK__EMIT_CSTR(js_ctx, buf);
 #endif
 	}
