@@ -568,10 +568,10 @@ DUK_LOCAL void duk__dec_pointer(duk_json_dec_ctx *js_ctx) {
 
 	voidptr = NULL;
 
-  if (encsz > 0 && encsz <= sizeof(pcpy)) {
+  if (encsz > 1 && encsz <= sizeof(pcpy)) {
     duk_memzero(pcpy, sizeof(pcpy));
     duk_memcpy(pcpy, p, encsz);
-    pcpy[encsz] = 0; /* copied ')' change to NUL */
+    pcpy[encsz - 1] = 0; /* copied ')' change to NUL */
 
     duk_decode_pointer_cstr(pcpy, encsz, &voidptr);
   }

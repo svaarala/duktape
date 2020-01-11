@@ -197,24 +197,20 @@ DUK_INTERNAL duk_size_t duk_encode_pointer_cstr(char* buf, duk_size_t sz, void* 
 
   duk_memzero(buf, sz);
 
-  if (sz < 2 * sizeof(ptraccess.bytes) + 1) {
+  if (sz < 2 * sizeof(void*) + 1) {
     return 0;
-  }
-
-  for (i = 0; i < sz; i++) {
-    buf[i] = 0;
   }
 
   ptraccess.ptr = ptr;
 
-  for (i = 0; i < sizeof(ptraccess.bytes); i++) {
+  for (i = 0; i < sizeof(void*); i++) {
     buf[2 * i + 0] = hex[(ptraccess.bytes[i] >> 4) & 0xF];
     buf[2 * i + 1] = hex[(ptraccess.bytes[i] >> 0) & 0xF];
   }
 
-  return 2 * sizeof(ptraccess.bytes);
+  return 2 * sizeof(void*);
 #else
-  int compsize = DUK_SNPRINTF(buf, sz, "%p", ptr);
+  int compsize = DUK_SNPRINTF(buf, sz, DUK_STR_FMT_PTR, ptr);
 
   if (compsize > 0 && ((duk_size_t) compsize) < sz) {
     return (duk_size_t) compsize;
@@ -235,11 +231,11 @@ DUK_INTERNAL int duk_decode_pointer_cstr(const char* buf, duk_size_t sz, void** 
 
   *ptr = NULL;
 
-  if (sz <= 2 * sizeof(ptraccess.bytes) || 0 != buf[sz]) {
+  if (sz < 2 * sizeof(void*) + 1 || 0 != buf[sz]) {
     return 0; /* syntax error */
   }
 
-  for (i = 0; i < 2 * sizeof(ptraccess.bytes); i++) {
+  for (i = 0; i < 2 * sizeof(void*); i++) {
     if (buf[i] >= '0' && buf[i] <= '9') {
       continue;
     }
@@ -251,18 +247,20 @@ DUK_INTERNAL int duk_decode_pointer_cstr(const char* buf, duk_size_t sz, void** 
     return 0; /* syntax error */
   }
 
-  for (i = 0; i < sizeof(ptraccess.bytes); i++) {
+  for (i = 0; i < sizeof(void*); i++) {
     a = (unsigned char) buf[2 * i + 0];
     b = (unsigned char) buf[2 * i + 1];
 
     if (a >= 'a') {
       a -= 'a';
+      a += 10;
     } else {
       a -= '0';
     }
 
     if (b >= 'a') {
       b -= 'a';
+      b += 10;
     } else {
       b -= '0';
     }
@@ -287,7 +285,7 @@ DUK_INTERNAL int duk_decode_pointer_cstr(const char* buf, duk_size_t sz, void** 
   goto syntax_error;
 
 safe_sscanf:
-  res = DUK_SSCANF(buf, "%p", ptr);
+  res = DUK_SSCANF(buf, DUK_STR_FMT_PTR, ptr);
 
   if (1 != res) {
     goto syntax_error;
