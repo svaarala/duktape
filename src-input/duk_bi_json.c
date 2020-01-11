@@ -538,6 +538,7 @@ DUK_LOCAL void duk__dec_plain_string(duk_json_dec_ctx *js_ctx) {
 DUK_LOCAL void duk__dec_pointer(duk_json_dec_ctx *js_ctx) {
 	duk_hthread *thr = js_ctx->thr;
 	const duk_uint8_t *p;
+  char pcpy[DUK_MAX_POINTER_ENCODING_SIZE];
 	duk_small_int_t x;
 	void *voidptr;
 
@@ -552,6 +553,7 @@ DUK_LOCAL void duk__dec_pointer(duk_json_dec_ctx *js_ctx) {
 		 * parenthesis.
 		 */
 
+    encsz++;
 		if (x == DUK_ASC_RPAREN) {
 			break;
 		} else if (x <= 0) {
@@ -561,19 +563,16 @@ DUK_LOCAL void duk__dec_pointer(duk_json_dec_ctx *js_ctx) {
 		p++;
 	}
 
-	/* There is no need to NUL delimit the sscanf() call: trailing garbage is
-	 * ignored and there is always a NUL terminator which will force an error
-	 * if no error is encountered before it.  It's possible that the scan
-	 * would scan further than between [js_ctx->p,p[ though and we'd advance
-	 * by less than the scanned value.
-	 *
-	 * Because pointers are platform specific, a failure to scan a pointer
-	 * results in a null pointer which is a better placeholder than a missing
-	 * value or an error.
-	 */
-
 	voidptr = NULL;
-	(void) DUK_SSCANF((const char *) js_ctx->p, DUK_STR_FMT_PTR, &voidptr);
+
+  if (encsz > 0 && encsz <= sizeof(pcpy)) {
+    duk_memzero(pcpy, sizeof(pcpy));
+    duk_memcpy(pcpy, p, encsz);
+    pcpy[encsz] = 0; /* copied ')' change to NUL */
+
+    duk_decode_pointer_cstr(pcpy, encsz, &voidptr);
+  }
+
 	duk_push_pointer(thr, voidptr);
 	js_ctx->p = p + 1;  /* skip ')' */
 
@@ -1641,6 +1640,7 @@ DUK_LOCAL void duk__enc_pointer(duk_json_enc_ctx *js_ctx, void *ptr) {
 		fmt = ptr ? "{\"_ptr\":\"%p\"}" : "{\"_ptr\":\"null\"}";
 	}
 #endif
+  duk_encode_pointer_cstr(ptrbuf, sizeof(ptrbuf), ptr);
 
 	/* When ptr == NULL, the format argument is unused. */
 	DUK_SNPRINTF(buf, sizeof(buf) - 1, fmt, ptr);  /* must not truncate */

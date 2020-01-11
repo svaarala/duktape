@@ -181,3 +181,135 @@ DUK_INTERNAL void duk_byteswap_bytes(duk_uint8_t *p, duk_small_uint_t len) {
 	}
 }
 #endif
+
+#if defined(DUK_USE_STANDARDIZED_POINTER_ENCODING)
+union duk_ptr_access {
+  void* ptr;
+  unsigned char bytes[sizeof(void*)];
+};
+#endif
+
+/*
+ * Encodes a pointer value to a NUL terminated C string representing the ptr value, into buf.
+ *
+ * Returns: the number of the written characters without the null character at the end.
+ */
+DUK_INTERNAL duk_size_t duk_encode_pointer_cstr(char* buf, duk_size_t sz, void* ptr) {
+#if defined(DUK_USE_STANDARDIZED_POINTER_ENCODING)
+  duk_size_t i;
+  union duk_ptr_access ptraccess;
+  const char hex[] = "0123456789abcdef";
+
+  duk_memzero(buf, sz);
+
+  if (sz < 2 * sizeof(ptraccess.bytes) + 1) {
+    return 0;
+  }
+
+  for (i = 0; i < sz; i++) {
+    buf[i] = 0;
+  }
+
+  ptraccess.ptr = ptr;
+
+  for (i = 0; i < sizeof(ptraccess.bytes); i++) {
+    buf[2 * i + 0] = hex[(ptraccess.bytes[i] >> 4) & 0xF];
+    buf[2 * i + 1] = hex[(ptraccess.bytes[i] >> 0) & 0xF];
+  }
+
+  return 2 * sizeof(ptraccess.bytes);
+#else
+  int compsize = DUK_SNPRINTF(buf, sz, "%p", ptr);
+
+  if (compsize > 0 && ((duk_size_t) compsize) < sz) {
+    return (duk_size_t) compsize;
+  }
+
+  duk_memzero(buf, sz);
+
+  return 0;
+#endif
+}
+
+/*
+ * Decodes a pointer value represented in a NUL terminated string containing *only ASCII*.
+ *
+ * Params:
+ *  - buf the NUL termnated string
+ *  - sz the size of the buffer, this is to ensure proper parsing
+ *  - outputs the parsed pointer value or NULL
+ *
+ * Retunrns: 0 if parsing failed, 1 if parsing is successful.
+ */
+DUK_INTERNAL int duk_decode_pointer_cstr(const char* buf, duk_size_t sz, void** ptr) {
+#if defined(DUK_USE_STANDARDIZED_POINTER_ENCODING)
+  duk_size_t i;
+  unsigned char a, b;
+  union duk_ptr_access ptraccess;
+
+  *ptr = NULL;
+
+  if (sz <= 2 * sizeof(ptraccess.bytes) || 0 != buf[sz]) {
+    return 0; /* syntax error */
+  }
+
+  for (i = 0; i < 2 * sizeof(ptraccess.bytes); i++) {
+    if (buf[i] >= '0' && buf[i] <= '9') {
+      continue;
+    }
+
+    if (buf[i] >= 'a' && buf[i] <= 'f') {
+      continue;
+    }
+
+    return 0; /* syntax error */
+  }
+
+  for (i = 0; i < sizeof(ptraccess.bytes); i++) {
+    a = buf[2 * i + 0];
+    b = buf[2 * i + 1];
+
+    if (a >= 'a') {
+      a -= 'a';
+    } else {
+      a -= '0';
+    }
+
+    if (b >= 'a') {
+      b -= 'a';
+    } else {
+      b -= '0';
+    }
+
+    ptraccess.bytes[i] = ((a << 4) & 0xF0) | ((b << 0) & 0x0F);
+  }
+
+  *ptr = ptraccess.ptr;
+
+  return 1; /* OK */
+#else
+  int res;
+  duk_size_t i;
+
+  for (i = 0; i < sz; i++) {
+    if (0 == buf[i]) {
+      goto safe_sscanf;
+    }
+  }
+
+  /* no NUL was found, therefore not safe to call sscanf */
+  goto syntax_error;
+
+safe_sscanf:
+  res = DUK_SSCANF(buf, "%p", ptr);
+
+  if (1 != res) {
+    goto syntax_error;
+  }
+
+  return 1; /* OK */
+
+syntax_error:
+  return 0;
+#endif
+}
