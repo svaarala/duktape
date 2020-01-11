@@ -1615,14 +1615,15 @@ DUK_LOCAL void duk__enc_buffer_json_fastpath(duk_json_enc_ctx *js_ctx, duk_hbuff
 
 #if defined(DUK_USE_JX) || defined(DUK_USE_JC)
 DUK_LOCAL void duk__enc_pointer(duk_json_enc_ctx *js_ctx, void *ptr) {
-	char buf[64];  /* XXX: how to figure correct size? */
-  char ptrbuf[21]; /* (2^64 - 1) as base 10 is 20 chars long + 1 */
+	char buf[DUK_MAX_POINTER_ENCODING_SIZE + 15];  /* length of {"_ptr":"null"} is 15 */
+  char ptrbuf[DUK_MAX_POINTER_ENCODING_SIZE];
 	const char *fmt;
 
 	DUK_ASSERT(js_ctx->flag_ext_custom || js_ctx->flag_ext_compatible);  /* caller checks */
 	DUK_ASSERT(js_ctx->flag_ext_custom_or_compatible);
 
 	duk_memzero(buf, sizeof(buf));
+  duk_memzero(ptrbuf, sizeof(ptrbuf));
 
 	/* The #if defined() clutter here needs to handle the three
 	 * cases: (1) JX+JC, (2) JX only, (3) JC only.
