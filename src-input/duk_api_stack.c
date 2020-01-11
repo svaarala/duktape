@@ -3345,6 +3345,12 @@ DUK_INTERNAL duk_int_t duk_to_int_check_range(duk_hthread *thr, duk_idx_t idx, d
 	return duk_to_int_clamped_raw(thr, idx, minval, maxval, NULL);  /* out_clamped==NULL -> RangeError if outside range */
 }
 
+DUK_INTERNAL void duk_pointer_to_string(duk_hthread *thr, void* ptr) {
+  char ptrstr[DUK_MAX_POINTER_ENCODING_SIZE];
+  duk_encode_pointer_cstr(ptrstr, sizeof(ptrstr), (void*) ptr);
+  duk_push_string(thr, ptrstr);
+}
+
 DUK_EXTERNAL const char *duk_to_string(duk_hthread *thr, duk_idx_t idx) {
 	duk_tval *tv;
 
@@ -3408,7 +3414,7 @@ DUK_EXTERNAL const char *duk_to_string(duk_hthread *thr, duk_idx_t idx) {
 	case DUK_TAG_POINTER: {
 		void *ptr = DUK_TVAL_GET_POINTER(tv);
 		if (ptr != NULL) {
-			duk_push_sprintf(thr, DUK_STR_FMT_PTR, (void *) ptr);
+      duk_pointer_to_string(thr, ptr);
 		} else {
 			/* Represent a null pointer as 'null' to be consistent with
 			 * the JX format variant.  Native '%p' format for a NULL

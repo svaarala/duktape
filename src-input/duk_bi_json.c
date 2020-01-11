@@ -1741,6 +1741,7 @@ DUK_LOCAL void duk__enc_objarr_entry(duk_json_enc_ctx *js_ctx, duk_idx_t *entry_
 	duk_hthread *thr = js_ctx->thr;
 	duk_hobject *h_target;
 	duk_uint_fast32_t i, n;
+  char ptrstr[DUK_MAX_POINTER_ENCODING_SIZE];
 
 	*entry_top = duk_get_top(thr);
 
@@ -1766,7 +1767,8 @@ DUK_LOCAL void duk__enc_objarr_entry(duk_json_enc_ctx *js_ctx, duk_idx_t *entry_
 	if (js_ctx->recursion_depth < DUK_JSON_ENC_LOOPARRAY) {
 		js_ctx->visiting[js_ctx->recursion_depth] = h_target;
 	} else {
-		duk_push_sprintf(thr, DUK_STR_FMT_PTR, (void *) h_target);
+    duk_encode_pointer_cstr(ptrstr, sizeof(ptrstr), (void*) h_target);
+    duk_push_string(thr, ptrstr);
 		duk_dup_top(thr);  /* -> [ ... voidp voidp ] */
 		if (duk_has_prop(thr, js_ctx->idx_loop)) {
 			DUK_ERROR_TYPE(thr, DUK_STR_CYCLIC_INPUT);
@@ -1794,6 +1796,7 @@ DUK_LOCAL void duk__enc_objarr_entry(duk_json_enc_ctx *js_ctx, duk_idx_t *entry_
 DUK_LOCAL void duk__enc_objarr_exit(duk_json_enc_ctx *js_ctx, duk_idx_t *entry_top) {
 	duk_hthread *thr = js_ctx->thr;
 	duk_hobject *h_target;
+  char ptrstr[DUK_MAX_POINTER_ENCODING_SIZE];
 
 	/* C recursion check. */
 
@@ -1808,7 +1811,8 @@ DUK_LOCAL void duk__enc_objarr_exit(duk_json_enc_ctx *js_ctx, duk_idx_t *entry_t
 	if (js_ctx->recursion_depth < DUK_JSON_ENC_LOOPARRAY) {
 		/* Previous entry was inside visited[], nothing to do. */
 	} else {
-		duk_push_sprintf(thr, DUK_STR_FMT_PTR, (void *) h_target);
+    duk_encode_pointer_cstr(ptrstr, sizeof(ptrstr), (void*) h_target);
+    duk_push_string(thr, ptrstr);
 		duk_del_prop(thr, js_ctx->idx_loop);  /* -> [ ... ] */
 	}
 
