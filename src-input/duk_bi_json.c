@@ -540,11 +540,13 @@ DUK_LOCAL void duk__dec_pointer(duk_json_dec_ctx *js_ctx) {
 	const duk_uint8_t *p;
   char pcpy[DUK_MAX_POINTER_ENCODING_SIZE];
 	duk_small_int_t x;
+  duk_size_t encsz;
 	void *voidptr;
 
 	/* Caller has already eaten the first character ('(') which we don't need. */
 
 	p = js_ctx->p;
+  encsz = 0;
 
 	for (;;) {
 		x = *p;
@@ -561,6 +563,7 @@ DUK_LOCAL void duk__dec_pointer(duk_json_dec_ctx *js_ctx) {
 			goto syntax_error;
 		}
 		p++;
+    encsz++;
 	}
 
 	voidptr = NULL;
@@ -1613,6 +1616,7 @@ DUK_LOCAL void duk__enc_buffer_json_fastpath(duk_json_enc_ctx *js_ctx, duk_hbuff
 #if defined(DUK_USE_JX) || defined(DUK_USE_JC)
 DUK_LOCAL void duk__enc_pointer(duk_json_enc_ctx *js_ctx, void *ptr) {
 	char buf[64];  /* XXX: how to figure correct size? */
+  char ptrbuf[21]; /* (2^64 - 1) as base 10 is 20 chars long + 1 */
 	const char *fmt;
 
 	DUK_ASSERT(js_ctx->flag_ext_custom || js_ctx->flag_ext_compatible);  /* caller checks */
@@ -1628,7 +1632,7 @@ DUK_LOCAL void duk__enc_pointer(duk_json_enc_ctx *js_ctx, void *ptr) {
 #endif
 #if defined(DUK_USE_JX)
 	{
-		fmt = ptr ? "(%p)" : "(null)";
+		fmt = ptr ? "(%s)" : "(null)";
 	}
 #endif
 #if defined(DUK_USE_JX) && defined(DUK_USE_JC)
@@ -1637,13 +1641,13 @@ DUK_LOCAL void duk__enc_pointer(duk_json_enc_ctx *js_ctx, void *ptr) {
 #if defined(DUK_USE_JC)
 	{
 		DUK_ASSERT(js_ctx->flag_ext_compatible);
-		fmt = ptr ? "{\"_ptr\":\"%p\"}" : "{\"_ptr\":\"null\"}";
+		fmt = ptr ? "{\"_ptr\":\"%s\"}" : "{\"_ptr\":\"null\"}";
 	}
 #endif
   duk_encode_pointer_cstr(ptrbuf, sizeof(ptrbuf), ptr);
 
 	/* When ptr == NULL, the format argument is unused. */
-	DUK_SNPRINTF(buf, sizeof(buf) - 1, fmt, ptr);  /* must not truncate */
+	DUK_SNPRINTF(buf, sizeof(buf) - 1, fmt, ptrbuf);  /* must not truncate */
 	DUK__EMIT_CSTR(js_ctx, buf);
 }
 #endif  /* DUK_USE_JX || DUK_USE_JC */
