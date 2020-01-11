@@ -252,8 +252,8 @@ DUK_INTERNAL int duk_decode_pointer_cstr(const char* buf, duk_size_t sz, void** 
   }
 
   for (i = 0; i < sizeof(ptraccess.bytes); i++) {
-    a = buf[2 * i + 0];
-    b = buf[2 * i + 1];
+    a = (unsigned char) buf[2 * i + 0];
+    b = (unsigned char) buf[2 * i + 1];
 
     if (a >= 'a') {
       a -= 'a';
