@@ -1,0 +1,12 @@
+define: DUK_USE_STANDARDIZED_POINTER_ENCODING
+introduced: 2.6.0
+default: false
+tags:
+  - debug
+description: >
+  All pointers that need to be encoded as string will be encoded in
+  lowercase hexadecimal encoding in the byte order they are laid out in
+  memory. Decoding will also work the same way.
+
+  When turned off, pointer encoding to string is done via the %p format
+  specifier in the printf and scanf family of functions.
