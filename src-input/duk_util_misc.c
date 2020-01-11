@@ -189,11 +189,6 @@ union duk_ptr_access {
 };
 #endif
 
-/*
- * Encodes a pointer value to a NUL terminated C string representing the ptr value, into buf.
- *
- * Returns: the number of the written characters without the null character at the end.
- */
 DUK_INTERNAL duk_size_t duk_encode_pointer_cstr(char* buf, duk_size_t sz, void* ptr) {
 #if defined(DUK_USE_STANDARDIZED_POINTER_ENCODING)
   duk_size_t i;
@@ -231,16 +226,7 @@ DUK_INTERNAL duk_size_t duk_encode_pointer_cstr(char* buf, duk_size_t sz, void* 
 #endif
 }
 
-/*
- * Decodes a pointer value represented in a NUL terminated string containing *only ASCII*.
- *
- * Params:
- *  - buf the NUL termnated string
- *  - sz the size of the buffer, this is to ensure proper parsing
- *  - outputs the parsed pointer value or NULL
- *
- * Retunrns: 0 if parsing failed, 1 if parsing is successful.
- */
+#if defined(DUK_USE_JX)
 DUK_INTERNAL int duk_decode_pointer_cstr(const char* buf, duk_size_t sz, void** ptr) {
 #if defined(DUK_USE_STANDARDIZED_POINTER_ENCODING)
   duk_size_t i;
@@ -312,4 +298,5 @@ safe_sscanf:
 syntax_error:
   return 0;
 #endif
+#endif /* DUK_USE_JX */
 }
