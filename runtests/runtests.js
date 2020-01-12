@@ -325,7 +325,7 @@ function executeTest(options, callback) {
         args.push('--output', tempInput)
         args.push('--prologue', tempPrologue)
 
-        child_process.execFile('python', args, {}, compileDone)
+        child_process.execFile('python2.7', args, {}, compileDone)
     }
 
     if (options.engine.name === 'api') {
