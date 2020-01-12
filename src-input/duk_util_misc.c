@@ -275,6 +275,8 @@ DUK_INTERNAL int duk_decode_pointer_cstr(const char* buf, duk_size_t sz, void** 
 	int res;
 	duk_size_t i;
 
+	*ptr = NULL;
+
 	for (i = 0; i < sz; i++) {
 		if (0 == buf[i]) {
 			goto safe_sscanf;
@@ -294,6 +296,8 @@ safe_sscanf:
 	return 1; /* OK */
 
 syntax_error:
+	*ptr = NULL;
+
 	return 0;
 #endif
 #endif /* DUK_USE_JX */
