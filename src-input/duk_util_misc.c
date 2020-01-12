@@ -195,7 +195,7 @@ DUK_INTERNAL duk_size_t duk_encode_pointer_cstr(char* buf, duk_size_t sz, void* 
 	union duk_ptr_access ptraccess;
 	const char hex[] = "0123456789abcdef";
 
-	if (sz < 2 * sizeof(void*) + 1) {
+	if (DUK_UNLIKELY(sz < 2 * sizeof(void*) + 1)) {
 		return 0;
 	}
 
@@ -210,7 +210,7 @@ DUK_INTERNAL duk_size_t duk_encode_pointer_cstr(char* buf, duk_size_t sz, void* 
 #else
 	int compsize = DUK_SNPRINTF(buf, sz, DUK_STR_FMT_PTR, ptr);
 
-	if (compsize > 0 && ((duk_size_t) compsize) < sz) {
+	if (DUK_LIKELY(compsize > 0 && ((duk_size_t) compsize) < sz)) {
 		return (duk_size_t) compsize;
 	}
 
@@ -229,16 +229,16 @@ DUK_INTERNAL int duk_decode_pointer_cstr(const char* buf, duk_size_t sz, void** 
 
 	*ptr = NULL;
 
-	if (sz < 2 * sizeof(void*) + 1 || 0 != buf[sz]) {
+	if (DUK_UNLIKELY(sz < 1 || sz < 2 * sizeof(void*) + 1 || 0 != buf[sz - 1])) {
 		return 0; /* syntax error */
 	}
 
 	for (i = 0; i < 2 * sizeof(void*); i++) {
-		if (buf[i] >= '0' && buf[i] <= '9') {
+		if (DUK_LIKELY(buf[i] >= '0' && buf[i] <= '9')) {
 			continue;
 		}
 
-		if (buf[i] >= 'a' && buf[i] <= 'f') {
+		if (DUK_LIKELY(buf[i] >= 'a' && buf[i] <= 'f')) {
 			continue;
 		}
 
