@@ -52,6 +52,7 @@
 /es5-tests.zip
 /JS-Interpreter/
 /runtests/node_modules/
+/runtests/package-lock.json
 /d067d2f0ca30.tar.bz2
 /595a36b252ee97110724e6fa89fc92c9aa9a206a.zip
 /regfuzz-0.1.tar.gz
