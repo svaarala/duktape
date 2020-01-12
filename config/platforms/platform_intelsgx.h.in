@@ -3,7 +3,7 @@
 #include <sys/types.h>
 #include <mbusafecrt.h>
 
-/**
+/*
  * Intel SGX enclaves are completely isolated from the underlying
  * kernel and therefore syscalls are not allowed by default. This
  * means that getting the current time and locale information is
@@ -52,11 +52,18 @@
 #undef DUK_USE_DATE_TZO_WINDOWS
 #undef DUK_USE_DATE_TZO_WINDOWS_NO_DST
 
+/*
+ * Intel SGX enclaves don't have access to sscanf, so pointer parsing must
+ * be standardized.
+ */
+#define DUK_USE_STANDARDIZED_POINTER_ENCODING
+
 #define DUK_SNPRINTF(a,b,c,...) _snprintf_s(a,b,b,c,__VA_ARGS__)
 #define DUK_VSNPRINTF(a,b,c,...) _vsnprintf_s(a,b,b,c,__VA_ARGS__)
 
 #if defined(DUK_F_WINDOWS)
-/* On Windows, assume we're little endian.  Even Itanium which has a
+/*
+ * On Windows, assume we're little endian.  Even Itanium which has a
  * configurable endianness runs little endian in Windows.
  */
 #if !defined(DUK_USE_BYTEORDER)
