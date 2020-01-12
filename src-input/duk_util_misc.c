@@ -195,8 +195,6 @@ DUK_INTERNAL duk_size_t duk_encode_pointer_cstr(char* buf, duk_size_t sz, void* 
 	union duk_ptr_access ptraccess;
 	const char hex[] = "0123456789abcdef";
 
-	duk_memzero(buf, sz);
-
 	if (sz < 2 * sizeof(void*) + 1) {
 		return 0;
 	}
@@ -287,9 +285,9 @@ DUK_INTERNAL int duk_decode_pointer_cstr(const char* buf, duk_size_t sz, void** 
 	goto syntax_error;
 
 safe_sscanf:
-	res = DUK_SSCANF(buf, DUK_STR_FMT_PTR, ptr);
+	return DUK_SSCANF(buf, DUK_STR_FMT_PTR, ptr);
 
-	if (1 != res) {
+	if (res < 1) {
 		goto syntax_error;
 	}
 

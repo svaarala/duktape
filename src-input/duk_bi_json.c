@@ -569,7 +569,7 @@ DUK_LOCAL void duk__dec_pointer(duk_json_dec_ctx *js_ctx) {
 
 	if (encsz > 1 && encsz <= sizeof(pcpy)) {
 		duk_memzero(pcpy, sizeof(pcpy));
-		duk_memcpy(pcpy, p, encsz);
+		duk_memcpy(pcpy, js_ctx->p, encsz);
 		pcpy[encsz - 1] = 0; /* copied ')' change to NUL */
 
 		duk_decode_pointer_cstr(pcpy, encsz, &voidptr);
@@ -1615,14 +1615,14 @@ DUK_LOCAL void duk__enc_buffer_json_fastpath(duk_json_enc_ctx *js_ctx, duk_hbuff
 #if defined(DUK_USE_JX) || defined(DUK_USE_JC)
 DUK_LOCAL void duk__enc_pointer(duk_json_enc_ctx *js_ctx, void *ptr) {
 	char buf[DUK_MAX_POINTER_ENCODING_SIZE + 15];  /* length of {"_ptr":"null"} is 15 */
-  char ptrbuf[DUK_MAX_POINTER_ENCODING_SIZE];
+	char ptrbuf[DUK_MAX_POINTER_ENCODING_SIZE];
 	const char *fmt;
 
 	DUK_ASSERT(js_ctx->flag_ext_custom || js_ctx->flag_ext_compatible);  /* caller checks */
 	DUK_ASSERT(js_ctx->flag_ext_custom_or_compatible);
 
 	duk_memzero(buf, sizeof(buf));
-  duk_memzero(ptrbuf, sizeof(ptrbuf));
+	duk_memzero(ptrbuf, sizeof(ptrbuf));
 
 	/* The #if defined() clutter here needs to handle the three
 	 * cases: (1) JX+JC, (2) JX only, (3) JC only.
@@ -1766,8 +1766,8 @@ DUK_LOCAL void duk__enc_objarr_entry(duk_json_enc_ctx *js_ctx, duk_idx_t *entry_
 	if (js_ctx->recursion_depth < DUK_JSON_ENC_LOOPARRAY) {
 		js_ctx->visiting[js_ctx->recursion_depth] = h_target;
 	} else {
-		duk_encode_pointer_cstr(ptrstr, sizeof(ptrstr), (void*) h_target);
-		duk_push_string(thr, ptrstr);
+		duk_size_t len = duk_encode_pointer_cstr(ptrstr, sizeof(ptrstr), (void*) h_target);
+		duk_push_lstring(thr, ptrstr, len);
 		duk_dup_top(thr);  /* -> [ ... voidp voidp ] */
 		if (duk_has_prop(thr, js_ctx->idx_loop)) {
 			DUK_ERROR_TYPE(thr, DUK_STR_CYCLIC_INPUT);
@@ -1810,8 +1810,8 @@ DUK_LOCAL void duk__enc_objarr_exit(duk_json_enc_ctx *js_ctx, duk_idx_t *entry_t
 	if (js_ctx->recursion_depth < DUK_JSON_ENC_LOOPARRAY) {
 		/* Previous entry was inside visited[], nothing to do. */
 	} else {
-		duk_encode_pointer_cstr(ptrstr, sizeof(ptrstr), (void*) h_target);
-		duk_push_string(thr, ptrstr);
+		duk_size_t len = duk_encode_pointer_cstr(ptrstr, sizeof(ptrstr), (void*) h_target);
+		duk_push_lstring(thr, ptrstr, len);
 		duk_del_prop(thr, js_ctx->idx_loop);  /* -> [ ... ] */
 	}
 
