@@ -538,15 +538,15 @@ DUK_LOCAL void duk__dec_plain_string(duk_json_dec_ctx *js_ctx) {
 DUK_LOCAL void duk__dec_pointer(duk_json_dec_ctx *js_ctx) {
 	duk_hthread *thr = js_ctx->thr;
 	const duk_uint8_t *p;
-  char pcpy[DUK_MAX_POINTER_ENCODING_SIZE];
+	char pcpy[DUK_MAX_POINTER_ENCODING_SIZE];
 	duk_small_int_t x;
-  duk_size_t encsz;
+	duk_size_t encsz;
 	void *voidptr;
 
 	/* Caller has already eaten the first character ('(') which we don't need. */
 
 	p = js_ctx->p;
-  encsz = 0;
+	encsz = 0;
 
 	for (;;) {
 		x = *p;
@@ -555,7 +555,7 @@ DUK_LOCAL void duk__dec_pointer(duk_json_dec_ctx *js_ctx) {
 		 * parenthesis.
 		 */
 
-    encsz++;
+		encsz++;
 		if (x == DUK_ASC_RPAREN) {
 			break;
 		} else if (x <= 0) {
@@ -563,18 +563,17 @@ DUK_LOCAL void duk__dec_pointer(duk_json_dec_ctx *js_ctx) {
 			goto syntax_error;
 		}
 		p++;
-    encsz++;
 	}
 
 	voidptr = NULL;
 
-  if (encsz > 1 && encsz <= sizeof(pcpy)) {
-    duk_memzero(pcpy, sizeof(pcpy));
-    duk_memcpy(pcpy, p, encsz);
-    pcpy[encsz - 1] = 0; /* copied ')' change to NUL */
+	if (encsz > 1 && encsz <= sizeof(pcpy)) {
+		duk_memzero(pcpy, sizeof(pcpy));
+		duk_memcpy(pcpy, p, encsz);
+		pcpy[encsz - 1] = 0; /* copied ')' change to NUL */
 
-    duk_decode_pointer_cstr(pcpy, encsz, &voidptr);
-  }
+		duk_decode_pointer_cstr(pcpy, encsz, &voidptr);
+	}
 
 	duk_push_pointer(thr, voidptr);
 	js_ctx->p = p + 1;  /* skip ')' */
@@ -1645,7 +1644,7 @@ DUK_LOCAL void duk__enc_pointer(duk_json_enc_ctx *js_ctx, void *ptr) {
 		fmt = ptr ? "{\"_ptr\":\"%s\"}" : "{\"_ptr\":\"null\"}";
 	}
 #endif
-  duk_encode_pointer_cstr(ptrbuf, sizeof(ptrbuf), ptr);
+	duk_encode_pointer_cstr(ptrbuf, sizeof(ptrbuf), ptr);
 
 	/* When ptr == NULL, the format argument is unused. */
 	DUK_SNPRINTF(buf, sizeof(buf) - 1, fmt, ptrbuf);  /* must not truncate */
@@ -1767,8 +1766,8 @@ DUK_LOCAL void duk__enc_objarr_entry(duk_json_enc_ctx *js_ctx, duk_idx_t *entry_
 	if (js_ctx->recursion_depth < DUK_JSON_ENC_LOOPARRAY) {
 		js_ctx->visiting[js_ctx->recursion_depth] = h_target;
 	} else {
-    duk_encode_pointer_cstr(ptrstr, sizeof(ptrstr), (void*) h_target);
-    duk_push_string(thr, ptrstr);
+		duk_encode_pointer_cstr(ptrstr, sizeof(ptrstr), (void*) h_target);
+		duk_push_string(thr, ptrstr);
 		duk_dup_top(thr);  /* -> [ ... voidp voidp ] */
 		if (duk_has_prop(thr, js_ctx->idx_loop)) {
 			DUK_ERROR_TYPE(thr, DUK_STR_CYCLIC_INPUT);
@@ -1811,8 +1810,8 @@ DUK_LOCAL void duk__enc_objarr_exit(duk_json_enc_ctx *js_ctx, duk_idx_t *entry_t
 	if (js_ctx->recursion_depth < DUK_JSON_ENC_LOOPARRAY) {
 		/* Previous entry was inside visited[], nothing to do. */
 	} else {
-    duk_encode_pointer_cstr(ptrstr, sizeof(ptrstr), (void*) h_target);
-    duk_push_string(thr, ptrstr);
+		duk_encode_pointer_cstr(ptrstr, sizeof(ptrstr), (void*) h_target);
+		duk_push_string(thr, ptrstr);
 		duk_del_prop(thr, js_ctx->idx_loop);  /* -> [ ... ] */
 	}
 

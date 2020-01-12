@@ -184,117 +184,117 @@ DUK_INTERNAL void duk_byteswap_bytes(duk_uint8_t *p, duk_small_uint_t len) {
 
 #if defined(DUK_USE_STANDARDIZED_POINTER_ENCODING)
 union duk_ptr_access {
-  void* ptr;
-  unsigned char bytes[sizeof(void*)];
+	void* ptr;
+	unsigned char bytes[sizeof(void*)];
 };
 #endif
 
 DUK_INTERNAL duk_size_t duk_encode_pointer_cstr(char* buf, duk_size_t sz, void* ptr) {
 #if defined(DUK_USE_STANDARDIZED_POINTER_ENCODING)
-  duk_size_t i;
-  union duk_ptr_access ptraccess;
-  const char hex[] = "0123456789abcdef";
+	duk_size_t i;
+	union duk_ptr_access ptraccess;
+	const char hex[] = "0123456789abcdef";
 
-  duk_memzero(buf, sz);
+	duk_memzero(buf, sz);
 
-  if (sz < 2 * sizeof(void*) + 1) {
-    return 0;
-  }
+	if (sz < 2 * sizeof(void*) + 1) {
+		return 0;
+	}
 
-  ptraccess.ptr = ptr;
+	ptraccess.ptr = ptr;
 
-  for (i = 0; i < sizeof(void*); i++) {
-    buf[2 * i + 0] = hex[(ptraccess.bytes[i] >> 4) & 0xF];
-    buf[2 * i + 1] = hex[(ptraccess.bytes[i] >> 0) & 0xF];
-  }
+	for (i = 0; i < sizeof(void*); i++) {
+		buf[2 * i + 0] = hex[(ptraccess.bytes[i] >> 4) & 0xF];
+		buf[2 * i + 1] = hex[(ptraccess.bytes[i] >> 0) & 0xF];
+	}
 
-  return 2 * sizeof(void*);
+	return 2 * sizeof(void*);
 #else
-  int compsize = DUK_SNPRINTF(buf, sz, DUK_STR_FMT_PTR, ptr);
+	int compsize = DUK_SNPRINTF(buf, sz, DUK_STR_FMT_PTR, ptr);
 
-  if (compsize > 0 && ((duk_size_t) compsize) < sz) {
-    return (duk_size_t) compsize;
-  }
+	if (compsize > 0 && ((duk_size_t) compsize) < sz) {
+		return (duk_size_t) compsize;
+	}
 
-  duk_memzero(buf, sz);
+	duk_memzero(buf, sz);
 
-  return 0;
+	return 0;
 #endif
 }
 
 #if defined(DUK_USE_JX)
 DUK_INTERNAL int duk_decode_pointer_cstr(const char* buf, duk_size_t sz, void** ptr) {
 #if defined(DUK_USE_STANDARDIZED_POINTER_ENCODING)
-  duk_size_t i;
-  unsigned char a, b;
-  union duk_ptr_access ptraccess;
+	duk_size_t i;
+	unsigned char a, b;
+	union duk_ptr_access ptraccess;
 
-  *ptr = NULL;
+	*ptr = NULL;
 
-  if (sz < 2 * sizeof(void*) + 1 || 0 != buf[sz]) {
-    return 0; /* syntax error */
-  }
+	if (sz < 2 * sizeof(void*) + 1 || 0 != buf[sz]) {
+		return 0; /* syntax error */
+	}
 
-  for (i = 0; i < 2 * sizeof(void*); i++) {
-    if (buf[i] >= '0' && buf[i] <= '9') {
-      continue;
-    }
+	for (i = 0; i < 2 * sizeof(void*); i++) {
+		if (buf[i] >= '0' && buf[i] <= '9') {
+			continue;
+		}
 
-    if (buf[i] >= 'a' && buf[i] <= 'f') {
-      continue;
-    }
+		if (buf[i] >= 'a' && buf[i] <= 'f') {
+			continue;
+		}
 
-    return 0; /* syntax error */
-  }
+		return 0; /* syntax error */
+	}
 
-  for (i = 0; i < sizeof(void*); i++) {
-    a = (unsigned char) buf[2 * i + 0];
-    b = (unsigned char) buf[2 * i + 1];
+	for (i = 0; i < sizeof(void*); i++) {
+		a = (unsigned char) buf[2 * i + 0];
+		b = (unsigned char) buf[2 * i + 1];
 
-    if (a >= 'a') {
-      a -= 'a';
-      a += 10;
-    } else {
-      a -= '0';
-    }
+		if (a >= 'a') {
+			a -= 'a';
+			a += 10;
+		} else {
+			a -= '0';
+		}
 
-    if (b >= 'a') {
-      b -= 'a';
-      b += 10;
-    } else {
-      b -= '0';
-    }
+		if (b >= 'a') {
+			b -= 'a';
+			b += 10;
+		} else {
+			b -= '0';
+		}
 
-    ptraccess.bytes[i] = ((a << 4) & 0xF0) | ((b << 0) & 0x0F);
-  }
+		ptraccess.bytes[i] = ((a << 4) & 0xF0) | ((b << 0) & 0x0F);
+	}
 
-  *ptr = ptraccess.ptr;
+	*ptr = ptraccess.ptr;
 
-  return 1; /* OK */
+	return 1; /* OK */
 #else
-  int res;
-  duk_size_t i;
+	int res;
+	duk_size_t i;
 
-  for (i = 0; i < sz; i++) {
-    if (0 == buf[i]) {
-      goto safe_sscanf;
-    }
-  }
+	for (i = 0; i < sz; i++) {
+		if (0 == buf[i]) {
+			goto safe_sscanf;
+		}
+	}
 
-  /* no NUL was found, therefore not safe to call sscanf */
-  goto syntax_error;
+	/* no NUL was found, therefore not safe to call sscanf */
+	goto syntax_error;
 
 safe_sscanf:
-  res = DUK_SSCANF(buf, DUK_STR_FMT_PTR, ptr);
+	res = DUK_SSCANF(buf, DUK_STR_FMT_PTR, ptr);
 
-  if (1 != res) {
-    goto syntax_error;
-  }
+	if (1 != res) {
+		goto syntax_error;
+	}
 
-  return 1; /* OK */
+	return 1; /* OK */
 
 syntax_error:
-  return 0;
+	return 0;
 #endif
 #endif /* DUK_USE_JX */
 }
