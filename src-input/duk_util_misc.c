@@ -285,7 +285,7 @@ DUK_INTERNAL int duk_decode_pointer_cstr(const char* buf, duk_size_t sz, void** 
 	goto syntax_error;
 
 safe_sscanf:
-	return DUK_SSCANF(buf, DUK_STR_FMT_PTR, ptr);
+	res = DUK_SSCANF(buf, DUK_STR_FMT_PTR, ptr);
 
 	if (res < 1) {
 		goto syntax_error;
