@@ -3345,7 +3345,7 @@ DUK_INTERNAL duk_int_t duk_to_int_check_range(duk_hthread *thr, duk_idx_t idx, d
 	return duk_to_int_clamped_raw(thr, idx, minval, maxval, NULL);  /* out_clamped==NULL -> RangeError if outside range */
 }
 
-DUK_INTERNAL void duk_pointer_to_string(duk_hthread *thr, void* ptr) {
+DUK_INTERNAL void duk_pointer_to_string(duk_hthread *thr, void *ptr) {
 	char ptrstr[DUK_MAX_POINTER_ENCODING_SIZE];
 	duk_size_t size = duk_encode_pointer_cstr(ptrstr, sizeof(ptrstr), (void*) ptr);
 	duk_push_lstring(thr, ptrstr, size);
