@@ -152,7 +152,7 @@ detection:
   need to do linear stack scans to detect loops.  The downside is relatively
   large memory footprint and lots of additional string table operations.
   However, these effects only come into play for very deep objects.  The option
-  ``DUK_USE_STANDARDIZED_POINTER_ENCODING`` can be used to remove the reliance
+  ``DUK_USE_MEMBASED_POINTER_ENCODING`` can be used to remove the reliance
   on ``%p``, however pointer values will still be platform-dependent.
 
 There's much room for improvement in the loop detection:
@@ -548,8 +548,8 @@ specific form, using the format ``(%p)``, e.g.::
   (0x1ff0e10)          // 32-bit Linux
   (000FEFF8)           // 32-bit Windows
   (000000000026A8A0)   // 64-bit Windows
-  (0D0C0B0A00000000)   // 0x0A0B0C0D in 64-bit little-endian x64
-                       // with DUK_USE_STANDARDIZED_POINTER_ENCODING
+  (0d0c0b0a00000000)   // 0x0A0B0C0D in 64-bit little-endian x64
+                       // with DUK_USE_MEMBASED_POINTER_ENCODING
 
 A pointer value parses back correctly when serialized and parsed by the same
 program.  Other than that there is no guarantee that a pointer value can be
@@ -565,7 +565,7 @@ an error.
 
   (null)
 
-By enabling the ``DUK_USE_STANDARDIZED_POINTER_ENCODING`` option you can make
+By enabling the ``DUK_USE_MEMBASED_POINTER_ENCODING`` option you can make
 the pointer encoding and decoding be "standard" across Duktape builds, but it
 is still platform dependant. It would depend on the memory layout and size in
 bytes of a pointer value, rather than ``%p``. Pointers can, therefore, be
@@ -686,7 +686,7 @@ specific form, using the format ``%p``, but wrapped in a marker table::
 Note that compared to JX, the difference is that there are no surrounding
 parentheses outside the pointer value.
 
-The option ``DUK_USE_STANDARDIZED_POINTER_ENCODING`` will also be used here as
+The option ``DUK_USE_MEMBASED_POINTER_ENCODING`` will also be used here as
 well. 
 
 ASCII only output

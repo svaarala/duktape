@@ -728,9 +728,9 @@ DUK_INTERNAL_DECL duk_bool_t duk_float_equals(duk_float_t x, duk_float_t y);
 #define DUK_IS_POWER_OF_TWO(x) \
 	((x) != 0U && ((x) & ((x) - 1U)) == 0U)
 
-#if defined(DUK_USE_STANDARDIZED_POINTER_ENCODING)
+#if defined(DUK_USE_MEMBASED_POINTER_ENCODING)
 /*
- * Standardized encoding is simple: 2 chars per byte.
+ * Memory based encoding is simple: 2 chars per byte.
  */
 #define DUK_MAX_POINTER_ENCODING_SIZE (2 * sizeof(void*) + 1)
 #else

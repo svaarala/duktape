@@ -29,14 +29,8 @@
  * and formatting.
  *
  * All related Duktape provided implementations regarding date and
- * time are intentionally disabled.
- *
- * Similarly, any file I/O APIs are disabled since file I/O is not
- * available in the enclave.
- *
- * DUK_USE_JX needs to be undefined since JX uses sscanf to parse out
- * pointers from strings, and sscanf is not available in Intel SGX
- * enclaves.
+ * time are intentionally disabled, since date and time functions are
+ * not generally available in Intel SGX enclaves.
  */
 
 #undef DUK_USE_DATE_FMT_STRFTIME
@@ -54,9 +48,9 @@
 
 /*
  * Intel SGX enclaves don't have access to sscanf, so pointer parsing must
- * be standardized.
+ * be without using sscanf.
  */
-#define DUK_USE_STANDARDIZED_POINTER_ENCODING
+#define DUK_USE_MEMBASED_POINTER_ENCODING
 
 #define DUK_SNPRINTF(a,b,c,...) _snprintf_s(a,b,b,c,__VA_ARGS__)
 #define DUK_VSNPRINTF(a,b,c,...) _vsnprintf_s(a,b,b,c,__VA_ARGS__)

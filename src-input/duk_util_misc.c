@@ -182,7 +182,7 @@ DUK_INTERNAL void duk_byteswap_bytes(duk_uint8_t *p, duk_small_uint_t len) {
 }
 #endif
 
-#if defined(DUK_USE_STANDARDIZED_POINTER_ENCODING)
+#if defined(DUK_USE_MEMBASED_POINTER_ENCODING)
 union duk_ptr_access {
 	void* ptr;
 	unsigned char bytes[sizeof(void*)];
@@ -190,7 +190,7 @@ union duk_ptr_access {
 #endif
 
 DUK_INTERNAL duk_size_t duk_encode_pointer_cstr(char* buf, duk_size_t sz, void* ptr) {
-#if defined(DUK_USE_STANDARDIZED_POINTER_ENCODING)
+#if defined(DUK_USE_MEMBASED_POINTER_ENCODING)
 	duk_size_t i;
 	union duk_ptr_access ptraccess;
 	const char hex[] = "0123456789abcdef";
@@ -222,7 +222,7 @@ DUK_INTERNAL duk_size_t duk_encode_pointer_cstr(char* buf, duk_size_t sz, void* 
 
 #if defined(DUK_USE_JX)
 DUK_INTERNAL int duk_decode_pointer_cstr(const char* buf, duk_size_t sz, void** ptr) {
-#if defined(DUK_USE_STANDARDIZED_POINTER_ENCODING)
+#if defined(DUK_USE_MEMBASED_POINTER_ENCODING)
 	duk_size_t i;
 	unsigned char a, b;
 	union duk_ptr_access ptraccess;
