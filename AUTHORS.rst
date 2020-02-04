@@ -66,6 +66,7 @@ and agreed to irrevocably license their contributions under the Duktape
 * Rick Sayre (https://github.com/whorfin)
 * Craig Leres (https://github.com/leres)
 * Maurici Abad (https://github.com/mauriciabad)
+* Stojan Dimitrovski (https://github.com/hf)
 
 Other contributions
 ===================
@@ -108,7 +109,6 @@ bugs, provided ideas, etc; roughly in order of appearance):
 * Andrew Janke (https://github.com/apjanke)
 * Unamer (https://github.com/unamer)
 * Karl Dahlke (eklhad@gmail.com)
-* Stojan Dimitrovski (https://github.com/hf)
 
 If you are accidentally missing from this list, send me an e-mail
 (``sami.vaarala@iki.fi``) and I'll fix the omission.
