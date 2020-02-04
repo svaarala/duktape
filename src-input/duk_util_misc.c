@@ -193,7 +193,6 @@ DUK_INTERNAL duk_size_t duk_encode_pointer_cstr(char* buf, duk_size_t sz, void *
 #if defined(DUK_USE_MEMBASED_POINTER_ENCODING)
 	duk_size_t i;
 	union duk__ptr_access ptraccess;
-	const char hex[] = "0123456789abcdef";
 
 	if (DUK_UNLIKELY(sz < 2 * sizeof(void*) + 1)) {
 		return 0;
@@ -202,8 +201,8 @@ DUK_INTERNAL duk_size_t duk_encode_pointer_cstr(char* buf, duk_size_t sz, void *
 	ptraccess.ptr = ptr;
 
 	for (i = 0; i < sizeof(void*); i++) {
-		buf[2 * i + 0] = hex[(ptraccess.bytes[i] >> 4) & 0xF];
-		buf[2 * i + 1] = hex[(ptraccess.bytes[i] >> 0) & 0xF];
+		buf[2 * i + 0] = duk_lc_digits[(ptraccess.bytes[i] >> 4) & 0xF];
+		buf[2 * i + 1] = duk_lc_digits[(ptraccess.bytes[i] >> 0) & 0xF];
 	}
 
 	return 2 * sizeof(void*);
