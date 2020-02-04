@@ -1592,7 +1592,7 @@ DUK_LOCAL void duk__enc_buffer_json_fastpath(duk_json_enc_ctx *js_ctx, duk_hbuff
 		for (i = 0; i < n; i++) {
 			duk__enc_newline_indent(js_ctx, js_ctx->recursion_depth + 1);
 			q = DUK_BW_ENSURE_GETPTR(js_ctx->thr, &js_ctx->bw, 32);
-      q += DUK_SNPRINTF((char *) q, 32, "\"%lu\": %u,", (unsigned long) i, (unsigned int) buf[i]);
+			q += DUK_SNPRINTF((char *) q, 32, "\"%lu\": %u,", (unsigned long) i, (unsigned int) buf[i]);
 			DUK_BW_SET_PTR(js_ctx->thr, &js_ctx->bw, q);
 		}
 	} else {
@@ -1740,7 +1740,7 @@ DUK_LOCAL void duk__enc_objarr_entry(duk_json_enc_ctx *js_ctx, duk_idx_t *entry_
 	duk_hthread *thr = js_ctx->thr;
 	duk_hobject *h_target;
 	duk_uint_fast32_t i, n;
-  char ptrstr[DUK_MAX_POINTER_ENCODING_SIZE];
+	char ptrstr[DUK_MAX_POINTER_ENCODING_SIZE];
 
 	*entry_top = duk_get_top(thr);
 
@@ -1795,7 +1795,7 @@ DUK_LOCAL void duk__enc_objarr_entry(duk_json_enc_ctx *js_ctx, duk_idx_t *entry_
 DUK_LOCAL void duk__enc_objarr_exit(duk_json_enc_ctx *js_ctx, duk_idx_t *entry_top) {
 	duk_hthread *thr = js_ctx->thr;
 	duk_hobject *h_target;
-  char ptrstr[DUK_MAX_POINTER_ENCODING_SIZE];
+	char ptrstr[DUK_MAX_POINTER_ENCODING_SIZE];
 
 	/* C recursion check. */
 
