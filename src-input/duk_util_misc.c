@@ -185,7 +185,7 @@ DUK_INTERNAL void duk_byteswap_bytes(duk_uint8_t *p, duk_small_uint_t len) {
 #if defined(DUK_USE_MEMBASED_POINTER_ENCODING)
 union duk__ptr_access {
 	void *ptr;
-	unsigned char bytes[sizeof(void*)];
+	unsigned char bytes[sizeof(void *)];
 };
 #endif
 
@@ -194,18 +194,18 @@ DUK_INTERNAL duk_size_t duk_encode_pointer_cstr(char* buf, duk_size_t sz, void *
 	duk_size_t i;
 	union duk__ptr_access ptraccess;
 
-	if (DUK_UNLIKELY(sz < 2 * sizeof(void*) + 1)) {
+	if (DUK_UNLIKELY(sz < 2 * sizeof(void *) + 1)) {
 		return 0;
 	}
 
 	ptraccess.ptr = ptr;
 
-	for (i = 0; i < sizeof(void*); i++) {
+	for (i = 0; i < sizeof(void *); i++) {
 		buf[2 * i + 0] = duk_lc_digits[(ptraccess.bytes[i] >> 4) & 0xF];
 		buf[2 * i + 1] = duk_lc_digits[(ptraccess.bytes[i] >> 0) & 0xF];
 	}
 
-	return 2 * sizeof(void*);
+	return 2 * sizeof(void *);
 #else
 	int compsize = DUK_SNPRINTF(buf, sz, DUK_STR_FMT_PTR, ptr);
 
@@ -228,11 +228,11 @@ DUK_INTERNAL int duk_decode_pointer_cstr(const char* buf, duk_size_t sz, void** 
 
 	*ptr = NULL;
 
-	if (DUK_UNLIKELY(sz < 1 || sz < 2 * sizeof(void*) + 1 || 0 != buf[sz - 1])) {
+	if (DUK_UNLIKELY(sz < 1 || sz < 2 * sizeof(void *) + 1 || 0 != buf[sz - 1])) {
 		return 0; /* syntax error */
 	}
 
-	for (i = 0; i < 2 * sizeof(void*); i++) {
+	for (i = 0; i < 2 * sizeof(void *); i++) {
 		if (DUK_LIKELY(buf[i] >= '0' && buf[i] <= '9')) {
 			continue;
 		}
@@ -244,7 +244,7 @@ DUK_INTERNAL int duk_decode_pointer_cstr(const char* buf, duk_size_t sz, void** 
 		return 0; /* syntax error */
 	}
 
-	for (i = 0; i < sizeof(void*); i++) {
+	for (i = 0; i < sizeof(void *); i++) {
 		a = (unsigned char) buf[2 * i + 0];
 		b = (unsigned char) buf[2 * i + 1];
 

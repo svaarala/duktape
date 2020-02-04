@@ -732,7 +732,7 @@ DUK_INTERNAL_DECL duk_bool_t duk_float_equals(duk_float_t x, duk_float_t y);
 /*
  * Memory based encoding is simple: 2 chars per byte.
  */
-#define DUK_MAX_POINTER_ENCODING_SIZE (2 * sizeof(void*) + 1)
+#define DUK_MAX_POINTER_ENCODING_SIZE (2 * sizeof(void *) + 1)
 #else
 /*
  * It's impossible to know the actual size of the pointer encoded

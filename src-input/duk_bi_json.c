@@ -1766,7 +1766,7 @@ DUK_LOCAL void duk__enc_objarr_entry(duk_json_enc_ctx *js_ctx, duk_idx_t *entry_
 	if (js_ctx->recursion_depth < DUK_JSON_ENC_LOOPARRAY) {
 		js_ctx->visiting[js_ctx->recursion_depth] = h_target;
 	} else {
-		duk_size_t len = duk_encode_pointer_cstr(ptrstr, sizeof(ptrstr), (void*) h_target);
+		duk_size_t len = duk_encode_pointer_cstr(ptrstr, sizeof(ptrstr), (void *) h_target);
 		duk_push_lstring(thr, ptrstr, len);
 		duk_dup_top(thr);  /* -> [ ... voidp voidp ] */
 		if (duk_has_prop(thr, js_ctx->idx_loop)) {
@@ -1810,7 +1810,7 @@ DUK_LOCAL void duk__enc_objarr_exit(duk_json_enc_ctx *js_ctx, duk_idx_t *entry_t
 	if (js_ctx->recursion_depth < DUK_JSON_ENC_LOOPARRAY) {
 		/* Previous entry was inside visited[], nothing to do. */
 	} else {
-		duk_size_t len = duk_encode_pointer_cstr(ptrstr, sizeof(ptrstr), (void*) h_target);
+		duk_size_t len = duk_encode_pointer_cstr(ptrstr, sizeof(ptrstr), (void *) h_target);
 		duk_push_lstring(thr, ptrstr, len);
 		duk_del_prop(thr, js_ctx->idx_loop);  /* -> [ ... ] */
 	}
