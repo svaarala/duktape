@@ -223,7 +223,6 @@ DUK_INTERNAL duk_size_t duk_encode_pointer_cstr(char* buf, duk_size_t sz, void *
 DUK_INTERNAL int duk_decode_pointer_cstr(const char* buf, duk_size_t sz, void** ptr) {
 #if defined(DUK_USE_MEMBASED_POINTER_ENCODING)
 	duk_size_t i;
-	unsigned char a, b;
 	union duk_ptr_access ptraccess;
 
 	*ptr = NULL;
@@ -245,24 +244,7 @@ DUK_INTERNAL int duk_decode_pointer_cstr(const char* buf, duk_size_t sz, void** 
 	}
 
 	for (i = 0; i < sizeof(void *); i++) {
-		a = (unsigned char) buf[2 * i + 0];
-		b = (unsigned char) buf[2 * i + 1];
-
-		if (a >= 'a') {
-			a -= 'a';
-			a += 10;
-		} else {
-			a -= '0';
-		}
-
-		if (b >= 'a') {
-			b -= 'a';
-			b += 10;
-		} else {
-			b -= '0';
-		}
-
-		ptraccess.bytes[i] = ((a << 4) & 0xF0) | ((b << 0) & 0x0F);
+		ptraccess.bytes[i] = duk_hex_dectab_shift4[buf[2 * i + 0]] | duk_hex_dectab[buf[2 * i + 1]];
 	}
 
 	*ptr = ptraccess.ptr;
