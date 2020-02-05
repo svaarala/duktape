@@ -16,6 +16,7 @@ DUK_INTERNAL duk_ret_t duk_bi_symbol_constructor_shared(duk_hthread *thr) {
 	duk_uint8_t *buf;
 	duk_uint8_t *p;
 	duk_int_t magic;
+  duk_int_t flen;
 
 	magic = duk_get_current_magic(thr);
 	if (duk_is_undefined(thr, 0) && (magic == 0)) {
@@ -62,11 +63,11 @@ DUK_INTERNAL duk_ret_t duk_bi_symbol_constructor_shared(duk_hthread *thr) {
 			thr->heap->sym_counter[1]++;
 		}
 
-    duk_int_t flen = DUK_SNPRINTF((char *) p,
-                                  1 + 17 + 1, /* B || format || C for NUL */
-                                  "\xFF" "%lx-%lx",
-                                  (unsigned long) thr->heap->sym_counter[1],
-                                  (unsigned long) thr->heap->sym_counter[0]);
+    flen = DUK_SNPRINTF((char *) p,
+                        1 + 17 + 1, /* B || format || C for NUL */
+                        "\xFF" "%lx-%lx",
+                        (unsigned long) thr->heap->sym_counter[1],
+                        (unsigned long) thr->heap->sym_counter[0]);
 
     /* make sure that we had enough room to format the symbol */
     DUK_ASSERT(flen > 0 && flen <= 1 + 17 /* without + 1 for NUL */);
