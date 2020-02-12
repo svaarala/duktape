@@ -95,35 +95,35 @@ DUK_LOCAL void duk__bi_print(const char *name, duk__bigint *x) {
 
 	/* No NUL term checks in this debug code. */
 	flen = DUK_SNPRINTF(p, 64, "%p n=%ld", (void *) x, (long) x->n);
-  if (flen > 63) {
-    p += 63;
-  } else if (flen > 0) {
-    p += flen;
-  }
+	if (flen > 63) {
+		p += 63;
+	} else if (flen > 0) {
+		p += flen;
+	}
 
 	if (x->n == 0) {
-    DUK_ASSERT(p - buf < sizeof(buf));
+		DUK_ASSERT(p - buf < sizeof(buf));
 
 		flen = DUK_SNPRINTF(p, 3, " 0");
-    if (flen > 2) {
-      p += 2;
-    } else if (flen > 0) {
-      p += flen;
-    }
+		if (flen > 2) {
+			p += 2;
+		} else if (flen > 0) {
+			p += flen;
+		}
 	}
 	for (i = x->n - 1; i >= 0; i--) {
-    DUK_ASSERT(p - buf < sizeof(buf));
+		DUK_ASSERT(p - buf < sizeof(buf));
 
-	  flen = DUK_SNPRINTF(p, 10, " %08lx", (unsigned long) x->v[i]);
-    if (flen > 9) {
-      p += 9;
-    } else if (flen > 0) {
-      p += flen;
-    }
+		flen = DUK_SNPRINTF(p, 10, " %08lx", (unsigned long) x->v[i]);
+		if (flen > 9) {
+			p += 9;
+		} else if (flen > 0) {
+			p += flen;
+		}
 	}
 
-  *p = 0; /* finally, NUL terminate buf regardless of snprintf */
-  DUK_ASSERT(p - buf < sizeof(buf));
+	*p = 0; /* finally, NUL terminate buf regardless of snprintf */
+	DUK_ASSERT(p - buf < sizeof(buf));
 
 	DUK_DDD(DUK_DDDPRINT("%s: %s", (const char *) name, (const char *) buf));
 }
