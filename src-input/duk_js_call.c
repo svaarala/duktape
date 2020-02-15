@@ -1961,7 +1961,7 @@ DUK_LOCAL duk_int_t duk__handle_call_raw(duk_hthread *thr,
 	duk_idx_t nargs;            /* # argument registers target function wants (< 0 => "as is") */
 	duk_idx_t nregs;            /* # total registers target function wants on entry (< 0 => "as is") */
 	duk_size_t vs_min_bytes;    /* minimum value stack size (bytes) for handling call */
-	duk_hobject *func;          /* 'func' on stack (borrowed reference) */
+	duk_hobject *func = NULL;   /* 'func' on stack (borrowed reference) */
 	duk_activation *act;
 	duk_ret_t rc;
 	duk_small_uint_t use_tailcall;
@@ -2264,7 +2264,7 @@ DUK_LOCAL duk_int_t duk__handle_call_raw(duk_hthread *thr,
 		DUK_ASSERT(thr->ptr_curr_pc == NULL);
 
 		/* XXX: native funcptr could come out of call setup. */
-		if (func) {
+		if (func != NULL) {
 			rc = ((duk_hnatfunc *) func)->func(thr);
 		} else {
 			duk_tval *tv_func;
