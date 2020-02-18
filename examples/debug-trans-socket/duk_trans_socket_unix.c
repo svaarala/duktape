@@ -9,6 +9,8 @@
  *  defining USE_SELECT.  See https://daniel.haxx.se/docs/poll-vs-select.html.
  */
 
+#define DUK_COMPILING_DUKTAPE
+
 #include <stdio.h>
 #include <string.h>
 #include <sys/socket.h>

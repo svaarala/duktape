@@ -4,6 +4,8 @@
  *  https://nodejs.org/api/modules.html
  */
 
+#define DUK_COMPILING_DUKTAPE
+
 #include "duktape.h"
 #include "duk_module_node.h"
 
