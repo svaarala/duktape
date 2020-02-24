@@ -945,7 +945,7 @@ sax-js:
 xmldoc:
 	# https://github.com/nfarina/xmldoc
 	# http://nfarina.com/post/34302964969/a-lightweight-xml-document-class-for-nodejs-javascript
-	$(GIT) clone --depth 1 https://github.com/nfarina/xmldoc.git 
+	$(GIT) clone --depth 1 https://github.com/nfarina/xmldoc.git
 FlameGraph:
 	# http://www.brendangregg.com/FlameGraphs/cpuflamegraphs.html
 	# https://github.com/brendangregg/FlameGraph
