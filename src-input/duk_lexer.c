@@ -924,7 +924,8 @@ DUK_LOCAL void duk__lexer_parse_string_literal(duk_lexer_ctx *lex_ctx, duk_token
 			DUK_ASSERT(x != quote);
 			DUK_ASSERT(x != DUK_ASC_BACKSLASH);
 			DUK__APPENDBUFFER_ASCII(lex_ctx, x);
-		} else if (x < 0 || duk_unicode_is_line_terminator(x)) {
+		} else if (x < 0 || (duk_unicode_is_line_terminator(x) && x != 0x2028 && x != 0x2029)) {
+			/* U+2028 and U+2029 are allowed since ES2019. */
 			goto fail_unterminated;
 		} else {
 			/* Character which is part of the string but wasn't handled
