@@ -8,8 +8,6 @@
 
 'use strict';
 
-const { hexEncodeUpper } = require('../util/hex.js');
-
 function parseHex(v) {
     return Number.parseInt(v, 16);
 }
@@ -82,8 +80,8 @@ function parseUnicodeText(unicodeData, specialCasing) {
             for (let cp = cp1; cp <= cp2; cp++) {
                 cpMap[cp] = {
                     cp: cp,
-                    cpStr: hexEncodeUpper(cp, 4),
-                    gc: gc1
+                    gc: gc1,
+                    name: haveFirst[1]
                     // Assume no case mappings for range encoded codepoints.
                 };
             }
@@ -97,8 +95,8 @@ function parseUnicodeText(unicodeData, specialCasing) {
             let simpleTitleCase = parseCodepointSequence(parts[14]) || simpleUpperCase;
             let ent = {
                 cp: cp,
-                cpStr: hexEncodeUpper(cp, 4),
-                gc: parts[2]
+                gc: parts[2],
+                name: parts[1]
             };
             if (simpleUpperCase) {
                 ent.uc = simpleUpperCase;
@@ -143,6 +141,9 @@ function parseUnicodeText(unicodeData, specialCasing) {
         var ent = cpMap[cp];
         if (!ent) {
             throw new TypeError('unexpected special casing for non-existent codepoint');
+        }
+        if (parts[4] !== '') {  // special conditions, drop
+            return;
         }
         if (lower) {
             ent.lc = lower;
