@@ -763,7 +763,7 @@ DUK_INTERNAL_DECL duk_size_t duk_encode_pointer_cstr(char* buf, duk_size_t sz, v
  *
  * Returns: 0 if parsing failed, 1 if parsing is successful.
  */
-DUK_INTERNAL_DECL int duk_decode_pointer_cstr(const char* buf, duk_size_t sz, void** ptr);
+DUK_INTERNAL_DECL int duk_decode_pointer_cstr(const char* buf, duk_size_t sz, void **ptr);
 #endif
 
 #endif  /* DUK_UTIL_H_INCLUDED */
