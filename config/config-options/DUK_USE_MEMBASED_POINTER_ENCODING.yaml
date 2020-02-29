@@ -1,5 +1,5 @@
 define: DUK_USE_MEMBASED_POINTER_ENCODING
-introduced: 2.7.0
+introduced: 3.0.0
 default: false
 tags:
   - ecmascript
