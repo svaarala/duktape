@@ -1044,7 +1044,7 @@ def generate_duk_config_header(opts, meta_dir):
 
     # DLL build affects visibility attributes on Windows but unfortunately
     # cannot be detected automatically from preprocessor defines or such.
-    # DLL build status is hidden behind DUK_F_DLL_BUILD. and there are two
+    # DLL build status is hidden behind DUK_F_DLL_BUILD.
     ret.chdr_comment_line('DLL build detection')
     if opts.dll:
         ret.line('/* configured for DLL build */')
