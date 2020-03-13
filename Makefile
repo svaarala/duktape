@@ -202,6 +202,7 @@ EMCC = emcc
 #EMCCOPTS = -s TOTAL_MEMORY=2097152 -s TOTAL_STACK=524288 --memory-init-file 0
 EMCCOPTS = -O2 -std=c99 -Wall --memory-init-file 0 -s WASM=0 -s POLYFILL_OLD_MATH_FUNCTIONS
 EMCCOPTS_DUKVM = -O2 -std=c99 -Wall --memory-init-file 0 -DEMSCRIPTEN -s WASM=0
+EMCCOPTS_DUKVM_WASM = -O2 -std=c99 -Wall --memory-init-file 0 -DEMSCRIPTEN -s WASM=1
 EMCCOPTS_DUKWEB_EXPORT = -s EXPORTED_FUNCTIONS='["_main","_dukweb_is_open", "_dukweb_open","_dukweb_close","_dukweb_eval"]' -s 'EXTRA_EXPORTED_RUNTIME_METHODS=["ccall","cwrap"]'
 EMDUKOPTS = -s TOTAL_MEMORY=268435456 -DDUK_CMDLINE_PRINTALERT_SUPPORT
 EMDUKOPTS += -DEMSCRIPTEN  # enable stdin workaround in duk_cmdline.c
@@ -261,7 +262,7 @@ clean:
 	@rm -rf test262-*
 	@rm -rf lua-5.2.3
 	@rm -rf luajs
-	@rm -f dukweb.js
+	@rm -f dukweb.js dukweb.wasm
 	@rm -rf /tmp/dukweb-test/
 	@rm -f massif-*.out
 	@rm -f literal_intern_test
@@ -574,9 +575,10 @@ emduk.js: prep/emduk
 # and providing an eval() facility from both sides.  This is a placeholder now
 # and doesn't do anything useful yet.
 dukweb.js: prep/dukweb
-	$(EMCC) $(EMCCOPTS_DUKVM) $(EMCCOPTS_DUKWEB_EXPORT) --post-js dukweb/dukweb_extra.js \
+	@rm -f dukweb.js dukweb.asm
+	$(EMCC) $(EMCCOPTS_DUKVM_WASM) $(EMCCOPTS_DUKWEB_EXPORT) --post-js dukweb/dukweb_extra.js \
 		-Iprep/dukweb prep/dukweb/duktape.c dukweb/dukweb.c -o dukweb.js
-	@wc dukweb.js
+	@wc dukweb.js dukweb.wasm
 literal_intern_test: prep/nondebug misc/literal_intern_test.c
 	$(CC) -o $@ -std=c99 -O2 -fstrict-aliasing -Wall -Wextra \
 		-Iprep/nondebug prep/nondebug/duktape.c misc/literal_intern_test.c -lm
@@ -660,11 +662,11 @@ configuretest:
 
 # Dukweb.js test.
 .PHONY: dukwebtest
-dukwebtest: dukweb.js jquery-1.11.2.js
+dukwebtest: dukweb.js dukweb.wasm jquery-1.11.2.js
 	@echo "### dukwebtest"
 	@rm -rf /tmp/dukweb-test/
 	mkdir /tmp/dukweb-test/
-	cp dukweb.js jquery-1.11.2.js dukweb/dukweb.html dukweb/dukweb.css /tmp/dukweb-test/
+	cp dukweb.js dukweb.wasm jquery-1.11.2.js dukweb/dukweb.html dukweb/dukweb.css /tmp/dukweb-test/
 	@echo "Now point your browser to: file:///tmp/dukweb-test/dukweb.html"
 
 # Third party tests.
@@ -1010,7 +1012,7 @@ dist-iso: dist-src
 .PHONY: tidy-site
 tidy-site:
 	for i in website/*/*.html; do echo "*** Checking $$i"; tidy -q -e -xml $$i; done
-site: duktape-releases dukweb.js jquery-1.11.2.js lz-string
+site: duktape-releases dukweb.js dukweb.wasm jquery-1.11.2.js lz-string
 	rm -rf site
 	mkdir site
 	-cd duktape-releases/; git pull --rebase  # get binaries up-to-date, but allow errors for offline use
