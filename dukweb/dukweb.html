@@ -12,11 +12,11 @@
 
 <div id="content-middle">
 
-<p id="dukweb-intro">Works in Chrome/Chromium/Firefox.  There is much to
-improve in the Duktape/browser bindings and errors are not handled nicely
-yet, so keep your Javascript Console open.  Also note that this page takes
-a few seconds to (re)load.  You can embed code in the Dukweb link as a
-fragment identifier: <a href="http://duktape.org/dukweb.html#print('Hello%20world!')%3B">http://duktape.org/dukweb.html#print('Hello%20world!')%3B</a>.</p>
+<p id="dukweb-intro">Duktape compiled using emcc into JS + wasm (can
+also be compiled into pure JS), should work in Chrome/Chromium/Firefox.
+See Web Console for details and errors.  This page takes a a few seconds
+to (re)load.  You can embed code in the Dukweb link as a fragment identifier:
+<a href="http://duktape.org/dukweb.html#print('Hello%20world!')%3B">http://duktape.org/dukweb.html#print('Hello%20world!')%3B</a>.</p>
 
 <div id="dukweb-input-wrapper">
 <textarea id="dukweb-input">
@@ -117,15 +117,15 @@ $(document).ready(function () {
         alert(e);
     }
 
-    try {
+    Duktape.getInitializedPromise().then(function () {
         dukwebSetup();
-    } catch (e) {
+    }).catch(function (e) {
         $('#dukweb-output')
             .addClass('error')
             .text(
                 'Dukweb.js initialization failed (perhaps your browser is not compatible?):\n\n' +
                 String(e.stack || e) + '\n\n');
-    }
+    });
 });
 
 //]]>

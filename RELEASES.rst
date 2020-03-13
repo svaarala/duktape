@@ -3597,3 +3597,6 @@ Planned
 
 * Don't treat U+180E as whitespace e.g. for String trim() purposes,
   (ES2016, requires Unicode 8.0.0 or higher) (GH-2236)
+
+* Use wasm for dukweb.js compilation (including duktape.org site),
+  fix async loading of emcc-compiled code in dukweb.html (GH-2244)
