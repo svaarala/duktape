@@ -1035,7 +1035,7 @@ dist-site: tidy-site site
 	rm -rf duktape-site-$(DUK_VERSION_FORMATTED)
 
 # Code policy check.
-ifeq ($(TRAVIS),1)
+ifeq ($(CI),1)
 CODEPOLICYOPTS=--fail-on-errors
 else
 CODEPOLICYOPTS=

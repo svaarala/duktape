@@ -1,0 +1,18 @@
+name: Build
+on: [push, pull_request]
+jobs:
+  build_duk:
+    name: Duk
+    runs-on: ubuntu-18.04
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v2
+      - name: Install packages
+        run: |
+          sudo apt install build-essential make python python-yaml bc git
+      - name: Build
+        run: |
+          make duk
+      - name: Test
+        run: |
+          ./duk dist-files/mandel.js

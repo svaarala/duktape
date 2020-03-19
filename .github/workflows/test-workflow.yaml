@@ -1,0 +1,63 @@
+name: Test
+on: [push, pull_request]
+jobs:
+  ecmatest:
+    name: Ecmatest
+    runs-on: ubuntu-18.04
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v2
+      - name: Install packages
+        run: |
+          sudo apt install build-essential make python python-yaml bc git nodejs
+      - name: Build
+        run: |
+          make duk
+      - name: Ecmatest
+        run: |
+          make ecmatest
+  apitest:
+    name: Apitest
+    runs-on: ubuntu-18.04
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v2
+      - name: Install packages
+        run: |
+          sudo apt install build-essential make python python-yaml bc git nodejs
+      - name: Build
+        run: |
+          make duk
+      - name: Apitest
+        run: |
+          make apitest
+  misctests:
+    name: Misc tests
+    runs-on: ubuntu-18.04
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v2
+      - name: Install packages
+        run: |
+          sudo apt install build-essential make python python-yaml bc git nodejs valgrind
+      - name: Configure test
+        run: |
+          make configuretest
+      - name: Error inject test
+        run: |
+          make errorinjecttest
+  lint:
+    name: Lint
+    runs-on: ubuntu-18.04
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v2
+      - name: Install packages
+        run: |
+          sudo apt install build-essential make python python-yaml bc git tidy
+      - name: Codepolicycheck
+        run: |
+          CI=1 make codepolicycheck
+      - name: Tidy-site
+        run: |
+          make tidy-site
