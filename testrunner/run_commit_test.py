@@ -194,7 +194,7 @@ def genconfig_dist_src(genconfig_opts):
     ])
 
 def context_codepolicycheck():
-    return execute([ 'make', 'codepolicycheck' ], env=newenv(TRAVIS=1), catch=True)['success']
+    return execute([ 'make', 'codepolicycheck' ], env=newenv(CI=1), catch=True)['success']
 
 def context_helper_x64_ecmatest(env=None, genconfig_opts=[], valgrind=False):
     cwd = os.getcwd()

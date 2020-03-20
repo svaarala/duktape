@@ -10,9 +10,9 @@ before_install:
 #  - clang
 #  - gcc
 script:
-  # Apply TRAVIS=1 to codepolicycheck to make it error out on failures;
+  # Apply CI=1 to codepolicycheck to make it error out on failures;
   # don't prevent apitest/ecmatest which also do a policy check.
-  - TRAVIS=1 make codepolicycheck
+  - CI=1 make codepolicycheck
   - make tidy-site
   - make apitest
   - make ecmatest
