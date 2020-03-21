@@ -82,3 +82,57 @@ function validateStringsAreBstrRecursive(doc) {
     visit(doc);
 }
 exports.validateStringsAreBstrRecursive = validateStringsAreBstrRecursive;
+
+// Convert all strings in a document to Uint8Array.
+function recursiveBstrToUint8Array(doc) {
+    function f(x) {
+        if (typeof x === 'string') {
+            return bstrToUint8Array(x);
+        } else if (typeof x === 'object' && x !== null && Array.isArray(x)) {
+            let res = [];
+            for (let i = 0; i < x.length; i++) {
+                res.push(f(x[i]));
+            }
+            return res;
+        } else if (typeof x === 'object' && x !== null) {
+            let res = {};
+            for (let k in x) {
+                // Python tooling encoded key too; this doesn't work well in JS.
+                //res[f(k)] = f(x[k]);
+                res[k] = f(x[k]);
+            }
+            return res;
+        } else {
+            return x;
+        }
+    }
+    return f(doc);
+}
+exports.recursiveBstrToUint8Array = recursiveBstrToUint8Array;
+
+// Convert all strings in an object to from Uint8Array to bstr.
+function recursiveUint8ArrayToBstr(doc) {
+    function f(x) {
+        if (typeof x === 'object' && x !== null && x instanceof Uint8Array) {
+            return uint8ArrayToBstr(x);
+        } else if (typeof x === 'object' && x !== null && Array.isArray(x)) {
+            let res = [];
+            for (let i = 0; i < x.length; i++) {
+                res.push(f(x[i]));
+            }
+            return res;
+        } else if (typeof x === 'object' && x !== null) {
+            let res = {};
+            for (let k in x) {
+                //res[f(k)] = f(x[k]);
+                res[k] = f(x[k]);
+            }
+            return res;
+        } else {
+            return x;
+        }
+    }
+
+    return f(doc);
+}
+exports.recursiveUint8ArrayToBstr = recursiveUint8ArrayToBstr;
