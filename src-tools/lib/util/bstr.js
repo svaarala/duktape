@@ -6,7 +6,7 @@
 
 'use strict';
 
-const { assert } = require('./assert.js');
+const { assert } = require('./assert');
 
 function bstrToArray(s) {
     var res = [];
@@ -53,3 +53,32 @@ function assertBstr(s) {
     assert(isBstr(s));
 }
 exports.assertBstr = assertBstr;
+
+function validateStringsAreBstrRecursive(doc) {
+    function visit(x) {
+        if (typeof x === 'string') {
+            if (!isBstr(x)) {
+                throw new TypeError('found non-bstr string (strings must consist of U+0000-U+00FF identified as encoded bytes): ' + JSON.stringify(x));
+            }
+        } else if (typeof x === 'boolean') {
+            // No validation
+        } else if (typeof x === 'number') {
+            // No validation
+        } else if (x === void 0 || x === null) {
+            // No validation
+        } else if (typeof x === 'object' && x !== null && Array.isArray(x)) {
+            for (let i = 0; i < x.length; i++) {
+                visit(x[i]);
+            }
+        } else if (typeof x === 'object' && x !== null) {
+            for (let k of Object.keys(x).sort()) {
+                visit(k);
+                visit(x[k]);
+            }
+        } else {
+            // Unexpected type, nothing to validate, ignore.
+        }
+    }
+    visit(doc);
+}
+exports.validateStringsAreBstrRecursive = validateStringsAreBstrRecursive;
