@@ -13,3 +13,6 @@ description: >
   If the time provided experiences time jumps or doesn't advance in realtime
   (which is useful in some time virtualization scenarios), consider defining
   DUK_USE_GET_MONOTONIC_TIME.
+
+  When used in Intel SGX enclaves it must be implemented by the enclave
+  developer, otherwise it will fail with a compilation error.

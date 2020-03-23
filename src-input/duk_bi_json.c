@@ -538,12 +538,15 @@ DUK_LOCAL void duk__dec_plain_string(duk_json_dec_ctx *js_ctx) {
 DUK_LOCAL void duk__dec_pointer(duk_json_dec_ctx *js_ctx) {
 	duk_hthread *thr = js_ctx->thr;
 	const duk_uint8_t *p;
+	char pcpy[DUK_MAX_POINTER_ENCODING_SIZE];
 	duk_small_int_t x;
+	duk_size_t encsz;
 	void *voidptr;
 
 	/* Caller has already eaten the first character ('(') which we don't need. */
 
 	p = js_ctx->p;
+	encsz = 0;
 
 	for (;;) {
 		x = *p;
@@ -552,6 +555,7 @@ DUK_LOCAL void duk__dec_pointer(duk_json_dec_ctx *js_ctx) {
 		 * parenthesis.
 		 */
 
+		encsz++;
 		if (x == DUK_ASC_RPAREN) {
 			break;
 		} else if (x <= 0) {
@@ -561,19 +565,16 @@ DUK_LOCAL void duk__dec_pointer(duk_json_dec_ctx *js_ctx) {
 		p++;
 	}
 
-	/* There is no need to NUL delimit the sscanf() call: trailing garbage is
-	 * ignored and there is always a NUL terminator which will force an error
-	 * if no error is encountered before it.  It's possible that the scan
-	 * would scan further than between [js_ctx->p,p[ though and we'd advance
-	 * by less than the scanned value.
-	 *
-	 * Because pointers are platform specific, a failure to scan a pointer
-	 * results in a null pointer which is a better placeholder than a missing
-	 * value or an error.
-	 */
-
 	voidptr = NULL;
-	(void) DUK_SSCANF((const char *) js_ctx->p, DUK_STR_FMT_PTR, &voidptr);
+
+	if (encsz > 1 && encsz <= sizeof(pcpy)) {
+		duk_memzero(pcpy, sizeof(pcpy));
+		duk_memcpy(pcpy, js_ctx->p, encsz);
+		pcpy[encsz - 1] = 0; /* copied ')' change to NUL */
+
+		duk_decode_pointer_cstr(pcpy, encsz, &voidptr);
+	}
+
 	duk_push_pointer(thr, voidptr);
 	js_ctx->p = p + 1;  /* skip ')' */
 
@@ -1419,7 +1420,7 @@ DUK_LOCAL void duk__enc_fastint_tval(duk_json_enc_ctx *js_ctx, duk_tval *tv) {
 	 * "long long" type exists.  Could also rely on C99 directly but that
 	 * won't work for older MSVC.
 	 */
-	DUK_SPRINTF((char *) buf, "%lld", (long long) v);
+	DUK_SNPRINTF((char *) buf, sizeof(buf), "%lld", (long long) v);
 	DUK__EMIT_CSTR(js_ctx, (const char *) buf);
 }
 #endif
@@ -1591,14 +1592,14 @@ DUK_LOCAL void duk__enc_buffer_json_fastpath(duk_json_enc_ctx *js_ctx, duk_hbuff
 		for (i = 0; i < n; i++) {
 			duk__enc_newline_indent(js_ctx, js_ctx->recursion_depth + 1);
 			q = DUK_BW_ENSURE_GETPTR(js_ctx->thr, &js_ctx->bw, 32);
-			q += DUK_SPRINTF((char *) q, "\"%lu\": %u,", (unsigned long) i, (unsigned int) buf[i]);
+			q += DUK_SNPRINTF((char *) q, 32, "\"%lu\": %u,", (unsigned long) i, (unsigned int) buf[i]);
 			DUK_BW_SET_PTR(js_ctx->thr, &js_ctx->bw, q);
 		}
 	} else {
 		q = DUK_BW_GET_PTR(js_ctx->thr, &js_ctx->bw);
 		for (i = 0; i < n; i++) {
 			q = DUK_BW_ENSURE_RAW(js_ctx->thr, &js_ctx->bw, 32, q);
-			q += DUK_SPRINTF((char *) q, "\"%lu\":%u,", (unsigned long) i, (unsigned int) buf[i]);
+			q += DUK_SNPRINTF((char *) q, 32, "\"%lu\":%u,", (unsigned long) i, (unsigned int) buf[i]);
 		}
 		DUK_BW_SET_PTR(js_ctx->thr, &js_ctx->bw, q);
 	}
@@ -1613,13 +1614,15 @@ DUK_LOCAL void duk__enc_buffer_json_fastpath(duk_json_enc_ctx *js_ctx, duk_hbuff
 
 #if defined(DUK_USE_JX) || defined(DUK_USE_JC)
 DUK_LOCAL void duk__enc_pointer(duk_json_enc_ctx *js_ctx, void *ptr) {
-	char buf[64];  /* XXX: how to figure correct size? */
+	char buf[DUK_MAX_POINTER_ENCODING_SIZE + 15];  /* length of {"_ptr":"null"} is 15 */
+	char ptrbuf[DUK_MAX_POINTER_ENCODING_SIZE];
 	const char *fmt;
 
 	DUK_ASSERT(js_ctx->flag_ext_custom || js_ctx->flag_ext_compatible);  /* caller checks */
 	DUK_ASSERT(js_ctx->flag_ext_custom_or_compatible);
 
 	duk_memzero(buf, sizeof(buf));
+	duk_memzero(ptrbuf, sizeof(ptrbuf));
 
 	/* The #if defined() clutter here needs to handle the three
 	 * cases: (1) JX+JC, (2) JX only, (3) JC only.
@@ -1629,7 +1632,7 @@ DUK_LOCAL void duk__enc_pointer(duk_json_enc_ctx *js_ctx, void *ptr) {
 #endif
 #if defined(DUK_USE_JX)
 	{
-		fmt = ptr ? "(%p)" : "(null)";
+		fmt = ptr ? "(%s)" : "(null)";
 	}
 #endif
 #if defined(DUK_USE_JX) && defined(DUK_USE_JC)
@@ -1638,12 +1641,13 @@ DUK_LOCAL void duk__enc_pointer(duk_json_enc_ctx *js_ctx, void *ptr) {
 #if defined(DUK_USE_JC)
 	{
 		DUK_ASSERT(js_ctx->flag_ext_compatible);
-		fmt = ptr ? "{\"_ptr\":\"%p\"}" : "{\"_ptr\":\"null\"}";
+		fmt = ptr ? "{\"_ptr\":\"%s\"}" : "{\"_ptr\":\"null\"}";
 	}
 #endif
+	duk_encode_pointer_cstr(ptrbuf, sizeof(ptrbuf), ptr);
 
 	/* When ptr == NULL, the format argument is unused. */
-	DUK_SNPRINTF(buf, sizeof(buf) - 1, fmt, ptr);  /* must not truncate */
+	DUK_SNPRINTF(buf, sizeof(buf) - 1, fmt, ptrbuf);  /* must not truncate */
 	DUK__EMIT_CSTR(js_ctx, buf);
 }
 #endif  /* DUK_USE_JX || DUK_USE_JC */
@@ -1736,6 +1740,7 @@ DUK_LOCAL void duk__enc_objarr_entry(duk_json_enc_ctx *js_ctx, duk_idx_t *entry_
 	duk_hthread *thr = js_ctx->thr;
 	duk_hobject *h_target;
 	duk_uint_fast32_t i, n;
+	char ptrstr[DUK_MAX_POINTER_ENCODING_SIZE];
 
 	*entry_top = duk_get_top(thr);
 
@@ -1761,7 +1766,8 @@ DUK_LOCAL void duk__enc_objarr_entry(duk_json_enc_ctx *js_ctx, duk_idx_t *entry_
 	if (js_ctx->recursion_depth < DUK_JSON_ENC_LOOPARRAY) {
 		js_ctx->visiting[js_ctx->recursion_depth] = h_target;
 	} else {
-		duk_push_sprintf(thr, DUK_STR_FMT_PTR, (void *) h_target);
+		duk_size_t len = duk_encode_pointer_cstr(ptrstr, sizeof(ptrstr), (void *) h_target);
+		duk_push_lstring(thr, ptrstr, len);
 		duk_dup_top(thr);  /* -> [ ... voidp voidp ] */
 		if (duk_has_prop(thr, js_ctx->idx_loop)) {
 			DUK_ERROR_TYPE(thr, DUK_STR_CYCLIC_INPUT);
@@ -1789,6 +1795,7 @@ DUK_LOCAL void duk__enc_objarr_entry(duk_json_enc_ctx *js_ctx, duk_idx_t *entry_
 DUK_LOCAL void duk__enc_objarr_exit(duk_json_enc_ctx *js_ctx, duk_idx_t *entry_top) {
 	duk_hthread *thr = js_ctx->thr;
 	duk_hobject *h_target;
+	char ptrstr[DUK_MAX_POINTER_ENCODING_SIZE];
 
 	/* C recursion check. */
 
@@ -1803,7 +1810,8 @@ DUK_LOCAL void duk__enc_objarr_exit(duk_json_enc_ctx *js_ctx, duk_idx_t *entry_t
 	if (js_ctx->recursion_depth < DUK_JSON_ENC_LOOPARRAY) {
 		/* Previous entry was inside visited[], nothing to do. */
 	} else {
-		duk_push_sprintf(thr, DUK_STR_FMT_PTR, (void *) h_target);
+		duk_size_t len = duk_encode_pointer_cstr(ptrstr, sizeof(ptrstr), (void *) h_target);
+		duk_push_lstring(thr, ptrstr, len);
 		duk_del_prop(thr, js_ctx->idx_loop);  /* -> [ ... ] */
 	}
 
@@ -2749,7 +2757,7 @@ DUK_LOCAL duk_bool_t duk__json_stringify_fast_value(duk_json_enc_ctx *js_ctx, du
 
 		DUK_ASSERT(DUK_TVAL_IS_DOUBLE(tv));
 		d = DUK_TVAL_GET_DOUBLE(tv);
-		DUK_SPRINTF(buf, "%lg", d);
+		DUK_SNPRINTF(buf, sizeof(buf), "%lg", d);
 		DUK__EMIT_CSTR(js_ctx, buf);
 #endif
 	}

@@ -728,4 +728,42 @@ DUK_INTERNAL_DECL duk_bool_t duk_float_equals(duk_float_t x, duk_float_t y);
 #define DUK_IS_POWER_OF_TWO(x) \
 	((x) != 0U && ((x) & ((x) - 1U)) == 0U)
 
+#if defined(DUK_USE_MEMBASED_POINTER_ENCODING)
+/*
+ * Memory based encoding is simple: 2 chars per byte.
+ */
+#define DUK_MAX_POINTER_ENCODING_SIZE (2 * sizeof(void *) + 1)
+#else
+/*
+ * It's impossible to know the actual size of the pointer encoded
+ * as string with %p (or decoded) at compile time. However, assuming
+ * that the worst thing printf/scanf can do is encode it as possibly
+ * signed base 8 integer, the encoding for (2^64-1) in base 8 is
+ * 22 characters long. We round at 32 (inc \0) to account for other
+ * bases or other weird encodings.
+ */
+#define DUK_MAX_POINTER_ENCODING_SIZE 32
+#endif
+
+/*
+ * Encodes a pointer value to a NUL terminated C string representing the ptr value, into buf.
+ *
+ * Returns: the number of the written characters without the null character at the end.
+ */
+DUK_INTERNAL_DECL duk_size_t duk_encode_pointer_cstr(char* buf, duk_size_t sz, void *ptr);
+
+#if defined(DUK_USE_JX)
+/*
+ * Decodes a pointer value represented in a NUL terminated string containing *only ASCII*.
+ *
+ * Params:
+ *  - buf the NUL termnated string
+ *  - sz the size of the buffer, this is to ensure proper parsing
+ *  - outputs the parsed pointer value or NULL
+ *
+ * Returns: 0 if parsing failed, 1 if parsing is successful.
+ */
+DUK_INTERNAL_DECL int duk_decode_pointer_cstr(const char* buf, duk_size_t sz, void **ptr);
+#endif
+
 #endif  /* DUK_UTIL_H_INCLUDED */

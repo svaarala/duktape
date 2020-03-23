@@ -91,15 +91,39 @@ DUK_LOCAL void duk__bi_print(const char *name, duk__bigint *x) {
 	char buf[DUK__BI_MAX_PARTS * 9 + 64];
 	char *p = buf;
 	duk_small_int_t i;
+  duk_int_t flen;
 
 	/* No NUL term checks in this debug code. */
-	p += DUK_SPRINTF(p, "%p n=%ld", (void *) x, (long) x->n);
+	flen = DUK_SNPRINTF(p, 64, "%p n=%ld", (void *) x, (long) x->n);
+	if (flen > 63) {
+		p += 63;
+	} else if (flen > 0) {
+		p += flen;
+	}
+
 	if (x->n == 0) {
-		p += DUK_SPRINTF(p, " 0");
+		DUK_ASSERT(p - buf < sizeof(buf));
+
+		flen = DUK_SNPRINTF(p, 3, " 0");
+		if (flen > 2) {
+			p += 2;
+		} else if (flen > 0) {
+			p += flen;
+		}
 	}
 	for (i = x->n - 1; i >= 0; i--) {
-		p += DUK_SPRINTF(p, " %08lx", (unsigned long) x->v[i]);
+		DUK_ASSERT(p - buf < sizeof(buf));
+
+		flen = DUK_SNPRINTF(p, 10, " %08lx", (unsigned long) x->v[i]);
+		if (flen > 9) {
+			p += 9;
+		} else if (flen > 0) {
+			p += flen;
+		}
 	}
+
+	*p = 0; /* finally, NUL terminate buf regardless of snprintf */
+	DUK_ASSERT(p - buf < sizeof(buf));
 
 	DUK_DDD(DUK_DDDPRINT("%s: %s", (const char *) name, (const char *) buf));
 }

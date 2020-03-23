@@ -66,6 +66,7 @@ and agreed to irrevocably license their contributions under the Duktape
 * Rick Sayre (https://github.com/whorfin)
 * Craig Leres (https://github.com/leres)
 * Maurici Abad (https://github.com/mauriciabad)
+* Stojan Dimitrovski (https://github.com/hf)
 
 Other contributions
 ===================

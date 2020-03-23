@@ -181,3 +181,103 @@ DUK_INTERNAL void duk_byteswap_bytes(duk_uint8_t *p, duk_small_uint_t len) {
 	}
 }
 #endif
+
+#if defined(DUK_USE_MEMBASED_POINTER_ENCODING)
+union duk__ptr_access {
+	void *ptr;
+	unsigned char bytes[sizeof(void *)];
+};
+#endif
+
+DUK_INTERNAL duk_size_t duk_encode_pointer_cstr(char* buf, duk_size_t sz, void *ptr) {
+#if defined(DUK_USE_MEMBASED_POINTER_ENCODING)
+	duk_size_t i;
+	union duk__ptr_access ptraccess;
+
+	if (DUK_UNLIKELY(sz < 2 * sizeof(void *) + 1)) {
+		return 0;
+	}
+
+	ptraccess.ptr = ptr;
+
+	for (i = 0; i < sizeof(void *); i++) {
+		buf[2 * i + 0] = duk_lc_digits[(ptraccess.bytes[i] >> 4) & 0xF];
+		buf[2 * i + 1] = duk_lc_digits[(ptraccess.bytes[i] >> 0) & 0xF];
+	}
+
+	return 2 * sizeof(void *);
+#else
+	int compsize = DUK_SNPRINTF(buf, sz, DUK_STR_FMT_PTR, ptr);
+
+	if (DUK_LIKELY(compsize > 0 && ((duk_size_t) compsize) < sz)) {
+		return (duk_size_t) compsize;
+	}
+
+	duk_memzero(buf, sz);
+
+	return 0;
+#endif
+}
+
+#if defined(DUK_USE_JX)
+DUK_INTERNAL int duk_decode_pointer_cstr(const char* buf, duk_size_t sz, void **ptr) {
+#if defined(DUK_USE_MEMBASED_POINTER_ENCODING)
+	duk_size_t i;
+	union duk_ptr_access ptraccess;
+
+	*ptr = NULL;
+
+	if (DUK_UNLIKELY(sz < 1 || sz < 2 * sizeof(void *) + 1 || 0 != buf[sz - 1])) {
+		return 0; /* syntax error */
+	}
+
+	for (i = 0; i < 2 * sizeof(void *); i++) {
+		if (DUK_LIKELY(buf[i] >= '0' && buf[i] <= '9')) {
+			continue;
+		}
+
+		if (DUK_LIKELY(buf[i] >= 'a' && buf[i] <= 'f')) {
+			continue;
+		}
+
+		return 0; /* syntax error */
+	}
+
+	for (i = 0; i < sizeof(void *); i++) {
+		ptraccess.bytes[i] = duk_hex_dectab_shift4[buf[2 * i + 0]] | duk_hex_dectab[buf[2 * i + 1]];
+	}
+
+	*ptr = ptraccess.ptr;
+
+	return 1; /* OK */
+#else
+	int res;
+	duk_size_t i;
+
+	*ptr = NULL;
+
+	for (i = 0; i < sz; i++) {
+		if (0 == buf[i]) {
+			goto safe_sscanf;
+		}
+	}
+
+	/* no NUL was found, therefore not safe to call sscanf */
+	goto syntax_error;
+
+safe_sscanf:
+	res = DUK_SSCANF(buf, DUK_STR_FMT_PTR, ptr);
+
+	if (res < 1) {
+		goto syntax_error;
+	}
+
+	return 1; /* OK */
+
+syntax_error:
+	*ptr = NULL;
+
+	return 0;
+#endif
+#endif /* DUK_USE_JX */
+}

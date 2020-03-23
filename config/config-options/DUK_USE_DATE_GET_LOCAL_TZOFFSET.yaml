@@ -7,3 +7,6 @@ tags:
 description: >
   Mandatory macro for getting the local time offset for a given datetime,
   see datetime.rst.
+
+  When used in Intel SGX enclaves it must be implemented by the enclave
+  developer, otherwise it will fail with a compilation error.
