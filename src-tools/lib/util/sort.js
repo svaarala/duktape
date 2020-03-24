@@ -13,3 +13,11 @@ function numericSort(arr) {
     return arr;
 }
 exports.numericSort = numericSort;
+
+// Comparison function for numbers (no coercion).
+function numberCompare(a, b) {
+    if (a > b) { return 1; }
+    if (a < b) { return -1; }
+    return 0;
+}
+exports.numberCompare = numberCompare;
