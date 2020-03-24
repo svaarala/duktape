@@ -1,0 +1,29 @@
+# https://editorconfig.org/
+#
+# Approximate configuration for the Duktape code base.
+
+root = true
+
+[*.{c,h,c.in,h.in}]
+end_of_line = lf
+insert_final_newline = true
+charset = utf-8
+indent_style = tab
+indent_size = 8
+trim_trailing_whitespace = true
+
+[*.js]
+end_of_line = lf
+insert_final_newline = true
+charset = utf-8
+indent_style = space
+indent_size = 4
+trim_trailing_whitespace = true
+
+[Makefile]
+end_of_line = lf
+insert_final_newline = true
+charset = utf-8
+indent_style = tab
+indent_size = 8
+trim_trailing_whitespace = true

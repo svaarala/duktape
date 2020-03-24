@@ -1167,6 +1167,7 @@ def main():
 
     print 'Copying dukweb.js files'
     for i in [ '../dukweb.js',
+               '../dukweb.wasm',
                '../jquery-1.11.2.js',
                '../dukweb/dukweb.css',
                '../dukweb/dukweb.html' ]:

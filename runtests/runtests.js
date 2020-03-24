@@ -21,6 +21,7 @@ var TIMEOUT_NORMAL_VALGRIND = 3600 * 1000;
 var TIMEOUT_NORMAL = 600 * 1000;
 
 // Global options from command line
+var optPythonCommand;
 var optPrepTestPath;
 var optMinifyClosure;
 var optMinifyUglifyJS;
@@ -325,7 +326,7 @@ function executeTest(options, callback) {
         args.push('--output', tempInput)
         args.push('--prologue', tempPrologue)
 
-        child_process.execFile('python', args, {}, compileDone)
+        child_process.execFile(optPythonCommand, args, {}, compileDone)
     }
 
     if (options.engine.name === 'api') {
@@ -475,6 +476,7 @@ function testRunnerMain() {
         .usage('Execute one or multiple test cases; dirname to execute all tests in a directory.')
         .default('num-threads', 4)
         .default('test-sleep', 0)
+        .default('python-command', 'python2')
         .boolean('run-duk')
         .boolean('run-nodejs')
         .boolean('run-rhino')
@@ -485,6 +487,7 @@ function testRunnerMain() {
         .boolean('emduk-trailing-line-hack')
         .describe('num-threads', 'number of threads to use for testcase execution')
         .describe('test-sleep', 'sleep time (milliseconds) between testcases, avoid overheating :)')
+        .describe('python-command', 'python2 executable to use')
         .describe('run-duk', 'run testcase with Duktape')
         .describe('cmd-duk', 'path for "duk" command')
         .describe('run-nodejs', 'run testcase with Node.js (V8)')
@@ -700,7 +703,7 @@ function testRunnerMain() {
                parts.push('valgrind ' + JSON.stringify(vgerrors));
                need = true;
            }
-           if (need) { 
+           if (need) {
                lines.push(parts);
            }
         }, null);
@@ -745,6 +748,8 @@ function testRunnerMain() {
 
         fs.writeFileSync(logFile, lines.join('\n') + '\n');
     }
+
+    optPythonCommand = argv['python-command'];
 
     if (argv['prep-test-path']) {
         optPrepTestPath = argv['prep-test-path'];

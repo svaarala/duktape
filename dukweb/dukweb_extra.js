@@ -12,11 +12,15 @@
 
 var Duktape = {};
 
+Duktape.initializedPromise = new Promise(function (resolve, reject) {
+    Duktape.initializedPromiseFuncs = [ resolve, reject ];
+});
+
 /*
  *  Utilities
  */
 
-Duktape.log = function() {};
+Duktape.log = function log() {};
 if (typeof console === 'object' && typeof console.log === 'function') {
     Duktape.log = function() {
         console.log.apply(console, arguments);
@@ -28,16 +32,16 @@ if (typeof console === 'object' && typeof console.log === 'function') {
 }
 Duktape.log('Duktape (dukweb) initializing');
 
-Duktape.logOwnProperties = function() {
+Duktape.logOwnProperties = function logOwnProperties() {
     Duktape.log('Own properties of Duktape:');
     Object.getOwnPropertyNames(Duktape).forEach(function (k) {
         var v = Duktape[k];
         if (typeof v === 'function') { v = '[omitted]'; }
         Duktape.log('    ' + k + ' = (' + typeof Duktape[k] + ') ' + String(v));
     });
-}
+};
 
-Duktape.hexVal = function(x, ndigits) {
+Duktape.hexVal = function hexVal(x, ndigits) {
     var nybbles = '0123456789abcdef';
     var i;
     var res = ''
@@ -48,7 +52,7 @@ Duktape.hexVal = function(x, ndigits) {
     return res;
 };
 
-Duktape.escapeTable = (function() {
+Duktape.escapeTable = (function escapeTableInit() {
     var i, n;
     var res = {};
 
@@ -64,7 +68,7 @@ Duktape.escapeTable = (function() {
 })();
 
 // Probably unnecessary, JSON.stringify() escapes strings nicely.
-Duktape.escapeString = function(x) {
+Duktape.escapeString = function escapeString(x) {
     var res = [];
     var i, n = x.length;
     var c;
@@ -74,14 +78,14 @@ Duktape.escapeString = function(x) {
         res.push(esc[c] || '\\u' + Duktape.hexVal(String.charCodeAt(i)));
     }
     return res.join('');
-}
+};
 
 /*
  *  Duktape.eval: run code inside Duktape, encode output value using JSON.
  */
 
 // XXX: errors should probably be promoted to work better
-Duktape.eval = function(code) {
+Duktape.eval = function eval(code) {
     // Code escape into a Javascript string
     var escapedString = JSON.stringify(String(code));
     //var escapedString = '"' + Duktape.escapeString(code) + '"';
@@ -105,17 +109,22 @@ Duktape.eval = function(code) {
  */
 
 // Expect web page to override this, e.g. to append to some buffer.
-Duktape.printHandler = function(msg) {
+Duktape.printHandler = function printHandler(msg) {
     log(msg);
-}
+};
 
 // Expect web page to override this, e.g. to use browser alert().
-Duktape.alertHandler = function(msg) {
+Duktape.alertHandler = function alertHandler(msg) {
     log(msg);
-}
+};
+
+// Get Promise for Dukweb init completion.
+Duktape.getInitializedPromise = function getInitializedPromise() {
+    return Duktape.initializedPromise;
+};
 
 // Asynchronous init, triggered from C main().
-Duktape.initialize = function initialize() {
+Duktape.initializeRaw = function initializeRaw() {
     console.log('Duktape.initialize() start');
 
     /*
@@ -207,4 +216,15 @@ Duktape.initialize = function initialize() {
     //console.log('=== ' + Duktape.eval('Duktape.enc("jx", { env: Duktape.env, version: Duktape.version })') + ' ===');
 
     console.log('Duktape.initialize() end');
-}
+};
+
+Duktape.initialize = function initialize() {
+    try {
+        Duktape.initializeRaw();
+        Duktape.initializedPromiseFuncs[0](Duktape);
+    } catch (e) {
+        Duktape.initializedPromiseFuncs[1](e);
+    } finally {
+        Duktape.initializedPromiseFuncs[1](new Error('internal error'));
+    }
+};

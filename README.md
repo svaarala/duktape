@@ -1,7 +1,12 @@
 Duktape
 =======
 
-[![Build Status](https://travis-ci.org/svaarala/duktape.svg?branch=master)](https://travis-ci.org/svaarala/duktape)
+[![Build status](https://github.com/svaarala/duktape/workflows/Build/badge.svg?branch=master)](https://github.com/svaarala/duktape/actions)
+[![Test status](https://github.com/svaarala/duktape/workflows/Test/badge.svg?branch=master)](https://github.com/svaarala/duktape/actions)
+[![AppVeyor status](https://ci.appveyor.com/api/projects/status/github/svaarala/duktape?branch=master&svg=true)](https://ci.appveyor.com/project/svaarala/duktape)
+
+:warning: **Master branch is undergoing incompatible changes for Duktape 3.x**.
+To track Duktape 2.x, follow the `v2-maintenance` branch.
 
 Introduction
 ------------
@@ -149,12 +154,13 @@ These are also **intended for Linux only**.  For example:
 Branch policy
 -------------
 
-* The `master` branch is used for active development.  While pull requests
-  are tested before merging, master may be broken from time to time.  When
+* The `master` branch is used for active development.  Even though pull requests
+  are tested before merging, master may still be broken from time to time.  When
   development on a new major release starts, master will also get API
   incompatible changes without warning.  For these reasons **you should
   generally not depend on the master branch** for building your project; use
-  a release tag or a release maintenance branch instead.
+  a release tag (e.g. `v2.4.0`) or a release maintenance branch
+  (e.g. `v2.4-maintenance` or `v2-maintenance`) instead.
 
 * Pull requests and their related branches are frequently rebased so you
   should not fork off them.  Pull requests may be open for a while for
