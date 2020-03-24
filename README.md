@@ -86,6 +86,16 @@ For example, to enable fastint support (example for Linux):
 
     # src-custom/ will now contain: duktape.c, duktape.h, duk_config.h.
 
+You can download and install duktape using the [vcpkg](https://github.com/Microsoft/vcpkg) dependency manager:
+   
+    $ git clone https://github.com/Microsoft/vcpkg.git
+    $ cd vcpkg
+    $ ./bootstrap-vcpkg.sh
+    $ ./vcpkg integrate install
+    $ vcpkg install duktape
+    
+The duktape port in vcpkg is kept up to date by Microsoft team members and community contributors. If the version is out of date, please [create an issue or pull request](https://github.com/Microsoft/vcpkg) on the vcpkg repository.
+
 You can also clone this repository, make modifications, and build a source
 distributable on Linux, macOS, and Windows using `python util/dist.py`.
 You'll need Python 2 and Python YAML binding.

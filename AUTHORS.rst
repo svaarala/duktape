@@ -66,6 +66,7 @@ and agreed to irrevocably license their contributions under the Duktape
 * Rick Sayre (https://github.com/whorfin)
 * Craig Leres (https://github.com/leres)
 * Maurici Abad (https://github.com/mauriciabad)
+* Nancy Li (https://github.com/NancyLi1013)
 
 Other contributions
 ===================
