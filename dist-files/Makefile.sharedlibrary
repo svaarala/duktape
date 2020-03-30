@@ -63,11 +63,11 @@ all: libduktape.$(SO_REALNAME_SUFFIX) libduktaped.$(SO_REALNAME_SUFFIX)
 
 libduktape.$(SO_REALNAME_SUFFIX):
 	$(CC) -shared -fPIC -Wall -Wextra -Os -Wl,$(LD_SONAME_ARG),libduktape.$(SO_SONAME_SUFFIX) \
-		-o $@ $(DUKTAPE_SRCDIR)/duktape.c
+		-o $@ $(DUKTAPE_SRCDIR)/duktape.c -lm
 
 libduktaped.$(SO_REALNAME_SUFFIX):
 	$(CC) -shared -fPIC -g -Wall -Wextra -Os -Wl,$(LD_SONAME_ARG),libduktaped.$(SO_SONAME_SUFFIX) \
-		-o $@ $(DUKTAPE_SRCDIR)/duktape.c
+		-o $@ $(DUKTAPE_SRCDIR)/duktape.c -lm
 
 # Symlinks depend on platform conventions.
 .PHONY: install
@@ -85,4 +85,4 @@ install: libduktape.$(SO_REALNAME_SUFFIX) libduktaped.$(SO_REALNAME_SUFFIX)
 
 CCOPTS = -I./examples/cmdline
 duk:
-	$(CC) $(CCOPTS) -I$(INSTALL_PREFIX)/include -L$(INSTALL_PREFIX)/lib -Wall -Wextra -Os -o $@ ./examples/cmdline/duk_cmdline.c -lduktape -lm
+	$(CC) $(CCOPTS) -I$(INSTALL_PREFIX)/include -L$(INSTALL_PREFIX)/lib -Wall -Wextra -Os -o $@ ./examples/cmdline/duk_cmdline.c -lduktape
