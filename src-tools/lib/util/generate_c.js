@@ -2,8 +2,8 @@
 
 'use strict';
 
-const { assert } = require('./assert.js');
-const { cCommentEscape, cIntEncode } = require('./cquote.js');
+const { assert } = require('./assert');
+const { cCommentEscape, cIntEncode } = require('./cquote');
 
 function GenerateC() {
     this.data = [];

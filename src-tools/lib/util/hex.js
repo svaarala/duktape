@@ -1,6 +1,6 @@
 'use strict';
 
-const { assert } = require('./assert.js');
+const { assert } = require('./assert');
 
 var zeroes = '0'.repeat(256);
 

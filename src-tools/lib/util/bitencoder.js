@@ -8,8 +8,8 @@
 
 'use strict';
 
-const { uint8ArrayToBstr } = require('./bstr.js');
-const { assert } = require('./assert.js');
+const { uint8ArrayToBstr } = require('./bstr');
+const { assert } = require('./assert');
 
 function zeroArray(length) {
     var res = [];
@@ -50,6 +50,17 @@ BitEncoder.prototype.string = function string(x) {
         }
         for (let shift = 7; shift >= 0; shift--) {
             this.currBits.push((cp >>> shift) & 0x01);
+        }
+    }
+};
+
+// Append an Uint8Array.
+BitEncoder.prototype.uint8array = function uint8array(x) {
+    assert(x instanceof Uint8Array);
+    for (let i = 0; i < x.length; i++) {
+        let val = x[i];
+        for (let shift = 7; shift >= 0; shift--) {
+            this.currBits.push((val >>> shift) & 0x01);
         }
     }
 };
