@@ -1,7 +1,7 @@
 'use strict';
 
-const { assert } = require('./assert.js');
-const { assertBstr } = require('./bstr.js');
+const { assert } = require('./assert');
+const { assertBstr } = require('./bstr');
 
 // Encode an integer into a C constant.
 function cIntEncode(x) {
