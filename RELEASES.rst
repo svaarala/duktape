@@ -3600,3 +3600,6 @@ Planned
 
 * Use wasm for dukweb.js compilation (including duktape.org site),
   fix async loading of emcc-compiled code in dukweb.html (GH-2244)
+
+* Remove hardcoded endianness assumption for PPC64 to support ppc64le
+  (GH-2265, GH-2267)
