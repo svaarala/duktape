@@ -9,6 +9,7 @@ const { stringIsArridx, stringIsHiddenSymbol, stringIsAnySymbol } = require('../
 const { unvalidatedUtf8Length } = require('../../util/utf8');
 const { hashStringDense, hashStringSparse } = require('../../strhash/string_hash');
 const { numberCompare } = require('../../util/sort');
+const { createBareObject } = require('../../util/bare');
 
 // Fixed seed for ROM strings, must match src-input/duk_heap_alloc.c.
 const DUK__FIXED_HASH_SEED = 0xabcd1234;
@@ -24,14 +25,14 @@ function getStrHash16Macro(val) {
     var hash16le = hashStringDense(val, DUK__FIXED_HASH_SEED, false /*big_endian*/, true /*strhash16*/);
     var hash16be = hashStringDense(val, DUK__FIXED_HASH_SEED, true /*big_endian*/, true /*strhash16*/);
     var hash16sparse = hashStringSparse(val, DUK__FIXED_HASH_SEED, true /*strhash16*/);
-    return 'DUK__STRHASH16(' + hash16le + ',' + hash16be + ',' + hash16sparse + ')';
+    return 'DUK__STRHASH16(' + hash16le + 'U,' + hash16be + 'U,' + hash16sparse + 'U)';
 }
 
 function getStrHash32Macro(val) {
     var hash16le = hashStringDense(val, DUK__FIXED_HASH_SEED, false /*big_endian*/, false /*strhash16*/);
     var hash16be = hashStringDense(val, DUK__FIXED_HASH_SEED, true /*big_endian*/, false /*strhash16*/);
     var hash16sparse = hashStringSparse(val, DUK__FIXED_HASH_SEED, false /*strhash16*/);
-    return 'DUK__STRHASH32(' + hash16le + ',' + hash16be + ',' + hash16sparse + ')';
+    return 'DUK__STRHASH32(' + hash16le + 'U,' + hash16be + 'U,' + hash16sparse + 'U)';
 }
 
 function emitStringHashMacros(genc) {
@@ -83,7 +84,7 @@ exports.emitStringInitMacro = emitStringInitMacro;
 
 function emitStringDeclarations(genc, strs) {
     // Sort used lengths and declare per-length initializers.
-    var lenMap = {};
+    var lenMap = createBareObject({});
     for (let v of strs) {
         lenMap[v.length] = true;
     }

@@ -25,7 +25,9 @@ function layoutTextColumns(columns) {
     for (let i = 0; i < maxlines; i++) {
         let parts = [];
         for (let j = 0; j < columns.length; j++) {
-            parts.push(rightPad(columns[j][i] || '', maxlens[j]));
+            let needPad = j < columns.length - 1;  // don't pad last column
+            let text = columns[j][i] || '';
+            parts.push(needPad ? rightPad(text, maxlens[j]) : text);
         }
         lines.push(parts.join('  '));
     }

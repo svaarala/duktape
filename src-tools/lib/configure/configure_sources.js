@@ -2,7 +2,7 @@
 
 'use strict';
 
-const { readFileUtf8, writeFileUtf8, writeFileJsonPretty, writeFileYamlPretty, mkdir } = require('../util/fs');
+const { readFileUtf8, writeFileUtf8, readFileJson, writeFileJsonPretty, writeFileYamlPretty, mkdir } = require('../util/fs');
 const { pathJoin, getCwd } = require('../util/fs');
 const { getDukVersion } = require('../configure/duk_version');
 const { generateDukConfigHeader } = require('../config/gen_duk_config');
@@ -21,7 +21,7 @@ const { numericSort } = require('../util/sort');
 const { sourceFiles, selectCombinedSources } = require('../configure/source_files');
 const { scanUsedStridxBidx } = require('../configure/scan_used_stridx_bidx');
 const { getGitInfo } = require('../configure/git_info');
-const { copyFiles, copyAndCQuote } = require('../configure/util');
+const { copyFiles, copyAndCQuote, copyFileUtf8AtSignReplace } = require('../configure/util');
 const { assert } = require('../util/assert');
 
 // Create a prologue for combined duktape.c.
@@ -60,10 +60,9 @@ function createSourcePrologue(args) {
 
 // Create duktape.h, using @KEYWORD@ replacements.
 function createDuktapeH(inputDirectory, outputDirectory, tempDirectory, replacements) {
-    var res = readFileUtf8(pathJoin(inputDirectory, 'duktape.h.in')).replace(/@(\w+)@/g, (m, a) => {
-        return replacements[a] || a;
-    });
-    writeFileUtf8(pathJoin(outputDirectory, 'duktape.h'), res);
+    copyFileUtf8AtSignReplace(pathJoin(inputDirectory, 'duktape.h.in'),
+                              pathJoin(outputDirectory, 'duktape.h'),
+                              replacements);
 }
 
 // Extract a matcher for a codepoint set.
@@ -77,7 +76,7 @@ function extractChars(cpMap, includeList, excludeList) {
 }
 
 // Parse Unicode data and generate useful intermediate outputs.
-function generateUnicodeFiles(unicodeDataFile, specialCasingFile, tempDirectory, srcTempDirectory) {
+function generateUnicodeFiles(unicodeDataFile, specialCasingFile, tempDirectory, srcGenDirectory) {
     // Parse UnicodeData.txt and SpecialCasing.txt into a master codepoint map.
     var cpMap = parseUnicodeText(readFileUtf8(unicodeDataFile), readFileUtf8(specialCasingFile));
     writeFileJsonPretty(pathJoin(tempDirectory, 'codepoint_map.json'), cpMap);
@@ -144,11 +143,13 @@ function generateUnicodeFiles(unicodeDataFile, specialCasingFile, tempDirectory,
             useCast: false,
             visibility: 'DUK_INTERNAL'
         });
-        writeFileUtf8(pathJoin(srcTempDirectory, 'duk_unicode_re_canon_lookup.c'), genc.getString());
+        writeFileUtf8(pathJoin(srcGenDirectory, 'duk_unicode_re_canon_lookup.c'), genc.getString());
 
         genc = new GenerateC();
+        genc.emitLine('#if !defined(DUK_SINGLE_FILE)');
         genc.emitLine('DUK_INTERNAL_DECL const duk_uint16_t duk_unicode_re_canon_lookup[' + reCanonTab.length + '];');
-        writeFileUtf8(pathJoin(srcTempDirectory, 'duk_unicode_re_canon_lookup.h'), genc.getString());
+        genc.emitLine('#endif');
+        writeFileUtf8(pathJoin(srcGenDirectory, 'duk_unicode_re_canon_lookup.h'), genc.getString());
     }
 
     function emitReCanonBitmap() {
@@ -162,14 +163,16 @@ function generateUnicodeFiles(unicodeDataFile, specialCasingFile, tempDirectory,
             useCast: false,
             visibility: 'DUK_INTERNAL'
         });
-        writeFileUtf8(pathJoin(srcTempDirectory, 'duk_unicode_re_canon_bitmap.c'), genc.getString());
+        writeFileUtf8(pathJoin(srcGenDirectory, 'duk_unicode_re_canon_bitmap.c'), genc.getString());
 
         genc = new GenerateC();
         genc.emitDefine('DUK_CANON_BITMAP_BLKSIZE', reCanonBitmap.blockSize);
         genc.emitDefine('DUK_CANON_BITMAP_BLKSHIFT', reCanonBitmap.blockShift);
         genc.emitDefine('DUK_CANON_BITMAP_BLKMASK', reCanonBitmap.blockMask);
+        genc.emitLine('#if !defined(DUK_SINGLE_FILE)');
         genc.emitLine('DUK_INTERNAL_DECL const duk_uint8_t duk_unicode_re_canon_bitmap[' + reCanonBitmap.bitmapContinuity.length + '];');
-        writeFileUtf8(pathJoin(srcTempDirectory, 'duk_unicode_re_canon_bitmap.h'), genc.getString());
+        genc.emitLine('#endif');
+        writeFileUtf8(pathJoin(srcGenDirectory, 'duk_unicode_re_canon_bitmap.h'), genc.getString());
     }
 
     function emitMatchTable(arg, tableName) {
@@ -188,11 +191,13 @@ function generateUnicodeFiles(unicodeDataFile, specialCasingFile, tempDirectory,
             useCast: false,
             visibility: 'DUK_INTERNAL'
         });
-        writeFileUtf8(pathJoin(srcTempDirectory, filename + '.c'), genc.getString());
+        writeFileUtf8(pathJoin(srcGenDirectory, filename + '.c'), genc.getString());
 
         genc = new GenerateC();
+        genc.emitLine('#if !defined(DUK_SINGLE_FILE)');
         genc.emitLine('DUK_INTERNAL_DECL const duk_uint8_t ' + tableName + '[' + data.length + '];');
-        writeFileUtf8(pathJoin(srcTempDirectory, filename + '.h'), genc.getString());
+        genc.emitLine('#endif');
+        writeFileUtf8(pathJoin(srcGenDirectory, filename + '.h'), genc.getString());
 
         writeFileUtf8(pathJoin(tempDirectory, filename + '_ranges.txt'), rangesToPrettyRangesDump(ranges));
         writeFileUtf8(pathJoin(tempDirectory, filename + '_bitmap.txt'), rangesToTextBitmapDump(ranges));
@@ -216,12 +221,14 @@ function generateUnicodeFiles(unicodeDataFile, specialCasingFile, tempDirectory,
             useCast: false,
             visibility: 'DUK_INTERNAL'
         });
-        writeFileUtf8(pathJoin(srcTempDirectory, 'duk_unicode_caseconv.c'), genc.getString());
+        writeFileUtf8(pathJoin(srcGenDirectory, 'duk_unicode_caseconv.c'), genc.getString());
 
         genc = new GenerateC();
+        genc.emitLine('#if !defined(DUK_SINGLE_FILE)');
         genc.emitLine('DUK_INTERNAL_DECL const duk_uint8_t duk_unicode_caseconv_uc[' + ucData.length + '];');
         genc.emitLine('DUK_INTERNAL_DECL const duk_uint8_t duk_unicode_caseconv_lc[' + lcData.length + '];');
-        writeFileUtf8(pathJoin(srcTempDirectory, 'duk_unicode_caseconv.h'), genc.getString());
+        genc.emitLine('#endif');
+        writeFileUtf8(pathJoin(srcGenDirectory, 'duk_unicode_caseconv.h'), genc.getString());
     }
 
     emitCaseconvTables(convUcNoa, convLcNoa);
@@ -237,10 +244,9 @@ function generateUnicodeFiles(unicodeDataFile, specialCasingFile, tempDirectory,
 }
 
 function configureSources(args) {
-    var entryCwd;
-    var sourceDirectory = assert(args.sourceDirectory);
-    var outputDirectory = assert(args.outputDirectory);
-    var configDirectory = assert(args.configDirectory);
+    var sourceDirectory = assert(args.sourceDirectory, 'sourceDirectory must be given');
+    var outputDirectory = assert(args.outputDirectory, 'outputDirectory must be given');
+    var configDirectory = assert(args.configDirectory, 'configDirectory must be given');
     var tempDirectory = assert(args.tempDirectory);
     var licenseFile = assert(args.licenseFile);
     var authorsFile = assert(args.authorsFile);
@@ -271,9 +277,10 @@ function configureSources(args) {
     var omitUnusedConfigOptions = args.omitUnusedConfigOptions;
     var userBuiltinFiles = args.userBuiltinFiles;
     var srcTempDirectory = pathJoin(tempDirectory, 'src-tmp');
+    var srcGenDirectory = pathJoin(tempDirectory, 'src-gen');
+    var entryCwd = getCwd();
 
     // Preparations: entry CWD, git info, Duktape version, etc.
-    entryCwd = getCwd();
     console.debug('entryCwd: ' + entryCwd);
 
     ({ dukVersion, dukMajor, dukMinor, dukPatch, dukVersionFormatted } =
@@ -282,8 +289,9 @@ function configureSources(args) {
 
     distMeta = {};
     if (dukDistMetaFile) {
-        distMeta = JSON.parse(readFileUtf8(dukDistMetaFile));
+        distMeta = readFileJson(dukDistMetaFile);
     }
+
     ({ gitCommit: autoGitCommit, gitDescribe: autoGitDescribe, gitBranch: autoGitBranch } = getGitInfo());
     gitCommit = gitCommit || distMeta.git_commit || autoGitCommit;
     gitDescribe = gitDescribe || distMeta.git_describe || autoGitDescribe;
@@ -291,14 +299,15 @@ function configureSources(args) {
     gitCommitCString = cStrEncode(gitCommit);
     gitBranchCString = cStrEncode(gitBranch);
     gitDescribeCString = cStrEncode(gitDescribe);
-    console.log({ gitCommit, gitDescribe, gitBranch,
-                  gitCommitCString, gitDescribeCString, gitBranchCString });
+    console.debug({ gitCommit, gitDescribe, gitBranch,
+                    gitCommitCString, gitDescribeCString, gitBranchCString });
 
     // Create output directory.
     mkdir(outputDirectory);
 
     // Copy sources files.
     mkdir(srcTempDirectory);
+    mkdir(srcGenDirectory);
     copyFiles(sourceFiles, sourceDirectory, srcTempDirectory);
 
     // Prepare LICENSE.txt and AUTHORS.rst.
@@ -374,7 +383,7 @@ function configureSources(args) {
     writeFileUtf8(pathJoin(srcTempDirectory, 'duk_builtins.h'), biHdr);
 
     // Generate Unicode tables as source/header files to be included later.
-    generateUnicodeFiles(unicodeDataFile, specialCasingFile, tempDirectory, srcTempDirectory);
+    generateUnicodeFiles(unicodeDataFile, specialCasingFile, tempDirectory, srcGenDirectory);
 
     // Generate source prologue.
     var prologueData = createSourcePrologue({ dukVersionFormatted, gitCommit, gitDescribe, gitBranch,
@@ -383,12 +392,13 @@ function configureSources(args) {
     writeFileUtf8(pathJoin(tempDirectory, 'prologue.tmp'), prologueData);
 
     // Combine sources,including autogenerated Unicode tables.
-    var sourceList = selectCombinedSources(srcTempDirectory);
+    var tmpSourceFiles = sourceFiles.concat([ 'duk_builtins.c' ]);
+    var sourceList = selectCombinedSources(tmpSourceFiles, srcTempDirectory);
     var combinedSource, combinedMetadata;
     ({ combinedSource: combinedSource, metadata: combinedMetadata } = combineSources({
         sourceFiles: sourceList,
         includeExcluded: [ 'duk_config.h', 'duktape.h' ],
-        includePaths: [ srcTempDirectory ],
+        includePaths: [ srcTempDirectory, srcGenDirectory ],
         prologueFileName: pathJoin(tempDirectory, 'prologue.tmp'),
         lineDirectives
     }));

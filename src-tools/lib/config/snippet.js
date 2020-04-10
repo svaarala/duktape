@@ -1,8 +1,8 @@
 'use strict';
 
-const { readFileUtf8 } = require('../extbindings/fileio.js');
-const { pathJoin, listDir } = require('../util/fs.js');
-const { createBareObject } = require('../util/bare.js');
+const { readFileUtf8, pathJoin, listDir } = require('../util/fs');
+const { createBareObject } = require('../util/bare');
+const { stripLastNewline } = require('../util/string_util');
 
 const re_line_provides = /^#(?:define|undef)\s+(\w+).*$/g;
 const re_line_requires = /(DUK_[A-Z0-9_]+)/g;  // uppercase only, don't match 'DUK_USE_xxx' for example
@@ -34,11 +34,7 @@ function Snippet(arg) {
         this.lines = arg;
     } else if (typeof arg === 'string') {
         filename = arg;
-        let data = readFileUtf8(arg);
-        if (data.endsWith('\n')) {
-            // Strip last newline to avoid empty line
-            data = data.substring(0, data.length - 1);
-        }
+        let data = stripLastNewline(readFileUtf8(arg));  // Strip last newline to avoid empty line.
         this.lines = data.split('\n');
     } else {
         throw new TypeError('invalid argument');

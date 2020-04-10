@@ -1,8 +1,6 @@
 'use strict';
 
-const { readFileUtf8 } = require('../extbindings/fileio.js');
-const { pathJoin, listDir } = require('../util/fs.js');
-const { parse: parseYaml } = require('../util/yaml.js');
+const { readFileYaml, pathJoin, listDir } = require('../util/fs');
 
 const requiredUseMetaKeys = [
     'define',
@@ -34,7 +32,7 @@ function scanUseDefs(dir) {
         if (!fn.startsWith('DUK_USE_') || !fn.endsWith('.yaml')) {
             continue;
         }
-        var doc = parseYaml(readFileUtf8(pathJoin(dir, fn)));
+        var doc = readFileYaml(pathJoin(dir, fn));
         if (doc.example) {
             console.debug('example config option, skip: ' + fn);
             continue;

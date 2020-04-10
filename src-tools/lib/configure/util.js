@@ -26,3 +26,11 @@ function copyAndCQuote(srcFn, dstFn) {
     writeFileUtf8(dstFn, data);
 }
 exports.copyAndCQuote = copyAndCQuote;
+
+function copyFileUtf8AtSignReplace(srcFn, dstFn, replacements) {
+    var res = readFileUtf8(srcFn).replace(/@(\w+)@/g, (m, a) => {
+        return replacements[a] || '@' + a + '@';
+    });
+    writeFileUtf8(dstFn, res);
+}
+exports.copyFileUtf8AtSignReplace = copyFileUtf8AtSignReplace;

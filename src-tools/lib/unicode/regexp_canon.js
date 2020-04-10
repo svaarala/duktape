@@ -4,8 +4,8 @@
 
 'use strict';
 
-const { assert } = require('../util/assert.js');
-const { jsonDeepClone } = require('../util/clone.js');
+const { assert } = require('../util/assert');
+const { jsonDeepClone } = require('../util/clone');
 
 // Generate direct canonicalization lookup: codepoint to normalized
 // codepoint.
@@ -36,7 +36,7 @@ function generateReCanonDirectLookup(convmap) {
     // At the moment highestNonId is 65370, which means there's very little
     // gain in assuming 1:1 mapping above a certain BMP codepoint (though we
     // do assume 1:1 mapping for above BMP codepoints).
-    console.log('- ' + countNonId + ' regexp canon non-identity mappings, highest: ' + highestNonId);
+    console.debug('- ' + countNonId + ' regexp canon non-identity mappings, highest: ' + highestNonId);
 
     return res;
 }
@@ -63,7 +63,7 @@ function generateReCanonDontCare(canontab) {
         }
     });
 
-    console.log('- ' + dontCareCount + ' regexp canon dontcare codepoints');
+    console.debug('- ' + dontCareCount + ' regexp canon dontcare codepoints');
     return res;
 }
 exports.generateReCanonDontCare = generateReCanonDontCare;
@@ -119,7 +119,7 @@ function generateReCanonRanges(canontab) {
         }
     }
 
-    console.log('- ' + res.length + ' regexp canon ranges');
+    console.debug('- ' + res.length + ' regexp canon ranges');
     return res;
 }
 exports.generateReCanonRanges = generateReCanonRanges;
@@ -193,7 +193,7 @@ function generateReCanonNeedCheck(canontab) {
                 let r3 = res[i + 2];
                 if (r1[0] === true && r2[0] === false && r3[0] === true &&
                     r2[1] <= falseLimit) {
-                    //console.log('fillin ' + r2[1] + ' falses');
+                    //console.debug('fillin ' + r2[1] + ' falses');
                     void res.splice(i + 1, 2);  // remove r2 and r3
                     res[i] = [ true, r1[1] + r2[1] + r3[1] ];
                     found = true;
@@ -210,7 +210,7 @@ function generateReCanonNeedCheck(canontab) {
     var straight = generateStraight();
     var rangesAccurate = generateRanges(straight);
     var rangesFilledIn = fillInRanges(rangesAccurate, 11);
-    console.log('- regexp canon needcheck, ' + rangesAccurate.length + ' accurate ranges, ' + rangesFilledIn.length + ' filled in ranges');
+    console.debug('- regexp canon needcheck, ' + rangesAccurate.length + ' accurate ranges, ' + rangesFilledIn.length + ' filled in ranges');
 
     return { straight, rangesAccurate, rangesFilledIn };
 }
@@ -272,8 +272,8 @@ function generateReCanonBitmap(canontab) {
             }
         });
         var dump = bits.map((v) => v ? 'x' : '.').join('').replace(/.{64}/g, (x) => (x) + '\n');
-        console.log('- regexp canon block bitmap, ' + trueCount + ' continuous blocks, ' + falseCount + ' non-continuous blocks');
-        console.log(dump);
+        console.debug('- regexp canon block bitmap, ' + trueCount + ' continuous blocks, ' + falseCount + ' non-continuous blocks');
+        console.debug(dump);
     }
 
     function convertToBitmap(bits) {
@@ -304,11 +304,11 @@ function generateReCanonBitmap(canontab) {
 
     // This is useful to figure out corner case test cases.
     function compareBits(bits1, bits2) {
-        console.log('- regexp canon blocks which are different with and without continuity check');
+        console.debug('- regexp canon blocks which are different with and without continuity check');
         assert(bits1.length === bits2.length);
         for (let i = 0; i < bits1.length; i++) {
             if (bits1[i] !== bits2[i]) {
-                console.log('  + block ' + i + ' [' + (i * blockSize) + ',' + (i * blockSize + blockSize - 1) + '] differs');
+                console.debug('  + block ' + i + ' [' + (i * blockSize) + ',' + (i * blockSize + blockSize - 1) + '] differs');
             }
         }
     }

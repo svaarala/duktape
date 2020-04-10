@@ -1,5 +1,7 @@
 'use strict';
 
+// Extract Unicode categories as a map from category name (e.g. 'Zs') to
+// list of codepoints.
 function extractCategories(cpMap) {
     var categories = {};
     cpMap.forEach((ent, cp) => {

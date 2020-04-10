@@ -1,0 +1,21 @@
+{
+    "name": "duktool",
+    "version": "3.0.0",
+    "module": "./index.js",
+    "dependencies": {},
+    "devDependencies": {
+        "@babel/cli": "^7.8.4",
+        "@babel/core": "^7.9.0",
+        "@babel/polyfill": "^7.8.7",
+        "@babel/preset-env": "^7.9.0",
+        "acorn": "^7.1.1",
+        "babel-loader": "^8.1.0",
+        "cjs-es": "^0.8.2",
+        "eslint": "^6.8.0",
+        "esm": "^3.2.25",
+        "js-beautify": "^1.11.0",
+        "webpack": "^4.42.0",
+        "webpack-cli": "^3.3.11",
+        "webpack-node-externals": "^1.7.2"
+    }
+}

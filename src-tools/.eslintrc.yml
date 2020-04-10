@@ -1,0 +1,26 @@
+env:
+  browser: true
+  commonjs: true
+  es6: true
+extends: 'eslint:recommended'
+globals:
+  Atomics: readonly
+  SharedArrayBuffer: readonly
+  # Node.js
+  process: readonly
+  __dirname: readonly
+  Buffer: readonly
+  # Duktape
+  Duktape: readonly
+  readFile: readonly
+  writeFile: readonly
+  sysExecute: readonly
+  sysArgv: readonly
+parserOptions:
+  ecmaVersion: 2018
+rules:
+  strict: error
+  no-tabs: error
+  no-control-regex: off
+  no-trailing-spaces: error
+  no-warning-comments: [ 1, { "terms": ["todo", "fixme", "xxx"], "location": "anywhere" } ]
