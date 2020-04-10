@@ -1,7 +1,8 @@
 'use strict';
 
-const { pathJoin } = require('../util/fs.js');
-const { Snippet } = require('./snippet.js');
+const { pathJoin } = require('../util/fs');
+const { stripLastNewline } = require('../util/string_util');
+const { Snippet } = require('./snippet');
 
 /* Helper for building a text file from individual lines, injected files, etc.
  * Inserted values are converted to Snippets so that their provides/requires
@@ -17,10 +18,7 @@ FileBuilder.prototype.line = function line(x) {
     this.vals.push(new Snippet([ x ]));
 };
 FileBuilder.prototype.lines = function lines(x) {
-    if (x.length > 0 && x.endsWith('\n')) {
-        // Strip last newline to avoid empty line
-        x = x.substring(0, x.length - 1);
-    }
+    x = stripLastNewline(x);  // Strip last newline to avoid empty line
     this.vals.push(new Snippet(x.split('\n')));
 };
 FileBuilder.prototype.empty = function empty() {

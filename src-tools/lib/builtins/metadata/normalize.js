@@ -17,6 +17,7 @@ const {
 const { formatSymbol } = require('../symbol');
 const { createBareObject } = require('../../util/bare');
 const { assert } = require('../../util/assert');
+const { jsonDeepClone } = require('../../util/clone');
 
 // Counter for creating unique sub-object IDs across multiple metadata files.
 var subObjCounter = 0;
@@ -308,12 +309,8 @@ function normalizePropertyShorthand(meta) {
     // Create a new property based on an existing one, copying common keys
     // but omitting e.g. value.
     function clonePropShared(prop) {
-        let res = createBareObject({});
-        for (let k of [ 'key', 'attributes', 'auto_lightfunc' ]) {
-            if (k in prop) {
-                res[k] = prop[k];
-            }
-        }
+        let res = jsonDeepClone(prop);
+        delete res.value;
         return res;
     }
 

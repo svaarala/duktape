@@ -1,7 +1,7 @@
 'use strict';
 
-const { assert } = require('../util/assert.js');
-const { bstrToUint8Array } = require('../util/bstr.js');
+const { assert } = require('../util/assert');
+const { bstrToUint8Array } = require('../util/bstr');
 
 // Compute a byte hash identical to duk_util_hashbytes().
 const DUK__MAGIC_M = 0x5bd1e995;

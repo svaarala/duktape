@@ -4,11 +4,11 @@ const { BitEncoder } = require('../util/bitencoder');
 const { bitpack5BitBstr } = require('../formats/bitpack_5bit');
 const { walkObjectsAndProperties, findObjectById, findPropertyByKey, propDefault } = require('./metadata/util');
 const { classToNumber } = require('./classnames');
-const { resolveMagic } = require('./magic');
 const { assert } = require('../util/assert');
 const { hexDecode } = require('../util/hex');
 const { shallowCloneArray } = require('../util/clone');
 const { createBareObject } = require('../util/bare');
+const { shuffleDoubleBytesFromBigEndian } = require('../util/double');
 
 // Default property attributes.
 const LENGTH_PROPERTY_ATTRIBUTES = 'c';
@@ -172,6 +172,7 @@ function stealProp(props, key, opts) {
 
 // Generate init data for an object, no properties yet.
 function generateRamObjectInitDataForObject(meta, be, obj, stringToStridx, natfuncNameToNatidx, objIdToBidx) {
+    void objIdToBidx;
     function emitStridx(strval) {
         var stridx = stringToStridx[strval];
         be.varuint(stridx);
@@ -265,7 +266,9 @@ function generateRamObjectInitDataForObject(meta, be, obj, stringToStridx, natfu
         // DUK_HOBJECT_FLAG_SPECIAL_CALL is handled at runtime without init data.
 
         // Convert signed magic to 16-bit unsigned for encoding.
-        var magic = resolveMagic(propDefault(obj, 'magic', null), objIdToBidx) & 0xffff;
+        var magic = propDefault(obj, 'magic', 0);
+        assert(typeof magic === 'number');
+        magic = magic & 0xffff;
         assert(magic >= 0 && magic <= 0xffff);
         be.varuint(magic);
     }
@@ -350,6 +353,8 @@ function generateRamObjectInitDataForProps(meta, be, obj, stringToStridx, natfun
     // directly in duk_hthread_builtins.c; so steal and ignore here.
     if (obj.id === 'bi_date_prototype') {
         let propToGmtString = stealProp(props, 'toGMTString');
+        void propToGmtString;
+        // May be missing if built-ins edited.
         console.debug('stole .toGMTString property');
     }
 
@@ -425,18 +430,9 @@ function generateRamObjectInitDataForProps(meta, be, obj, stringToStridx, natfun
 
             be.bits(PROP_TYPE_DOUBLE, PROP_TYPE_BITS);
 
-            // Encoding of double must match target architecture byte order.
-            var indexList = ({
-                big:    [ 0, 1, 2, 3, 4, 5, 6, 7 ],
-                little: [ 7, 6, 5, 4, 3, 2, 1, 0 ],
-                mixed:  [ 3, 2, 1, 0, 7, 6, 5, 4 ]
-            })[doubleByteOrder];
-            assert(indexList);
-
             let dataU8 = new Uint8Array(8);
-            for (let i = 0; i < indexList.length; i++) {
-                dataU8[i] = val[indexList[i]];
-            }
+            shuffleDoubleBytesFromBigEndian(val, dataU8, doubleByteOrder);
+
             be.uint8array(dataU8);
         } else if (typeof val === 'string') {
             let stridx = stringToStridx[val];
@@ -526,7 +522,10 @@ function generateRamObjectInitDataForProps(meta, be, obj, stringToStridx, natfun
         }
 
         // Magic.
-        var magic = resolveMagic(propDefault(funObj, 'magic', null), objIdToBidx) & 0xffff;
+        // Convert signed magic to 16-bit unsigned for encoding.
+        var magic = propDefault(funObj, 'magic', 0);
+        assert(typeof magic === 'number');
+        magic = magic & 0xffff;
         assert(magic >= 0 && magic <= 0xffff);
         be.varuint(magic);
 
@@ -615,7 +614,9 @@ function emitRamObjectNativeFuncArray(gcSrc, ramNativeFuncs) {
 exports.emitRamObjectNativeFuncArray = emitRamObjectNativeFuncArray;
 
 function emitRamObjectNativeFuncArrayDeclaration(gcSrc, ramNativeFuncs) {
+    gcSrc.emitLine('#if !defined(DUK_SINGLE_FILE)');
     gcSrc.emitLine('DUK_INTERNAL_DECL const duk_c_function duk_bi_native_functions[' + ramNativeFuncs.length + '];');
+    gcSrc.emitLine('#endif');
 }
 exports.emitRamObjectNativeFuncArrayDeclaration = emitRamObjectNativeFuncArrayDeclaration;
 

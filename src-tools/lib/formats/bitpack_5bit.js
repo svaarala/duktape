@@ -14,9 +14,9 @@
 
 'use strict';
 
-const { assert } = require('../util/assert.js');
-const { bstrToUint8Array } = require('../util/bstr.js');
-const { BitEncoder } = require('../util/bitencoder.js');
+const { assert } = require('../util/assert');
+const { bstrToUint8Array } = require('../util/bstr');
+const { BitEncoder } = require('../util/bitencoder');
 
 const LOOKUP1 = 26;
 const LOOKUP2 = 27;

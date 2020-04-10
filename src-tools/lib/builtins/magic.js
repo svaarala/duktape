@@ -2,6 +2,7 @@
 
 const { assert } = require('../util/assert');
 const { createBareObject } = require('../util/bare');
+const { isWholeFinite } = require('../util/double');
 
 const mathOneargMagic = createBareObject({
     fabs: 0,    // BI_MATH_FABS_IDX
@@ -107,8 +108,9 @@ function resolveMagic(elem, objIdToBidx) {
         return tmp;
     }
     case 'plain': {
-        let v = Math.floor(elem.value);
-        if (!(v >= -0x8000 && v <= 0x7fff)) {
+        let v = elem.value;
+        assert(typeof v === 'number');
+        if (!(isWholeFinite(v) && v >= -0x8000 && v <= 0x7fff)) {
             throw new TypeError('invalid plain value for magic: ' + v);
         }
         return v;

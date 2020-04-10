@@ -18,23 +18,12 @@
 
 'use strict';
 
-const { BitEncoder } = require('../util/bitencoder.js');
-const { jsonDeepClone } = require('../util/clone.js');
+const { BitEncoder } = require('../util/bitencoder');
+const { jsonDeepClone } = require('../util/clone');
+const { numericSort } = require('../util/sort');
+const { assert } = require('../util/assert');
 
 const SKIP_MAX = 6;  // Skips 1...6 are useful at least.
-
-// Numeric sort of object keys (converted from string to number), to sort
-// sparse array keys.
-function numericSort(arr) {
-    arr.sort((a, b) => {
-        let an = Number(a);
-        let bn = Number(b);
-        if (an > bn) { return 1; }
-        if (an < bn) { return -1; }
-        return 0;
-    });
-    return arr;
-}
 
 // Remove ASCII case conversion parts, as they are handled by C fast path.
 function removeConversionMapAscii(convmap) {
@@ -153,7 +142,7 @@ function findFirstRangeWithSkip(convmap, skip) {
 // basis.  This is very slow because we always scan from scratch, but it's
 // the most reliable and simple way to scan.
 function scanCaseconvTables(convmap) {
-    console.log('scan caseconv tables');
+    console.debug('scan caseconv tables');
 
     var ranges = [];   // range mappings (2 or more consecutive mappings with a certain skip)
     var singles = [];  // 1:1 character mappings
@@ -214,9 +203,9 @@ function scanCaseconvTables(convmap) {
         delete convmap[cp];
     });
 
-    console.log('- range mappings: ' + ranges.length);
-    console.log('- 1-to-1 mappings: ' + singles.length);
-    console.log('- 1-to-n mappings: ' + multis.length);
+    console.debug('- range mappings: ' + ranges.length);
+    console.debug('- 1-to-1 mappings: ' + singles.length);
+    console.debug('- 1-to-n mappings: ' + multis.length);
     if (Object.keys(convmap).length > 0) {
         throw new TypeError('internal error, convmap not empty after caseconv processing');
     }
@@ -225,7 +214,7 @@ function scanCaseconvTables(convmap) {
 }
 
 function bitpackCaseconvTables(ranges, singles, multis) {
-    console.log('bitpack caseconv tables');
+    console.debug('bitpack caseconv tables');
 
     var be = new BitEncoder();
     var count;
@@ -238,8 +227,9 @@ function bitpackCaseconvTables(ranges, singles, multis) {
             }
             count++;
         });
+        assert(count < 0x3f);
         be.bits(count, 6);
-        console.log('- encode: skip=' + curr_skip + ', count=' + count);
+        console.debug('- encode: skip=' + curr_skip + ', count=' + count);
 
         ranges.forEach((r) => {
             if (r.skip !== curr_skip) {
@@ -250,6 +240,7 @@ function bitpackCaseconvTables(ranges, singles, multis) {
             be.bits(r.count, 7);
         });
     }
+    be.bits(0x3f, 6);  // end of skip ranges
 
     count = singles.length;
     be.bits(count, 7);
@@ -270,7 +261,7 @@ function bitpackCaseconvTables(ranges, singles, multis) {
         }
     });
 
-    console.log(be.getStatsString());
+    console.debug('caseconv table: ' + be.getStatsString());
     return be;
 }
 
@@ -284,9 +275,9 @@ function removeArrayNulls(arr) {
 }
 
 function generateCaseconvTables(convmap) {
-    console.log('generate caseconv tables');
+    console.debug('generate caseconv tables');
     var t = scanCaseconvTables(removeArrayNulls(jsonDeepClone(convmap)));
     var be = bitpackCaseconvTables(t.ranges, t.singles, t.multis);
-    return be;
+    return { data: be.getBytes() };
 }
 exports.generateCaseconvTables = generateCaseconvTables;

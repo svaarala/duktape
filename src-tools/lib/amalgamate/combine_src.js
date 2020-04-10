@@ -46,11 +46,10 @@
 
 'use strict';
 
-const { readFileUtf8 } = require('../extbindings/fileio.js');
-const { pathJoin, basename, fileExists } = require('../util/fs.js');
-const { createBareObject } = require('../util/bare.js');
-const { stripLastNewline, normalizeNewlines } = require('../util/string_util.js');
-const { cStrEncode } = require('../util/cquote.js');
+const { readFileUtf8, pathJoin, basename, fileExists } = require('../util/fs');
+const { createBareObject } = require('../util/bare');
+const { stripLastNewline, normalizeNewlines } = require('../util/string_util');
+const { cStrEncode } = require('../util/cquote');
 
 function Line(fileName, lineNo, data) {
     this.fileName = basename(fileName);

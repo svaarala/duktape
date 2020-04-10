@@ -157,7 +157,7 @@ function parseUnicodeText(unicodeData, specialCasing) {
     });
 
     endTime = Date.now();
-    console.log('parsed unicode data in ' + (endTime - startTime) + ' milliseconds');
+    console.debug('parsed unicode data in ' + (endTime - startTime) + ' milliseconds');
 
     return cpMap;
 }
