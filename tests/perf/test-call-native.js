@@ -2,13 +2,15 @@ if (typeof print !== 'function') { print = console.log; }
 
 function test() {
     var arr = [];
-    for (var i = 0; i < 1e3; i++) {
+    var i;
+
+    for (i = 0; i < 1e3; i++) {
         arr[i] = i;
     }
 
     var t1 = Date.now();
 
-    for (var i = 0; i < 1e4; i++) {
+    for (i = 0; i < 1e4; i++) {
         // Each .forEach() call is a native call so that return 123 causes a
         // return-to-native situation which was previously a longjmp.
 

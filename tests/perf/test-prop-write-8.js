@@ -13,8 +13,9 @@ function test() {
         obj['prop-' + i] = 1;
     }
     obj['foo'] = 123;
+    if (typeof Duktape !== 'undefined') { Duktape.compact(obj); }
 
-    for (i = 0; i < 1e7; i++) {
+    for (i = 0; i < 1e7; i++) {
         obj.foo = 234;
         obj.foo = 234;
         obj.foo = 234;
