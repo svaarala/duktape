@@ -8,7 +8,7 @@ function test() {
     var arr = [];
     var i;
 
-    for (i = 0; i < 1e3; i++) {
+    for (i = 0; i < 1e3; i++) {
         arr.push('value-' + i);
     }
 

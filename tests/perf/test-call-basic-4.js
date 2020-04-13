@@ -16,7 +16,7 @@ function func(a0, a1, a2, a3, a4, a5, a6, a7, a8, a9) {
     var x70, x71, x72, x73, x74, x75, x76, x77, x78, x79;
     var x80, x81, x82, x83, x84, x85, x86, x87, x88, x89;
     var x90, x91, x92, x93, x94, x95, x96, x97, x98, x99;
-    var x99 = 1;
+    x99 = 1;
 
     return;
 }

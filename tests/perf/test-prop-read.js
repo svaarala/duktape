@@ -9,7 +9,7 @@ function test() {
     var i;
     var ign;
 
-    for (i = 0; i < 1e7; i++) {
+    for (i = 0; i < 1e7; i++) {
         ign = obj.foo;
         ign = obj.foo;
         ign = obj.foo;
