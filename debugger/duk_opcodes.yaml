@@ -823,13 +823,13 @@ opcodes:
       # - output: when caught, catch value (base_reg + 0) and type (base_reg + 1)
       - BC_R
     flags:
-      - mask: 0x40
-        name: have_catch
-      - mask: 0x80
-        name: have_finally
       - mask: 0x100
-        name: catch_binding
+        name: have_catch
       - mask: 0x200
+        name: have_finally
+      - mask: 0x400
+        name: catch_binding
+      - mask: 0x800
         name: with_binding
   - name: ENDTRY
   - name: ENDCATCH
@@ -864,66 +864,210 @@ opcodes:
     args:
       - A_I
       - BC_R
+    flags:
+      - mask: 0x01
+        name: tailcall
+      - mask: 0x02
+        name: construct
+      - mask: 0x04
+        name: called_as_eval
+      - mask: 0x08
+        name: indirect
   - name: CALL1
     args:
       - A_I
       - BC_R
+    flags:
+      - mask: 0x01
+        name: tailcall
+      - mask: 0x02
+        name: construct
+      - mask: 0x04
+        name: called_as_eval
+      - mask: 0x08
+        name: indirect
   - name: CALL2
     args:
       - A_I
       - BC_R
+    flags:
+      - mask: 0x01
+        name: tailcall
+      - mask: 0x02
+        name: construct
+      - mask: 0x04
+        name: called_as_eval
+      - mask: 0x08
+        name: indirect
   - name: CALL3
     args:
       - A_I
       - BC_R
+    flags:
+      - mask: 0x01
+        name: tailcall
+      - mask: 0x02
+        name: construct
+      - mask: 0x04
+        name: called_as_eval
+      - mask: 0x08
+        name: indirect
   - name: CALL4
     args:
       - A_I
       - BC_R
+    flags:
+      - mask: 0x01
+        name: tailcall
+      - mask: 0x02
+        name: construct
+      - mask: 0x04
+        name: called_as_eval
+      - mask: 0x08
+        name: indirect
   - name: CALL5
     args:
       - A_I
       - BC_R
+    flags:
+      - mask: 0x01
+        name: tailcall
+      - mask: 0x02
+        name: construct
+      - mask: 0x04
+        name: called_as_eval
+      - mask: 0x08
+        name: indirect
   - name: CALL6
     args:
       - A_I
       - BC_R
+    flags:
+      - mask: 0x01
+        name: tailcall
+      - mask: 0x02
+        name: construct
+      - mask: 0x04
+        name: called_as_eval
+      - mask: 0x08
+        name: indirect
   - name: CALL7
     args:
       - A_I
       - BC_R
+    flags:
+      - mask: 0x01
+        name: tailcall
+      - mask: 0x02
+        name: construct
+      - mask: 0x04
+        name: called_as_eval
+      - mask: 0x08
+        name: indirect
   - name: CALL8
     args:
       - A_I
       - BC_R
+    flags:
+      - mask: 0x01
+        name: tailcall
+      - mask: 0x02
+        name: construct
+      - mask: 0x04
+        name: called_as_eval
+      - mask: 0x08
+        name: indirect
   - name: CALL9
     args:
       - A_I
       - BC_R
+    flags:
+      - mask: 0x01
+        name: tailcall
+      - mask: 0x02
+        name: construct
+      - mask: 0x04
+        name: called_as_eval
+      - mask: 0x08
+        name: indirect
   - name: CALL10
     args:
       - A_I
       - BC_R
+    flags:
+      - mask: 0x01
+        name: tailcall
+      - mask: 0x02
+        name: construct
+      - mask: 0x04
+        name: called_as_eval
+      - mask: 0x08
+        name: indirect
   - name: CALL11
     args:
       - A_I
       - BC_R
+    flags:
+      - mask: 0x01
+        name: tailcall
+      - mask: 0x02
+        name: construct
+      - mask: 0x04
+        name: called_as_eval
+      - mask: 0x08
+        name: indirect
   - name: CALL12
     args:
       - A_I
       - BC_R
+    flags:
+      - mask: 0x01
+        name: tailcall
+      - mask: 0x02
+        name: construct
+      - mask: 0x04
+        name: called_as_eval
+      - mask: 0x08
+        name: indirect
   - name: CALL13
     args:
       - A_I
       - BC_R
+    flags:
+      - mask: 0x01
+        name: tailcall
+      - mask: 0x02
+        name: construct
+      - mask: 0x04
+        name: called_as_eval
+      - mask: 0x08
+        name: indirect
   - name: CALL14
     args:
       - A_I
       - BC_R
+    flags:
+      - mask: 0x01
+        name: tailcall
+      - mask: 0x02
+        name: construct
+      - mask: 0x04
+        name: called_as_eval
+      - mask: 0x08
+        name: indirect
   - name: CALL15
     args:
       - A_I
       - BC_R
+    flags:
+      - mask: 0x01
+        name: tailcall
+      - mask: 0x02
+        name: construct
+      - mask: 0x04
+        name: called_as_eval
+      - mask: 0x08
+        name: indirect
   - name: NEWOBJ
     args:
       - A_I  # property count init size
