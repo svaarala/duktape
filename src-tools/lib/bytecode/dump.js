@@ -5,6 +5,7 @@
 'use strict';
 
 const { prettyInstructionLine } = require('./instruction');
+const { drawBytecodeJumpLines } = require('./jump');
 const { hexEncode } = require('../util/hex');
 const { createBareObject } = require('../util/bare');
 const { assert } = require('../util/assert');
@@ -12,7 +13,6 @@ const { assert } = require('../util/assert');
 function dumpString(doc, opts) {
     void opts;
     if (doc.type !== 'string') {
-        console.log(doc);
         throw new TypeError('internal error, doc.type: ' + doc.type);
     }
     // Ideally we'd pass through valid UTF-8 and just escape invalid UTF-8.
@@ -35,11 +35,12 @@ function dumpBuffer(doc, opts) {
     return '[' + res.join(',') + ']';
 }
 
-function dumpInstruction(doc, idx, res, indent, opts) {
+function dumpInstruction(doc, idx, res, indent, jumpLines, opts) {
+    let prefix = jumpLines ? jumpLines[idx] + ' ' : '';
     if (opts.dukOpcodes) {
-        res.push([ indent, prettyInstructionLine(doc.ins, idx, opts.dukOpcodes) ]);
+        res.push([ indent, prefix + prettyInstructionLine(doc.ins, idx, opts.dukOpcodes) ]);
     } else {
-        res.push([ indent, idx + ': ' + doc.ins.toString(16) ]);
+        res.push([ indent, prefix + idx + ': ' + hexEncode(doc.ins, 8) ]);
     }
 }
 
@@ -67,7 +68,7 @@ function dumpConstant(doc, idx, res, indent, opts) {
         tmp = dumpString(doc, opts);
         break;
     case 'double':
-        tmp = dumpBuffer(doc, opts) + ' => ' + prettyDoubleU8(doc.value);
+        tmp = prettyDoubleU8(doc.value) + ' <= ' + dumpBuffer(doc, opts);
         break;
     default:
         throw new TypeError('internal error');
@@ -96,8 +97,12 @@ function dumpFunction(doc, res, indent, opts) {
     res.push([ indent, '.name: ' + dumpString(doc.name, opts) ]);
     res.push([ indent, '.fileName: ' + dumpString(doc.fileName, opts) ]);
     res.push([ indent, 'Opcodes:' ]);
+    var jumpLines;
+    if (opts.jumps) {
+        jumpLines = drawBytecodeJumpLines(doc, opts);
+    }
     doc.instructions.forEach((instr, idx) => {
-        dumpInstruction(instr, idx, res, indent + 1, opts);
+        dumpInstruction(instr, idx, res, indent + 1, jumpLines, opts);
     });
     res.push([ indent, 'Constants:' ]);
     doc.constants.forEach((elem, idx) => {
@@ -107,10 +112,14 @@ function dumpFunction(doc, res, indent, opts) {
     doc.varmap.forEach((elem, idx) => {
         dumpVarmapEntry(elem, idx, res, indent + 1, opts);
     });
-    res.push([ indent, '_Formals:' ]);
-    doc.formals.forEach((elem, idx) => {
-        dumpFormalsEntry(elem, idx, res, indent + 1, opts);
-    });
+    if (doc.formals) {
+        res.push([ indent, '_Formals:' ]);
+        doc.formals.forEach((elem, idx) => {
+            dumpFormalsEntry(elem, idx, res, indent + 1, opts);
+        });
+    } else {
+        res.push([ indent, '_Formals: missing' ]);
+    }
     res.push([ indent, '_Pc2line: ' + dumpBuffer(doc.pc2line, opts) ]);
     res.push([ indent, 'Inner functions:' ]);
     doc.functions.forEach((func) => {

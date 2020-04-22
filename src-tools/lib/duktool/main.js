@@ -5,18 +5,24 @@ miscPolyfills();
 
 const { getArgs } = require('../extbindings/args');
 const { parseCommandLine } = require('../util/cmdline');
-const { configureCommand, configureCommandSpec } = require('../command/configure');
-const { distCommand, distCommandSpec } = require('../command/dist');
 const { dirname, pathJoin, fileExists } = require('../util/fs');
 const { createBareObject } = require('../util/bare');
 
+const { configureCommand, configureCommandSpec } = require('../command/configure');
+const { distCommand, distCommandSpec } = require('../command/dist');
+const { decodeBytecodeCommand, decodeBytecodeCommandSpec } = require('../command/decode_bytecode');
+const { dumpBytecodeCommand, dumpBytecodeCommandSpec } = require('../command/dump_bytecode');
+
 // Command line parsing spec.
+
 const commandSpec = {
     options: createBareObject({
     }),
     commands: createBareObject({
         configure: configureCommandSpec,
-        dist: distCommandSpec
+        dist: distCommandSpec,
+        ['decode-bytecode']: decodeBytecodeCommandSpec,
+        ['dump-bytecode']: dumpBytecodeCommandSpec
     })
 };
 
@@ -71,6 +77,12 @@ function main() {
         },
         dist: () => {
             distCommand(cmdline, autoDuktapeRoot);
+        },
+        ['decode-bytecode']: () => {
+            decodeBytecodeCommand(cmdline, autoDuktapeRoot);
+        },
+        ['dump-bytecode']: () => {
+            dumpBytecodeCommand(cmdline, autoDuktapeRoot);
         }
     });
 
