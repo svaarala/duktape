@@ -8,34 +8,48 @@ const { hexEncode } = require('../util/hex');
 
 'use strict';
 
-function decodeStringConst(dv, off) {
+const useU8Data = false;
+
+function decodeStringConst(dv, off, opts) {
+    void opts;
     var strlen = dv.getUint32(off);
     off += 4;
-    var strdata = new Uint8Array(strlen);
+    var strdata = [];
     for (let i = 0; i < strlen; i++) {
-        strdata[i] = dv.getUint8(off + i);
+        strdata.push(dv.getUint8(off + i));
     }
     off += strlen;
+    if (useU8Data) {
+        strdata = new Uint8Array(strdata);
+    }
     return [off, { type: 'string', value: strdata }];
 }
 
-function decodeBufferConst(dv, off) {
+function decodeBufferConst(dv, off, opts) {
+    void opts;
     var buflen = dv.getUint32(off);
     off += 4;
-    var bufdata = new Uint8Array(buflen);
+    var bufdata = [];
     for (let i = 0; i < buflen; i++) {
-        bufdata[i] = dv.getUint8(off + i);
+        bufdata.push(dv.getUint8(off + i));
     }
     off += buflen;
+    if (useU8Data) {
+        bufdata = new Uint8Array(bufdata);
+    }
     return [off, { type: 'buffer', value: bufdata }];
 }
 
-function decodeDoubleConst(dv, off) {
-    var dbldata = new Uint8Array(8);
+function decodeDoubleConst(dv, off, opts) {
+    void opts;
+    var dbldata = [];
     for (let i = 0; i < 8; i++) {
-        dbldata[i] = dv.getUint8(off + i);
+        dbldata.push(dv.getUint8(off + i));
     }
     off += 8;
+    if (useU8Data) {
+        dbldata = new Uint8Array(dbldata);
+    }
     return [off, { type: 'double', value: dbldata }];
 }
 
@@ -79,10 +93,10 @@ function decodeFunction(dv, off, opts) {
 
         switch (constType) {
         case 0:  // string
-            [off, constValue] = decodeStringConst(dv, off);
+            [off, constValue] = decodeStringConst(dv, off, opts);
             break;
         case 1:  // double
-            [off, constValue] = decodeDoubleConst(dv, off);
+            [off, constValue] = decodeDoubleConst(dv, off, opts);
             break;
         default:
             throw new TypeError('invalid constant type: ' + constType);
@@ -98,13 +112,13 @@ function decodeFunction(dv, off, opts) {
 
     length = dv.getUint32(off);
     off += 4;
-    [off, name] = decodeStringConst(dv, off);
-    [off, fileName] = decodeStringConst(dv, off);
-    [off, pc2line] = decodeBufferConst(dv, off);
+    [off, name] = decodeStringConst(dv, off, opts);
+    [off, fileName] = decodeStringConst(dv, off, opts);
+    [off, pc2line] = decodeBufferConst(dv, off, opts);
 
     for (;;) {
         let varName, varReg;
-        [off, varName] = decodeStringConst(dv, off);
+        [off, varName] = decodeStringConst(dv, off, opts);
         if (varName.value.length === 0) {
             break;
         }
@@ -115,10 +129,13 @@ function decodeFunction(dv, off, opts) {
 
     numFormals = dv.getUint32(off);
     off += 4;
-    if (numFormals != 0xffffffff) {
+    if (numFormals === 0xffffffff) {
+        // Missing entirely.
+        formals = null;
+    } else {
         for (let i = 0; i < numFormals; i++) {
             let argName;
-            [off, argName] = decodeStringConst(dv, off);
+            [off, argName] = decodeStringConst(dv, off, opts);
             formals.push({ name: argName, position: i });
         }
     }
