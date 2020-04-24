@@ -1200,6 +1200,7 @@ DUK_INTERNAL void duk_heap_mark_and_sweep(duk_heap *heap, duk_small_uint_t flags
 #if defined(DUK_USE_VOLUNTARY_GC)
 	duk_size_t tmp;
 #endif
+	duk_bool_t entry_creating_error;
 
 	DUK_STATS_INC(heap, stats_ms_try_count);
 #if defined(DUK_USE_DEBUG)
@@ -1270,6 +1271,8 @@ DUK_INTERNAL void duk_heap_mark_and_sweep(duk_heap *heap, duk_small_uint_t flags
 	DUK_ASSERT(heap->ms_running == 0);
 	heap->ms_prevent_count = 1;
 	heap->ms_running = 1;
+	entry_creating_error = heap->creating_error;
+	heap->creating_error = 0;
 
 	/*
 	 *  Free activation/catcher freelists on every mark-and-sweep for now.
@@ -1400,6 +1403,7 @@ DUK_INTERNAL void duk_heap_mark_and_sweep(duk_heap *heap, duk_small_uint_t flags
 	DUK_ASSERT(heap->ms_running == 1);
 	heap->ms_prevent_count = 0;
 	heap->ms_running = 0;
+	heap->creating_error = entry_creating_error;  /* for nested error handling, see GH-2278 */
 
 	/*
 	 *  Assertions after
