@@ -235,8 +235,8 @@ See also:
 
 * http://www.gnu.org/software/libc/manual/html_node/Date-and-Time.html#Date-and-Time
 
-OSX / Darwin
-------------
+macOS / Darwin
+--------------
 
 Current implementation uses the same functions as on Linux.
 

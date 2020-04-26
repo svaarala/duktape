@@ -48,7 +48,7 @@ The basic options are:
   Duktape distributable includes a default duk_config.h which autodetects the
   the platform, compiler, and architecture, and uses default values for all
   Duktape configuration options.  This header should work "out of the box" for
-  Linux, OS X, Windows, and also for several more exotic platforms.  If you're
+  Linux, macOS, Windows, and also for several more exotic platforms.  If you're
   using one of the supported platform and default options are acceptable, this
   should be your default choice.  Note that ``DUK_OPT_xxx`` compiler command
   line options are no longer supported in Duktape 2.x; to use non-default

@@ -4,7 +4,7 @@ autodetect:
   # Platforms for autodetect header.  Order matters because some defines
   # overlap, so rules select for more specific define first.
   -
-    name: Mac OSX, iPhone, Darwin
+    name: macOS, iOS, watchOS, tvOS, Darwin, etc
     check: DUK_F_APPLE
     include: platform_apple.h.in
   -

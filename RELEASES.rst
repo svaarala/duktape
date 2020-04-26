@@ -683,7 +683,7 @@ Released
   sigsetjmp() (with savesigs set to 0) can be a lot faster than setjmp()
   if the platform's setjmp() implementation saves the signal mask (GH-55)
 
-* Default to _setjmp() for long control transfers on OSX/iPhone (when
+* Default to _setjmp() for long control transfers on macOS/iOS (when
   __APPLE__ is defined) (GH-55)
 
 * Add SuperH detection support
@@ -862,7 +862,7 @@ Released
 * Improve MIPS32/MIPS64 detection, architecture strings in Duktape.env
   also updated ("mips32" or "mips64") (GH-102)
 
-* Add iPhone/iOS strings to Duktape.env
+* Add iOS strings to Duktape.env
 
 * Add support for TI-Nspire (using Ndless, see GH-113)
 
@@ -1092,7 +1092,7 @@ Released
 
 * Remove DUK_OPT_DEEP_C_STACK (and DUK_USE_DEEP_C_STACK) in favor of explicit
   DUK_USE_xxx config options for native recursion limits; C stacks are assumed
-  to be deep by default for all targets including OSX/iPhone (GH-165, GH-226)
+  to be deep by default for all targets including macOS/iOS (GH-165, GH-226)
 
 * Make Proxy internal _Target and _Handler properties immutable (non-writable
   and non-configurable) (GH-237)
