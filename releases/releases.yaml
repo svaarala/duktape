@@ -1359,3 +1359,4 @@ duktape_releases:
     - "Use wasm for dukweb.js compilation (including duktape.org site), fix async loading of emcc-compiled code in dukweb.html (GH-2244)"
     - "Fix duk_opcodes.yaml metadata for TRYCATCH and CALLn (GH-2277)"
     - "Fix duk_suspend() handling of finalizers, if main thread was suspended finalizers triggered by other threads could consistenly fail (GH-2282)"
+    - "Improve DUK_USE_OS_STRING for macOS, iOS, watchOS, and tvOS (GH-2288)"
