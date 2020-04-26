@@ -11,7 +11,7 @@ description: >
   The downside of setjmp/longjmp is that signal mask saving behavior is not
   specified and varies between platforms.  Signal mask saving may have a
   significant performance impact so you may want to force a specific provider
-  if performance matters for your application.  (This is the case for OSX,
+  if performance matters for your application.  (This is the case for macOS,
   for instance.)
 
   Removed in Duktape 1.5.0: edit duk_config.h directly.

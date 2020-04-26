@@ -9,7 +9,7 @@ description: >
   The default long control transfer provider is setjmp/longjmp because it
   is the most portable option.  When a better provider is known for a platform,
   Duktape may default to that (e.g. _setjmp/_longjmp is the default for
-  OSX/iPhone, see GH-55).  With this feature option you can force Duktape to
+  macOS/iOS, see GH-55).  With this feature option you can force Duktape to
   explicitly use setjmp/longjmp even in these cases.
 
   The downside of setjmp/longjmp is that signal mask saving behavior is not

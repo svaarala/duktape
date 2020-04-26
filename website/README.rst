@@ -176,7 +176,7 @@ Without any document meta headers Nokia N9, for instance, attempts to get::
   GET /apple-touch-icon-precomposed.png
   GET /apple-touch-icon.png
 
-iPhone/iPad versions will have different automatic icon searches, like::
+iOS versions will have different automatic icon searches, like::
 
   GET /apple-touch-icon-57x57-precomposed.png
   GET /apple-touch-icon-57x57.png

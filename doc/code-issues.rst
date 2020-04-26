@@ -1451,7 +1451,7 @@ When a pointer itself may be reassigned, the latter is correct, e.g.::
 
 In practice it seems that some compilers have trouble guaranteeing these
 semantics for variables that are assigned to before ``setjmp()`` and not
-changed before ``longjmp()``.  For instance, there are crashes on OSX when
+changed before ``longjmp()``.  For instance, there are crashes on macOS when
 using ``_setjmp()`` in such cases.  These crashes can be eliminated by
 declaring the variables volatile.  (It might be that adding the "volatile"
 changes the compiler output enough to mask a different bug though.)

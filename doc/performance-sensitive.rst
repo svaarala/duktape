@@ -70,7 +70,7 @@ Suggested feature options
   - Edit ``DUK_SETJMP``, ``DUK_LONGJMP``, and ``DUK_JMPBUF_TYPE`` to change
     the setjmp provider.
 
-  - On some platforms (e.g. OSX/iPhone) Duktape will automatically use
+  - On some platforms (e.g. macOS/iOS) Duktape will automatically use
     ``_setjmp()``.
 
 * Consider enabling "fastints":
