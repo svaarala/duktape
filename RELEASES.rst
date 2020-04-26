@@ -3603,3 +3603,6 @@ Planned
 
 * Remove hardcoded endianness assumption for PPC64 to support ppc64le
   (GH-2265, GH-2267)
+
+* Fix duk_suspend() handling of finalizers, if main thread was suspended
+  finalizers triggered by other threads could consistenly fail (GH-2282)
