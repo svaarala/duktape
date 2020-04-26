@@ -12,6 +12,7 @@ const { configureCommand, configureCommandSpec } = require('../command/configure
 const { distCommand, distCommandSpec } = require('../command/dist');
 const { decodeBytecodeCommand, decodeBytecodeCommandSpec } = require('../command/decode_bytecode');
 const { dumpBytecodeCommand, dumpBytecodeCommandSpec } = require('../command/dump_bytecode');
+const { generateReleasesRstCommand, generateReleasesRstCommandSpec } = require('../command/generate_releases_rst');
 
 // Command line parsing spec.
 
@@ -19,10 +20,11 @@ const commandSpec = {
     options: createBareObject({
     }),
     commands: createBareObject({
-        configure: configureCommandSpec,
-        dist: distCommandSpec,
+        ['configure']: configureCommandSpec,
+        ['dist']: distCommandSpec,
         ['decode-bytecode']: decodeBytecodeCommandSpec,
-        ['dump-bytecode']: dumpBytecodeCommandSpec
+        ['dump-bytecode']: dumpBytecodeCommandSpec,
+        ['generate-releases-rst']: generateReleasesRstCommandSpec
     })
 };
 
@@ -72,10 +74,10 @@ function main() {
     // Commands.
     var commandMap = createBareObject({
         // Main commands: configure and prepare sources, dist.
-        configure: () => {
+        ['configure']: () => {
             configureCommand(cmdline, autoDuktapeRoot);
         },
-        dist: () => {
+        ['dist']: () => {
             distCommand(cmdline, autoDuktapeRoot);
         },
         ['decode-bytecode']: () => {
@@ -83,6 +85,9 @@ function main() {
         },
         ['dump-bytecode']: () => {
             dumpBytecodeCommand(cmdline, autoDuktapeRoot);
+        },
+        ['generate-releases-rst']: () => {
+            generateReleasesRstCommand(cmdline, autoDuktapeRoot);
         }
     });
 
