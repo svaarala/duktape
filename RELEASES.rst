@@ -3608,3 +3608,6 @@ Planned
   finalizers triggered by other threads could consistenly fail (GH-2282)
 
 * Improve DUK_USE_OS_STRING for macOS, iOS, watchOS, and tvOS (GH-2288)
+
+* Fix nested error handling bug for out-of-memory during error creation
+  (GH-2278, GH-2290)

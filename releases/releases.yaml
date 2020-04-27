@@ -1347,6 +1347,7 @@ duktape_releases:
     - "Remove hardcoded endianness assumption for PPC64 to support ppc64le (GH-2265, GH-2267)"
     - "Fix duk_opcodes.yaml metadata for TRYCATCH and CALLn (GH-2277)"
     - "Fix duk_suspend() handling of finalizers, if main thread was suspended finalizers triggered by other threads could consistenly fail (GH-2282)"
+    - "Fix nested error handling bug for out-of-memory during error creation (GH-2278, GH-2290)"
 
 - version: '3.0.0'
   #release_date: 'XXXX-XX-XX'
@@ -1360,3 +1361,4 @@ duktape_releases:
     - "Fix duk_opcodes.yaml metadata for TRYCATCH and CALLn (GH-2277)"
     - "Fix duk_suspend() handling of finalizers, if main thread was suspended finalizers triggered by other threads could consistenly fail (GH-2282)"
     - "Improve DUK_USE_OS_STRING for macOS, iOS, watchOS, and tvOS (GH-2288)"
+    - "Fix nested error handling bug for out-of-memory during error creation (GH-2278, GH-2290)"
