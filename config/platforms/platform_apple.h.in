@@ -9,12 +9,36 @@
 #include <time.h>
 
 /* http://stackoverflow.com/questions/5919996/how-to-detect-reliably-mac-os-x-ios-linux-windows-in-c-preprocessor */
-#if TARGET_IPHONE_SIMULATOR
-#define DUK_USE_OS_STRING "iphone-sim"
-#elif TARGET_OS_IPHONE
-#define DUK_USE_OS_STRING "iphone"
+/* https://stackoverflow.com/questions/12132933/preprocessor-macro-for-os-x-targets */
+/* Some of the combinations below probably don't actually exist
+ * (like macOS simulator) but include them for completeness.
+ */
+#if TARGET_OS_SIMULATOR && TARGET_OS_MACCATALYST
+#define DUK_USE_OS_STRING "catalyst-sim"
+#elif TARGET_OS_SIMULATOR && TARGET_OS_BRIDGE
+#define DUK_USE_OS_STRING "bridgeos-sim"
+#elif TARGET_OS_SIMULATOR && TARGET_OS_WATCH
+#define DUK_USE_OS_STRING "watchos-sim"
+#elif TARGET_OS_SIMULATOR && TARGET_OS_TV
+#define DUK_USE_OS_STRING "tvos-sim"
+#elif TARGET_OS_SIMULATOR && TARGET_OS_IOS
+#define DUK_USE_OS_STRING "ios-sim"
+#elif TARGET_IPHONE_SIMULATOR && TARGET_OS_IOS  /* deprecated */
+#define DUK_USE_OS_STRING "ios-sim"
+#elif TARGET_OS_SIMULATOR && TARGET_OS_MAC
+#define DUK_USE_OS_STRING "macos-sim"
+#elif TARGET_OS_MACCATALYST
+#define DUK_USE_OS_STRING "catalyst"
+#elif TARGET_OS_BRIDGE
+#define DUK_USE_OS_STRING "bridgeos"
+#elif TARGET_OS_WATCH
+#define DUK_USE_OS_STRING "watchos"
+#elif TARGET_OS_TV
+#define DUK_USE_OS_STRING "tvos"
+#elif TARGET_OS_IOS
+#define DUK_USE_OS_STRING "ios"
 #elif TARGET_OS_MAC
-#define DUK_USE_OS_STRING "osx"
+#define DUK_USE_OS_STRING "macos"
 #else
 #define DUK_USE_OS_STRING "osx-unknown"
 #endif

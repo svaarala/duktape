@@ -3606,3 +3606,5 @@ Planned
 
 * Fix duk_suspend() handling of finalizers, if main thread was suspended
   finalizers triggered by other threads could consistenly fail (GH-2282)
+
+* Improve DUK_USE_OS_STRING for macOS, iOS, watchOS, and tvOS (GH-2288)
