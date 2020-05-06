@@ -210,7 +210,7 @@ EMDUKOPTS += -DEMSCRIPTEN  # enable stdin workaround in duk_cmdline.c
 MAND_BASE64 = dyA9IDgwOyBoID0gNDA7IGl0ZXIgPSAxMDA7IGZvciAoaSA9IDA7IGkgLSBoOyBpICs9IDEpIHsgeTAgPSAoaSAvIGgpICogNC4wIC0gMi4wOyByZXMgPSBbXTsgZm9yIChqID0gMDsgaiAtIHc7IGogKz0gMSkgeyB4MCA9IChqIC8gdykgKiA0LjAgLSAyLjA7IHh4ID0gMDsgeXkgPSAwOyBjID0gIiMiOyBmb3IgKGsgPSAwOyBrIC0gaXRlcjsgayArPSAxKSB7IHh4MiA9IHh4Knh4OyB5eTIgPSB5eSp5eTsgaWYgKE1hdGgubWF4KDAsIDQuMCAtICh4eDIgKyB5eTIpKSkgeyB5eSA9IDIqeHgqeXkgKyB5MDsgeHggPSB4eDIgLSB5eTIgKyB4MDsgfSBlbHNlIHsgYyA9ICIuIjsgYnJlYWs7IH0gfSByZXNbcmVzLmxlbmd0aF0gPSBjOyB9IHByaW50KHJlcy5qb2luKCIiKSk7IH0K
 
 # Options for runtests.js.
-RUNTESTSOPTS = --prep-test-path util/prep_test.py --minify-uglifyjs2 UglifyJS2/bin/uglifyjs --util-include-path tests/ecmascript --known-issues doc/testcase-known-issues.yaml
+RUNTESTSOPTS = --prep-test-path util/prep_test.py --minify-uglifyjs2 UglifyJS/bin/uglifyjs --util-include-path tests/ecmascript --known-issues doc/testcase-known-issues.yaml
 
 # Compile 'duk' only by default
 .PHONY: all
@@ -273,7 +273,6 @@ cleanall: clean
 	@rm -f regfuzz-*.tar.gz
 	@rm -rf linenoise
 	@rm -rf UglifyJS
-	@rm -rf UglifyJS2
 	@rm -rf closure-compiler
 	@rm -rf underscore
 	@rm -rf lodash
@@ -633,7 +632,7 @@ releasetest: configuretest xmldoctest closuretest bluebirdtest luajstest jsinter
 
 # Runtests-based ECMAScript and API tests.
 .PHONY: runtestsdeps
-runtestsdeps: runtests/node_modules UglifyJS2
+runtestsdeps: runtests/node_modules UglifyJS
 runtests/node_modules:
 	@echo "Installing required NodeJS modules for runtests"
 	@cd runtests; npm install
@@ -905,27 +904,14 @@ compiler.jar: closure-compiler/build/compiler.jar
 	touch $@  # ensure date is newer than compiler-latest.zip
 UglifyJS:
 	# https://github.com/mishoo/UglifyJS
-	# Use a specific release because UglifyJS is used in building Duktape
-	# Don't use this because it's a moving critical dependency
-	#$(GIT) clone --depth 1 https://github.com/mishoo/UglifyJS.git
-	@rm -f v1.3.5.tar.gz
-	$(WGET) https://github.com/mishoo/UglifyJS/archive/v1.3.5.tar.gz -O v1.3.5.tar.gz
-	tar xfz v1.3.5.tar.gz
-	mv UglifyJS-1.3.5 UglifyJS
-	@rm -f v1.3.5.tar.gz
-UglifyJS2:
-	# https://github.com/mishoo/UglifyJS2
-	# Use a specific release because UglifyJS2 is used in building Duktape
-	# (This is now a bit futile because UglifyJS2 requires an 'npm install',
-	# the NodeJS dependencies need to be controlled for this to really work.)
-	# Don't use this because it's a moving critical dependency
+	# Don't use this because it's a moving dependency
 	#$(GIT) clone --depth 1 https://github.com/mishoo/UglifyJS2.git
-	@rm -f v2.4.12.tar.gz
-	$(WGET) https://github.com/mishoo/UglifyJS2/archive/v2.4.12.tar.gz -O v2.4.12.tar.gz
-	tar xfz v2.4.12.tar.gz
-	mv UglifyJS2-2.4.12 UglifyJS2
-	@rm -f v2.4.12.tar.gz
-	cd UglifyJS2; npm install; cd -
+	@rm -f v3.9.2.tar.gz
+	$(WGET) https://github.com/svaarala/UglifyJS/archive/v3.9.2.tar.gz -O v3.9.2.tar.gz
+	tar xfz v3.9.2.tar.gz
+	mv UglifyJS-3.9.2 UglifyJS
+	@rm -f v3.9.2.tar.gz
+	cd UglifyJS; npm install; cd -
 cloc-1.60.pl:
 	# http://cloc.sourceforge.net/
 	$(WGET) http://downloads.sourceforge.net/project/cloc/cloc/v1.60/cloc-1.60.pl -O $@
