@@ -551,48 +551,43 @@ DUK_INTERNAL duk_small_int_t duk_unicode_is_whitespace(duk_codepoint_t cp) {
 	 *  E5 Section 7.2 specifies six characters specifically as
 	 *  white space:
 	 *
-	 *    0009;<control>;Cc;0;S;;;;;N;CHARACTER TABULATION;;;;
-	 *    000B;<control>;Cc;0;S;;;;;N;LINE TABULATION;;;;
-	 *    000C;<control>;Cc;0;WS;;;;;N;FORM FEED (FF);;;;
-	 *    0020;SPACE;Zs;0;WS;;;;;N;;;;;
-	 *    00A0;NO-BREAK SPACE;Zs;0;CS;<noBreak> 0020;;;;N;NON-BREAKING SPACE;;;;
-	 *    FEFF;ZERO WIDTH NO-BREAK SPACE;Cf;0;BN;;;;;N;BYTE ORDER MARK;;;;
+	 *    - 0009: <control>
+	 *    - 000B: <control>
+	 *    - 000C: <control>
+	 *    - 0020: SPACE
+	 *    - 00A0: NO-BREAK SPACE
+	 *    - FEFF: ZERO WIDTH NO-BREAK SPACE
 	 *
 	 *  It also specifies any Unicode category 'Zs' characters as white
-	 *  space.  These can be extracted with the "tools/extract_chars.py" script.
-	 *  Current result:
+	 *  space.  Current result (Unicode 12.1.0):
 	 *
-	 *    RAW OUTPUT:
-	 *    ===========
-	 *    0020;SPACE;Zs;0;WS;;;;;N;;;;;
-	 *    00A0;NO-BREAK SPACE;Zs;0;CS;<noBreak> 0020;;;;N;NON-BREAKING SPACE;;;;
-	 *    1680;OGHAM SPACE MARK;Zs;0;WS;;;;;N;;;;;
-	 *    180E;MONGOLIAN VOWEL SEPARATOR;Zs;0;WS;;;;;N;;;;;
-	 *    2000;EN QUAD;Zs;0;WS;2002;;;;N;;;;;
-	 *    2001;EM QUAD;Zs;0;WS;2003;;;;N;;;;;
-	 *    2002;EN SPACE;Zs;0;WS;<compat> 0020;;;;N;;;;;
-	 *    2003;EM SPACE;Zs;0;WS;<compat> 0020;;;;N;;;;;
-	 *    2004;THREE-PER-EM SPACE;Zs;0;WS;<compat> 0020;;;;N;;;;;
-	 *    2005;FOUR-PER-EM SPACE;Zs;0;WS;<compat> 0020;;;;N;;;;;
-	 *    2006;SIX-PER-EM SPACE;Zs;0;WS;<compat> 0020;;;;N;;;;;
-	 *    2007;FIGURE SPACE;Zs;0;WS;<noBreak> 0020;;;;N;;;;;
-	 *    2008;PUNCTUATION SPACE;Zs;0;WS;<compat> 0020;;;;N;;;;;
-	 *    2009;THIN SPACE;Zs;0;WS;<compat> 0020;;;;N;;;;;
-	 *    200A;HAIR SPACE;Zs;0;WS;<compat> 0020;;;;N;;;;;
-	 *    202F;NARROW NO-BREAK SPACE;Zs;0;CS;<noBreak> 0020;;;;N;;;;;
-	 *    205F;MEDIUM MATHEMATICAL SPACE;Zs;0;WS;<compat> 0020;;;;N;;;;;
-	 *    3000;IDEOGRAPHIC SPACE;Zs;0;WS;<wide> 0020;;;;N;;;;;
+	 *    CATEGORY: Zs
+	 *    - 0020: SPACE
+	 *    - 00A0: NO-BREAK SPACE
+	 *    - 1680: OGHAM SPACE MARK
+	 *    - 2000: EN QUAD
+	 *    - 2001: EM QUAD
+	 *    - 2002: EN SPACE
+	 *    - 2003: EM SPACE
+	 *    - 2004: THREE-PER-EM SPACE
+	 *    - 2005: FOUR-PER-EM SPACE
+	 *    - 2006: SIX-PER-EM SPACE
+	 *    - 2007: FIGURE SPACE
+	 *    - 2008: PUNCTUATION SPACE
+	 *    - 2009: THIN SPACE
+	 *    - 200A: HAIR SPACE
+	 *    - 202F: NARROW NO-BREAK SPACE
+	 *    - 205F: MEDIUM MATHEMATICAL SPACE
+	 *    - 3000: IDEOGRAPHIC SPACE
 	 *
 	 *    RANGES:
-	 *    =======
-	 *    0x0020
-	 *    0x00a0
-	 *    0x1680
-	 *    0x180e
-	 *    0x2000 ... 0x200a
-	 *    0x202f
-	 *    0x205f
-	 *    0x3000
+	 *    - 0020
+	 *    - 00A0
+	 *    - 1680
+	 *    - 2000-200A
+	 *    - 202F
+	 *    - 205F
+	 *    - 3000
 	 *
 	 *  A manual decoder (below) is probably most compact for this.
 	 */
@@ -614,8 +609,7 @@ DUK_INTERNAL duk_small_int_t duk_unicode_is_whitespace(duk_codepoint_t cp) {
 		if (lo <= 0x0aU || lo == 0x2fU || lo == 0x5fU) {
 			return 1;
 		}
-	} else if (cp == 0x1680L || cp == 0x180eL || cp == 0x3000L ||
-	           cp == 0xfeffL) {
+	} else if (cp == 0x1680L || cp == 0x3000L || cp == 0xfeffL) {
 		return 1;
 	}
 

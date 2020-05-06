@@ -13,7 +13,7 @@ function test() {
         arr.push('foo');
     }
 
-    for (i = 0; i < 3e4; i++) {
+    for (i = 0; i < 3e4; i++) {
         // Typical loop idiom where index check is against .length.
         for (j = 0; j < arr.length; j++) {
             ign = arr[j];

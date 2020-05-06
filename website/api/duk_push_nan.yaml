@@ -7,7 +7,7 @@ stack: |
   [ ... ] -> [ ... NaN! ]
 
 summary: |
-  Pushes a <code>NaN</code> (not-a-number) to the stack.
+  <p>Pushes a <code>NaN</code> (not-a-number) to the stack.</p>
 
 example: |
   duk_push_nan(ctx);

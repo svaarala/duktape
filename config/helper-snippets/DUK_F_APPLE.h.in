@@ -1,4 +1,4 @@
-/* Apple OSX, iOS */
+/* Apple macOS, iOS, watchOS, tvOS, Darwin, etc */
 #if defined(__APPLE__)
 #define DUK_F_APPLE
 #endif

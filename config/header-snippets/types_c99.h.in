@@ -83,6 +83,7 @@ typedef intmax_t duk_intmax_t;
 #define DUK_UINTPTR_MAX       UINTPTR_MAX
 #define DUK_INTPTR_MIN        INTPTR_MIN
 #define DUK_INTPTR_MAX        INTPTR_MAX
+#undef DUK_UINTPTR_MAX_COMPUTED
 
 #define DUK_UINTMAX_MIN       0
 #define DUK_UINTMAX_MAX       UINTMAX_MAX

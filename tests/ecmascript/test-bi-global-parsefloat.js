@@ -19,7 +19,6 @@ var WHITESPACE_CODEPOINTS = [
 //  0x0020,    // 0020;SPACE;Zs;0;WS;;;;;N;;;;;
 //  0x00A0,    // 00A0;NO-BREAK SPACE;Zs;0;CS;<noBreak> 0020;;;;N;NON-BREAKING SPACE;;;;
     0x1680,    // 1680;OGHAM SPACE MARK;Zs;0;WS;;;;;N;;;;;
-    0x180E,    // 180E;MONGOLIAN VOWEL SEPARATOR;Zs;0;WS;;;;;N;;;;;
     0x2000,    // 2000;EN QUAD;Zs;0;WS;2002;;;;N;;;;;
     0x2001,    // 2001;EM QUAD;Zs;0;WS;2003;;;;N;;;;;
     0x2002,    // 2002;EN SPACE;Zs;0;WS;<compat> 0020;;;;N;;;;;

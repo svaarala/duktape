@@ -23,7 +23,7 @@ are also discussed.</p>
 <tr><td>L</td><td>lightfunc compare: to be considered equal, Duktape/C function pointers and
                   internal control flags (including the "magic" value) must match</td></tr>
 <tr><td>1</td><td>string vs. number: coerce string with ToNumber() and retry comparison</td></tr>
-<tr><td>2</td><td>boolean vs. any: coerce boolean with ToNumber() and retry comparison</td></tr>
+<tr><td>2</td><td>boolean vs. any: coerce boolean with ToNumber() to 0 or 1, and retry comparison</td></tr>
 <tr><td>3</td><td>object vs. string/number: coerce object with ToPrimitive() and retry comparison</td></tr>
 </tbody>
 </table>

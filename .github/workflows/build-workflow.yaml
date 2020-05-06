@@ -1,0 +1,35 @@
+name: Build
+on: [push, pull_request]
+jobs:
+  build_duk_ubuntu:
+    name: Duk Ubuntu 18.04
+    runs-on: ubuntu-18.04
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v2
+      - name: Install packages
+        run: |
+          sudo apt install build-essential make python python-yaml bc git
+      - name: Build
+        run: |
+          make duk
+      - name: Test
+        run: |
+          ./duk -e "print(Duktape.env); print('Hello world!');"
+          ./duk dist-files/mandel.js
+  build_duk_macos:
+    name: Duk macOS 10.15
+    runs-on: macos-10.15
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v2
+      - name: Install packages
+        run: |
+          python2 -m pip install PyYAML
+      - name: Build
+        run: |
+          make duk
+      - name: Test
+        run: |
+          ./duk -e "print(Duktape.env); print('Hello world!');"
+          ./duk dist-files/mandel.js

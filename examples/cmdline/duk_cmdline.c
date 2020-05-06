@@ -106,7 +106,7 @@
 #define  LINEBUF_SIZE       65536
 
 static int main_argc = 0;
-static char **main_argv = NULL;
+static const char **main_argv = NULL;
 static int interactive_mode = 0;
 static int allow_bytecode = 0;
 #if defined(DUK_CMDLINE_DEBUGGER_SUPPORT)
@@ -682,11 +682,16 @@ static int handle_file(duk_context *ctx, const char *filename, const char *bytec
 	return -1;
 }
 
-static int handle_eval(duk_context *ctx, char *code) {
+static int handle_eval(duk_context *ctx, const char *code) {
 	int rc;
 	int retval = -1;
+	union {
+		void *ptr;
+		const void *constptr;
+	} u;
 
-	duk_push_pointer(ctx, (void *) code);
+	u.constptr = code;  /* Lose 'const' without warning. */
+	duk_push_pointer(ctx, u.ptr);
 	duk_push_uint(ctx, (duk_uint_t) strlen(code));
 	duk_push_string(ctx, "eval");
 
@@ -952,7 +957,22 @@ static duk_ret_t fileio_write_file(duk_context *ctx) {
 
 	return 0;
 }
-#endif  /* DUK_CMDLINE_FILEIO */
+
+static duk_ret_t sys_execute(duk_context *ctx) {
+	const char *command = duk_require_string(ctx, 0);
+	int rc;
+
+	rc = system(command);
+	if (rc != 0) {
+		duk_push_error_object(ctx, DUK_ERR_TYPE_ERROR, "system() failed with code %d", rc);
+		duk_push_int(ctx, rc);
+		duk_put_prop_string(ctx, -2, "exitCode");
+		return duk_throw(ctx);
+	}
+
+	return 0;
+}
+#endif
 
 /*
  *  String.fromBufferRaw()
@@ -1038,6 +1058,9 @@ static void debugger_detached(duk_context *ctx, void *udata) {
 
 static duk_context *create_duktape_heap(int alloc_provider, int debugger, int lowmem_log) {
 	duk_context *ctx;
+#if defined(DUK_CMDLINE_FILEIO)
+	int i;
+#endif
 
 	(void) lowmem_log;  /* suppress warning */
 
@@ -1157,12 +1180,20 @@ static duk_context *create_duktape_heap(int alloc_provider, int debugger, int lo
 	duk_module_duktape_init(ctx);
 #endif
 
-	/* Trivial readFile/writeFile bindings for testing. */
+	/* Trivial file I/O bindings, sysExecute(), and sysArgv for testing. */
 #if defined(DUK_CMDLINE_FILEIO)
 	duk_push_c_function(ctx, fileio_read_file, 1 /*nargs*/);
 	duk_put_global_string(ctx, "readFile");
 	duk_push_c_function(ctx, fileio_write_file, 2 /*nargs*/);
 	duk_put_global_string(ctx, "writeFile");
+	duk_push_c_function(ctx, sys_execute, 1 /*nargs*/);
+	duk_put_global_string(ctx, "sysExecute");
+	duk_push_array(ctx);
+	for (i = 0; i < main_argc; i++) {
+		duk_push_string(ctx, main_argv[i]);
+		duk_put_prop_index(ctx, -2, (duk_uarridx_t) i);
+	}
+	duk_put_global_string(ctx, "sysArgv");  /* raw argv */
 #endif
 
 	/* Stash a formatting function for evaluation results. */
@@ -1249,7 +1280,7 @@ static void destroy_duktape_heap(duk_context *ctx, int alloc_provider) {
  *  Main
  */
 
-int main(int argc, char *argv[]) {
+int main(int argc, const char *argv[]) {
 	duk_context *ctx = NULL;
 	int retval = 0;
 	int have_files = 0;
@@ -1267,7 +1298,7 @@ int main(int argc, char *argv[]) {
 	int i;
 
 	main_argc = argc;
-	main_argv = (char **) argv;
+	main_argv = (const char **) argv;
 
 #if defined(EMSCRIPTEN)
 	/* Try to use NODEFS to provide access to local files.  Mount the
@@ -1337,11 +1368,13 @@ int main(int argc, char *argv[]) {
 	 */
 
 	for (i = 1; i < argc; i++) {
-		char *arg = argv[i];
+		const char *arg = argv[i];
 		if (!arg) {
 			goto usage;
-		}
-		if (strcmp(arg, "--restrict-memory") == 0) {
+		} else if (strcmp(arg, "--") == 0) {
+			/* Ignore anything after '--'. */
+			break;
+		} else if (strcmp(arg, "--restrict-memory") == 0) {
 			memlimit_high = 0;
 		} else if (strcmp(arg, "-i") == 0) {
 			interactive = 1;
@@ -1423,9 +1456,12 @@ int main(int argc, char *argv[]) {
 	 */
 
 	for (i = 1; i < argc; i++) {
-		char *arg = argv[i];
+		const char *arg = argv[i];
 		if (!arg) {
 			continue;
+		} else if (strcmp(arg, "--") == 0) {
+			/* Ignore anything after '--'. */
+			break;
 		} else if (strlen(arg) == 2 && strcmp(arg, "-e") == 0) {
 			/* Here we know the eval arg exists but check anyway */
 			if (i == argc - 1) {

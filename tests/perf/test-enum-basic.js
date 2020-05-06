@@ -10,7 +10,7 @@ function test() {
     var i;
     var ign;
 
-    for (i = 0; i < 1e5; i++) {
+    for (i = 0; i < 1e5; i++) {
         for (ign in obj) {}
         for (ign in arr) {}
         for (ign in obj) {}

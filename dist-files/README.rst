@@ -71,20 +71,12 @@ For more details, see:
 
 This distributable contains:
 
-* Pre-configured Duktape header and source files using the Duktape default
-  configuration:
+* ``src/``: main Duktape library in a "single source file" format (duktape.c,
+  duktape.h, and duk_config.h; no ``#line`` directives), using Duktape default
+  configuration.
 
-  * ``src/``: main Duktape library in a "single source file" format (duktape.c,
-    duktape.h, and duk_config.h).
-
-  * ``src-noline/``: contains a variant of ``src/duktape.c`` with no ``#line``
-    directives which is preferable for some users.  See discussion in
-    https://github.com/svaarala/duktape/pull/363.
-
-  * ``src-separate/``: main Duktape library in multiple files format.
-
-* ``src-input/``: raw input source files used by ``configure.py`` which
-  recreates the combined/separate prepared sources with specific options.
+* ``src-input/``: raw input source files used by ``configure.py`` for creating
+  custom configurations.
 
 * ``tools/``: various Python tools, such as ``configure.py`` for preparing
   a ``duk_config.h`` header and Duktape source files for compilation, see
@@ -125,13 +117,12 @@ This distributable contains Duktape version @DUK_VERSION_FORMATTED@, created fro
 commit @GIT_COMMIT@ (@GIT_DESCRIBE@).
 
 Duktape is copyrighted by its authors (see ``AUTHORS.rst``) and licensed
-under the MIT license (see ``LICENSE.txt``).  String hashing algorithms are
-based on the algorithm from Lua (MIT license), djb2 hash, and Murmurhash2
-(MIT license).  Pseudorandom number generator algorithms are based on
-Adi Shamir's three-op algorithm, xoroshiro128+ (public domain), and SplitMix64
-(public domain).  Duktape module loader is based on the CommonJS module
-loading specification (without sharing any code), CommonJS is under the MIT
-license.
+under the MIT license (see ``LICENSE.txt``).  Duktape contains independent
+implementations, with no included code, of the following algorithms: Lua
+string hash (MIT license), djb2 hash, Murmurhash2 (MIT license), Adi
+Shamir's three-op hash algorithm, xoroshiro128+ PRNG (public domain),
+SplitMix64 PRNG (public domain), and CommonJS module loading specification
+(MIT license).
 
 Have fun!
 

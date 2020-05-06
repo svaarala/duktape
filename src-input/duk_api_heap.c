@@ -10,6 +10,7 @@ struct duk_internal_thread_state {
 	duk_ljstate lj;
 	duk_bool_t creating_error;
 	duk_hthread *curr_thread;
+	duk_uint8_t thread_state;
 	duk_int_t call_recursion_depth;
 };
 
@@ -108,6 +109,7 @@ DUK_EXTERNAL void duk_suspend(duk_hthread *thr, duk_thread_state *state) {
 	duk_memcpy((void *) &snapshot->lj, (const void *) lj, sizeof(duk_ljstate));
 	snapshot->creating_error = heap->creating_error;
 	snapshot->curr_thread = heap->curr_thread;
+	snapshot->thread_state = thr->state;
 	snapshot->call_recursion_depth = heap->call_recursion_depth;
 
 	lj->jmpbuf_ptr = NULL;
@@ -117,6 +119,8 @@ DUK_EXTERNAL void duk_suspend(duk_hthread *thr, duk_thread_state *state) {
 	heap->creating_error = 0;
 	heap->curr_thread = NULL;
 	heap->call_recursion_depth = 0;
+
+	thr->state = DUK_HTHREAD_STATE_INACTIVE;
 }
 
 DUK_EXTERNAL void duk_resume(duk_hthread *thr, const duk_thread_state *state) {
@@ -132,6 +136,8 @@ DUK_EXTERNAL void duk_resume(duk_hthread *thr, const duk_thread_state *state) {
 	 */
 	DUK_ASSERT(thr->heap->pf_prevent_count == 0);
 	DUK_ASSERT(thr->heap->creating_error == 0);
+
+	thr->state = snapshot->thread_state;
 
 	heap = thr->heap;
 

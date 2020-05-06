@@ -31,7 +31,7 @@ summary: |
       start of the array and length would be 64.</li>
   <li>For <code>new Uint32Array(16).subarray(2, 6)</code> the return pointer
       would point to the start of the subarray (2 x 4 = 8 bytes from the start
-      of the Uint32Array) and length would be 16 ((6-2) x 4).</li>
+      of the Uint32Array) and length would be 16 (= (6-2) x 4).</li>
   </ul>
 
   <p>If the target value or the underlying buffer value of a buffer object is a

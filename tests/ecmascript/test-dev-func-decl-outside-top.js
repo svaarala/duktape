@@ -172,13 +172,14 @@ try {
 
 /*===
 function declaration inside try (strict)
-SyntaxError
+fun1 undefined
+fun1 undefined
 ===*/
 
 function functionDeclarationInsideTryStrictTest() {
-    /* Same as above, but in strict mode.  V8 behavior is to reject
-     * function declarationts outside top level in strict mode.  We
-     * follow that behavior.
+    /* Same as above, but in strict mode.  V8 used to reject function
+     * declarations outside top level in strict mode but now accepts
+     * them with block level semantics.
      *
      * Rhino allows such declarations even in strict mode, and provides
      * the same semantics as in non-strict mode.
@@ -190,8 +191,9 @@ function functionDeclarationInsideTryStrictTest() {
                  'throw new Error("test");' +
              '} catch (e) {' +
                  'function fun1() { print("fun1", typeof e); }' +
+                 'fun1();' +  // V8: 'fun1 object'
              '}' +
-             'fun1();' +
+             'fun1();' +  // V8: TypeError, fun1 not visible
          '})()');
 }
 

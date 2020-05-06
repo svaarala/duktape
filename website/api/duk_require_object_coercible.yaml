@@ -8,7 +8,8 @@ stack: |
 
 summary: |
   <p>Like <code><a href="#duk_is_object_coercible">duk_is_object_coercible()</a></code>
-  but throws a <code>TypeError</code> if <code>val</code> is not object coercible.</p>
+  but throws a <code>TypeError</code> if <code>val</code> is not
+  <a href="http://www.ecma-international.org/ecma-262/5.1/#sec-9.10">object coercible</a>.</p>
 
 example: |
   duk_require_object_coercible(ctx, -3);

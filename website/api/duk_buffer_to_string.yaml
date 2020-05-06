@@ -16,6 +16,10 @@ summary: |
   a buffer object whose backing buffer doesn't cover the apparent
   buffer size, (3) the index is invalid.</p>
 
+  <p>Because the buffer data is used as is for the string created, this
+  API call allows creation of Symbol values unless the buffer data is
+  first sanitized.</p>
+
   <div include="ref-custom-type-coercion.html" />
 
   <div class="note">

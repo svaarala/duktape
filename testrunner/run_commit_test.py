@@ -2,7 +2,7 @@
 #
 #  Python commit test run script.
 #
-#  Intended to work on Linux, OS X, and Windows (both Cygwin and command
+#  Intended to work on Linux, macOS, and Windows (both Cygwin and command
 #  prompt).  Some notes for portability:
 #
 #    * Use os.path.join() to join paths.
@@ -129,7 +129,7 @@ def unpack_zip(fn):
     z.close()
 
 def get_binary_size(fn):
-    # Pattern works for Linux and OS X.
+    # Pattern works for Linux and macOS.
     res = execute([ 'size', fn ])
     m = re.compile(r'.*?^\s*(\d+)\s+(\d+)\s+(\d+)\s+(\d+).*?', re.MULTILINE | re.DOTALL).match(res['stdout'])
     if m is None:
@@ -194,7 +194,7 @@ def genconfig_dist_src(genconfig_opts):
     ])
 
 def context_codepolicycheck():
-    return execute([ 'make', 'codepolicycheck' ], env=newenv(TRAVIS=1), catch=True)['success']
+    return execute([ 'make', 'codepolicycheck' ], env=newenv(CI=1), catch=True)['success']
 
 def context_helper_x64_ecmatest(env=None, genconfig_opts=[], valgrind=False):
     cwd = os.getcwd()
@@ -1107,7 +1107,7 @@ context_handlers = {
 
     'codemetrics': context_codemetrics,
 
-    # OS X: can currently share Linux handlers
+    # macOS: can currently share Linux handlers
 
     'osx-x64-ecmatest': context_linux_x64_ecmatest,
     'osx-x64-qecmatest': context_linux_x64_ecmatest,

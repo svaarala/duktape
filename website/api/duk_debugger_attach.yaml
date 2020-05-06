@@ -54,7 +54,7 @@ summary: |
       <a href="https://github.com/svaarala/duktape/blob/master/doc/debugger.rst">debugger.rst</a>.</li>
   <li>Since Duktape 1.4.0 the debugger detached callback is allowed to call
       <code><a href="#duk_debugger_attach">duk_debugger_attach()</a></code>
-      to immediately reattach the debugger.  In Duktape 1.3.0 and before the
+      to immediately reattach the debugger.  Before Duktape 1.4.0 the
       immediate reattach potentially caused
       <a href="https://github.com/svaarala/duktape/pull/399">some issues</a>.</li>
   </ul>

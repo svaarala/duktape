@@ -119,11 +119,10 @@ try {
 }
 </pre>
 
-<p>Attempt to write to <code>stack</code> is silently ignored.  You can still
-override the accessor by defining an own property of the same name explicitly
-with <code>Object.defineProperty()</code>.  This behavior differs from V8 where
-<code>stack</code> is an own property of the Error instance, and if you assign a
-value to <code>stack</code>, the value reads back as assigned.</p>
+<p>An attempt to write to <code>stack</code> is captured by an inherited
+setter which will create an own property as if a normal assignment was done.
+This behavior differs from V8 where <code>stack</code> is an own property
+of the Error instance.</p>
 
 <h2 id="error-handlers">Error handlers (errCreate and errThrow)</h2>
 

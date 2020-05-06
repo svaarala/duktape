@@ -4,8 +4,7 @@ proto: |
   void duk_gc(duk_context *ctx, duk_uint_t flags);
 
 summary: |
-  <p>Force a mark-and-sweep garbage collection round.  If mark-and-sweep is
-  disabled in the Duktape build, the call is a no-op.</p>
+  <p>Force a mark-and-sweep garbage collection round.</p>
 
   <p>The following flags are defined:</p>
   <table>

@@ -65,6 +65,9 @@ and agreed to irrevocably license their contributions under the Duktape
 * Ian Whyman (https://github.com/v00d00)
 * Rick Sayre (https://github.com/whorfin)
 * Craig Edwards (https://github.com/braindigitalis)
+* Craig Leres (https://github.com/leres)
+* Maurici Abad (https://github.com/mauriciabad)
+* Nancy Li (https://github.com/NancyLi1013)
 
 Other contributions
 ===================

@@ -26,7 +26,7 @@ function test() {
     var i;
     var ign;
 
-    for (var i = 0; i < 1e5; i++) {
+    for (i = 0; i < 1e5; i++) {
         ign = func();
         ign = func();
         ign = func();
@@ -39,6 +39,7 @@ function test() {
         ign = func();
     }
 }
+
 try {
     test();
 } catch (e) {

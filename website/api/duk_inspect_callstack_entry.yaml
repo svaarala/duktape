@@ -43,7 +43,7 @@ summary: |
   </table>
 
 example: |
-  duk_inspect_callstack_entry(ctx, -3);
+  duk_inspect_callstack_entry(ctx, -1);
   duk_get_prop_string(ctx, -1, "lineNumber");
   printf("immediate caller is executing on line %ld\n", (long) duk_to_int(ctx, -1));
   duk_pop_2(ctx);

@@ -37,7 +37,7 @@ Duktape API to call ECMAScript functions from C code and vice versa.</p>
 <h1>Main features</h1>
 <ul>
 <li>Embeddable, portable, compact:
-    can run on platforms with 160kB flash and 64kB system RAM</li>
+    can run on platforms with 160kB flash and 64kB RAM</li>
 <li><a href="http://www.ecma-international.org/ecma-262/5.1/">ECMAScript E5/E5.1</a>,
     with some semantics updated from ES2015+</li>
 <li>Partial support for
@@ -78,7 +78,9 @@ Duktape API to call ECMAScript functions from C code and vice versa.</p>
 <tr><td>x86 full lowmem</td><td>148</td><td>1.5</td></tr>
 </table>
 
+<!--
 <p>See <a href="http://duktape.org/benchmarks.html">Benchmarks</a>.</p>
+-->
 
 <p>See <a href="https://github.com/svaarala/duktape/blob/master/doc/low-memory.rst#optimizing-code-footprint">GCC options</a>
 for minimizing code footprint.  Full <a href="https://github.com/svaarala/duktape/blob/master/doc/low-memory.rst">lowmem</a>
@@ -143,7 +145,7 @@ $ ./test
 here to disable ECMAScript 6 <code>Proxy</code> object support:</p>
 
 <pre>
-$ python2 duktape-2.2.0/tools/configure.py --output-directory src-duktape \
+$ python2 duktape-2.5.0/tools/configure.py --output-directory src-duktape \
       -UDUK_USE_ES6_PROXY
 $ ls src-duktape/
 <span class="index-shell-output">duk_config.h  duk_source_meta.json  duktape.c  duktape.h</span>

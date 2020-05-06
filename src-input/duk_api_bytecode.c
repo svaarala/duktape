@@ -395,7 +395,7 @@ static const duk_uint8_t *duk__load_func(duk_hthread *thr, const duk_uint8_t *p,
 
 	DUK_ASSERT(thr != NULL);
 
-	DUK_DD(DUK_DDPRINT("loading function, p=%p, p_end=%p", (void *) p, (void *) p_end));
+	DUK_DD(DUK_DDPRINT("loading function, p=%p, p_end=%p", (const void *) p, (const void *) p_end));
 
 	DUK__ASSERT_LEFT(3 * 4);
 	count_instr = DUK_RAW_READINC_U32_BE(p);

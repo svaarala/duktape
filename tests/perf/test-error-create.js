@@ -35,7 +35,7 @@ function test() {
     var err;
     var i;
 
-    for (i = 0; i < 1e6; i++) {
+    for (i = 0; i < 1e6; i++) {
         err = fun4();
     }
 

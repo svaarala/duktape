@@ -202,7 +202,8 @@ EMCC = emcc
 #EMCCOPTS = -s TOTAL_MEMORY=2097152 -s TOTAL_STACK=524288 --memory-init-file 0
 EMCCOPTS = -O2 -std=c99 -Wall --memory-init-file 0 -s WASM=0 -s POLYFILL_OLD_MATH_FUNCTIONS
 EMCCOPTS_DUKVM = -O2 -std=c99 -Wall --memory-init-file 0 -DEMSCRIPTEN -s WASM=0
-EMCCOPTS_DUKWEB_EXPORT = -s EXPORTED_FUNCTIONS='["_dukweb_is_open", "_dukweb_open","_dukweb_close","_dukweb_eval"]' -s 'EXTRA_EXPORTED_RUNTIME_METHODS=["ccall","cwrap"]'
+EMCCOPTS_DUKVM_WASM = -O2 -std=c99 -Wall --memory-init-file 0 -DEMSCRIPTEN -s WASM=1
+EMCCOPTS_DUKWEB_EXPORT = -s EXPORTED_FUNCTIONS='["_main","_dukweb_is_open", "_dukweb_open","_dukweb_close","_dukweb_eval"]' -s 'EXTRA_EXPORTED_RUNTIME_METHODS=["ccall","cwrap"]'
 EMDUKOPTS = -s TOTAL_MEMORY=268435456 -DDUK_CMDLINE_PRINTALERT_SUPPORT
 EMDUKOPTS += -DEMSCRIPTEN  # enable stdin workaround in duk_cmdline.c
 
@@ -210,7 +211,7 @@ EMDUKOPTS += -DEMSCRIPTEN  # enable stdin workaround in duk_cmdline.c
 MAND_BASE64 = dyA9IDgwOyBoID0gNDA7IGl0ZXIgPSAxMDA7IGZvciAoaSA9IDA7IGkgLSBoOyBpICs9IDEpIHsgeTAgPSAoaSAvIGgpICogNC4wIC0gMi4wOyByZXMgPSBbXTsgZm9yIChqID0gMDsgaiAtIHc7IGogKz0gMSkgeyB4MCA9IChqIC8gdykgKiA0LjAgLSAyLjA7IHh4ID0gMDsgeXkgPSAwOyBjID0gIiMiOyBmb3IgKGsgPSAwOyBrIC0gaXRlcjsgayArPSAxKSB7IHh4MiA9IHh4Knh4OyB5eTIgPSB5eSp5eTsgaWYgKE1hdGgubWF4KDAsIDQuMCAtICh4eDIgKyB5eTIpKSkgeyB5eSA9IDIqeHgqeXkgKyB5MDsgeHggPSB4eDIgLSB5eTIgKyB4MDsgfSBlbHNlIHsgYyA9ICIuIjsgYnJlYWs7IH0gfSByZXNbcmVzLmxlbmd0aF0gPSBjOyB9IHByaW50KHJlcy5qb2luKCIiKSk7IH0K
 
 # Options for runtests.js.
-RUNTESTSOPTS = --prep-test-path util/prep_test.py --minify-uglifyjs2 UglifyJS2/bin/uglifyjs --util-include-path tests/ecmascript --known-issues doc/testcase-known-issues.yaml
+RUNTESTSOPTS = --python-command $(PYTHON) --prep-test-path util/prep_test.py --minify-uglifyjs2 UglifyJS2/bin/uglifyjs --util-include-path tests/ecmascript --known-issues doc/testcase-known-issues.yaml
 
 # Compile 'duk' only by default
 .PHONY: all
@@ -261,7 +262,7 @@ clean:
 	@rm -rf test262-*
 	@rm -rf lua-5.2.3
 	@rm -rf luajs
-	@rm -f dukweb.js
+	@rm -f dukweb.js dukweb.wasm
 	@rm -rf /tmp/dukweb-test/
 	@rm -f massif-*.out
 	@rm -f literal_intern_test
@@ -574,10 +575,10 @@ emduk.js: prep/emduk
 # and providing an eval() facility from both sides.  This is a placeholder now
 # and doesn't do anything useful yet.
 dukweb.js: prep/dukweb
-	$(EMCC) $(EMCCOPTS_DUKVM) $(EMCCOPTS_DUKWEB_EXPORT) \
+	@rm -f dukweb.js dukweb.asm
+	$(EMCC) $(EMCCOPTS_DUKVM_WASM) $(EMCCOPTS_DUKWEB_EXPORT) --post-js dukweb/dukweb_extra.js \
 		-Iprep/dukweb prep/dukweb/duktape.c dukweb/dukweb.c -o dukweb.js
-	cat dukweb/dukweb_extra.js >> dukweb.js
-	@wc dukweb.js
+	@wc dukweb.js dukweb.wasm
 literal_intern_test: prep/nondebug misc/literal_intern_test.c
 	$(CC) -o $@ -std=c99 -O2 -fstrict-aliasing -Wall -Wextra \
 		-Iprep/nondebug prep/nondebug/duktape.c misc/literal_intern_test.c -lm
@@ -627,7 +628,7 @@ test: apitest ecmatest
 
 # Set of miscellaneous tests for release.
 .PHONY: releasetest
-releasetest: configuretest xmldoctest closuretest bluebirdtest luajstest jsinterpretertest lodashtest underscoretest emscriptenluatest emscriptenduktest emscripteninceptiontest emscriptenmandeltest emscriptentest errorinjecttest
+releasetest: configuretest xmldoctest closuretest bluebirdtest luajstest jsinterpretertest lodashtest underscoretest emscriptenluatest emscriptenduktest emscriptenmandeltest emscriptentest errorinjecttest
 	@echo ""
 	@echo "### Release tests successful!"  # These tests now have output checks.
 
@@ -661,11 +662,11 @@ configuretest:
 
 # Dukweb.js test.
 .PHONY: dukwebtest
-dukwebtest: dukweb.js jquery-1.11.2.js
+dukwebtest: dukweb.js dukweb.wasm jquery-1.11.2.js
 	@echo "### dukwebtest"
 	@rm -rf /tmp/dukweb-test/
 	mkdir /tmp/dukweb-test/
-	cp dukweb.js jquery-1.11.2.js dukweb/dukweb.html dukweb/dukweb.css /tmp/dukweb-test/
+	cp dukweb.js dukweb.wasm jquery-1.11.2.js dukweb/dukweb.html dukweb/dukweb.css /tmp/dukweb-test/
 	@echo "Now point your browser to: file:///tmp/dukweb-test/dukweb.html"
 
 # Third party tests.
@@ -946,7 +947,7 @@ sax-js:
 xmldoc:
 	# https://github.com/nfarina/xmldoc
 	# http://nfarina.com/post/34302964969/a-lightweight-xml-document-class-for-nodejs-javascript
-	$(GIT) clone --depth 1 https://github.com/nfarina/xmldoc.git 
+	$(GIT) clone --depth 1 https://github.com/nfarina/xmldoc.git
 FlameGraph:
 	# http://www.brendangregg.com/FlameGraphs/cpuflamegraphs.html
 	# https://github.com/brendangregg/FlameGraph
@@ -1011,7 +1012,7 @@ dist-iso: dist-src
 .PHONY: tidy-site
 tidy-site:
 	for i in website/*/*.html; do echo "*** Checking $$i"; tidy -q -e -xml $$i; done
-site: duktape-releases dukweb.js jquery-1.11.2.js lz-string
+site: duktape-releases dukweb.js dukweb.wasm jquery-1.11.2.js lz-string
 	rm -rf site
 	mkdir site
 	-cd duktape-releases/; git pull --rebase  # get binaries up-to-date, but allow errors for offline use
@@ -1034,7 +1035,7 @@ dist-site: tidy-site site
 	rm -rf duktape-site-$(DUK_VERSION_FORMATTED)
 
 # Code policy check.
-ifeq ($(TRAVIS),1)
+ifeq ($(CI),1)
 CODEPOLICYOPTS=--fail-on-errors
 else
 CODEPOLICYOPTS=
@@ -1183,6 +1184,7 @@ docker-images-x64: docker-prepare
 	docker build -t duktape-site-ubuntu-18.04-x64 docker/duktape-site-ubuntu-18.04-x64
 	docker build -t duktape-duk-ubuntu-18.04-x64 docker/duktape-duk-ubuntu-18.04-x64
 	docker build -t duktape-shell-ubuntu-18.04-x64 docker/duktape-shell-ubuntu-18.04-x64
+	docker build -t duktape-release-1-ubuntu-18.04-x64 docker/duktape-release-1-ubuntu-18.04-x64
 
 .PHONY: docker-images-s390x
 docker-images-s390x: docker-prepare
@@ -1195,15 +1197,14 @@ docker-images: docker-images-x64
 .PHONY: docker-clean
 docker-clean:
 	-rm -f docker/*/gitconfig docker/*/prepare_repo.sh
-	-docker rmi \
-		duktape-shell-ubuntu-18.04-x64:latest \
-		duktape-duk-ubuntu-18.04-x64:latest \
-		duktape-site-ubuntu-18.04-x64:latest \
-		duktape-dist-ubuntu-18.04-x64:latest \
-		duktape-base-ubuntu-18.04-x64:latest
-	-docker rmi \
-		duktape-shell-ubuntu-18.04-s390x:latest \
-		duktape-base-ubuntu-18.04-s390x:latest
+	-docker rmi duktape-release-1-ubuntu-18.04-x64:latest
+	-docker rmi duktape-shell-ubuntu-18.04-x64:latest
+	-docker rmi duktape-duk-ubuntu-18.04-x64:latest
+	-docker rmi duktape-site-ubuntu-18.04-x64:latest
+	-docker rmi duktape-dist-ubuntu-18.04-x64:latest
+	-docker rmi duktape-base-ubuntu-18.04-x64:latest
+	-docker rmi duktape-shell-ubuntu-18.04-s390x:latest
+	-docker rmi duktape-base-ubuntu-18.04-s390x:latest
 	@echo ""
 	@echo "Now run 'docker system prune' to free disk space."
 
@@ -1262,3 +1263,10 @@ docker-shell-wd:
 .PHONY: docker-shell-wdmount
 docker-shell-wdmount:
 	docker run -v $(shell pwd):/work/duktape --rm -ti duktape-shell-ubuntu-18.04-x64
+
+.PHONY: docker-release-1-wd
+docker-release-1-wd:
+	rm -f docker-input.zip docker-output.zip
+	#git archive --format zip --output docker-input.zip HEAD
+	zip -1 -q -r docker-input.zip .
+	docker run --rm -i -e STDIN_ZIP=1 duktape-release-1-ubuntu-18.04-x64 < docker-input.zip

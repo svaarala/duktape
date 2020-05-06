@@ -26,7 +26,7 @@ browsers only the actual section defining the function should be found.</p>
 <code>NULL</code> arguments and invalid value stack indices without unsafe
 behavior (crashes).</p>
 
-<p>One major exception is the Duktape context argument, <code>ctx</code>.
+<p>One major exception is the initial Duktape context argument, <code>ctx</code>.
 Unless stated otherwise, it is not checked and is required to be
 non-<code>NULL</code> or unsafe behavior may occur.  This is the case
 because explicit checks for the argument would increase code footprint
@@ -48,7 +48,7 @@ for more discussion.</p>
 <pre class="c-code">
 #include "duktape.h"
 
-int main(int argc, char *argv[]) {
+int main(int argc, const char *argv[]) {
     duk_context *ctx = duk_create_heap_default();
     if (ctx) {
         duk_eval_string(ctx, "print('Hello world from Javascript!');");

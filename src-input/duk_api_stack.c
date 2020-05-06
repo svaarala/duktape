@@ -6313,6 +6313,13 @@ DUK_INTERNAL duk_idx_t duk_unpack_array_like(duk_hthread *thr, duk_idx_t idx) {
  *  Error throwing
  */
 
+#if defined(DUK_USE_GCC_PRAGMAS)
+#pragma GCC diagnostic push
+#pragma GCC diagnostic ignored "-Wsuggest-attribute=noreturn"
+#elif defined(DUK_USE_CLANG_PRAGMAS)
+#pragma clang diagnostic push
+#endif
+
 DUK_EXTERNAL void duk_throw_raw(duk_hthread *thr) {
 	duk_tval *tv_val;
 
@@ -6401,6 +6408,12 @@ DUK_EXTERNAL void duk_error_raw(duk_hthread *thr, duk_errcode_t err_code, const 
 	(void) duk_throw(thr);
 	DUK_WO_NORETURN(return;);
 }
+
+#if defined(DUK_USE_GCC_PRAGMAS)
+#pragma GCC diagnostic pop
+#elif defined(DUK_USE_CLANG_PRAGMAS)
+#pragma clang diagnostic pop
+#endif
 
 #if !defined(DUK_USE_VARIADIC_MACROS)
 DUK_NORETURN(DUK_LOCAL_DECL void duk__throw_error_from_stash(duk_hthread *thr, duk_errcode_t err_code, const char *fmt, va_list ap));

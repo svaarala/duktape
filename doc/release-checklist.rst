@@ -41,21 +41,18 @@ Checklist for ordinary releases
 
   - Must add all new API calls
 
+* Run ``make docker-release-1-wd``
+
+  - Check output manually
+
 * Compilation tests:
 
   - Clean compile for command line tool with (a) no options and (b) common
     debug options (DUK_USE_DEBUG, DUK_USE_DEBUG_LEVEL=0, DUK_USE_DEBUG_PRINT=...,
     DUK_USE_SELF_TESTS, DUK_USE_ASSERTIONS)
 
-  - Compile both from ``src`` and ``src-separate``.
-
-  - Run ``mandel.js`` to test the the command line tool works.
-
   - Check that ``duk_tval`` is packed by default on x86 and unpacked on
     x64
-
-  - util/checklist_compile_test.sh: linux compiler/arch combinations,
-    run in dist, check output manually
 
   - Platform / compiler combinations (incomplete, should be automated):
 
@@ -83,14 +80,7 @@ Checklist for ordinary releases
 
     + Linux SH4 gcc
 
-  - Check ``make duk-clang``, covers ``-Wcast-align``
-
   - Check compile warnings when DUK_NORETURN() is not defined
-
-* Test configure.py manually using metadata from the distributable
-
-  - Ensure that Duktape compiles with e.g. ``-DDUK_USE_FASTINT`` configure
-    argument
 
 * duk-sanitize-clang:
 
@@ -226,9 +216,9 @@ Checklist for ordinary releases
 
   - ``git tag -l -n1`` to list current tags
 
-  - ``git tag -s -m "<one line release description>" vN.N.N`` to set tag
+  - ``git tag -m "<one line release description>" vN.N.N`` to set tag
 
-  - ``git tag -f -s -m "<one line release description>" vN.N.N`` to forcibly
+  - ``git tag -f -m "<one line release description>" vN.N.N`` to forcibly
     reset tag if it needs to be moved
 
 * If release is a stable major/minor release (e.g. 1.1.0), create a maintenance

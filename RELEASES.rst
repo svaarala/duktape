@@ -683,7 +683,7 @@ Released
   sigsetjmp() (with savesigs set to 0) can be a lot faster than setjmp()
   if the platform's setjmp() implementation saves the signal mask (GH-55)
 
-* Default to _setjmp() for long control transfers on OSX/iPhone (when
+* Default to _setjmp() for long control transfers on macOS/iOS (when
   __APPLE__ is defined) (GH-55)
 
 * Add SuperH detection support
@@ -862,7 +862,7 @@ Released
 * Improve MIPS32/MIPS64 detection, architecture strings in Duktape.env
   also updated ("mips32" or "mips64") (GH-102)
 
-* Add iPhone/iOS strings to Duktape.env
+* Add iOS strings to Duktape.env
 
 * Add support for TI-Nspire (using Ndless, see GH-113)
 
@@ -1092,7 +1092,7 @@ Released
 
 * Remove DUK_OPT_DEEP_C_STACK (and DUK_USE_DEEP_C_STACK) in favor of explicit
   DUK_USE_xxx config options for native recursion limits; C stacks are assumed
-  to be deep by default for all targets including OSX/iPhone (GH-165, GH-226)
+  to be deep by default for all targets including macOS/iOS (GH-165, GH-226)
 
 * Make Proxy internal _Target and _Handler properties immutable (non-writable
   and non-configurable) (GH-237)
@@ -3540,10 +3540,7 @@ Miscellaneous:
 
 * Various portability fixes (GH-1931, GH-1976)
 
-Planned
-=======
-
-2.5.0 (XXXX-XX-XX)
+2.5.0 (2019-11-24)
 ------------------
 
 * Rename the 'global' binding to 'globalThis' to match updated
@@ -3582,7 +3579,35 @@ Planned
 
 * Minor performance and footprint improvements (GH-2167, GH-2177)
 
+Planned
+=======
+
 3.0.0 (XXXX-XX-XX)
 ------------------
 
-* TBD
+* Remove prepared source variants other than src/ (matches Duktape 2.x
+  src-noline/) from the distributable (GH-2209)
+
+* Accept unlabelled function statements outside of top level for strict
+  functions (using hoist semantics), previously they were rejected with
+  a SyntaxError (GH-2213)
+
+* Accept unescaped U+2028 and U+2029 in string literals so that all
+  JSON.stringify() output parses with eval() (ES2019) (GH-2235)
+
+* Don't treat U+180E as whitespace e.g. for String trim() purposes,
+  (ES2016, requires Unicode 8.0.0 or higher) (GH-2236)
+
+* Use wasm for dukweb.js compilation (including duktape.org site),
+  fix async loading of emcc-compiled code in dukweb.html (GH-2244)
+
+* Remove hardcoded endianness assumption for PPC64 to support ppc64le
+  (GH-2265, GH-2267)
+
+* Fix duk_suspend() handling of finalizers, if main thread was suspended
+  finalizers triggered by other threads could consistenly fail (GH-2282)
+
+* Improve DUK_USE_OS_STRING for macOS, iOS, watchOS, and tvOS (GH-2288)
+
+* Fix nested error handling bug for out-of-memory during error creation
+  (GH-2278, GH-2290)
