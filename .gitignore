@@ -40,7 +40,6 @@
 /duktape-releases/
 /doc/*.pdf
 /UglifyJS/
-/UglifyJS2/
 /closure-compiler/
 /linenoise/
 /underscore/
