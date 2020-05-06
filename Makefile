@@ -924,7 +924,7 @@ UglifyJS2:
 	@rm -f v2.4.12.tar.gz
 	$(WGET) https://github.com/mishoo/UglifyJS2/archive/v2.4.12.tar.gz -O v2.4.12.tar.gz
 	tar xfz v2.4.12.tar.gz
-	mv UglifyJS2-2.4.12 UglifyJS2
+	mv UglifyJS-2.4.12 UglifyJS2
 	@rm -f v2.4.12.tar.gz
 	cd UglifyJS2; npm install; cd -
 cloc-1.60.pl:
