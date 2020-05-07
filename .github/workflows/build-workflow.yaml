@@ -33,3 +33,29 @@ jobs:
         run: |
           ./duk -e "print(Duktape.env); print('Hello world!');"
           ./duk dist-files/mandel.js
+  build_duk_windows:
+    name: Duk VS2019
+    runs-on: windows-2019
+    strategy:
+      matrix:
+        architecture: [ 'x86', 'amd64' ]
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v2
+      - name: Build
+        shell: cmd
+        run: |
+          REM call "C:\Program Files (x86)\Microsoft Visual Studio\2019\Enterprise\VC\Auxiliary\Build\vcvars64.bat"
+          call "C:\Program Files (x86)\Microsoft Visual Studio\2019\Enterprise\VC\Auxiliary\Build\vcvarsall.bat" ${{matrix.architecture}}
+          REM cl /?
+          REM python2 -m pip install PyYAML
+          REM python2 tools\configure.py --line-directives --output-directory prep-nondll --source-directory src-input --config-metadata config
+          cd src-tools && make && cd ..
+          node.exe src-tools\index.js configure --output-directory prep-nondll --source-directory src-input
+          cl /W3 /O2 /DDUK_CMDLINE_PRINTALERT_SUPPORT /DDUK_CMDLINE_PRINTALERT_SUPPORT /Iprep-nondll /Iexamples\cmdline /Iextras\print-alert prep-nondll\duktape.c examples\cmdline\duk_cmdline.c extras\print-alert\duk_print_alert.c /Feduk.exe
+          dir duk.exe
+      - name: Test
+        shell: cmd
+        run: |
+          duk.exe -e "print(Duktape.env); print('Hello world!');"
+          duk.exe dist-files\mandel.js
