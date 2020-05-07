@@ -97,6 +97,17 @@ function addOptionValue(optSpec, opts, name, value) {
     }
 }
 
+// Check required options.
+function checkRequiredOptions(spec, opts) {
+    let options = spec.options || {};
+    for (let optName of Object.getOwnPropertyNames(options || {}).sort()) {
+        let opt = options[optName];
+        if (opt.required && !(optName in opts)) {
+            throw new TypeError('missing required option --' + optName);
+        }
+    }
+}
+
 // Parse command line given a clean argv (excluding nodejs etc) and a
 // global command/option specification object.
 function parseCommandLine(argv, argSpec) {
@@ -104,7 +115,7 @@ function parseCommandLine(argv, argSpec) {
     var command = void 0;
     var commandOpts = void 0;
     var commandPositional = [];
-    var genericSpec = argSpec.options;
+    var genericSpec = assert(argSpec);
     var commandSpec = void 0;
 
     function parseLongOption(i, t) {
@@ -230,6 +241,14 @@ function parseCommandLine(argv, argSpec) {
             }
             i++;
         }
+    }
+
+    // Check required options.
+    if (genericSpec) {
+        checkRequiredOptions(genericSpec, genericOpts);
+    }
+    if (commandSpec) {
+        checkRequiredOptions(commandSpec, commandOpts);
     }
 
     return { genericOpts, command, commandOpts, commandPositional };

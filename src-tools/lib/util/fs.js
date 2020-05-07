@@ -61,6 +61,10 @@ function pathJoinTest() {
     // > require('path').join('foo/bar/')
     // 'foo/bar/'
 
+    if (!isDuktape()) {
+        return;
+    }
+
     assert(pathJoin('foo/bar/quux.c', '..', 'baz') === 'foo/bar/baz');
     assert(pathJoin('foo/bar/', '..', 'baz') === 'foo/baz');
     assert(pathJoin('foo/bar', '..', 'baz') === 'foo/baz');
@@ -135,6 +139,10 @@ function dirnameTest() {
     // > require('path').dirname('foo')
     // '.'
 
+    if (!isDuktape()) {
+        return;
+    }
+
     assert(dirname('foo/bar') === 'foo');
     assert(dirname('foo/bar/') === 'foo');
     assert(dirname('foo/bar//') === 'foo');
@@ -185,6 +193,10 @@ function basenameTest() {
     // '..'
     // > require('path').basename('foo/..')
     // '..'
+
+    if (!isDuktape()) {
+        return;
+    }
 
     assert(basename('foo') === 'foo');
     assert(basename('foo/') === 'foo');
@@ -247,6 +259,11 @@ function readFileYaml(fn) {
     return parseYaml(readFileUtf8(fn));
 }
 exports.readFileYaml = readFileYaml;
+
+function writeFileJson(fn, doc) {
+    writeFileUtf8(fn, JSON.stringify(doc) + '\n');
+}
+exports.writeFileJson = writeFileJson;
 
 function writeFileJsonPretty(fn, doc) {
     writeFileUtf8(fn, JSON.stringify(doc, null, 4) + '\n');
