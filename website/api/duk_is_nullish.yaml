@@ -1,0 +1,27 @@
+name: duk_is_nullish
+
+proto: |
+  duk_bool_t duk_is_nullish(duk_context *ctx, duk_idx_t idx);
+
+stack: |
+  [ ... val! ... ]
+
+summary: |
+  <p>Returns 1 if value at <code>idx</code> is either <code>null</code> or <code>undefined</code>,
+  otherwise returns 0.  If <code>idx</code> is invalid, also returns 0.</p>
+
+  <p>This API call is similar to a <code>(x == null)</code> comparison in ECMAScript, which
+  is true for both <code>null</code> and <code>undefined</code>.</p>
+
+example: |
+  if (duk_is_nullish(ctx, -3)) {
+      /* ... */
+  }
+
+tags:
+  - stack
+
+seealso:
+  - duk_is_null_or_undefined
+
+introduced: 3.0.0

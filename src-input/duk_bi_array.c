@@ -419,7 +419,7 @@ DUK_INTERNAL duk_ret_t duk_bi_array_prototype_join_shared(duk_hthread *thr) {
 		}
 
 		duk_get_prop_index(thr, 1, (duk_uarridx_t) idx);
-		if (duk_is_null_or_undefined(thr, -1)) {
+		if (duk_is_nullish(thr, -1)) {
 			duk_pop_nodecref_unsafe(thr);
 			duk_push_hstring_empty(thr);
 		} else {

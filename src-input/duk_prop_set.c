@@ -2082,7 +2082,7 @@ DUK_INTERNAL duk_bool_t duk_prop_putvalue_inidx(duk_hthread *thr, duk_idx_t idx_
 	}
 	}
 
-	if (duk_is_null_or_undefined(thr, idx_recv)) {
+	if (duk_is_nullish(thr, idx_recv)) {
 		/* Ensure ToObject() coercion error happens before key coercion
 		 * side effects.
 		 */

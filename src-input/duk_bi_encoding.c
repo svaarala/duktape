@@ -448,7 +448,7 @@ DUK_INTERNAL duk_ret_t duk_bi_textdecoder_constructor(duk_hthread *thr) {
 		/* XXX: For now ignore 'label' (encoding identifier). */
 		duk_to_string(thr, 0);
 	}
-	if (!duk_is_null_or_undefined(thr, 1)) {
+	if (!duk_is_nullish(thr, 1)) {
 		if (duk_get_prop_literal(thr, 1, "fatal")) {
 			fatal = duk_to_boolean(thr, -1);
 		}

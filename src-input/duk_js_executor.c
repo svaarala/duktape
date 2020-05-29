@@ -2608,7 +2608,7 @@ DUK_LOCAL DUK_EXEC_NOINLINE_PERF void duk__handle_op_initenum(duk_hthread *thr, 
 	b = DUK_DEC_B(ins);
 	c = DUK_DEC_C(ins);
 
-	if (duk_is_null_or_undefined(thr, (duk_idx_t) c)) {
+	if (duk_is_nullish(thr, (duk_idx_t) c)) {
 		duk_push_null(thr);
 		duk_replace(thr, (duk_idx_t) b);
 	} else {

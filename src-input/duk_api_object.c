@@ -891,7 +891,7 @@ DUK_EXTERNAL duk_bool_t duk_put_global_heapptr(duk_hthread *thr, void *ptr) {
 
 DUK_INTERNAL duk_bool_t duk_get_method_stridx(duk_hthread *thr, duk_idx_t idx, duk_small_uint_t stridx) {
 	(void) duk_get_prop_stridx(thr, idx, stridx);
-	if (duk_is_null_or_undefined(thr, -1)) {
+	if (duk_is_nullish(thr, -1)) {
 		duk_pop_nodecref_unsafe(thr);
 		return 0;
 	}

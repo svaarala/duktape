@@ -4536,8 +4536,7 @@ DUK_INTERNAL duk_bool_t duk_hobject_delprop(duk_hthread *thr, duk_tval *tv_obj, 
 	 */
 	entry_top = duk_get_top(thr);
 
-	if (DUK_TVAL_IS_UNDEFINED(tv_obj) ||
-	    DUK_TVAL_IS_NULL(tv_obj)) {
+	if (DUK_TVAL_IS_NULLISH(tv_obj)) {
 		DUK_DDD(DUK_DDDPRINT("base object is undefined or null -> reject"));
 		goto fail_invalid_base_uncond;
 	}
