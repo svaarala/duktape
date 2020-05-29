@@ -91,6 +91,7 @@ CONFIGOPTS_DEBUG_SCANBUILD = --option-file util/makeduk_base.yaml --option-file 
 CONFIGOPTS_DEBUG_ROM = --rom-support --rom-auto-lightfunc --option-file util/makeduk_base.yaml --option-file util/makeduk_debug.yaml -DDUK_USE_ROM_STRINGS -DDUK_USE_ROM_OBJECTS -DDUK_USE_ROM_GLOBAL_INHERIT -UDUK_USE_HSTRING_ARRIDX
 CONFIGOPTS_EMDUK = -UDUK_USE_FASTINT -UDUK_USE_PACKED_TVAL
 CONFIGOPTS_DUKWEB = --option-file util/dukweb_base.yaml --fixup-file util/dukweb_fixup.h
+CONFIGOPTS_FUZZ = --option-file util/makeduk_base.yaml --option-file util/makeduk_fuzz.yaml
 
 # Profile guided optimization test set.
 PGO_TEST_SET = \
@@ -266,7 +267,7 @@ clean:
 	@rm -rf /tmp/dukweb-test/
 	@rm -f massif-*.out
 	@rm -f literal_intern_test
-
+	@rm -f duk-fuzzilli
 .PHONY: cleanall
 cleanall: clean
 	# Don't delete these in 'clean' to avoid re-downloading them over and over
@@ -325,6 +326,9 @@ prep/nondebug-rom: prep
 prep/debug: prep
 	@rm -rf ./prep/debug
 	$(PYTHON) tools/configure.py --output-directory ./prep/debug --source-directory src-input --config-metadata config $(CONFIGOPTS_DEBUG) --line-directives
+prep/fuzz: prep
+	@rm -rf ./prep/fuzz
+	$(PYTHON) tools/configure.py --output-directory ./prep/fuzz --source-directory src-input --config-metadata config $(CONFIGOPTS_FUZZ) --line-directives
 prep/debug-scanbuild: prep
 	@rm -rf ./prep/debug-scanbuild
 	$(PYTHON) tools/configure.py --output-directory ./prep/debug-scanbuild --source-directory src-input --config-metadata config $(CONFIGOPTS_DEBUG_SCANBUILD) --separate-sources --line-directives
@@ -464,6 +468,11 @@ duk-clang: linenoise prep/nondebug
 	-@size $@
 duk-sanitize-clang: linenoise prep/nondebug
 	clang -o $@ -Wcast-align -Wshift-sign-overflow -fsanitize=undefined -Iprep/nondebug $(CLANG_CCOPTS_NONDEBUG) prep/nondebug/duktape.c $(DUKTAPE_CMDLINE_SOURCES) $(LINENOISE_SOURCES) $(CCLIBS)
+	@ls -l $@
+	-@size $@
+duk-fuzzilli: linenoise prep/fuzz examples/cmdline/duk_cmdline.c
+	# Target for fuzzilli. Adds in the appropriate debug flags, without doing the debug prints
+	clang -O3 -o $@ -Wcast-align -Wshift-sign-overflow -fsanitize=undefined -fsanitize-coverage=trace-pc-guard  -Iprep/fuzz $(CLANG_CCOPTS_DEBUG) prep/fuzz/duktape.c $(DUKTAPE_CMDLINE_SOURCES) $(LINENOISE_SOURCES) $(CCLIBS)
 	@ls -l $@
 	-@size $@
 duk-perf-clang: linenoise prep/nondebug-perf

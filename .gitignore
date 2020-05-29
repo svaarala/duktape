@@ -11,6 +11,7 @@
 /dukd
 /dukd.*
 /duk-clang
+/duk-fuzzilli
 /duk-sanitize-clang
 /duk-g++
 /duk-size
