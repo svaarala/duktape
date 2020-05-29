@@ -4556,9 +4556,7 @@ DUK_LOCAL void duk__push_this_helper(duk_hthread *thr, duk_small_uint_t check_ob
 		/* 'this' binding is just before current activation's bottom */
 		DUK_ASSERT(thr->valstack_bottom > thr->valstack);
 		tv = thr->valstack_bottom - 1;
-		if (check_object_coercible &&
-		    (DUK_TVAL_IS_UNDEFINED(tv) || DUK_TVAL_IS_NULL(tv))) {
-			/* XXX: better macro for DUK_TVAL_IS_UNDEFINED_OR_NULL(tv) */
+		if (check_object_coercible && DUK_TVAL_IS_NULLISH(tv)) {
 			goto type_error;
 		}
 
@@ -6297,7 +6295,7 @@ DUK_INTERNAL duk_idx_t duk_unpack_array_like(duk_hthread *thr, duk_idx_t idx) {
 			duk_get_prop_index(thr, idx, (duk_uarridx_t) i);
 		}
 		return (duk_idx_t) len;
-	} else if (DUK_TVAL_IS_UNDEFINED(tv) || DUK_TVAL_IS_NULL(tv)) {
+	} else if (DUK_TVAL_IS_NULLISH(tv)) {
 		return 0;
 	}
 

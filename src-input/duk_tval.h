@@ -598,6 +598,8 @@ DUK_INTERNAL_DECL duk_double_t duk_tval_get_number_unpacked_fastint(duk_tval *tv
 #define DUK_TVAL_STRING_IS_SYMBOL(tv) \
 	DUK_HSTRING_HAS_SYMBOL(DUK_TVAL_GET_STRING((tv)))
 
+#define DUK_TVAL_IS_NULLISH(tv)              (DUK_TVAL_IS_NULL((tv)) || DUK_TVAL_IS_UNDEFINED((tv)))
+
 /* Lightfunc flags packing and unpacking. */
 /* Sign extend: 0x0000##00 -> 0x##000000 -> sign extend to 0xssssss##.
  * Avoid signed shifts due to portability limitations.

@@ -7,11 +7,7 @@ stack: |
   [ ... val! ... ]
 
 summary: |
-  <p>Returns 1 if value at <code>idx</code> is either <code>null</code> or <code>undefined</code>,
-  otherwise returns 0.  If <code>idx</code> is invalid, also returns 0.</p>
-
-  <p>This API call is similar to a <code>(x == null)</code> comparison in ECMAScript, which
-  is true for both <code>null</code> and <code>undefined</code>.</p>
+  <p>Renamed <code><a href="#duk_is_nullish">duk_is_nullish()</a></code> in Duktape 3.0.</p>
 
 example: |
   if (duk_is_null_or_undefined(ctx, -3)) {
@@ -21,4 +17,8 @@ example: |
 tags:
   - stack
 
+seealso:
+  - duk_is_nullish
+
 introduced: 1.0.0
+deprecated: 3.0.0

@@ -166,6 +166,7 @@ static duk_ret_t test_func(duk_context *ctx, void *udata) {
 	(void) duk_is_lightfunc(ctx, 0);
 	(void) duk_is_nan(ctx, 0);
 	(void) duk_is_null_or_undefined(ctx, 0);
+	(void) duk_is_nullish(ctx, 0);
 	(void) duk_is_null(ctx, 0);
 	(void) duk_is_number(ctx, 0);
 	(void) duk_is_object_coercible(ctx, 0);

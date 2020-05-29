@@ -890,7 +890,7 @@ DUK_INTERNAL duk_bool_t duk_prop_deleteoper(duk_hthread *thr, duk_idx_t idx_obj,
 	 * caused by key coercion.
 	 */
 
-	if (DUK_UNLIKELY(duk_is_null_or_undefined(thr, idx_obj))) {
+	if (DUK_UNLIKELY(duk_is_nullish(thr, idx_obj))) {
 		return duk__prop_delete_error_objidx_tvkey(thr, idx_obj, tv_key, DUK_DELPROP_FLAG_THROW);
 	}
 

@@ -64,7 +64,7 @@ DUK_INTERNAL duk_ret_t duk_bi_object_constructor_assign(duk_hthread *thr) {
 	duk_to_object(thr, 0);
 	for (idx = 1; idx < nargs; idx++) {
 		/* E7 19.1.2.1 (step 4a) */
-		if (duk_is_null_or_undefined(thr, idx)) {
+		if (duk_is_nullish(thr, idx)) {
 			continue;
 		}
 

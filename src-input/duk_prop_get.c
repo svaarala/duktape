@@ -1234,7 +1234,7 @@ DUK_INTERNAL duk_bool_t duk_prop_getvalue_outidx(duk_hthread *thr, duk_idx_t idx
 	 * seems acceptable considering the cost of the alternative.
 	 */
 
-	if (DUK_UNLIKELY(duk_is_null_or_undefined(thr, idx_recv))) {
+	if (DUK_UNLIKELY(duk_is_nullish(thr, idx_recv))) {
 		/* Must TypeError before key coercion side effects. */
 		return duk__prop_get_error_objidx_tvkey(thr, idx_recv, tv_key);
 	}
