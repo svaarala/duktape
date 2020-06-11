@@ -487,7 +487,7 @@ DUK_LOCAL void duk__cbor_encode_object(duk_cbor_encode_context *enc_ctx) {
 		duk__cbor_encode_uint32(enc_ctx, (duk_uint32_t) len, 0x40U);
 		duk__cbor_encode_ensure(enc_ctx, len);
 		p = enc_ctx->ptr;
-		duk_memcpy((void *) p, (const void *) buf, len);
+		duk_memcpy_unsafe((void *) p, (const void *) buf, len);
 		p += len;
 		enc_ctx->ptr = p;
 	} else {
@@ -542,7 +542,7 @@ DUK_LOCAL void duk__cbor_encode_buffer(duk_cbor_encode_context *enc_ctx) {
 	duk__cbor_encode_uint32(enc_ctx, (duk_uint32_t) len, 0x40U);
 	duk__cbor_encode_ensure(enc_ctx, len);
 	p = enc_ctx->ptr;
-	duk_memcpy((void *) p, (const void *) buf, len);
+	duk_memcpy_unsafe((void *) p, (const void *) buf, len);
 	p += len;
 	enc_ctx->ptr = p;
 }
@@ -945,9 +945,7 @@ DUK_LOCAL void duk__cbor_decode_join_buffers(duk_cbor_decode_context *dec_ctx, d
 
 			buf_data = (duk_uint8_t *) duk_require_buffer(dec_ctx->thr, idx, &buf_size);
 			if (p != NULL) {
-				if (buf_size > 0U) {
-					duk_memcpy((void *) p, (const void *) buf_data, buf_size);
-				}
+				duk_memcpy_unsafe((void *) p, (const void *) buf_data, buf_size);
 				p += buf_size;
 			} else {
 				total_size += buf_size;
