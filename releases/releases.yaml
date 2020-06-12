@@ -1364,3 +1364,4 @@ duktape_releases:
     - "Improve DUK_USE_OS_STRING for macOS, iOS, watchOS, and tvOS (GH-2288)"
     - "Fix nested error handling bug for out-of-memory during error creation (GH-2278, GH-2290)"
     - "Fix failing assert for CBOR.encode() when argument is a zero-size dynamic plain array (GH-2316, GH-2318)"
+    - "Fix pointer overflow in String.prototype.startsWith/endsWith() with certain arguments (GH-2320)"
