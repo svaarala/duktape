@@ -165,6 +165,13 @@ DUK_LOCAL void duk__sort_enum_keys_es6(duk_hthread *thr, duk_hobject *h_obj, duk
 			keys[idx_insert] = h_curr;
 		}
 	}
+
+	/* Entry part has been reordered now with no side effects.
+	 * If the object has a hash part, it will now be incorrect
+	 * and we need to rehash.  Do that by forcing a resize to
+	 * the current size.
+	 */
+	duk_hobject_resize_entrypart(thr, h_obj, DUK_HOBJECT_GET_ESIZE(h_obj));
 }
 
 /*
