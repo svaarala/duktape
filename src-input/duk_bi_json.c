@@ -3021,7 +3021,7 @@ void duk_bi_json_stringify_helper(duk_hthread *thr,
 			duk_uarridx_t plist_idx = 0;
 			duk_small_uint_t enum_flags;
 
-			js_ctx->idx_proplist = duk_push_array(thr);  /* XXX: array internal? */
+			js_ctx->idx_proplist = duk_push_bare_array(thr);
 
 			enum_flags = DUK_ENUM_ARRAY_INDICES_ONLY |
 			             DUK_ENUM_SORT_ARRAY_INDICES;  /* expensive flag */
