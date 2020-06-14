@@ -1281,6 +1281,7 @@ void duk__putvar_helper(duk_hthread *thr,
                         duk_tval *val,
                         duk_bool_t strict) {
 	duk__id_lookup_result ref;
+	duk_tval tv_tmp_val;
 	duk_tval tv_tmp_obj;
 	duk_tval tv_tmp_key;
 	duk_bool_t parents;
@@ -1298,9 +1299,12 @@ void duk__putvar_helper(duk_hthread *thr,
 	DUK_ASSERT(val != NULL);
 	/* env and act may be NULL */
 
-        DUK_ASSERT_REFCOUNT_NONZERO_HEAPHDR(env);
-        DUK_ASSERT_REFCOUNT_NONZERO_HEAPHDR(name);
+	DUK_ASSERT_REFCOUNT_NONZERO_HEAPHDR(env);
+	DUK_ASSERT_REFCOUNT_NONZERO_HEAPHDR(name);
 	DUK_ASSERT_REFCOUNT_NONZERO_TVAL(val);
+
+	DUK_TVAL_SET_TVAL(&tv_tmp_val, val);  /* Stabilize. */
+	val = NULL;
 
 	/*
 	 *  In strict mode E5 protects 'eval' and 'arguments' from being
@@ -1333,7 +1337,7 @@ void duk__putvar_helper(duk_hthread *thr,
 
 			tv_val = ref.value;
 			DUK_ASSERT(tv_val != NULL);
-			DUK_TVAL_SET_TVAL_UPDREF(thr, tv_val, val);  /* side effects */
+			DUK_TVAL_SET_TVAL_UPDREF(thr, tv_val, &tv_tmp_val);  /* side effects */
 
 			/* ref.value invalidated here */
 		} else {
@@ -1341,7 +1345,7 @@ void duk__putvar_helper(duk_hthread *thr,
 
 			DUK_TVAL_SET_OBJECT(&tv_tmp_obj, ref.holder);
 			DUK_TVAL_SET_STRING(&tv_tmp_key, name);
-			(void) duk_hobject_putprop(thr, &tv_tmp_obj, &tv_tmp_key, val, strict);
+			(void) duk_hobject_putprop(thr, &tv_tmp_obj, &tv_tmp_key, &tv_tmp_val, strict);
 
 			/* ref.value invalidated here */
 		}
@@ -1366,7 +1370,7 @@ void duk__putvar_helper(duk_hthread *thr,
 
 	DUK_TVAL_SET_OBJECT(&tv_tmp_obj, thr->builtins[DUK_BIDX_GLOBAL]);
 	DUK_TVAL_SET_STRING(&tv_tmp_key, name);
-	(void) duk_hobject_putprop(thr, &tv_tmp_obj, &tv_tmp_key, val, 0);  /* 0 = no throw */
+	(void) duk_hobject_putprop(thr, &tv_tmp_obj, &tv_tmp_key, &tv_tmp_val, 0);  /* 0 = no throw */
 
 	/* NB: 'val' may be invalidated here because put_value may realloc valstack,
 	 * caller beware.
