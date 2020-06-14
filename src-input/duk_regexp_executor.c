@@ -945,10 +945,12 @@ DUK_LOCAL void duk__regexp_match_helper(duk_hthread *thr, duk_small_int_t force_
 			 * as 'undefined'.  The same is done when saved[] pointers are insane
 			 * (this should, of course, never happen in practice).
 			 */
+			duk_push_uarridx(thr, (duk_uarridx_t) (i / 2));
+
 			if (re_ctx.saved[i] && re_ctx.saved[i + 1] && re_ctx.saved[i + 1] >= re_ctx.saved[i]) {
 				duk_push_lstring(thr,
 				                 (const char *) re_ctx.saved[i],
-				                 (duk_size_t) (re_ctx.saved[i+1] - re_ctx.saved[i]));
+				                 (duk_size_t) (re_ctx.saved[i + 1] - re_ctx.saved[i]));
 				if (i == 0) {
 					/* Assumes that saved[0] and saved[1] are always
 					 * set by regexp bytecode (if not, char_end_offset
@@ -961,8 +963,8 @@ DUK_LOCAL void duk__regexp_match_helper(duk_hthread *thr, duk_small_int_t force_
 				duk_push_undefined(thr);
 			}
 
-			/* [ ... re_obj input bc saved_buf res_obj val ] */
-			duk_put_prop_index(thr, -2, (duk_uarridx_t) (i / 2));
+			/* [ ... re_obj input bc saved_buf res_obj idx val ] */
+			duk_def_prop(thr, -3, DUK_DEFPROP_HAVE_VALUE | DUK_DEFPROP_SET_WEC);
 		}
 
 		/* [ ... re_obj input bc saved_buf res_obj ] */
