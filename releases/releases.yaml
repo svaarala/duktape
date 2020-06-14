@@ -1368,3 +1368,4 @@ duktape_releases:
     - "Fix assertion failure and incorrect behavior in some enumeration cases involving inherited duplicate keys (GH-2322)"
     - "Fix unstable pointer in 'putvar' which could trigger e.g. in a with(proxy) statement (GH-2323)"
     - "Fix unsafe behavior in JSON.stringify() when replacer argument is an array and Array.prototype has inherited index properties (GH-2202, GH-2324)"
+    - "Fix RegExp exec() result object creation bug when Array.prototype has index properties (GH-2203, GH-2325)"
