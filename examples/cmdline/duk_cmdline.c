@@ -102,19 +102,18 @@
 #endif
 
 #if defined(DUK_USE_FUZZILLI)
-/* REPRL Pipe file descriptors for quicker fuzzing */
+/* REPRL Pipe file descriptors for quicker fuzzing. */
 #define REPRL_CRFD 100
 #define REPRL_CWFD 101
 #define REPRL_DRFD 102
 #define REPRL_DWFD 103
-/* Required includes for coverage tracking */
+/* Required includes for coverage tracking. */
 #include <fcntl.h>
 #include <errno.h>
 #include <sys/mman.h>
 #include <sys/stat.h>
 #include <unistd.h>
 #endif
-
 
 #define  MEM_LIMIT_NORMAL   (128*1024*1024)   /* 128 MB */
 #define  MEM_LIMIT_HIGH     (2047*1024*1024)  /* ~2 GB */
@@ -990,63 +989,37 @@ static duk_ret_t sys_execute(duk_context *ctx) {
 #endif
 
 #if defined(DUK_USE_FUZZILLI)
-/*
- * Custom builtin for Fuzzilli, used to ensure the fuzzer is properly catching crashes and assert failures
+/* Custom builtin for Fuzzilli, used to ensure the fuzzer is properly catching
+ * crashes and assert failures.
  */
-
-void duk_assert_wrapper(int x);
-
 static duk_ret_t fuzzilli(duk_context *ctx) {
-    duk_idx_t i, nargs;
-    nargs = duk_get_top(ctx);
+	const char *first_arg = duk_require_string(ctx, 0);
 
-    /* Ensure right number of args */
-    if(nargs != 2){
-        return -1;
-    }
+	if (strcmp(first_arg, "FUZZILLI_CRASH") == 0) {
+		duk_int_t second_arg = duk_get_int(ctx, 1);
+		switch (second_arg) {
+		case 0:
+			*((duk_int_t *)0x41414141) = 0x1337; /* intentionally segfault */
+			break;
+		default:
+			duk_assert_wrapper(0); /* Intentionally fail assertion */
+			break;
+		}
+	} else if (strcmp(first_arg, "FUZZILLI_PRINT") == 0) {
+		const char *string = duk_require_string(ctx, 1);
 
-    /* Ensure first arg is a string */
-    if(!duk_is_string(ctx, 0)){
-        return -1;
-    }
+		FILE *fzliout = fdopen(REPRL_DWFD, "w");
+		if (!fzliout) {
+			fprintf(stderr, "Fuzzer output channel not available, printing to stdout instead\n");
+			fzliout = stdout;
+		}
+		fprintf(fzliout, "%s\n", string);
+		fflush(fzliout);
+	}
 
-    const char * first_arg = duk_get_string(ctx, 0);
-
-    /*
-     * This is to enable
-     */
-    if(strcmp(first_arg, "FUZZILLI_CRASH") == 0){
-        duk_int_t second_arg = duk_get_int(ctx, 1);
-        switch(second_arg){
-            case 0:
-                *((duk_int_t *)0x41414141) = 0x1337; /* intentionally segfault */
-                break;
-            default:
-                duk_assert_wrapper(0); /* Intentionally fail assertion */
-                break;
-        }
-
-    }else if(strcmp(first_arg, "FUZZILLI_PRINT") == 0){
-        FILE* fzliout = fdopen(REPRL_DWFD, "w");
-        if (!fzliout) {
-            fprintf(stderr, "Fuzzer output channel not available, printing to stdout instead\n");
-            fzliout = stdout;
-        }
-
-        const char * string = duk_get_string(ctx, 1);
-        if (string == NULL) {
-            return -1;
-        }
-        fprintf(fzliout, "%s\n", string);
-        fflush(fzliout);
-
-    }
-
-    return 0;
+	return 0;
 }
-
 #endif /* DUK_USE_FUZZILLI */
-
 
 /*
  *  String.fromBufferRaw()
@@ -1320,12 +1293,10 @@ static duk_context *create_duktape_heap(int alloc_provider, int debugger, int lo
 #endif
 
 #if defined(DUK_USE_FUZZILLI)
-    /*
-     * Add the custom function for fuzzilli
-     */
+	/* Add the custom function for Fuzzilli integration. */
 
-    duk_push_c_function(ctx, fuzzilli, DUK_VARARGS);
-    duk_put_global_string(ctx, "fuzzilli");
+	duk_push_c_function(ctx, fuzzilli, 2 /*nargs*/);
+	duk_put_global_string(ctx, "fuzzilli");
 #endif /* DUK_USE_FUZZILLI */
 
 	return ctx;
@@ -1360,12 +1331,9 @@ static void destroy_duktape_heap(duk_context *ctx, int alloc_provider) {
 }
 
 #if defined(DUK_USE_FUZZILLI)
-/*
- * Enables coverage tracking for fuzzing
- */
+/* Enables coverage tracking for fuzzing. */
 
-void __sanitizer_cov_reset_edgeguards();
-
+void __sanitizer_cov_reset_edgeguards(void);
 
 #define SHM_SIZE 0x100000
 #define MAX_EDGES ((SHM_SIZE - 4) * 8)
@@ -1373,78 +1341,80 @@ void __sanitizer_cov_reset_edgeguards();
 #define CHECK(cond) if (!(cond)) { fprintf(stderr, "\"" #cond "\" failed\n"); _exit(-1); }
 
 struct shmem_data {
-    duk_uint32_t num_edges;
-    unsigned char edges[];
+	duk_uint32_t num_edges;
+	unsigned char edges[];
 };
 
-struct shmem_data* __shmem;
+struct shmem_data *__shmem;
 duk_uint32_t *__edges_start, *__edges_stop;
 
-void __sanitizer_cov_reset_edgeguards() {
-    duk_uint64_t N = 0;
-    for (duk_uint32_t *x = __edges_start; x < __edges_stop && N < MAX_EDGES; x++)
-        *x = ++N;
+void __sanitizer_cov_reset_edgeguards(void) {
+	duk_uint64_t N = 0;
+	duk_uint32_t *x;
+	for (x = __edges_start; x < __edges_stop && N < MAX_EDGES; x++) {
+		*x = ++N;
+	}
 }
 
 
 void __sanitizer_cov_trace_pc_guard_init(duk_uint32_t *start, duk_uint32_t *stop) {
-    /*
-     * Avoid duplicate initialization
-     */
-    if (start == stop || *start)
-        return;
+	/* Avoid duplicate initialization. */
+	if (start == stop || *start) {
+		return;
+	}
 
-    if (__edges_start != NULL || __edges_stop != NULL) {
-        fprintf(stderr, "Coverage instrumentation is only supported for a single module\n");
-        _exit(-1);
-    }
+	if (__edges_start != NULL || __edges_stop != NULL) {
+		fprintf(stderr, "Coverage instrumentation is only supported for a single module\n");
+		_exit(-1);
+	}
 
-    __edges_start = start;
-    __edges_stop = stop;
+	__edges_start = start;
+	__edges_stop = stop;
 
-    /*
-     * Map the shared memory region
-     */
-    const char* shm_key = getenv("SHM_ID");
-    if (!shm_key) {
-        puts("[COV] no shared memory bitmap available, skipping");
-        __shmem = (struct shmem_data*) malloc(SHM_SIZE);
-    } else {
-        int fd = shm_open(shm_key, O_RDWR, S_IREAD | S_IWRITE);
-        if (fd <= -1) {
-            fprintf(stderr, "Failed to open shared memory region: %s\n", strerror(errno));
-            _exit(-1);
-        }
+	/* Map the shared memory region. */
+	const char *shm_key = getenv("SHM_ID");
+	if (!shm_key) {
+		puts("[COV] no shared memory bitmap available, skipping");
+		__shmem = (struct shmem_data *) malloc(SHM_SIZE);
+	} else {
+		int fd = shm_open(shm_key, O_RDWR, S_IREAD | S_IWRITE);
+		if (fd <= -1) {
+			fprintf(stderr, "Failed to open shared memory region: %s\n", strerror(errno));
+			_exit(-1);
+		}
 
-        __shmem = (struct shmem_data*) mmap(0, SHM_SIZE, PROT_READ | PROT_WRITE, MAP_SHARED, fd, 0);
-        if (__shmem == MAP_FAILED) {
-            fprintf(stderr, "Failed to mmap shared memory region\n");
-            _exit(-1);
-        }
-    }
+		__shmem = (struct shmem_data *) mmap(0, SHM_SIZE, PROT_READ | PROT_WRITE, MAP_SHARED, fd, 0);
+		if (__shmem == MAP_FAILED) {
+			fprintf(stderr, "Failed to mmap shared memory region\n");
+			_exit(-1);
+		}
+	}
 
-    __sanitizer_cov_reset_edgeguards();
+	__sanitizer_cov_reset_edgeguards();
 
-    __shmem->num_edges = stop - start;
-    printf("[COV] edge counters initialized. Shared memory: %s with %u edges\n", shm_key, __shmem->num_edges);
+	__shmem->num_edges = stop - start;
+	printf("[COV] edge counters initialized. Shared memory: %s with %u edges\n", shm_key, __shmem->num_edges);
 }
 
 void __sanitizer_cov_trace_pc_guard(duk_uint32_t *guard) {
-    /* There's a small race condition here: if this function executes in two threads for the same
-     * edge at the same time, the first thread might disable the edge (by setting the guard to zero)
-     * before the second thread fetches the guard value (and thus the index). However, our
-     * instrumentation ignores the first edge (see libcoverage.c) and so the race is unproblematic.
-     */
-    duk_uint32_t index = *guard;
-    /*
-     * If this function is called before coverage instrumentation is properly initialized we want to return early.
-     */
-    if (!index) return;
-    __shmem->edges[index / 8] |= 1 << (index % 8);
-    *guard = 0;
+	/* There's a small race condition here: if this function executes in two threads for the same
+	 * edge at the same time, the first thread might disable the edge (by setting the guard to zero)
+	 * before the second thread fetches the guard value (and thus the index).  However, our
+	 * instrumentation ignores the first edge (see libcoverage.c) and so the race is unproblematic.
+	 */
+	duk_uint32_t index = *guard;
+
+	/* If this function is called before coverage instrumentation is properly initialized we want
+	 * to return early.
+	 */
+	if (!index) {
+		return;
+	}
+
+	__shmem->edges[index / 8] |= 1 << (index % 8);
+	*guard = 0;
 }
 #endif /* DUK_USE_FUZZILLI */
-
 
 /*
  *  Main
@@ -1467,7 +1437,7 @@ int main(int argc, const char *argv[]) {
 	const char *compile_filename = NULL;
 	int i;
 #if defined(DUK_USE_FUZZILLI)
-    int reprl_mode = 0;
+	int reprl_mode = 0;
 #endif /* DUK_USE_FUZZILLI */
 
 	main_argc = argc;
@@ -1584,10 +1554,10 @@ int main(int argc, const char *argv[]) {
 			debugger_reattach = 1;
 #endif
 #if defined(DUK_USE_FUZZILLI)
-        } else if (strcmp(arg, "--reprl") == 0) {
+		} else if (strcmp(arg, "--reprl") == 0) {
 			reprl_mode = 1;
 #endif
-        } else if (strcmp(arg, "--recreate-heap") == 0) {
+		} else if (strcmp(arg, "--recreate-heap") == 0) {
 			recreate_heap = 1;
 		} else if (strcmp(arg, "--no-heap-destroy") == 0) {
 			no_heap_destroy = 1;
@@ -1680,74 +1650,75 @@ int main(int argc, const char *argv[]) {
 	}
 
 #if defined(DUK_USE_FUZZILLI)
-    /* Run the fuzzilli run-eval-print-repeat loop, and exit at the end*/
-    if(reprl_mode){
-        /* REPRL: let parent know we are ready */
-        char helo[4] = "HELO";
-        if (write(REPRL_CWFD, helo, 4) != 4 ||
-            read(REPRL_CRFD, helo, 4) != 4) {
-            reprl_mode = 0;
-        }
+	/* Run the fuzzilli run-eval-print-repeat loop, and exit at the end. */
+	if (reprl_mode) {
+		/* REPRL: let parent know we are ready */
+		char helo[4] = "HELO";
+		if (write(REPRL_CWFD, helo, 4) != 4 ||
+		    read(REPRL_CRFD, helo, 4) != 4) {
+			reprl_mode = 0;
+		}
 
-        if (memcmp(helo, "HELO", 4) != 0) {
-            fprintf(stderr, "Invalid response from parent\n");
-            _exit(-1);
-        }
+		if (memcmp(helo, "HELO", 4) != 0) {
+			fprintf(stderr, "Invalid response from parent\n");
+			_exit(-1);
+		}
 
-        while(reprl_mode) {
-            unsigned action = 0;
-            duk_int64_t nread = read(REPRL_CRFD, &action, 4);
-            if (nread != 4 || action != 'cexe') {
-                fprintf(stderr, "Unknown action: %u\n", action);
-                duk_assert_wrapper(0);
-                _exit(-1);
-            }
+		while (reprl_mode) {
+			unsigned int action = 0;
+			duk_size_t script_size;
+			char static_buff[4096];
+			char *buffer;
+			char *ptr;
+			duk_size_t remaining;
+			duk_int_t rc;
 
+			duk_int64_t nread = read(REPRL_CRFD, &action, 4);
+			if (nread != 4 || action != 'cexe') {
+				fprintf(stderr, "Unknown action: %u\n", action);
+				duk_assert_wrapper(0);
+				_exit(-1);
+			}
 
-            duk_size_t script_size;
-            duk_assert_wrapper(read(REPRL_CRFD, &script_size, 8) == 8);
-            char static_buff[4096];
-            char * buffer;
-            /* In practice, we're never going to get to 4k long input scripts (21 core days got to ~80 bytes) */
-            if(script_size > 4095) {
-                buffer = (char *) malloc((sizeof(char) * (script_size + 1)));
-            }else{
-                buffer = static_buff;
-            }
-            char *ptr = buffer;
-            duk_size_t remaining = script_size;
-            while (remaining > 0) {
-                duk_int64_t rv = read(REPRL_DRFD, ptr, remaining);
-                duk_assert_wrapper(rv >= 0);
-                remaining -= rv;
-                ptr += rv;
-            }
-            buffer[script_size] = 0;
+			duk_assert_wrapper(read(REPRL_CRFD, &script_size, 8) == 8);
+			/* In practice, we're never going to get to 4k long input scripts (21 core days got to ~80 bytes). */
+			if (script_size > 4095) {
+				buffer = (char *) malloc((sizeof(char) * (script_size + 1)));
+			} else {
+				buffer = static_buff;
+			}
 
-            /* Actually execute */
-            duk_push_string(ctx, buffer);
-            duk_int_t rc = duk_peval(ctx);
+			ptr = buffer;
+			remaining = script_size;
+			while (remaining > 0) {
+				duk_int64_t rv = read(REPRL_DRFD, ptr, remaining);
+				duk_assert_wrapper(rv >= 0);
+				remaining -= rv;
+				ptr += rv;
+			}
+			buffer[script_size] = 0;
 
-            /* Return result to parent */
-            rc <<= 8;
-            duk_assert_wrapper(write(REPRL_CWFD, &rc, 4) == 4);
+			/* Actually execute. */
+			duk_push_string(ctx, buffer);
+			rc = duk_peval(ctx);
 
-            /* Clean up this round */
-            if(script_size > 4095) {
-                free(buffer);
-            }
-            duk_destroy_heap(ctx);
-            ctx = create_duktape_heap(alloc_provider, debugger, lowmem_log);
-            __sanitizer_cov_reset_edgeguards();
-        }
-        return 0;
+			/* Return result to parent. */
+			rc <<= 8;
+			duk_assert_wrapper(write(REPRL_CWFD, &rc, 4) == 4);
 
-
-	}
+			/* Clean up this round. */
+			if (script_size > 4095) {
+				free(buffer);
+			}
+			duk_destroy_heap(ctx);
+			ctx = create_duktape_heap(alloc_provider, debugger, lowmem_log);
+			__sanitizer_cov_reset_edgeguards();
+		}
+		return 0;
+	}  /* reprl_mode */
 #endif
 
-
-    if (run_stdin) {
+	if (run_stdin) {
 		/* Running stdin like a full file (reading all lines before
 		 * compiling) is useful with emduk:
 		 * cat test.js | ./emduk --run-stdin

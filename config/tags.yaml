@@ -89,6 +89,9 @@ torture:
     Development time options to stress test corner case handling by e.g.
     causing a garbage collection on every allocation.
 
+fuzzing:
+  title: Fuzzing
+
 cbor:
   title: CBOR
 

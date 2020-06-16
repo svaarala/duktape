@@ -268,6 +268,7 @@ clean:
 	@rm -f massif-*.out
 	@rm -f literal_intern_test
 	@rm -f duk-fuzzilli
+
 .PHONY: cleanall
 cleanall: clean
 	# Don't delete these in 'clean' to avoid re-downloading them over and over
@@ -471,8 +472,8 @@ duk-sanitize-clang: linenoise prep/nondebug
 	@ls -l $@
 	-@size $@
 duk-fuzzilli: linenoise prep/fuzz examples/cmdline/duk_cmdline.c
-	# Target for fuzzilli. Adds in the appropriate debug flags, without doing the debug prints
-	clang -O3 -o $@ -Wcast-align -Wshift-sign-overflow -fsanitize=undefined -fsanitize-coverage=trace-pc-guard  -Iprep/fuzz $(CLANG_CCOPTS_DEBUG) prep/fuzz/duktape.c $(DUKTAPE_CMDLINE_SOURCES) $(LINENOISE_SOURCES) $(CCLIBS)
+	# Target for fuzzilli.  Adds in the appropriate debug flags, without doing the debug prints.
+	clang -O3 -o $@ -Wall -Wextra -Wcast-align -Wshift-sign-overflow -fsanitize=undefined -fsanitize-coverage=trace-pc-guard  -Iprep/fuzz $(CLANG_CCOPTS_DEBUG) prep/fuzz/duktape.c $(DUKTAPE_CMDLINE_SOURCES) $(LINENOISE_SOURCES) $(CCLIBS)
 	@ls -l $@
 	-@size $@
 duk-perf-clang: linenoise prep/nondebug-perf

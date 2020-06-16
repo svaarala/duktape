@@ -1298,6 +1298,13 @@ DUK_EXTERNAL_DECL const void * const duk_rom_compressed_pointers[];
 #endif
 
 /*
+ *  Fuzzilli fuzzing integration
+ */
+#if defined(DUK_USE_FUZZILLI)
+DUK_EXTERNAL_DECL void duk_assert_wrapper(duk_int_t x);
+#endif
+
+/*
  *  C++ name mangling
  */
 
