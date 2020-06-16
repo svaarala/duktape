@@ -1,0 +1,7 @@
+define: DUK_USE_FUZZILLI
+introduced: 3.0.0
+default: false
+tags:
+  - fuzzing
+description: >
+  Enables access to the assertion debug wrapper needed for fuzzilli integration
