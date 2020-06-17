@@ -1370,3 +1370,4 @@ duktape_releases:
     - "Fix unsafe behavior in JSON.stringify() when replacer argument is an array and Array.prototype has inherited index properties (GH-2202, GH-2324)"
     - "Fix RegExp exec() result object creation bug when Array.prototype has index properties (GH-2203, GH-2325)"
     - "Fix Proxy 'ownKeys' trap postprocessing bug when Array.prototype has index properties (GH-2207, GH-2326)"
+    - "Fix coroutine yield() dangling pointer when the yielding coroutine is no longer reachable except via the resume/yield relationship (GH-2204, GH-2332)"

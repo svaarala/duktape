@@ -1309,17 +1309,21 @@ DUK_LOCAL duk_small_uint_t duk__handle_longjmp(duk_hthread *thr, duk_activation 
 			DUK_DD(DUK_DDPRINT("-> yield an error, converted to a throw in the resumer, propagate"));
 			goto check_longjmp;
 		} else {
-			duk_hthread_activation_unwind_norz(resumer);
-			duk__handle_yield(thr, resumer, &thr->heap->lj.value1);
+			/* When handling the yield, the last reference to
+			 * 'thr' may disappear.
+			 */
 
+			DUK_GC_TORTURE(resumer->heap);
+			duk_hthread_activation_unwind_norz(resumer);
+			DUK_GC_TORTURE(resumer->heap);
 			thr->state = DUK_HTHREAD_STATE_YIELDED;
 			thr->resumer = NULL;
 			DUK_HTHREAD_DECREF_NORZ(thr, resumer);
 			resumer->state = DUK_HTHREAD_STATE_RUNNING;
 			DUK_HEAP_SWITCH_THREAD(thr->heap, resumer);
-#if 0
-			thr = resumer;  /* not needed, as we exit right away */
-#endif
+			duk__handle_yield(thr, resumer, &thr->heap->lj.value1);
+			thr = resumer;
+			DUK_GC_TORTURE(resumer->heap);
 
 			DUK_DD(DUK_DDPRINT("-> yield a value, restart execution in resumer"));
 			retval = DUK__LONGJMP_RESTART;
