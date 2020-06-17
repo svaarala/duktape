@@ -174,10 +174,8 @@ DUK_INTERNAL void duk_err_setup_ljstate1(duk_hthread *thr, duk_small_uint_t lj_t
 }
 
 #if defined(DUK_USE_FUZZILLI)
-/*
- * Wrapper for easy usage in duk_fuzzillies. Goal is to have an easy test case, that ASSERT is triggered properly
- */
-DUK_EXTERNAL_DECL void duk_assert_wrapper(int x){
-    DUK_ASSERT(x);
+/* Wrapper for easy usage in duk-fizzilli. */
+DUK_EXTERNAL_DECL void duk_assert_wrapper(duk_int_t x) {
+	DUK_ASSERT(x);
 }
 #endif /* DUK_USE_FUZZILLI */

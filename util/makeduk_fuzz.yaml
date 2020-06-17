@@ -1,4 +1,5 @@
-# Additional options on top of makeduk_base.yaml to enable fuzzilli integration. Currently only has assertions enabled
+# Additional options on top of makeduk_base.yaml to enable Fuzzilli
+# integration. Currently only has assertions enabled.
 
 #DUK_USE_DEBUG_BUFSIZE: 512
 #DUK_USE_DEBUG: true

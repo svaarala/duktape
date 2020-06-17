@@ -4,4 +4,5 @@ default: false
 tags:
   - fuzzing
 description: >
-  Enables access to the assertion debug wrapper needed for fuzzilli integration
+  Needed when running Fuzzilli fuzzing, enables access to duk_assert_wrapper()
+  expected by the integration.
