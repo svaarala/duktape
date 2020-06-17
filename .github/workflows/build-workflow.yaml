@@ -12,7 +12,7 @@ jobs:
           sudo apt install build-essential make python python-yaml bc git
       - name: Build
         run: |
-          make duk
+          make duk dukd duk-g++ duk-clang duk-fuzzilli
       - name: Test
         run: |
           ./duk -e "print(Duktape.env); print('Hello world!');"
