@@ -1168,13 +1168,13 @@ def main():
     print 'Copying dukweb.js files'
     for i in [ '../dukweb.js',
                '../dukweb.wasm',
-               '../jquery-1.11.2.js',
+               '../deps/jquery-1.11.2.js',
                '../dukweb/dukweb.css',
                '../dukweb/dukweb.html' ]:
         shutil.copyfile(os.path.join('./', i), os.path.join(outdir, os.path.basename(i)))
 
     print 'Copying benchmarks.html dependencies'
-    shutil.copyfile(os.path.join('../lz-string/libs/lz-string.js'), os.path.join(outdir, 'lz-string.js'))
+    shutil.copyfile(os.path.join('../deps/lz-string/libs/lz-string.js'), os.path.join(outdir, 'lz-string.js'))
 
 if __name__ == '__main__':
     main()
