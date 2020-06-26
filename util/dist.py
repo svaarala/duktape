@@ -1,6 +1,6 @@
 #!/usr/bin/env python2
 #
-#  Create a distributable Duktape package into 'dist' directory.  The contents
+#  Create a distributable Duktape package into a dist directory.  The contents
 #  of this directory can then be packaged into a source distributable.
 #
 
@@ -250,7 +250,7 @@ def main():
     logger.debug('Using repo directory: %s' % opts.repo_directory)
 
     if opts.output_directory is None:
-        opts.output_directory = os.path.abspath(os.path.join(opts.repo_directory, 'dist'))
+        opts.output_directory = os.path.abspath(os.path.join(opts.repo_directory, 'dist', 'source'))
         logger.info('No --output-directory option, defaulting to repo/dist directory %s' % opts.output_directory)
     opts.output_directory = os.path.abspath(opts.output_directory)
     logger.debug('Using output directory: %s' % opts.output_directory)

@@ -80,9 +80,9 @@ RUN echo "=== Prepare duktape-prep repo ===" && \
 	cp -r repo-snapshots/duktape duktape-prep && \
 	cp -r repo-snapshots/duktape-releases duktape-prep/duktape-releases && \
 	cd duktape-prep && \
-	make runtestsdeps linenoise UglifyJS2 && \
-	make duktape-releases lz-string jquery-1.11.2.js && \
-	make luajs underscore lodash bluebird.js closure-compiler && \
+	make runtestsdeps deps/linenoise deps/UglifyJS && \
+	make deps/duktape-releases deps/lz-string deps/jquery-1.11.2.js && \
+	make deps/luajs deps/underscore deps/lodash deps/bluebird.js deps/closure-compiler && \
 	make clean
 
 # Initialize Emscripten cached bytecode files.

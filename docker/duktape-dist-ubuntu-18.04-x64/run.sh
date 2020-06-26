@@ -7,7 +7,7 @@ set -e
 source emsdk/emsdk_env.sh
 
 cd duktape
-make clean dist-src
-ls -l duktape-*.tar.*
-zip /tmp/out.zip duktape-*.tar.*
+make clean dist-source
+ls -l dist
+zip -r /tmp/out.zip dist
 cat /tmp/out.zip

@@ -910,7 +910,7 @@ def generateDownloadPage(releases_filename):
             continue
         href = tmp[0].select('a')[0]['href']
         hash_elem = tr.select('.hash')[0]
-        hash_elem.string = getFileMd5(os.path.abspath(os.path.join('..', 'duktape-releases', href))) or '???'
+        hash_elem.string = getFileMd5(os.path.abspath(os.path.join('..', 'deps', 'duktape-releases', href))) or '???'
 
     tmp_soup = templ_soup.select('#site-middle')[0]
     tmp_soup.clear()
@@ -1160,14 +1160,14 @@ def main():
         shutil.copyfile(os.path.join('./', i), os.path.join(outdir, os.path.basename(i)))
 
     print 'Copying release binaries'
-    for i in os.listdir(os.path.join('..', 'duktape-releases')):
+    for i in os.listdir(os.path.join('..', 'deps', 'duktape-releases')):
         if re.match(r'^duktape-.*?.tar.xz$', i) is None:
             continue
-        shutil.copyfile(os.path.join('..', 'duktape-releases', i), os.path.join(outdir, i))
+        shutil.copyfile(os.path.join('..', 'deps', 'duktape-releases', i), os.path.join(outdir, i))
 
     print 'Copying dukweb.js files'
-    for i in [ '../dukweb.js',
-               '../dukweb.wasm',
+    for i in [ '../build/dukweb.js',
+               '../build/dukweb.wasm',
                '../deps/jquery-1.11.2.js',
                '../dukweb/dukweb.css',
                '../dukweb/dukweb.html' ]:

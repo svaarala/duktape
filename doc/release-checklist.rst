@@ -209,7 +209,7 @@ Checklist for ordinary releases
     push it to the public repo until the tag is certain not to move anymore.
 
   - There can be commits to the repo after tagging but nothing that will
-    affect "make dist" output.
+    affect "make dist/source" output.
 
   - Make sure the tag is in the master commit chain, so that git describe will
     provide a useful output for dist packages built after the release

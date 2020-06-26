@@ -19,4 +19,3 @@ if __name__ == '__main__':
 		print('')
 		print('%s -> %s' % (image, data_uri))
 		print('')
-

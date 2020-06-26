@@ -25,6 +25,7 @@ build_script:
   # Make dist, ensure it works on Windows too.
 
   - cmd: cd C:\projects\duktape
+  - cmd: mkdir dist
   - cmd: python util\dist.py
 
   # Prep a few variants of headers and sources.

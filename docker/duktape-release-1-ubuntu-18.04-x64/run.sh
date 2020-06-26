@@ -11,8 +11,8 @@ cd duktape
 ROOT=`pwd`
 
 test_combined_source_compilation() {
-	make clean dist
-	cd dist
+	make clean dist/source
+	cd dist/source
 	cat Makefile.cmdline
 	make -f Makefile.cmdline
 	ls -l duk; size duk
@@ -49,8 +49,8 @@ test_misc_compilation() {
 }
 
 test_configure_fastint() {
-	make clean dist
-	cd dist
+	make clean dist/source
+	cd dist/source
 	rm -rf /tmp/out
 	python tools/configure.py -DDUK_USE_FASTINT --output-directory /tmp/out
 	ls -l /tmp/out
@@ -62,8 +62,8 @@ test_releasetest() {
 }
 
 test_checklist_compile_test() {
-	make clean dist
-	cd dist
+	make clean dist/source
+	cd dist/source
 	bash ../util/checklist_compile_test.sh
 }
 
