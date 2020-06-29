@@ -316,7 +316,7 @@ duk_uint16_t lowmem_enc16(void *ud, void *p) {
 
 		/* We should really never be here: Duktape should only be
 		 * compressing pointers which are in the ROM compressed
-		 * pointers list, which are known at 'make dist' time.
+		 * pointers list, which are known when configuring sources.
 		 * We go on, causing a pointer compression error.
 		 */
 		fprintf(stderr, "lowmem_enc16: rom pointer: %p could not be compressed, should never happen\n", (void *) p);

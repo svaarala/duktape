@@ -51,7 +51,7 @@ RUN echo "=== Prepare duktape-prep repo ===" && \
 	cp -r repo-snapshots/duktape duktape-prep && \
 	cp -r repo-snapshots/duktape-releases duktape-prep/duktape-releases && \
 	cd duktape-prep && \
-	make linenoise && \
+	make deps/linenoise && \
 	make clean
 
 RUN echo "=== Versions ===" && \

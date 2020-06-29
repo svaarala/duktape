@@ -12,11 +12,11 @@ jobs:
           sudo apt install build-essential make python python-yaml bc git
       - name: Build
         run: |
-          make duk dukd duk-g++ duk-clang duk-fuzzilli
+          make build/duk build/dukd build/duk-g++ build/duk-clang build/duk-fuzzilli
       - name: Test
         run: |
-          ./duk -e "print(Duktape.env); print('Hello world!');"
-          ./duk dist-files/mandel.js
+          build/duk -e "print(Duktape.env); print('Hello world!');"
+          build/duk dist-files/mandel.js
   build_duk_macos:
     name: Duk macOS 10.15
     runs-on: macos-10.15
@@ -28,11 +28,11 @@ jobs:
           python2 -m pip install PyYAML
       - name: Build
         run: |
-          make duk
+          make build/duk
       - name: Test
         run: |
-          ./duk -e "print(Duktape.env); print('Hello world!');"
-          ./duk dist-files/mandel.js
+          build/duk -e "print(Duktape.env); print('Hello world!');"
+          build/duk dist-files/mandel.js
   build_duk_windows:
     name: Duk VS2019
     runs-on: windows-2019

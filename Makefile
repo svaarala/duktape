@@ -12,7 +12,7 @@
 #    - Miscellaneous development tasks
 #
 #  The Makefile now also works in a very limited fashion with Cygwin,
-#  you can 'make dist' as long as you have enough software installed.
+#  you can 'make dist/source' as long as you have enough software installed.
 #
 #  The source distributable has more platform neutral example Makefiles
 #  for end user projects, though an end user should really just use their
@@ -77,8 +77,10 @@ DUKTAPE_CMDLINE_SOURCES += examples/debug-trans-socket/duk_trans_socket_unix.c
 endif
 ifdef SYSTEMROOT  # Windows
 LINENOISE_SOURCES =
+LINENOISE_HEADERS =
 else
 LINENOISE_SOURCES = deps/linenoise/linenoise.c
+LINENOISE_HEADERS = deps/linenoise/linenoise.h
 endif
 
 # Configure.py options for a few configuration profiles needed.
@@ -233,22 +235,8 @@ clean:
 	@rm -rf prep/
 	@rm -rf dist/
 	@rm -rf site/
-	@rm -f duk duk-rom dukd dukd-rom duk.O2 duk.O3 duk.O4
-	@rm -f duk-pgo duk-pgo.O2
-	@rm -f duk-perf duk-perf.O2 duk-perf.O3 duk-perf.O4
-	@rm -f duk-perf-pgo duk-perf-pgo.O2 duk-perf-pgo.O3 duk-perf-pgo.O4
-	@rm -f duk-size
-	@rm -f duk-rom dukd-rom
-	@rm -f duk-clang duk-perf-clang duk-sanitize-clang
-	@rm -f duk-g++ dukd-g++ duk-perf-g++
-	@rm -f duk-low duk-low-norefc duk-low-rom
-	@rm -f duk-fuzzilli
+	@rm -f duk
 	@rm -f emduk emduk.js
-	@rm -f libduktape*.so*
-	@rm -f duktape-*.tar.*
-	@rm -f duktape-*.iso
-	@rm -f dukweb.js dukweb.wasm
-	@rm -f docker-input.zip docker-output.zip
 	@rm -f doc/*.html
 	@rm -f src-input/*.pyc tools/*.pyc util/*.pyc
 	@rm -f *.gcda
@@ -265,7 +253,6 @@ clean:
 cleanall: clean
 	@# Don't delete these in 'clean' to avoid re-downloading them over and over
 	@rm -rf deps
-	@rm -rf duktape-releases
 	@rm -f "references/ECMA-262 5th edition December 2009.pdf"
 	@rm -f "references/ECMA-262 5.1 edition June 2011.pdf"
 	@rm -f "references/ECMA-262.pdf"
@@ -280,6 +267,10 @@ tmp:
 
 # Build results.
 build:
+	@mkdir -p $@
+
+# Final releases files.
+dist:
 	@mkdir -p $@
 
 # Targets for preparing different Duktape configurations.
@@ -338,23 +329,27 @@ prep/duklow-debug-norefc: prep
 	$(PYTHON) tools/configure.py --output-directory ./prep/duklow-debug-norefc --source-directory src-input --config-metadata config $(CONFIGOPTS_DEBUG_DUKLOW_NOREFC) --line-directives
 
 # Library targets.
-libduktape.so.1.0.0: prep/nondebug
+build/libduktape.so.1.0.0: prep/nondebug | build
 	rm -f $(subst .so.1.0.0,.so.1,$@) $(subst .so.1.0.0,.so.1.0.0,$@) $(subst .so.1.0.0,.so,$@)
 	$(CC) -o $@ -shared -Wl,-soname,$(subst .so.1.0.0,.so.1,$@) -fPIC -I./prep/nondebug $(CCOPTS_NONDEBUG) prep/nondebug/duktape.c $(CCLIBS)
-	ln -s $@ $(subst .so.1.0.0,.so.1,$@)
-	ln -s $@ $(subst .so.1.0.0,.so,$@)
-libduktaped.so.1.0.0: prep/debug
+	ln -s $(@F) $(subst .so.1.0.0,.so.1,$@)
+	ln -s $(@F) $(subst .so.1.0.0,.so,$@)
+build/libduktaped.so.1.0.0: prep/debug | build
 	rm -f $(subst .so.1.0.0,.so.1,$@) $(subst .so.1.0.0,.so.1.0.0,$@) $(subst .so.1.0.0,.so,$@)
 	$(CC) -o $@ -shared -Wl,-soname,$(subst .so.1.0.0,.so.1,$@) -fPIC -I./prep/debug $(CCOPTS_DEBUG) prep/debug/duktape.c $(CCLIBS)
-	ln -s $@ $(subst .so.1.0.0,.so.1,$@)
-	ln -s $@ $(subst .so.1.0.0,.so,$@)
+	ln -s $(@F) $(subst .so.1.0.0,.so.1,$@)
+	ln -s $(@F) $(subst .so.1.0.0,.so,$@)
 
 # Various 'duk' command line tool targets.
-duk: prep/nondebug $(DUKTAPE_CMDLINE_SOURCES) $(LINENOISE_SOURCES) | deps/linenoise
+DUK_SOURCE_DEPS=$(DUKTAPE_CMDLINE_SOURCES) $(LINENOISE_SOURCES) $(LINENOISE_HEADERS)
+
+duk: build/duk  # Convenience target.
+	cp $< $@
+build/duk: prep/nondebug $(DUK_SOURCE_DEPS) | build
 	$(CC) -o $@ -Iprep/nondebug $(CCOPTS_NONDEBUG) prep/nondebug/duktape.c $(DUKTAPE_CMDLINE_SOURCES) $(LINENOISE_SOURCES) $(CCLIBS)
 	@ls -l $@
 	-@size $@
-duk-pgo: prep/nondebug $(DUKTAPE_CMDLINE_SOURCES) $(LINENOISE_SOURCES) | deps/linenoise
+build/duk-pgo: prep/nondebug $(DUK_SOURCE_DEPS) | build
 	@echo "Compiling with -fprofile-generate..."
 	@rm -f *.gcda
 	$(CC) -o $@ -Iprep/nondebug $(CCOPTS_NONDEBUG) -fprofile-generate prep/nondebug/duktape.c $(DUKTAPE_CMDLINE_SOURCES) $(LINENOISE_SOURCES) $(CCLIBS)
@@ -368,31 +363,31 @@ duk-pgo: prep/nondebug $(DUKTAPE_CMDLINE_SOURCES) $(LINENOISE_SOURCES) | deps/li
 	$(CC) -o $@ -Iprep/nondebug $(CCOPTS_NONDEBUG) -fprofile-use prep/nondebug/duktape.c $(DUKTAPE_CMDLINE_SOURCES) $(LINENOISE_SOURCES) $(CCLIBS)
 	@ls -l $@
 	-@size $@
-duk-perf: prep/nondebug-perf $(DUKTAPE_CMDLINE_SOURCES) $(LINENOISE_SOURCES) | deps/linenoise
+build/duk-perf: prep/nondebug-perf $(DUK_SOURCE_DEPS) | build
 	$(CC) -o $@ -Iprep/nondebug-perf $(CCOPTS_NONDEBUG) prep/nondebug-perf/duktape.c $(DUKTAPE_CMDLINE_SOURCES) $(LINENOISE_SOURCES) $(CCLIBS)
 	@ls -l $@
 	-@size $@
-duk-size: prep/nondebug-size $(DUKTAPE_CMDLINE_SOURCES) $(LINENOISE_SOURCES) | deps/linenoise
+build/duk-size: prep/nondebug-size $(DUK_SOURCE_DEPS) | build
 	$(CC) -o $@ -Iprep/nondebug-size $(CCOPTS_NONDEBUG) prep/nondebug-size/duktape.c $(DUKTAPE_CMDLINE_SOURCES) $(LINENOISE_SOURCES) $(CCLIBS)
 	@ls -l $@
 	-@size $@
-duk-rom: prep/nondebug-rom $(DUKTAPE_CMDLINE_SOURCES) $(LINENOISE_SOURCES) | deps/linenoise
+build/duk-rom: prep/nondebug-rom $(DUK_SOURCE_DEPS) | build
 	$(CC) -o $@ -Iprep/nondebug-rom $(CCOPTS_NONDEBUG) prep/nondebug-rom/duktape.c $(DUKTAPE_CMDLINE_SOURCES) $(LINENOISE_SOURCES) $(CCLIBS)
 	@ls -l $@
 	-@size $@
-dukd: prep/debug $(DUKTAPE_CMDLINE_SOURCES) $(LINENOISE_SOURCES) | deps/linenoise
+build/dukd: prep/debug $(DUK_SOURCE_DEPS) | build
 	$(CC) -o $@ -Iprep/debug $(CCOPTS_DEBUG) prep/debug/duktape.c $(DUKTAPE_CMDLINE_SOURCES) $(LINENOISE_SOURCES) $(CCLIBS)
 	@ls -l $@
 	-@size $@
-dukd-rom: prep/debug-rom $(DUKTAPE_CMDLINE_SOURCES) $(LINENOISE_SOURCES) | deps/linenoise
+build/dukd-rom: prep/debug-rom $(DUK_SOURCE_DEPS) | build
 	$(CC) -o $@ -Iprep/debug-rom $(CCOPTS_DEBUG) prep/debug-rom/duktape.c $(DUKTAPE_CMDLINE_SOURCES) $(LINENOISE_SOURCES) $(CCLIBS)
 	@ls -l $@
 	-@size $@
-duk.O2: prep/nondebug $(DUKTAPE_CMDLINE_SOURCES) $(LINENOISE_SOURCES) | deps/linenoise
+build/duk.O2: prep/nondebug $(DUK_SOURCE_DEPS) | build
 	$(CC) -o $@ -Iprep/nondebug $(CCOPTS_NONDEBUG) -O2 prep/nondebug/duktape.c $(DUKTAPE_CMDLINE_SOURCES) $(LINENOISE_SOURCES) $(CCLIBS)
 	@ls -l $@
 	-@size $@
-duk-pgo.O2: prep/nondebug $(DUKTAPE_CMDLINE_SOURCES) $(LINENOISE_SOURCES) | deps/linenoise
+build/duk-pgo.O2: prep/nondebug $(DUK_SOURCE_DEPS) | build
 	@echo "Compiling with -fprofile-generate..."
 	@rm -f *.gcda
 	$(CC) -o $@ -Iprep/nondebug $(CCOPTS_NONDEBUG) -O2 -fprofile-generate prep/nondebug/duktape.c $(DUKTAPE_CMDLINE_SOURCES) $(LINENOISE_SOURCES) $(CCLIBS)
@@ -406,11 +401,11 @@ duk-pgo.O2: prep/nondebug $(DUKTAPE_CMDLINE_SOURCES) $(LINENOISE_SOURCES) | deps
 	$(CC) -o $@ -Iprep/nondebug $(CCOPTS_NONDEBUG) -O2 -fprofile-use prep/nondebug/duktape.c $(DUKTAPE_CMDLINE_SOURCES) $(LINENOISE_SOURCES) $(CCLIBS)
 	@ls -l $@
 	-@size $@
-duk-perf.O2: prep/nondebug-perf $(DUKTAPE_CMDLINE_SOURCES) $(LINENOISE_SOURCES) | deps/linenoise
+build/duk-perf.O2: prep/nondebug-perf $(DUK_SOURCE_DEPS) | build
 	$(CC) -o $@ -Iprep/nondebug-perf $(CCOPTS_NONDEBUG) -O2 prep/nondebug-perf/duktape.c $(DUKTAPE_CMDLINE_SOURCES) $(LINENOISE_SOURCES) $(CCLIBS)
 	@ls -l $@
 	-@size $@
-duk-perf-pgo.O2: prep/nondebug-perf $(DUKTAPE_CMDLINE_SOURCES) $(LINENOISE_SOURCES) | deps/linenoise
+build/duk-perf-pgo.O2: prep/nondebug-perf $(DUK_SOURCE_DEPS) | build
 	@echo "Compiling with -fprofile-generate..."
 	@rm -f *.gcda
 	$(CC) -o $@ -Iprep/nondebug-perf $(CCOPTS_NONDEBUG) -O2 -fprofile-generate prep/nondebug-perf/duktape.c $(DUKTAPE_CMDLINE_SOURCES) $(LINENOISE_SOURCES) $(CCLIBS)
@@ -422,59 +417,59 @@ duk-perf-pgo.O2: prep/nondebug-perf $(DUKTAPE_CMDLINE_SOURCES) $(LINENOISE_SOURC
 	@rm -f $@
 	@echo "Recompiling with -fprofile-use..."
 	$(CC) -o $@ -Iprep/nondebug-perf $(CCOPTS_NONDEBUG) -O2 -fprofile-use prep/nondebug-perf/duktape.c $(DUKTAPE_CMDLINE_SOURCES) $(LINENOISE_SOURCES) $(CCLIBS)
-duk.O3: prep/nondebug $(DUKTAPE_CMDLINE_SOURCES) $(LINENOISE_SOURCES) | deps/linenoise
+build/duk.O3: prep/nondebug $(DUKTAPE_CMDLINE_SOURCES) $(LINENOISE_SOURCES) | deps/linenoise
 	$(CC) -o $@ -Iprep/nondebug $(CCOPTS_NONDEBUG) -O3 prep/nondebug/duktape.c $(DUKTAPE_CMDLINE_SOURCES) $(LINENOISE_SOURCES) $(CCLIBS)
 	@ls -l $@
 	-@size $@
-duk-perf.O3: prep/nondebug-perf $(DUKTAPE_CMDLINE_SOURCES) $(LINENOISE_SOURCES) | deps/linenoise
+build/duk-perf.O3: prep/nondebug-perf $(DUK_SOURCE_DEPS) | build
 	$(CC) -o $@ -Iprep/nondebug-perf $(CCOPTS_NONDEBUG) -O3 prep/nondebug-perf/duktape.c $(DUKTAPE_CMDLINE_SOURCES) $(LINENOISE_SOURCES) $(CCLIBS)
 	@ls -l $@
 	-@size $@
-duk.O4: prep/nondebug $(DUKTAPE_CMDLINE_SOURCES) $(LINENOISE_SOURCES) | deps/linenoise
+build/duk.O4: prep/nondebug $(DUK_SOURCE_DEPS) | build
 	$(CC) -o $@ -Iprep/nondebug $(CCOPTS_NONDEBUG) -O4 prep/nondebug/duktape.c $(DUKTAPE_CMDLINE_SOURCES) $(LINENOISE_SOURCES) $(CCLIBS)
 	@ls -l $@
 	-@size $@
-duk-perf.O4: prep/nondebug-perf $(DUKTAPE_CMDLINE_SOURCES) $(LINENOISE_SOURCES) | deps/linenoise
+build/duk-perf.O4: prep/nondebug-perf $(DUK_SOURCE_DEPS) | build
 	$(CC) -o $@ -Iprep/nondebug-perf $(CCOPTS_NONDEBUG) -O4 prep/nondebug-perf/duktape.c $(DUKTAPE_CMDLINE_SOURCES) $(LINENOISE_SOURCES) $(CCLIBS)
 	@ls -l $@
 	-@size $@
-duk-clang: prep/nondebug $(DUKTAPE_CMDLINE_SOURCES) $(LINENOISE_SOURCES) | deps/linenoise
+build/duk-clang: prep/nondebug $(DUK_SOURCE_DEPS) | build
 	@# Use -Wcast-align to trigger issues like: https://github.com/svaarala/duktape/issues/270
 	@# Use -Wshift-sign-overflow to trigger issues like: https://github.com/svaarala/duktape/issues/812
 	@# -Weverything
 	$(CLANG) -o $@ -Wcast-align -Wshift-sign-overflow -Iprep/nondebug $(CLANG_CCOPTS_NONDEBUG) prep/nondebug/duktape.c $(DUKTAPE_CMDLINE_SOURCES) $(LINENOISE_SOURCES) $(CCLIBS)
 	@ls -l $@
 	-@size $@
-duk-sanitize-clang: prep/nondebug $(DUKTAPE_CMDLINE_SOURCES) $(LINENOISE_SOURCES) | deps/linenoise
+build/duk-sanitize-clang: prep/nondebug $(DUK_SOURCE_DEPS) | build
 	$(CLANG) -o $@ -Wcast-align -Wshift-sign-overflow -fsanitize=undefined -Iprep/nondebug $(CLANG_CCOPTS_NONDEBUG) prep/nondebug/duktape.c $(DUKTAPE_CMDLINE_SOURCES) $(LINENOISE_SOURCES) $(CCLIBS)
 	@ls -l $@
 	-@size $@
-duk-fuzzilli: prep/fuzz $(DUKTAPE_CMDLINE_SOURCES) $(LINENOISE_SOURCES) | deps/linenoise
+build/duk-fuzzilli: prep/fuzz $(DUK_SOURCE_DEPS) | build
 	# Target for fuzzilli.  Adds in the appropriate debug flags, without doing the debug prints.
 	$(CLANG) -O3 -o $@ -Wall -Wextra -Wcast-align -Wshift-sign-overflow -fsanitize=undefined -fsanitize-coverage=trace-pc-guard  -Iprep/fuzz $(CLANG_CCOPTS_DEBUG) prep/fuzz/duktape.c $(DUKTAPE_CMDLINE_SOURCES) $(LINENOISE_SOURCES) $(CCLIBS)
 	@ls -l $@
 	-@size $@
-duk-perf-clang: prep/nondebug-perf $(DUKTAPE_CMDLINE_SOURCES) $(LINENOISE_SOURCES) | deps/linenoise
+build/duk-perf-clang: prep/nondebug-perf $(DUK_SOURCE_DEPS) | build
 	$(CLANG) -o $@ -Wcast-align -Wshift-sign-overflow -Iprep/nondebug-perf $(CLANG_CCOPTS_NONDEBUG) prep/nondebug-perf/duktape.c $(DUKTAPE_CMDLINE_SOURCES) $(LINENOISE_SOURCES) $(CCLIBS)
 	@ls -l $@
 	-@size $@
-duk-g++: prep/nondebug $(DUKTAPE_CMDLINE_SOURCES) $(LINENOISE_SOURCES) | deps/linenoise
+build/duk-g++: prep/nondebug $(DUK_SOURCE_DEPS) | build
 	$(GXX) -o $@ -Iprep/nondebug $(GXXOPTS_NONDEBUG) prep/nondebug/duktape.c $(DUKTAPE_CMDLINE_SOURCES) $(CCLIBS)
 	@ls -l $@
 	-@size $@
-duk-perf-g++: prep/nondebug-perf $(DUKTAPE_CMDLINE_SOURCES) $(LINENOISE_SOURCES) | deps/linenoise
+build/duk-perf-g++: prep/nondebug-perf $(DUK_SOURCE_DEPS) | build
 	$(GXX) -o $@ -Iprep/nondebug-perf $(GXXOPTS_NONDEBUG) prep/nondebug-perf/duktape.c $(DUKTAPE_CMDLINE_SOURCES) $(CCLIBS)
 	@ls -l $@
 	-@size $@
-dukd-g++: prep/debug $(DUKTAPE_CMDLINE_SOURCES) $(LINENOISE_SOURCES) | deps/linenoise
+build/dukd-g++: prep/debug $(DUK_SOURCE_DEPS) | build
 	$(GXX) -o $@ -Iprep/debug $(GXXOPTS_DEBUG) prep/debug/duktape.c $(DUKTAPE_CMDLINE_SOURCES) $(CCLIBS)
 	@ls -l $@
 	-@size $@
 .PHONY: dukscanbuild
-dukscanbuild: prep/nondebug-scanbuild $(DUKTAPE_CMDLINE_SOURCES) $(LINENOISE_SOURCES) | deps/linenoise tmp
+build/dukscanbuild: prep/nondebug-scanbuild $(DUK_SOURCE_DEPS) | build tmp
 	$(SCAN_BUILD) $(GCC) -otmp/duk.scanbuild -Iprep/nondebug-scanbuild $(CCOPTS_NONDEBUG) prep/nondebug-scanbuild/*.c $(DUKTAPE_CMDLINE_SOURCES) $(LINENOISE_SOURCES) $(CCLIBS)
 .PHONY: dukdscanbuild
-dukdscanbuild: prep/debug-scanbuild $(DUKTAPE_CMDLINE_SOURCES) $(LINENOISE_SOURCES) | deps/linenoise tmp
+build/dukdscanbuild: prep/debug-scanbuild $(DUK_SOURCE_DEPS) | build tmp
 	$(SCAN_BUILD) $(GCC) -otmp/dukd.scanbuild -Iprep/debug-scanbuild $(CCOPTS_DEBUG) prep/debug-scanbuild/*.c $(DUKTAPE_CMDLINE_SOURCES) $(LINENOISE_SOURCES) $(CCLIBS)
 # Command line with a simple pool allocator, for low memory testing.
 # The pool sizes only make sense with -m32, so force that.  This forces
@@ -483,8 +478,9 @@ DUKTAPE_CMDLINE_LOWMEM_SOURCES=\
 		$(DUKTAPE_CMDLINE_SOURCES) \
 		examples/cmdline/duk_cmdline_lowmem.c \
 		extras/alloc-pool/duk_alloc_pool.c
+DUK_LOWMEM_SOURCE_DEPS=$(DUKTAPE_CMDLINE_LOWMEM_SOURCES) $(LINENOISE_SOURCES) $(LINENOISE_HEADERS)
 
-duk-low: prep/duklow-nondebug $(DUKTAPE_CMDLINE_LOWMEM_SOURCES) $(LINENOISE_SOURCES) | deps/linenoise
+build/duk-low: prep/duklow-nondebug $(DUK_LOWMEM_SOURCE_DEPS) | build
 	$(CC) -o $@ \
 		-Iextras/alloc-pool/ -Iprep/duklow-nondebug \
 		$(CCOPTS_NONDEBUG) $(CCOPTS_DUKLOW) \
@@ -493,7 +489,7 @@ duk-low: prep/duklow-nondebug $(DUKTAPE_CMDLINE_LOWMEM_SOURCES) $(LINENOISE_SOUR
 	@echo "*** SUCCESS:"
 	@ls -l $@
 	-@size $@
-dukd-low: prep/duklow-debug $(DUKTAPE_CMDLINE_LOWMEM_SOURCES) $(LINENOISE_SOURCES) | deps/linenoise
+build/dukd-low: prep/duklow-debug $(DUK_LOWMEM_SOURCE_DEPS) | build
 	$(CC) -o $@ \
 		-Iextras/alloc-pool/ -Iprep/duklow-debug \
 		$(CCOPTS_DEBUG) $(CCOPTS_DUKLOW) \
@@ -502,7 +498,7 @@ dukd-low: prep/duklow-debug $(DUKTAPE_CMDLINE_LOWMEM_SOURCES) $(LINENOISE_SOURCE
 	@echo "*** SUCCESS:"
 	@ls -l $@
 	-@size $@
-duk-low-rom: prep/duklow-nondebug-rom $(DUKTAPE_CMDLINE_LOWMEM_SOURCES) $(LINENOISE_SOURCES) | deps/linenoise
+build/duk-low-rom: prep/duklow-nondebug-rom $(DUK_LOWMEM_SOURCE_DEPS) | build
 	$(CC) -o $@ \
 		-Iextras/alloc-pool/ -Iprep/duklow-nondebug-rom \
 		$(CCOPTS_NONDEBUG) $(CCOPTS_DUKLOW) \
@@ -511,7 +507,7 @@ duk-low-rom: prep/duklow-nondebug-rom $(DUKTAPE_CMDLINE_LOWMEM_SOURCES) $(LINENO
 	@echo "*** SUCCESS:"
 	@ls -l $@
 	-@size $@
-dukd-low-rom: prep/duklow-debug-rom $(DUKTAPE_CMDLINE_LOWMEM_SOURCES) $(LINENOISE_SOURCES) | deps/linenoise
+build/dukd-low-rom: prep/duklow-debug-rom $(DUK_LOWMEM_SOURCE_DEPS) | build
 	$(CC) -o $@ \
 		-Iextras/alloc-pool/ -Iprep/duklow-debug-rom \
 		$(CCOPTS_DEBUG) $(CCOPTS_DUKLOW) \
@@ -520,7 +516,7 @@ dukd-low-rom: prep/duklow-debug-rom $(DUKTAPE_CMDLINE_LOWMEM_SOURCES) $(LINENOIS
 	@echo "*** SUCCESS:"
 	@ls -l $@
 	-@size $@
-duk-low-norefc: prep/duklow-nondebug-norefc $(DUKTAPE_CMDLINE_LOWMEM_SOURCES) $(LINENOISE_SOURCES) | deps/linenoise
+build/duk-low-norefc: prep/duklow-nondebug-norefc $(DUK_LOWMEM_SOURCE_DEPS) | build
 	$(CC) -o $@ \
 		-Iextras/alloc-pool/ -Iprep/duklow-nondebug-norefc \
 		$(CCOPTS_NONDEBUG) $(CCOPTS_DUKLOW) \
@@ -529,7 +525,7 @@ duk-low-norefc: prep/duklow-nondebug-norefc $(DUKTAPE_CMDLINE_LOWMEM_SOURCES) $(
 	@echo "*** SUCCESS:"
 	@ls -l $@
 	-@size $@
-dukd-low-norefc: prep/duklow-debug-norefc $(DUKTAPE_CMDLINE_LOWMEM_SOURCES) $(LINENOISE_SOURCES) | deps/linenoise
+build/dukd-low-norefc: prep/duklow-debug-norefc $(DUK_LOWMEM_SOURCE_DEPS) | build
 	$(CC) -o $@ \
 		-Iextras/alloc-pool/ -Iprep/duklow-debug-norefc \
 		$(CCOPTS_DEBUG) $(CCOPTS_DUKLOW) \
@@ -542,10 +538,10 @@ dukd-low-norefc: prep/duklow-debug-norefc $(DUKTAPE_CMDLINE_LOWMEM_SOURCES) $(LI
 # util/fix_emscripten.py is used so that emduk.js can also be executed using
 # Duktape itself (though you can't currently pass arguments/files to it).
 # No Emscripten fixes are needed in practice since Duktape 1.5.0.
-emduk: emduk.js
+build/emduk: emduk.js | build
 	cat util/emduk_wrapper.sh | sed "s|WORKDIR|$(shell pwd)|" > $@
 	chmod ugo+x $@
-emduk.js: prep/emduk examples/cmdline/duk_cmdline.c extras/print-alert/duk_print_alert.c | tmp
+build/emduk.js: prep/emduk examples/cmdline/duk_cmdline.c extras/print-alert/duk_print_alert.c | build tmp
 	$(EMCC) $(EMCCOPTS) -Iprep/emduk -Iexamples/cmdline -Iextras/print-alert \
 		$(EMDUKOPTS) \
 		prep/emduk/duktape.c examples/cmdline/duk_cmdline.c extras/print-alert/duk_print_alert.c \
@@ -556,11 +552,11 @@ emduk.js: prep/emduk examples/cmdline/duk_cmdline.c extras/print-alert/duk_print
 # This is a prototype of running Duktape in a web environment with Emscripten,
 # and providing an eval() facility from both sides.  This is a placeholder now
 # and doesn't do anything useful yet.
-dukweb.js: prep/dukweb dukweb/dukweb_extra.js dukweb/dukweb.c
-	@rm -f dukweb.js dukweb.asm
+build/dukweb.js: prep/dukweb dukweb/dukweb_extra.js dukweb/dukweb.c | build
+	@rm -f build/dukweb.js build/dukweb.asm
 	$(EMCC) $(EMCCOPTS_DUKVM_WASM) $(EMCCOPTS_DUKWEB_EXPORT) --post-js dukweb/dukweb_extra.js \
-		-Iprep/dukweb prep/dukweb/duktape.c dukweb/dukweb.c -o dukweb.js
-	@wc dukweb.js dukweb.wasm
+		-Iprep/dukweb prep/dukweb/duktape.c dukweb/dukweb.c -o $@
+	@wc build/dukweb.js build/dukweb.wasm
 
 build/literal_intern_test: prep/nondebug misc/literal_intern_test.c | build
 	$(CC) -o $@ -std=c99 -O2 -fstrict-aliasing -Wall -Wextra \
@@ -571,12 +567,12 @@ literalinterntest: build/literal_intern_test
 
 # Miscellaneous dumps.
 .PHONY: dump-public
-dump-public: duk | tmp
+dump-public: build/duk | tmp
 	@(objdump -t $< | grep ' g' | grep .text | grep -v .hidden | tr -s ' ' | cut -d ' ' -f 5 | sort > tmp/duk-public.txt ; true)
 	@echo "Symbol dump in tmp/duk-public.txt"
 	@(grep duk__ tmp/duk-public.txt ; true)  # check for leaked file local symbols (does not cover internal, but not public symbols)
 .PHONY: duksizes
-duksizes: duk | tmp
+duksizes: build/duk | tmp
 	$(PYTHON) util/genexesizereport.py $< > tmp/duk_sizes.html
 .PHONY: issuecount
 issuecount:
@@ -620,15 +616,15 @@ runtests/node_modules:
 	@echo "Installing required NodeJS modules for runtests"
 	@cd runtests; npm install
 .PHONY: ecmatest
-ecmatest: runtestsdeps duk | tmp
+ecmatest: runtestsdeps build/duk | tmp
 	@echo "### ecmatest"
-	"$(NODE)" runtests/runtests.js $(RUNTESTSOPTS) --run-duk --cmd-duk=$(shell pwd)/duk --num-threads 4 --log-file=tmp/duk-test.log tests/ecmascript/
+	"$(NODE)" runtests/runtests.js $(RUNTESTSOPTS) --run-duk --cmd-duk=$(shell pwd)/build/duk --num-threads 4 --log-file=tmp/duk-test.log tests/ecmascript/
 .PHONY: ecmatest-comparison
-ecmatest-comparison: runtestsdeps duk | tmp
+ecmatest-comparison: runtestsdeps build/duk | tmp
 	@echo "### ecmatest"
-	"$(NODE)" runtests/runtests.js $(RUNTESTSOPTS) --run-duk --cmd-duk=$(shell pwd)/duk --report-diff-to-other --run-nodejs --run-rhino --num-threads 4 --log-file=tmp/duk-test.log tests/ecmascript/
+	"$(NODE)" runtests/runtests.js $(RUNTESTSOPTS) --run-duk --cmd-duk=$(shell pwd)/build/duk --report-diff-to-other --run-nodejs --run-rhino --num-threads 4 --log-file=tmp/duk-test.log tests/ecmascript/
 .PHONY: apitest
-apitest: runtestsdeps libduktape.so.1.0.0 | tmp
+apitest: runtestsdeps build/libduktape.so.1.0.0 | tmp
 	@echo "### apitest"
 	"$(NODE)" runtests/runtests.js $(RUNTESTSOPTS) --num-threads 1 --log-file=tmp/duk-api-test.log tests/api/
 
@@ -639,47 +635,48 @@ configuretest:
 
 # Dukweb.js test.
 .PHONY: dukwebtest
-dukwebtest: dukweb.js dukweb.wasm deps/jquery-1.11.2.js | tmp
+dukwebtest: build/dukweb.js build/dukweb.wasm deps/jquery-1.11.2.js | tmp
 	@echo "### dukwebtest"
 	@rm -rf tmp/dukweb-test/
 	mkdir -p tmp/dukweb-test/
-	cp dukweb.js dukweb.wasm deps/jquery-1.11.2.js dukweb/dukweb.html dukweb/dukweb.css tmp/dukweb-test/
+	cp build/dukweb.js build/dukweb.wasm deps/jquery-1.11.2.js dukweb/dukweb.html dukweb/dukweb.css tmp/dukweb-test/
 	@echo "Now point your browser to: file:///<workdir>/tmp/dukweb-test/dukweb.html"
 
 # Third party tests.
 .PHONY: underscoretest
-underscoretest: duk | deps/underscore tmp
+underscoretest: build/duk | deps/underscore tmp
 	@echo "### underscoretest"
 	@echo "Run underscore tests with underscore-test-shim.js"
-	-util/underscore_test.sh ./duk deps/underscore/test/arrays.js
-	-util/underscore_test.sh ./duk deps/underscore/test/chaining.js
-	-util/underscore_test.sh ./duk deps/underscore/test/collections.js
-	-util/underscore_test.sh ./duk deps/underscore/test/functions.js
-	-util/underscore_test.sh ./duk deps/underscore/test/objects.js
+	-util/underscore_test.sh $< deps/underscore/test/arrays.js
+	-util/underscore_test.sh $< deps/underscore/test/chaining.js
+	-util/underscore_test.sh $< deps/underscore/test/collections.js
+	-util/underscore_test.sh $< deps/underscore/test/functions.js
+	-util/underscore_test.sh $< deps/underscore/test/objects.js
 	@# speed test disabled, requires JSLitmus
-	@#-util/underscore_test.sh ./duk deps/underscore/test/speed.js
-	-util/underscore_test.sh ./duk deps/underscore/test/utility.js
+	@#-util/underscore_test.sh $< deps/underscore/test/speed.js
+	-util/underscore_test.sh $< deps/underscore/test/utility.js
 .PHONY: regfuzztest
-regfuzztest: duk | deps/regfuzz-0.1 tmp
+regfuzztest: build/duk | deps/regfuzz-0.1 tmp
 	@echo "### regfuzztest"
 	@# Spidermonkey test is pretty close, just lacks 'arguments'
 	@# Should run with assertions enabled in 'duk'
 	rm -rf tmp/duktape-regfuzz; mkdir -p tmp/duktape-regfuzz
 	echo "arguments = [ 0xdeadbeef ];" > tmp/duktape-regfuzz/regfuzz-test.js
 	cat deps/regfuzz-0.1/examples/spidermonkey/regexfuzz.js >> tmp/duktape-regfuzz/regfuzz-test.js
-	cd tmp/duktape-regfuzz && ../../duk regfuzz-test.js
+	$< tmp/duktape-regfuzz/regfuzz-test.js
 # Lodash test.js assumes require() etc.  Placeholder test for now, no
 # expect string etc.
 .PHONY: lodashtest
-lodashtest: duk | deps/lodash tmp
-	./duk deps/lodash/lodash.js tests/lodash/basic.js | tee tmp/duk-lodash-test.out
+lodashtest: build/duk | deps/lodash tmp
+	@echo "### lodashtest"
+	$< deps/lodash/lodash.js tests/lodash/basic.js | tee tmp/duk-lodash-test.out
 	if [ `md5sum tmp/duk-lodash-test.out | cut -f 1 -d ' '` != "318977a4e39deb7c97c87b9b55ea9a80" ]; then false; fi
 .PHONY: test262test
-test262test: duk | deps/test262-es5-tests tmp
+test262test: build/duk | deps/test262-es5-tests tmp
 	@echo "### test262test"
 	@# http://wiki.ecmascript.org/doku.php?id=test262:command
 	rm -f tmp/duk-test262.log tmp/duk-test262-filtered.log
-	-cd $<; $(PYTHON) tools/packaging/test262.py --command "../../duk {{path}}" --summary >../../tmp/duk-test262.log
+	-cd deps/test262-es5-tests; $(PYTHON) tools/packaging/test262.py --command "../../$< {{path}}" --summary >../../tmp/duk-test262.log
 	cat tmp/duk-test262.log | $(PYTHON) util/filter_test262_log.py doc/test262-known-issues.yaml > tmp/duk-test262-filtered.log
 	cat tmp/duk-test262-filtered.log
 # Awkward helper to write out a testcase, the awkwardness is that it
@@ -688,38 +685,35 @@ test262test: duk | deps/test262-es5-tests tmp
 .PHONY: test262cat
 test262cat: | deps/test262-es5-tests
 	@echo "NOTE: this Makefile target will print a 'No rule...' error, ignore it" >&2
-	-@cd $<; $(PYTHON) tools/packaging/test262.py --command "../../duk {{path}}" --cat $(filter-out $@,$(MAKECMDGOALS))
+	-@cd deps/test262-es5-tests; $(PYTHON) tools/packaging/test262.py --command "../../$< {{path}}" --cat $(filter-out $@,$(MAKECMDGOALS)) 2>/dev/null
 .PHONY: emscriptentest
-emscriptentest: duk | tmp
+emscriptentest: build/duk | tmp
 	@echo "### emscriptentest"
 	@rm -f tmp/duk-emcc-test*
 	$(EMCC) $(EMCCOPTS) tests/emscripten/helloworld.c -o tmp/duk-emcc-test.js
 	cat tmp/duk-emcc-test.js | $(PYTHON) util/fix_emscripten.py > tmp/duk-emcc-test-fixed.js
 	@ls -l tmp/duk-emcc-test*
-	#./duk tmp/duk-emcc-test-fixed.js
-	./duk tmp/duk-emcc-test.js | tee tmp/duk-emcc-test.out
+	$< tmp/duk-emcc-test.js | tee tmp/duk-emcc-test.out
 	if [ `md5sum tmp/duk-emcc-test.out | cut -f 1 -d ' '` != "59ca0efa9f5633cb0371bbc0355478d8" ]; then false; fi
 .PHONY: emscriptenmandeltest
-emscriptenmandeltest: duk | tmp
+emscriptenmandeltest: build/duk | tmp
 	@echo "### emscriptenmandeltest"
 	@rm -f tmp/duk-emcc-test*
 	$(EMCC) $(EMCCOPTS) tests/emscripten/mandelbrot.c -o tmp/duk-emcc-test.js
 	cat tmp/duk-emcc-test.js | $(PYTHON) util/fix_emscripten.py > tmp/duk-emcc-test-fixed.js
 	@ls -l tmp/duk-emcc-test*
-	#./duk tmp/duk-emcc-test-fixed.js
-	./duk tmp/duk-emcc-test.js | tee tmp/duk-emcc-test.out
+	$< tmp/duk-emcc-test.js | tee tmp/duk-emcc-test.out
 	if [ `md5sum tmp/duk-emcc-test.out | cut -f 1 -d ' '` != "a0b2daf2e979e192d9838d976920f213" ]; then false; fi
 # Compile Duktape and hello.c using Emscripten and execute the result with
 # Duktape.
 .PHONY: emscripteninceptiontest
-emscripteninceptiontest: prep/nondebug duk | tmp
+emscripteninceptiontest: build/duk prep/nondebug | tmp
 	@echo "### emscripteninceptiontest"
 	@rm -f tmp/duk-emcc-test*
 	$(EMCC) $(EMCCOPTS) -Iprep/nondebug prep/nondebug/duktape.c examples/hello/hello.c -o tmp/duk-emcc-test.js
 	cat tmp/duk-emcc-test.js | $(PYTHON) util/fix_emscripten.py > tmp/duk-emcc-test-fixed.js
 	@ls -l tmp/duk-emcc-test*
-	#./duk tmp/duk-emcc-test-fixed.js
-	./duk tmp/duk-emcc-test.js | tee tmp/duk-emcc-test.out
+	$< tmp/duk-emcc-test.js | tee tmp/duk-emcc-test.out
 	if [ `md5sum tmp/duk-emcc-test.out | cut -f 1 -d ' '` != "8521f9d969cdc0a2fa26661a151cef04" ]; then false; fi
 # Compile Duktape with Emscripten and execute it with NodeJS.
 .PHONY: emscriptenduktest
@@ -740,50 +734,49 @@ LUASRC=	lapi.c lauxlib.c lbaselib.c lbitlib.c lcode.c lcorolib.c lctype.c \
 	lua.c lundump.c lvm.c lzio.c
 # Compile Lua 5.2.3 with Emscripten and run it with Duktape.
 .PHONY: emscriptenluatest
-emscriptenluatest: duk | deps/lua-5.2.3 tmp
+emscriptenluatest: build/duk | deps/lua-5.2.3 tmp
 	@echo "### emscriptenluatest"
 	@rm -f tmp/duk-emcc-luatest*
 	$(EMCC) $(EMCCOPTS) -Ideps/lua-5.2.3/src/ $(patsubst %,deps/lua-5.2.3/src/%,$(LUASRC)) -o tmp/duk-emcc-luatest.js
 	cat tmp/duk-emcc-luatest.js | $(PYTHON) util/fix_emscripten.py > tmp/duk-emcc-luatest-fixed.js
 	@ls -l tmp/duk-emcc-luatest*
-	#./duk tmp/duk-emcc-luatest-fixed.js
-	./duk tmp/duk-emcc-luatest.js | tee tmp/duk-emcc-luatest.out
+	$< tmp/duk-emcc-luatest.js | tee tmp/duk-emcc-luatest.out
 	if [ `md5sum tmp/duk-emcc-luatest.out | cut -f 1 -d ' '` != "280db36b7805a00f887d559c1ba8285d" ]; then false; fi
 .PHONY: jsinterpretertest
-jsinterpretertest: duk | deps/JS-Interpreter tmp
+jsinterpretertest: build/duk | deps/JS-Interpreter tmp
 	@echo "### jsinterpretertest"
 	@rm -f tmp/duk-jsint-test*
 	echo "window = {};" > tmp/duk-jsint-test.js
 	cat deps/JS-Interpreter/acorn.js deps/JS-Interpreter/interpreter.js > tmp/duk-jsint-test.js
 	cat tests/jsinterpreter/addition.js >> tmp/duk-jsint-test.js
-	./duk tmp/duk-jsint-test.js | tee tmp/duk-jsint-test.out
+	$< tmp/duk-jsint-test.js | tee tmp/duk-jsint-test.out
 	if [ `md5sum tmp/duk-jsint-test.out | cut -f 1 -d ' '` != "9ae0ea9e3c9c6e1b9b6252c8395efdc1" ]; then false; fi
 .PHONY: luajstest
-luajstest: duk | deps/luajs tmp
+luajstest: build/duk | deps/luajs tmp
 	@rm -f tmp/duk-luajs-mandel.js tmp/duk-luajs-test.js
 	deps/luajs/lua2js tests/luajs/mandel.lua tmp/duk-luajs-mandel.js
 	echo "console = { log: function() { print(Array.prototype.join.call(arguments, ' ')); } };" > tmp/duk-luajs-test.js
 	cat deps/luajs/lua.js tmp/duk-luajs-mandel.js >> tmp/duk-luajs-test.js
-	./duk tmp/duk-luajs-test.js | tee tmp/duk-luajs-test.out
+	$< tmp/duk-luajs-test.js | tee tmp/duk-luajs-test.out
 	if [ `md5sum tmp/duk-luajs-test.out | cut -f 1 -d ' '` != "a0b2daf2e979e192d9838d976920f213" ]; then false; fi
 .PHONY: bluebirdtest
-bluebirdtest: duk deps/bluebird.js | tmp
+bluebirdtest: build/duk deps/bluebird.js | tmp
 	@rm -f tmp/duk-bluebird-test.js
 	cat util/bluebird-test-shim.js deps/bluebird.js > tmp/duk-bluebird-test.js
 	echo "var myPromise = new Promise(function(resolve, reject) { setTimeout(function () { resolve('resolved 123') }, 1000); });" >> tmp/duk-bluebird-test.js
 	echo "myPromise.then(function (v) { print('then:', v); });" >> tmp/duk-bluebird-test.js
 	echo "fakeEventLoop();" >> tmp/duk-bluebird-test.js
-	./duk tmp/duk-bluebird-test.js | tee tmp/duk-bluebird-test.out
+	$< tmp/duk-bluebird-test.js | tee tmp/duk-bluebird-test.out
 	if [ `md5sum tmp/duk-bluebird-test.out | cut -f 1 -d ' '` != "6edf907604d970db7f6f4ca6991127db" ]; then false; fi
 .PHONY: closuretest
-closuretest: duk deps/closure-compiler.jar | tmp
+closuretest: build/duk deps/closure-compiler.jar | tmp
 	@echo "### closuretest"
 	@rm -f tmp/duk-closure-test*
 	$(JAVA) -jar deps/closure-compiler.jar tests/ecmascript/test-dev-mandel2-func.js > tmp/duk-closure-test.js
-	./duk tmp/duk-closure-test.js | tee tmp/duk-closure-test.out
+	$< tmp/duk-closure-test.js | tee tmp/duk-closure-test.out
 	if [ `md5sum tmp/duk-closure-test.out | cut -f 1 -d ' '` != "a0b2daf2e979e192d9838d976920f213" ]; then false; fi
 .PHONY: xmldoctest
-xmldoctest: duk | deps/sax-js deps/xmldoc tmp
+xmldoctest: build/duk | deps/sax-js deps/xmldoc tmp
 	@echo "### xmldoctest"
 	@rm -f tmp/duk-xmldoc-test*
 	cat deps/sax-js/lib/sax.js > tmp/duk-xmldoc-test.js
@@ -791,7 +784,7 @@ xmldoctest: duk | deps/sax-js deps/xmldoc tmp
 	cat deps/xmldoc/lib/xmldoc.js >> tmp/duk-xmldoc-test.js
 	echo ";" >> tmp/duk-xmldoc-test.js  # missing end semicolon causes automatic semicolon problem
 	cat tests/xmldoc/basic.js >> tmp/duk-xmldoc-test.js
-	./duk tmp/duk-xmldoc-test.js | tee tmp/duk-xmldoc-test.out
+	$< tmp/duk-xmldoc-test.js | tee tmp/duk-xmldoc-test.out
 	if [ `md5sum tmp/duk-xmldoc-test.out | cut -f 1 -d ' '` != "798cab55f8c62f3cf24f277a8192518a" ]; then false; fi
 .PHONY: errorinjecttest
 errorinjecttest:
@@ -807,6 +800,7 @@ deps/linenoise: | deps
 	$(GIT) clone -q --depth 1 -b fix-compile-warnings-duktape https://github.com/svaarala/linenoise.git $@
 	touch $@
 deps/linenoise/linenoise.c: | deps/linenoise
+deps/linenoise/linenoise.h: | deps/linenoise
 deps/regfuzz-0.1.tar.gz: | deps
 	@# https://code.google.com/p/regfuzz/
 	@# SHA1: 774be8e3dda75d095225ba699ac59969d92ac970
@@ -825,7 +819,7 @@ deps/lodash: | deps
 	@# http://lodash.com/
 	@# https://github.com/lodash
 	@# Use pre-built .js file.
-	#$(GIT) clone -q --depth 1 https://github.com/lodash/lodash.git $@
+	@#$(GIT) clone -q --depth 1 https://github.com/lodash/lodash.git $@
 	mkdir -p $@
 	$(WGET) -q https://raw.githubusercontent.com/lodash/lodash/4.17.10-npm/lodash.js -O $@/lodash.js
 	touch $@
@@ -892,7 +886,7 @@ deps/closure-compiler: deps/closure-compiler-v20140814.tar.gz | deps tmp
 	tar -C tmp -x -z -f $<
 	mv tmp/closure-compiler-20140814 $@
 	touch $@
-deps/closure-compiler/build/compiler.jar: deps/closure-compiler
+deps/closure-compiler/build/compiler.jar: | deps/closure-compiler
 	cd deps/closure-compiler; ant
 deps/closure-compiler.jar: deps/closure-compiler/build/compiler.jar
 	cp $< $@
@@ -944,17 +938,18 @@ deps/flow: | deps
 	@# https://github.com/facebook/flow
 	$(GIT) clone -q --depth 1 https://github.com/facebook/flow.git $@
 	touch $@
-deps/lz-string: deps
+deps/lz-string: | deps
 	# https://github.com/pieroxy/lz-string.git
 	$(GIT) clone -q --depth 1 https://github.com/pieroxy/lz-string.git $@
 	touch $@
-deps/citylots.json: deps
+deps/citylots.json: | deps
 	$(WGET) -q https://github.com/zemirco/sf-city-lots-json/raw/master/citylots.json -O $@
 	touch $@
 
 # Duktape binary releases are in a separate repo.
-duktape-releases:
-	$(GIT) clone -q https://github.com/svaarala/duktape-releases.git
+deps/duktape-releases:
+	$(GIT) clone -q https://github.com/svaarala/duktape-releases.git $@
+	touch $@
 
 # Reference documents.
 references/ECMA-262\ 5th\ edition\ December\ 2009.pdf:
@@ -975,48 +970,51 @@ doc/%.html: doc/%.txt
 	rst2html $< $@
 
 # Source distributable for end users.
-dist: codepolicycheck
+dist/source: | codepolicycheck dist
 	$(PYTHON) util/dist.py
-.PHONY: dist-src
-dist-src: dist
-	rm -rf duktape-$(DUK_VERSION_FORMATTED)
-	rm -rf duktape-$(DUK_VERSION_FORMATTED).tar*
-	mkdir duktape-$(DUK_VERSION_FORMATTED)
-	cp -r dist/* duktape-$(DUK_VERSION_FORMATTED)/
-	tar cvfz duktape-$(DUK_VERSION_FORMATTED).tar.gz duktape-$(DUK_VERSION_FORMATTED)/
-	tar cvf duktape-$(DUK_VERSION_FORMATTED).tar duktape-$(DUK_VERSION_FORMATTED)/
-	xz -z -e -9 duktape-$(DUK_VERSION_FORMATTED).tar
-	cp duktape-$(DUK_VERSION_FORMATTED).tar.gz duktape-$(DUK_VERSION_FORMATTED)-$(BUILD_DATETIME)-$(GIT_INFO).tar.gz
-	cp duktape-$(DUK_VERSION_FORMATTED).tar.xz duktape-$(DUK_VERSION_FORMATTED)-$(BUILD_DATETIME)-$(GIT_INFO).tar.xz
-	rm -rf duktape-$(DUK_VERSION_FORMATTED)
-# ISO target is useful with some system emulators with no network access.
-.PHONY: dist-iso
-dist-iso: dist-src
-	mkisofs -input-charset utf-8 -o duktape-$(DUK_VERSION_FORMATTED)-$(BUILD_DATETIME)-$(GIT_INFO).iso duktape-$(DUK_VERSION_FORMATTED)-$(BUILD_DATETIME)-$(GIT_INFO).tar.gz
+dist/duktape-$(DUK_VERSION_FORMATTED).tar: dist/source | dist
+	rm -rf dist/duktape-$(DUK_VERSION_FORMATTED) dist/duktape-$(DUK_VERSION_FORMATTED).*
+	mkdir dist/duktape-$(DUK_VERSION_FORMATTED) && cp -r dist/source/* dist/duktape-$(DUK_VERSION_FORMATTED)/
+	tar -C dist -c -f dist/duktape-$(DUK_VERSION_FORMATTED).tar duktape-$(DUK_VERSION_FORMATTED)/
+	rm -rf dist/duktape-$(DUK_VERSION_FORMATTED)
+dist/duktape-$(DUK_VERSION_FORMATTED).tar.xz: dist/duktape-$(DUK_VERSION_FORMATTED).tar | dist
+	xz -k -z -e -9 $<
+dist/duktape-$(DUK_VERSION_FORMATTED).tar.gz: dist/duktape-$(DUK_VERSION_FORMATTED).tar | dist
+	gzip -k -9 $<
+dist/duktape-$(DUK_VERSION_FORMATTED)-$(BUILD_DATETIME)-$(GIT_INFO).tar.xz: dist/duktape-$(DUK_VERSION_FORMATTED).tar.xz | dist
+	cp $< $@
+dist/duktape-$(DUK_VERSION_FORMATTED)-$(BUILD_DATETIME)-$(GIT_INFO).tar.gz: dist/duktape-$(DUK_VERSION_FORMATTED).tar.gz | dist
+	cp $< $@
+dist/duktape-$(DUK_VERSION_FORMATTED)-$(BUILD_DATETIME)-$(GIT_INFO).iso: dist/duktape-$(DUK_VERSION_FORMATTED)-$(BUILD_DATETIME)-$(GIT_INFO).tar.gz | dist
+	cd dist && genisoimage -r -input-charset utf-8 -o duktape-$(DUK_VERSION_FORMATTED)-$(BUILD_DATETIME)-$(GIT_INFO).iso duktape-$(DUK_VERSION_FORMATTED)-$(BUILD_DATETIME)-$(GIT_INFO).tar.gz
+.PHONY: dist-source
+dist-source: dist/duktape-$(DUK_VERSION_FORMATTED).tar.xz dist/duktape-$(DUK_VERSION_FORMATTED)-$(BUILD_DATETIME)-$(GIT_INFO).tar.xz
+.PHONY: dist-source-iso
+dist-source-iso: dist/duktape-$(DUK_VERSION_FORMATTED)-$(BUILD_DATETIME)-$(GIT_INFO).iso
 
 # Website targets.
+.PHONY: duktape-releases-update
+duktape-releases-update: | deps/duktape-releases
+	cd deps/duktape-releases/; git pull --rebase
 .PHONY: tidy-site
 tidy-site:
 	for i in website/*/*.html; do echo "*** Checking $$i"; tidy -q -e -xml $$i; done
-site: duktape-releases dukweb.js dukweb.wasm deps/jquery-1.11.2.js deps/lz-string
-	rm -rf site
-	mkdir site
-	-cd duktape-releases/; git pull --rebase  # get binaries up-to-date, but allow errors for offline use
-	cd website/; $(PYTHON) buildsite.py ../site/
-	for i in site/*.html; do echo "tidy checking $$i"; tidy -q -e -xml -utf8 $$i; done
+dist/site: build/dukweb.js build/dukweb.wasm deps/jquery-1.11.2.js | deps/lz-string deps/duktape-releases dist
+	mkdir -p $@
+	-cd deps/duktape-releases/; git pull --rebase  # get binaries up-to-date, but allow errors for offline use
+	cd website/; $(PYTHON) buildsite.py ../dist/site/
+	for i in dist/site/*.html; do echo "tidy checking $$i"; tidy -q -e -xml -utf8 $$i; done
+dist/duktape-site-$(DUK_VERSION_FORMATTED).tar: dist/site | dist
+	rm -rf dist/duktape-site-$(DUK_VERSION_FORMATTED) dist/duktape-site-$(DUK_VERSION_FORMATTED).*
+	mkdir dist/duktape-site-$(DUK_VERSION_FORMATTED) && cp -r dist/site/* dist/duktape-site-$(DUK_VERSION_FORMATTED)/
+	tar -C dist -c -f dist/duktape-site-$(DUK_VERSION_FORMATTED).tar duktape-site-$(DUK_VERSION_FORMATTED)/
+	rm -rf duktape-site-$(DUK_VERSION_FORMATTED)
+dist/duktape-site-$(DUK_VERSION_FORMATTED).tar.xz: dist/duktape-site-$(DUK_VERSION_FORMATTED).tar | dist
+	xz -k -z -e -9 $<
+dist/duktape-site-$(DUK_VERSION_FORMATTED)-$(BUILD_DATETIME)-$(GIT_INFO).tar.xz: dist/duktape-site-$(DUK_VERSION_FORMATTED).tar.xz | dist
+	cp $< $@
 .PHONY: dist-site
-dist-site: tidy-site site
-	# When doing a final dist build, run html tidy
-	# Also pull binaries up-to-date
-	cd duktape-releases/; git pull --rebase  # get binaries up-to-date
-	rm -rf duktape-site-$(DUK_VERSION_FORMATTED)
-	rm -rf duktape-site-$(DUK_VERSION_FORMATTED).tar*
-	mkdir duktape-site-$(DUK_VERSION_FORMATTED)
-	cp -r site/* duktape-site-$(DUK_VERSION_FORMATTED)/
-	tar cvf duktape-site-$(DUK_VERSION_FORMATTED).tar duktape-site-$(DUK_VERSION_FORMATTED)/
-	xz -z -e -9 duktape-site-$(DUK_VERSION_FORMATTED).tar
-	cp duktape-site-$(DUK_VERSION_FORMATTED).tar.xz duktape-site-$(DUK_VERSION_FORMATTED)-$(BUILD_DATETIME)-$(GIT_INFO).tar.xz
-	rm -rf duktape-site-$(DUK_VERSION_FORMATTED)
+dist-site: tidy-site duktape-releases-update dist/duktape-site-$(DUK_VERSION_FORMATTED).tar.xz dist/duktape-site-$(DUK_VERSION_FORMATTED)-$(BUILD_DATETIME)-$(GIT_INFO).tar.xz
 
 # Code policy check.
 ifeq ($(CI),1)
@@ -1192,65 +1190,62 @@ docker-clean:
 	@echo ""
 	@echo "Now run 'docker system prune' to free disk space."
 
-.PHONY: docker-dist-src-master
-docker-dist-src-master:
-	rm -f docker-input.zip docker-output.zip
-	docker run --rm -i duktape-dist-ubuntu-18.04-x64 > docker-output.zip
-	unzip -t docker-output.zip ; true  # avoid failure due to leading garbage
+.PHONY: docker-dist-source-master
+docker-dist-source-master: | tmp
+	docker run --rm -i duktape-dist-ubuntu-18.04-x64 > tmp/docker-output.zip
+	unzip -q -o tmp/docker-output.zip ; true  # avoid failure due to leading garbage
 
-.PHONY: docker-dist-src-wd
-docker-dist-src-wd:
-	rm -f docker-input.zip docker-output.zip
-	#git archive --format zip --output docker-input.zip HEAD
-	zip -1 -q -r docker-input.zip .
-	docker run --rm -i -e STDIN_ZIP=1 duktape-dist-ubuntu-18.04-x64 < docker-input.zip > docker-output.zip
-	unzip -t docker-output.zip ; true  # avoid failure due to leading garbage
+.PHONY: docker-dist-source-wd
+docker-dist-source-wd: | tmp
+	rm -f tmp/docker-input.zip tmp/docker-output.zip
+	#git archive --format zip --output tmp/docker-input.zip HEAD
+	zip -1 -q -r tmp/docker-input.zip .
+	docker run --rm -i -e STDIN_ZIP=1 duktape-dist-ubuntu-18.04-x64 < tmp/docker-input.zip > tmp/docker-output.zip
+	unzip -q -o tmp/docker-output.zip ; true  # avoid failure due to leading garbage
 
 .PHONY: docker-dist-site-master
-docker-dist-site-master:
-	rm -f docker-input.zip docker-output.zip
-	docker run --rm -i duktape-site-ubuntu-18.04-x64 > docker-output.zip
-	unzip -t docker-output.zip ; true  # avoid failure due to leading garbage
+docker-dist-site-master: | tmp
+	rm -f tmp/docker-input.zip tmp/docker-output.zip
+	docker run --rm -i duktape-site-ubuntu-18.04-x64 > tmp/docker-output.zip
+	unzip -q -o tmp/docker-output.zip ; true  # avoid failure due to leading garbage
 
 .PHONY: docker-dist-site-wd
-docker-dist-site-wd:
-	rm -f docker-input.zip docker-output.zip
-	#git archive --format zip --output docker-input.zip HEAD
-	zip -1 -q -r docker-input.zip .
-	docker run --rm -i -e STDIN_ZIP=1 duktape-site-ubuntu-18.04-x64 < docker-input.zip > docker-output.zip
-	unzip -t docker-output.zip ; true  # avoid failure due to leading garbage
+docker-dist-site-wd: | tmp
+	rm -f tmp/docker-input.zip tmp/docker-output.zip
+	#git archive --format zip --output tmp/docker-input.zip HEAD
+	zip -1 -q -r tmp/docker-input.zip .
+	docker run --rm -i -e STDIN_ZIP=1 duktape-site-ubuntu-18.04-x64 < tmp/docker-input.zip > tmp/docker-output.zip
+	unzip -q -o tmp/docker-output.zip ; true  # avoid failure due to leading garbage
 
 .PHONY: docker-duk-wd
-docker-duk-wd:
-	rm -f docker-input.zip docker-output.zip
-	#git archive --format zip --output docker-input.zip HEAD
-	zip -1 -q -r docker-input.zip .
-	docker run --rm -i -e STDIN_ZIP=1 duktape-duk-ubuntu-18.04-x64 < docker-input.zip > docker-output.zip
-	unzip -t docker-output.zip ; true  # avoid failure due to leading garbage
-	unzip -o docker-output.zip ; true
+docker-duk-wd: | tmp
+	rm -f tmp/docker-input.zip tmp/docker-output.zip
+	#git archive --format zip --output tmp/docker-input.zip HEAD
+	zip -1 -q -r tmp/docker-input.zip .
+	docker run --rm -i -e STDIN_ZIP=1 duktape-duk-ubuntu-18.04-x64 < tmp/docker-input.zip > tmp/docker-output.zip
+	unzip -q -o tmp/docker-output.zip ; true
 
 .PHONY: docker-duk-master
-docker-duk-master:
-	rm -f docker-input.zip docker-output.zip
-	docker run --rm -i duktape-duk-ubuntu-18.04-x64 > docker-output.zip
-	unzip -t docker-output.zip ; true  # avoid failure due to leading garbage
-	unzip -o docker-output.zip ; true
+docker-duk-master: | tmp
+	rm -f tmp/docker-input.zip tmp/docker-output.zip
+	docker run --rm -i duktape-duk-ubuntu-18.04-x64 > tmp/docker-output.zip
+	unzip -q -o tmp/docker-output.zip ; true
 
 .PHONY: docker-shell-master
-docker-shell-master:
+docker-shell-master: | tmp
 	docker run --rm -ti duktape-shell-ubuntu-18.04-x64
 
 .PHONY: docker-shell-wd
-docker-shell-wd:
+docker-shell-wd: | tmp
 	docker run -v $(shell pwd):/work/duktape-host --rm -ti duktape-shell-ubuntu-18.04-x64
 
 .PHONY: docker-shell-wdmount
-docker-shell-wdmount:
+docker-shell-wdmount: | tmp
 	docker run -v $(shell pwd):/work/duktape --rm -ti duktape-shell-ubuntu-18.04-x64
 
 .PHONY: docker-release-1-wd
-docker-release-1-wd:
-	rm -f docker-input.zip docker-output.zip
-	#git archive --format zip --output docker-input.zip HEAD
-	zip -1 -q -r docker-input.zip .
-	docker run --rm -i -e STDIN_ZIP=1 duktape-release-1-ubuntu-18.04-x64 < docker-input.zip
+docker-release-1-wd: | tmp
+	rm -f tmp/docker-input.zip tmp/docker-output.zip
+	#git archive --format zip --output tmp/docker-input.zip HEAD
+	zip -1 -q -r tmp/docker-input.zip .
+	docker run --rm -i -e STDIN_ZIP=1 duktape-release-1-ubuntu-18.04-x64 < tmp/docker-input.zip

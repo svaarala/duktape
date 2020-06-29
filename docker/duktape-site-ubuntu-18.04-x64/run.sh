@@ -8,6 +8,6 @@ source emsdk/emsdk_env.sh
 
 cd duktape
 make clean dist-site
-ls -l duktape-site-*.tar.*
-zip /tmp/out.zip duktape-site-*.tar.*
+ls -l dist/
+zip -r /tmp/out.zip dist/
 cat /tmp/out.zip

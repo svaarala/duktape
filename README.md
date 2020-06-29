@@ -137,8 +137,8 @@ These are also **intended for Linux only**.  For example:
     # Build Docker images.  This takes a long time.
     $ make docker-images
 
-    # Equivalent of 'make dist', but runs inside a container.
-    $ make docker-dist-src-wd
+    # Equivalent of 'make dist-source', but runs inside a container.
+    $ make docker-dist-source-wd
 
     # Run a shell with /work/duktape containing a disposable master snapshot.
     $ make docker-shell-master
