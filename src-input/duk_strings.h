@@ -77,9 +77,11 @@
 /* JSON */
 #define DUK_STR_FMT_PTR                          "%p"
 #define DUK_STR_FMT_INVALID_JSON                 "invalid json (at offset %ld)"
-#define DUK_STR_JSONDEC_RECLIMIT                 "json decode recursion limit"
-#define DUK_STR_JSONENC_RECLIMIT                 "json encode recursion limit"
 #define DUK_STR_CYCLIC_INPUT                     "cyclic input"
+
+/* Generic codec */
+#define DUK_STR_DEC_RECLIMIT                     "decode recursion limit"
+#define DUK_STR_ENC_RECLIMIT                     "encode recursion limit"
 
 /* Object property access */
 #define DUK_STR_INVALID_BASE                     "invalid base value"

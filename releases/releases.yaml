@@ -1371,3 +1371,4 @@ duktape_releases:
     - "Fix RegExp exec() result object creation bug when Array.prototype has index properties (GH-2203, GH-2325)"
     - "Fix Proxy 'ownKeys' trap postprocessing bug when Array.prototype has index properties (GH-2207, GH-2326)"
     - "Fix coroutine yield() dangling pointer when the yielding coroutine is no longer reachable except via the resume/yield relationship (GH-2204, GH-2332)"
+    - "Fix potentially unbounded recursion in CBOR encode/decode by adding duk_native_stack_check() and depth limits to recursion paths (GH-2327, GH-2340)"

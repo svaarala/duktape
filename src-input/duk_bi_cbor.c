@@ -31,6 +31,8 @@ typedef struct {
 	duk_uint8_t *buf_end;
 	duk_size_t len;
 	duk_idx_t idx_buf;
+	duk_uint_t recursion_depth;
+	duk_uint_t recursion_limit;
 } duk_cbor_encode_context;
 
 typedef struct {
@@ -38,6 +40,8 @@ typedef struct {
 	const duk_uint8_t *buf;
 	duk_size_t off;
 	duk_size_t len;
+	duk_uint_t recursion_depth;
+	duk_uint_t recursion_limit;
 } duk_cbor_decode_context;
 
 DUK_LOCAL void duk__cbor_encode_value(duk_cbor_encode_context *enc_ctx);
@@ -59,6 +63,34 @@ DUK_LOCAL duk_uint32_t duk__cbor_double_to_uint32(double d) {
 
 DUK_LOCAL void duk__cbor_encode_error(duk_cbor_encode_context *enc_ctx) {
 	(void) duk_type_error(enc_ctx->thr, "cbor encode error");
+}
+
+DUK_LOCAL void duk__cbor_encode_req_stack(duk_cbor_encode_context *enc_ctx) {
+	duk_require_stack(enc_ctx->thr, 4);
+}
+
+DUK_LOCAL void duk__cbor_encode_objarr_entry(duk_cbor_encode_context *enc_ctx) {
+	duk_hthread *thr = enc_ctx->thr;
+
+	/* Native stack check in object/array recursion. */
+	duk_native_stack_check(thr);
+
+	/* When working with deeply recursive structures, this is important
+	 * to ensure there's no effective depth limit.
+	 */
+	duk__cbor_encode_req_stack(enc_ctx);
+
+	DUK_ASSERT(enc_ctx->recursion_depth <= enc_ctx->recursion_limit);
+	if (enc_ctx->recursion_depth >= enc_ctx->recursion_limit) {
+		DUK_ERROR_RANGE(thr, DUK_STR_ENC_RECLIMIT);
+		DUK_WO_NORETURN(return;);
+	}
+	enc_ctx->recursion_depth++;
+}
+
+DUK_LOCAL void duk__cbor_encode_objarr_exit(duk_cbor_encode_context *enc_ctx) {
+	DUK_ASSERT(enc_ctx->recursion_depth > 0);
+	enc_ctx->recursion_depth--;
 }
 
 /* Check that a size_t is in uint32 range to avoid out-of-range casts. */
@@ -463,6 +495,8 @@ DUK_LOCAL void duk__cbor_encode_object(duk_cbor_encode_context *enc_ctx) {
 	/* Caller must ensure space. */
 	DUK_ASSERT(duk__cbor_get_reserve(enc_ctx) >= 1 + 8);
 
+	duk__cbor_encode_objarr_entry(enc_ctx);
+
 	/* XXX: Support for specific built-ins like Date and RegExp. */
 	if (duk_is_array(enc_ctx->thr, -1)) {
 		/* Shortest encoding for arrays >= 256 in length is actually
@@ -526,6 +560,8 @@ DUK_LOCAL void duk__cbor_encode_object(duk_cbor_encode_context *enc_ctx) {
 			enc_ctx->ptr = p;
 		}
 	}
+
+	duk__cbor_encode_objarr_exit(enc_ctx);
 }
 
 DUK_LOCAL void duk__cbor_encode_buffer(duk_cbor_encode_context *enc_ctx) {
@@ -588,11 +624,6 @@ DUK_LOCAL void duk__cbor_encode_value(duk_cbor_encode_context *enc_ctx) {
 	/* Encode/decode cycle currently loses some type information.
 	 * This can be improved by registering custom tags with IANA.
 	 */
-
-	/* When working with deeply recursive structures, this is important
-	 * to ensure there's no effective depth limit.
-	 */
-	duk_require_stack(enc_ctx->thr, 4);
 
 	/* Reserve space for up to 64-bit types (1 initial byte + 8
 	 * followup bytes).  This allows encoding of integers, floats,
@@ -661,12 +692,33 @@ DUK_LOCAL void duk__cbor_encode_value(duk_cbor_encode_context *enc_ctx) {
  *  Decoding
  */
 
-DUK_LOCAL void duk__cbor_req_stack(duk_cbor_decode_context *dec_ctx) {
+DUK_LOCAL void duk__cbor_decode_error(duk_cbor_decode_context *dec_ctx) {
+	(void) duk_type_error(dec_ctx->thr, "cbor decode error");
+}
+
+DUK_LOCAL void duk__cbor_decode_req_stack(duk_cbor_decode_context *dec_ctx) {
 	duk_require_stack(dec_ctx->thr, 4);
 }
 
-DUK_LOCAL void duk__cbor_decode_error(duk_cbor_decode_context *dec_ctx) {
-	(void) duk_type_error(dec_ctx->thr, "cbor decode error");
+DUK_LOCAL void duk__cbor_decode_objarr_entry(duk_cbor_decode_context *dec_ctx) {
+	duk_hthread *thr = dec_ctx->thr;
+
+	/* Native stack check in object/array recursion. */
+	duk_native_stack_check(thr);
+
+	duk__cbor_decode_req_stack(dec_ctx);
+
+	DUK_ASSERT(dec_ctx->recursion_depth <= dec_ctx->recursion_limit);
+	if (dec_ctx->recursion_depth >= dec_ctx->recursion_limit) {
+		DUK_ERROR_RANGE(thr, DUK_STR_DEC_RECLIMIT);
+		DUK_WO_NORETURN(return;);
+	}
+	dec_ctx->recursion_depth++;
+}
+
+DUK_LOCAL void duk__cbor_decode_objarr_exit(duk_cbor_decode_context *dec_ctx) {
+	DUK_ASSERT(dec_ctx->recursion_depth > 0);
+	dec_ctx->recursion_depth--;
 }
 
 DUK_LOCAL duk_uint8_t duk__cbor_decode_readbyte(duk_cbor_decode_context *dec_ctx) {
@@ -1110,7 +1162,7 @@ DUK_LOCAL void duk__cbor_decode_string(duk_cbor_decode_context *dec_ctx, duk_uin
 DUK_LOCAL duk_bool_t duk__cbor_decode_array(duk_cbor_decode_context *dec_ctx, duk_uint8_t ib, duk_uint8_t ai) {
 	duk_uint32_t idx, len;
 
-	duk__cbor_req_stack(dec_ctx);
+	duk__cbor_decode_objarr_entry(dec_ctx);
 
 	/* Support arrays up to 0xfffffffeU in length.  0xffffffff is
 	 * used as an indefinite length marker.
@@ -1120,7 +1172,7 @@ DUK_LOCAL duk_bool_t duk__cbor_decode_array(duk_cbor_decode_context *dec_ctx, du
 	} else {
 		len = duk__cbor_decode_aival_uint32(dec_ctx, ib);
 		if (len == 0xffffffffUL) {
-			return 0;
+			goto failure;
 		}
 	}
 
@@ -1132,7 +1184,7 @@ DUK_LOCAL duk_bool_t duk__cbor_decode_array(duk_cbor_decode_context *dec_ctx, du
 		}
 		if (idx == len) {
 			if (ai == 0x1fU) {
-				return 0;
+				goto failure;
 			}
 			break;
 		}
@@ -1140,24 +1192,32 @@ DUK_LOCAL duk_bool_t duk__cbor_decode_array(duk_cbor_decode_context *dec_ctx, du
 		duk_put_prop_index(dec_ctx->thr, -2, (duk_uarridx_t) idx);
 		idx++;
 		if (idx == 0U) {
-			return 0;  /* wrapped */
+			goto failure;  /* wrapped */
 		}
 	}
 
+#if 0
+ success:
+#endif
+	duk__cbor_decode_objarr_exit(dec_ctx);
 	return 1;
+
+ failure:
+	/* No need to unwind recursion checks, caller will throw. */
+	return 0;
 }
 
 DUK_LOCAL duk_bool_t duk__cbor_decode_map(duk_cbor_decode_context *dec_ctx, duk_uint8_t ib, duk_uint8_t ai) {
 	duk_uint32_t count;
 
-	duk__cbor_req_stack(dec_ctx);
+	duk__cbor_decode_objarr_entry(dec_ctx);
 
 	if (ai == 0x1fU) {
 		count = 0xffffffffUL;
 	} else {
 		count = duk__cbor_decode_aival_uint32(dec_ctx, ib);
 		if (count == 0xffffffffUL) {
-			return 0;
+			goto failure;
 		}
 	}
 
@@ -1188,7 +1248,15 @@ DUK_LOCAL duk_bool_t duk__cbor_decode_map(duk_cbor_decode_context *dec_ctx, duk_
 		duk_put_prop(dec_ctx->thr, -3);
 	}
 
+#if 0
+ success:
+#endif
+	duk__cbor_decode_objarr_exit(dec_ctx);
 	return 1;
+
+ failure:
+	/* No need to unwind recursion checks, caller will throw. */
+	return 0;
 }
 
 DUK_LOCAL duk_double_t duk__cbor_decode_float(duk_cbor_decode_context *dec_ctx) {
@@ -1565,8 +1633,13 @@ DUK_LOCAL void duk__cbor_encode(duk_hthread *thr, duk_idx_t idx, duk_uint_t enco
 	enc_ctx.buf = buf;
 	enc_ctx.buf_end = buf + enc_ctx.len;
 
+	enc_ctx.recursion_depth = 0;
+	enc_ctx.recursion_limit = DUK_USE_CBOR_ENC_RECLIMIT;
+
 	duk_dup(thr, idx);
+	duk__cbor_encode_req_stack(&enc_ctx);
 	duk__cbor_encode_value(&enc_ctx);
+	DUK_ASSERT(enc_ctx.recursion_depth == 0);
 	duk_resize_buffer(enc_ctx.thr, enc_ctx.idx_buf, (duk_size_t) (enc_ctx.ptr - enc_ctx.buf));
 	duk_replace(thr, idx);
 }
@@ -1588,8 +1661,12 @@ DUK_LOCAL void duk__cbor_decode(duk_hthread *thr, duk_idx_t idx, duk_uint_t deco
 	dec_ctx.off = 0;
 	/* dec_ctx.len: set above */
 
-	duk__cbor_req_stack(&dec_ctx);
+	dec_ctx.recursion_depth = 0;
+	dec_ctx.recursion_limit = DUK_USE_CBOR_DEC_RECLIMIT;
+
+	duk__cbor_decode_req_stack(&dec_ctx);
 	duk__cbor_decode_value(&dec_ctx);
+	DUK_ASSERT(dec_ctx.recursion_depth == 0);
 	if (dec_ctx.off != dec_ctx.len) {
 		(void) duk_type_error(thr, "trailing garbage");
 	}
