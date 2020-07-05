@@ -955,14 +955,17 @@ DUK_LOCAL void duk__json_dec_value(duk_json_dec_ctx *js_ctx) {
 	DUK_UNREACHABLE();
 }
 
-/* Recursive value reviver, implements the Walk() algorithm.  No C recursion
- * check is done here because the initial parsing step will already ensure
- * there is a reasonable limit on C recursion depth and hence object depth.
+/* Recursive value reviver, implements the Walk() algorithm.  The parsing
+ * step ensures there is a reasonable depth limit to the input.  However,
+ * the reviver may create more depth by editing object or array entries, so
+ * we have both C recursion limit and native stack checks here.
  */
 DUK_LOCAL void duk__json_dec_reviver_walk(duk_json_dec_ctx *js_ctx) {
 	duk_hthread *thr = js_ctx->thr;
 	duk_hobject *h;
 	duk_uarridx_t i, arr_len;
+
+	duk__json_dec_objarr_entry(js_ctx);
 
 	DUK_DDD(DUK_DDDPRINT("walk: top=%ld, holder=%!T, name=%!T",
 	                     (long) duk_get_top(thr),
@@ -1041,6 +1044,8 @@ DUK_LOCAL void duk__json_dec_reviver_walk(duk_json_dec_ctx *js_ctx) {
 	duk_dup(thr, js_ctx->idx_reviver);
 	duk_insert(thr, -4);  /* -> [ ... reviver holder name val ] */
 	duk_call_method(thr, 2);  /* -> [ ... res ] */
+
+	duk__json_dec_objarr_exit(js_ctx);
 
 	DUK_DDD(DUK_DDDPRINT("walk: top=%ld, result=%!T",
 	                     (long) duk_get_top(thr), (duk_tval *) duk_get_tval(thr, -1)));
@@ -2852,6 +2857,7 @@ void duk_bi_json_parse_helper(duk_hthread *thr,
 	DUK_ASSERT(*(js_ctx->p_end) == 0x00);
 
 	duk__json_dec_value(js_ctx);  /* -> [ ... value ] */
+	DUK_ASSERT(js_ctx->recursion_depth == 0);
 
 	/* Trailing whitespace has been eaten by duk__json_dec_value(), so if
 	 * we're not at end of input here, it's a SyntaxError.
@@ -2876,7 +2882,9 @@ void duk_bi_json_parse_helper(duk_hthread *thr,
 		                     (duk_tval *) duk_get_tval(thr, -2),
 		                     (duk_tval *) duk_get_tval(thr, -1)));
 
+		DUK_ASSERT(js_ctx->recursion_depth == 0);
 		duk__json_dec_reviver_walk(js_ctx);  /* [ ... val root "" ] -> [ ... val val' ] */
+		DUK_ASSERT(js_ctx->recursion_depth == 0);
 		duk_remove_m2(thr);             /* -> [ ... val' ] */
 	} else {
 		DUK_DDD(DUK_DDDPRINT("reviver does not exist or is not callable: %!T",
