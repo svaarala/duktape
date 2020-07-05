@@ -10,6 +10,10 @@ description: >
   there is enough stack space available and non-zero otherwise; a RangeError
   will then be thrown.
 
+  The macro is performance sensitive.  It should ideally have a fast path,
+  e.g. a stack pointer range comparison, and a slow path handling
+  initialization, detecting stack resizes, thread changes, etc.
+
   The definition of "enough space" depends on the target platform and the
   compiler because the size of native stack frames cannot be easily known
   in advance.  As a relatively safe estimate, one can check for 8kB of
@@ -19,4 +23,6 @@ description: >
   is called in code paths that are involved in potentially unlimited
   recursion (such as making Ecmascript/native function calls, invoking
   getters and Proxy traps, and resolving Proxy chains) and code paths
-  requiring a lot of stack space temporarily.
+  requiring a lot of stack space temporarily.  Even so the macro is called
+  very frequently, and unless the check is fast, performance will be visibly
+  impacted.
