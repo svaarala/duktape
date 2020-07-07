@@ -1372,3 +1372,4 @@ duktape_releases:
     - "Fix Proxy 'ownKeys' trap postprocessing bug when Array.prototype has index properties (GH-2207, GH-2326)"
     - "Fix coroutine yield() dangling pointer when the yielding coroutine is no longer reachable except via the resume/yield relationship (GH-2204, GH-2332)"
     - "Fix potentially unbounded recursion in CBOR encode/decode by adding duk_native_stack_check() and depth limits to recursion paths (GH-2327, GH-2340)"
+    - "Fix potentially unbounded recursion and assertion failure in JSON.parse() reviver walk by adding duk_native_stack_check() and depth limits (GH-2338, GH-2341)"
