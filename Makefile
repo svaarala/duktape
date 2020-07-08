@@ -603,6 +603,31 @@ test: apitest ecmatest
 	@echo ""
 	@echo "### Tests successful!"
 
+# Build targets for the integeration of the fuzzilli fuzzer
+docker-image-fuzzilli: build/duk-fuzzilli
+	-git clone https://github.com/googleprojectzero/fuzzilli ./deps/fuzzilli
+	mkdir -p deps/fuzzilli/Cloud/Docker/DuktapeBuilder/out
+	cp build/duk-fuzzilli deps/fuzzilli/Cloud/Docker/DuktapeBuilder/out/
+	cd deps/fuzzilli/Cloud/Docker; ./build.sh fuzzilli # Don't use duktape build option here, as duk-fuzzilli is already present
+
+# Runs until stopped
+.PHONY: fuzzillitest
+fuzzillitest:
+	# Clean up previous rounds if necessary
+	-docker stop fuzzilli_runner
+	-docker rm fuzzilli_runner
+	sudo sysctl -w 'kernel.core_pattern=|/bin/false' # Required to run fuzzilli on Linux
+	docker run --name fuzzilli_runner -i fuzzilli ./Fuzzilli --profile=duktape --timeout=1000 --storagePath=/home/fuzzer/fuzz ./duktape/duk-fuzzilli
+	echo "Run make get-fuzzilli-test-results to pull fuzz results out of container"
+
+# Gets results from fuzztest and cleans up the container
+.PHONY: get-fuzzilli-test-results
+get-fuzzilli-test-results:
+	mkdir ./tmp
+	docker cp fuzzilli_runner:/home/fuzzer/fuzz ./tmp/fuzzilli_results
+	docker rm fuzzilli_runner
+	echo "Check ./tmp/fuzzilli_results for the results"
+
 # Set of miscellaneous tests for release.
 .PHONY: releasetest
 releasetest: configuretest xmldoctest closuretest bluebirdtest luajstest jsinterpretertest lodashtest underscoretest emscriptenluatest emscriptenduktest emscriptenmandeltest emscriptentest errorinjecttest
@@ -1187,6 +1212,8 @@ docker-clean:
 	-docker rmi duktape-base-ubuntu-18.04-x64:latest
 	-docker rmi duktape-shell-ubuntu-18.04-s390x:latest
 	-docker rmi duktape-base-ubuntu-18.04-s390x:latest
+	-docker rm fuzzilli_runner
+	-docker rmi fuzzilli
 	@echo ""
 	@echo "Now run 'docker system prune' to free disk space."
 
