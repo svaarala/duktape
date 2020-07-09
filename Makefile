@@ -603,30 +603,23 @@ test: apitest ecmatest
 	@echo ""
 	@echo "### Tests successful!"
 
-# Build targets for the integeration of the fuzzilli fuzzer
-docker-image-fuzzilli: build/duk-fuzzilli
-	-git clone https://github.com/googleprojectzero/fuzzilli ./deps/fuzzilli
-	mkdir -p deps/fuzzilli/Cloud/Docker/DuktapeBuilder/out
-	cp build/duk-fuzzilli deps/fuzzilli/Cloud/Docker/DuktapeBuilder/out/
-	cd deps/fuzzilli/Cloud/Docker; ./build.sh fuzzilli # Don't use duktape build option here, as duk-fuzzilli is already present
-
-# Runs until stopped
+# Runs fuzzilli fuzz testing until stopped.
 .PHONY: fuzzillitest
-fuzzillitest:
-	# Clean up previous rounds if necessary
-	-docker stop fuzzilli_runner
-	-docker rm fuzzilli_runner
+fuzzillitest: | tmp
+	@# Clean up previous rounds if necessary.
+	-docker stop fuzzilli_runner || true
+	-docker rm fuzzilli_runner || true
+	rm -rf tmp/fuzzilli_results
 	sudo sysctl -w 'kernel.core_pattern=|/bin/false' # Required to run fuzzilli on Linux
-	docker run --name fuzzilli_runner -i fuzzilli ./Fuzzilli --profile=duktape --timeout=1000 --storagePath=/home/fuzzer/fuzz ./duktape/duk-fuzzilli
-	echo "Run make get-fuzzilli-test-results to pull fuzz results out of container"
+	@echo "Running fuzzilli tests.  Run 'make fuzzillitest-stop' to stop."
+	docker run --name fuzzilli_runner -i fuzzilli ./Fuzzilli --profile=duktape --timeout=1000 --storagePath=/home/fuzzer/fuzz ./duktape/duk-fuzzilli || true
+	@echo "Fuzzilli runner exited, pulling results out of the container."
+	docker cp fuzzilli_runner:/home/fuzzer/fuzz tmp/fuzzilli_results; docker rm fuzzilli_runner
+	@echo "Check tmp/fuzzilli_results for the results."
 
-# Gets results from fuzztest and cleans up the container
-.PHONY: get-fuzzilli-test-results
-get-fuzzilli-test-results:
-	mkdir ./tmp
-	docker cp fuzzilli_runner:/home/fuzzer/fuzz ./tmp/fuzzilli_results
-	docker rm fuzzilli_runner
-	echo "Check ./tmp/fuzzilli_results for the results"
+.PHONY: fuzzillitest-stop
+fuzzillitest-stop:
+	docker stop fuzzilli_runner || true
 
 # Set of miscellaneous tests for release.
 .PHONY: releasetest
@@ -970,6 +963,9 @@ deps/lz-string: | deps
 deps/citylots.json: | deps
 	$(WGET) -q https://github.com/zemirco/sf-city-lots-json/raw/master/citylots.json -O $@
 	touch $@
+deps/fuzzilli: | deps
+	$(GIT) clone -q https://github.com/googleprojectzero/fuzzilli $@
+	touch $@
 
 # Duktape binary releases are in a separate repo.
 deps/duktape-releases:
@@ -1197,6 +1193,12 @@ docker-images-x64: docker-prepare
 docker-images-s390x: docker-prepare
 	docker build --build-arg UID=$(shell id -u) --build-arg GID=$(shell id -g) -t duktape-base-ubuntu-18.04-s390x docker/duktape-base-ubuntu-18.04-s390x
 	docker build -t duktape-shell-ubuntu-18.04-s390x docker/duktape-shell-ubuntu-18.04-s390x
+
+# Build Docker image for fuzzilli fuzz testing, tag as 'fuzzilli'.
+docker-image-fuzzilli: build/duk-fuzzilli deps/fuzzilli
+	mkdir -p deps/fuzzilli/Cloud/Docker/DuktapeBuilder/out
+	cp build/duk-fuzzilli deps/fuzzilli/Cloud/Docker/DuktapeBuilder/out/
+	cd deps/fuzzilli/Cloud/Docker; ./build.sh fuzzilli # Don't use duktape build option here, as duk-fuzzilli is already present
 
 .PHONY: docker-images
 docker-images: docker-images-x64
