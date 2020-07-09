@@ -47,6 +47,10 @@
 #if defined(DUK_CMDLINE_PTHREAD_STACK_CHECK)
 #define _GNU_SOURCE
 #include <pthread.h>
+#include <unistd.h>
+#if defined(__linux)
+#include <sys/syscall.h>
+#endif
 #endif
 
 #include <stdio.h>
@@ -1825,19 +1829,59 @@ int main(int argc, const char *argv[]) {
 /* Example of how a native stack check can be implemented in a platform
  * specific manner for DUK_USE_NATIVE_STACK_CHECK().  This example is for
  * (Linux) pthreads, and rejects further native recursion if less than
- * 16kB stack is left (conservative).
+ * 16kB stack is left (conservative).  A production version should have
+ * an inlined fast path check for the common case.
  */
 #if defined(DUK_CMDLINE_PTHREAD_STACK_CHECK)
-int duk_cmdline_stack_check(void) {
+
+/* Cache stack address/size based on tid because the pthread calls are
+ * quite slow.
+ */
+#if defined(__linux)
+static pid_t duk__pthread_cached_tid = (pid_t) -1;
+static void *duk__pthread_cached_stack_addr = NULL;
+static size_t duk__pthread_cached_stack_size = 0;
+#endif
+
+static void duk__get_stack_addr_size(void **out_stack_addr, size_t *out_stack_size) {
+#if defined(__linux)
+	pid_t my_tid;
+#endif
 	pthread_attr_t attr;
-	void *stackaddr;
-	size_t stacksize;
+
+#if defined(__linux)
+	/* Fast path case: thread not changed. */
+	my_tid = syscall(SYS_gettid);
+	if (my_tid == duk__pthread_cached_tid) {
+		*out_stack_addr = duk__pthread_cached_stack_addr;
+		*out_stack_size = duk__pthread_cached_stack_size;
+		return;
+	}
+#endif
+
+	(void) pthread_getattr_np(pthread_self(), &attr);
+	(void) pthread_attr_getstack(&attr, out_stack_addr, out_stack_size);
+
+#if defined(__linux)
+#if 0
+	fprintf(stderr, "STACK CHECK: uncached, cache results\n");
+	fflush(stderr);
+#endif
+	duk__pthread_cached_tid = my_tid;
+	duk__pthread_cached_stack_addr = *out_stack_addr;
+	duk__pthread_cached_stack_size = *out_stack_size;
+#endif
+}
+
+int duk_cmdline_stack_check(void) {
 	char *ptr;
 	char *ptr_base;
 	ptrdiff_t remain;
+	void *stackaddr;
+	size_t stacksize;
 
-	(void) pthread_getattr_np(pthread_self(), &attr);
-	(void) pthread_attr_getstack(&attr, &stackaddr, &stacksize);
+	duk__get_stack_addr_size(&stackaddr, &stacksize);
+
 	ptr = (char *) &stacksize;  /* Rough estimate of current stack pointer. */
 	ptr_base = (char *) stackaddr;
 	remain = ptr - ptr_base;
