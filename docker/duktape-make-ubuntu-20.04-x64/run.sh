@@ -7,7 +7,6 @@ set -e
 source emsdk/emsdk_env.sh
 
 cd duktape
-make clean dist-source
-ls -l dist
-zip -r /tmp/out.zip dist
+make "$@"
+zip -r /tmp/out.zip build dist tmp
 cat /tmp/out.zip

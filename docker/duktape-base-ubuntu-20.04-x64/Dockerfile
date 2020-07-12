@@ -1,6 +1,6 @@
 # Base x64 image for all targets.
 
-FROM ubuntu:18.04
+FROM ubuntu:20.04
 
 # Username is assumed to be 'duktape' for now, change only UID/GID if required.
 ARG USERNAME=duktape
@@ -23,8 +23,8 @@ RUN echo "=== Node.js and package install ===" && \
 	apt-get update && \
 	apt-get install -qqy \
 		build-essential llvm valgrind strace libc6-dbg libc6-dbg:i386 \
-		gcc gcc-multilib g++-multilib gcc-4.8 gcc-5 gcc-6 \
-		clang clang-tools clang-3.9 clang-4.0 clang-5.0 clang-6.0 clang-7 \
+		gcc gcc-multilib g++-multilib \
+		clang clang-tools clang-6.0 clang-7 \
 		libncurses5-dev libncurses5 \
 		python python-yaml make tig git bc ant diffstat colordiff nodejs \
 		python-bs4 tidy wget curl source-highlight rst2pdf openjdk-11-jre \
