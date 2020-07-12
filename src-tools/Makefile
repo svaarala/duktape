@@ -30,7 +30,7 @@ duktool.js: from-xml js-yaml
 	ls -l duktool.js
 
 from-xml:
-	git clone https://github.com/svaarala/from-xml
+	git clone -q https://github.com/svaarala/from-xml
 
 js-yaml:
-	git clone https://github.com/svaarala/js-yaml
+	git clone -q https://github.com/svaarala/js-yaml

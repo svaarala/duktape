@@ -273,6 +273,11 @@ build:
 dist:
 	@mkdir -p $@
 
+# Targets for tooling.
+build/duktool.js: | build
+	make -C src-tools
+	cp src-tools/duktool.js $@
+
 # Targets for preparing different Duktape configurations.
 prep:
 	@mkdir -p prep
@@ -1017,10 +1022,13 @@ dist-source-iso: dist/duktape-$(DUK_VERSION_FORMATTED)-$(BUILD_DATETIME)-$(GIT_I
 .PHONY: duktape-releases-update
 duktape-releases-update: | deps/duktape-releases
 	cd deps/duktape-releases/; git pull --rebase
+build/RELEASES.rst: build/duktool.js releases/releases.yaml | build
+	$(NODE) $< generate-releases-rst --input releases/releases.yaml --output $@
+
 .PHONY: tidy-site
 tidy-site:
 	for i in website/*/*.html; do echo "*** Checking $$i"; tidy -q -e -xml $$i; done
-dist/site: build/dukweb.js build/dukweb.wasm deps/jquery-1.11.2.js | deps/lz-string deps/duktape-releases dist
+dist/site: build/dukweb.js build/dukweb.wasm build/RELEASES.rst deps/jquery-1.11.2.js | deps/lz-string deps/duktape-releases dist
 	mkdir -p $@
 	-cd deps/duktape-releases/; git pull --rebase  # get binaries up-to-date, but allow errors for offline use
 	cd website/; $(PYTHON) buildsite.py ../dist/site/
