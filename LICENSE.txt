@@ -1,10 +1,6 @@
-===============
-Duktape license
-===============
+The MIT License (MIT)
 
-(http://opensource.org/licenses/MIT)
-
-Copyright (c) 2013-2020 by Duktape authors (see AUTHORS.rst)
+Copyright (c) 2013-present, Duktape authors (see AUTHORS.rst)
 
 Permission is hereby granted, free of charge, to any person obtaining a copy
 of this software and associated documentation files (the "Software"), to deal
