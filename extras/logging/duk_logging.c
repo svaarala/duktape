@@ -8,6 +8,31 @@
 #include "duktape.h"
 #include "duk_logging.h"
 
+#if defined(WIN32) || defined(_WIN32) || defined(__WIN32__) || \
+    defined(WIN64) || defined(_WIN64) || defined(__WIN64__)
+/* Suppress warnings about plain fopen() etc. */
+#define _CRT_SECURE_NO_WARNINGS
+#if defined(_MSC_VER) && (_MSC_VER < 1900)
+/* Workaround for snprintf() missing in older MSVC versions.
+ * Note that _snprintf() may not NUL terminate the string, but
+ * this difference does not matter here as a NUL terminator is
+ * always explicitly added.
+ */
+#define snprintf _snprintf
+#endif
+#endif
+
+#if defined(__GNUC__) && !defined(__clang__)
+#if __GNUC__ >= 7
+#define DUK__LOGGING_GCC_PRAGMAS
+#endif
+#endif
+
+#if defined(DUK__LOGGING_GCC_PRAGMAS)
+#pragma GCC diagnostic push
+#pragma GCC diagnostic ignored "-Wformat-truncation"
+#endif
+
 /* XXX: uses stderr always for now, configurable? */
 
 #define DUK_LOGGING_FLUSH  /* Duktape 1.x: flush stderr */
@@ -71,7 +96,12 @@ static duk_ret_t duk__logger_constructor(duk_context *ctx) {
 		duk_dup(ctx, 0);
 		duk_put_prop_string(ctx, 1, "n");
 	} else {
-		/* don't set 'n' at all, inherited value is used as name */
+		/* Don't set 'n' at all, inherited value is used as name.
+		 *
+		 * A natural extension would be to allow an object argument
+		 * for extensible parameters, i.e.
+		 * new Duktape.Logger({ name: 'foo', ... })
+		 */
 	}
 
 	duk_compact(ctx, 1);
@@ -181,10 +211,11 @@ static duk_ret_t duk__logger_prototype_log_shared(duk_context *ctx) {
 
 	now = duk_get_now(ctx);
 	duk_time_to_components(ctx, now, &comp);
-	sprintf((char *) date_buf, "%04d-%02d-%02dT%02d:%02d:%02d.%03dZ",
-	        (int) comp.year, (int) comp.month + 1, (int) comp.day,
-	        (int) comp.hours, (int) comp.minutes, (int) comp.seconds,
-	        (int) comp.milliseconds);
+	(void) snprintf((char *) date_buf, sizeof(date_buf), "%04d-%02d-%02dT%02d:%02d:%02d.%03dZ",
+	                (int) comp.year, (int) comp.month + 1, (int) comp.day,
+	                (int) comp.hours, (int) comp.minutes, (int) comp.seconds,
+	                (int) comp.milliseconds);
+	date_buf[sizeof(date_buf) - 1] = 0;
 
 	date_len = strlen((const char *) date_buf);
 
@@ -378,3 +409,7 @@ void duk_logging_init(duk_context *ctx, duk_uint_t flags) {
 	duk_call(ctx, 2);
 	duk_pop(ctx);
 }
+
+#if defined(DUK__LOGGING_GCC_PRAGMAS)
+#pragma GCC diagnostic pop
+#endif
