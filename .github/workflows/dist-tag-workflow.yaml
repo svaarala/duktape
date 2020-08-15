@@ -1,0 +1,42 @@
+name: Dist Tag
+on:
+  push:
+    tags: '*'
+jobs:
+  dist_source:
+    name: Source
+    runs-on: ubuntu-18.04
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v2
+      - name: Install packages
+        run: |
+          sudo apt install build-essential make python python-yaml bc git
+      - name: Dist source
+        run: |
+          make dist-source
+      - name: Upload artifact
+        uses: actions/upload-artifact@v2
+        with:
+          name: source-artifact
+          path: dist/*.tar.xz
+  dist_site:
+    name: Site
+    runs-on: ubuntu-18.04
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v2
+      - name: Install packages
+        run: |
+          sudo apt install build-essential make python python-yaml bc git
+      - name: Build Docker images
+        run: |
+          make docker-images
+      - name: Dist site
+        run: |
+          make docker-dist-site-wd
+      - name: Upload artifact
+        uses: actions/upload-artifact@v2
+        with:
+          name: site-artifact
+          path: dist/*.tar.xz
