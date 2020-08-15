@@ -2,6 +2,8 @@
  *  Simulate creation and JSON serialization of a fake JSONRPC message.
  */
 
+if (typeof print !== 'function') { print = console.log; }
+
 function test() {
     var i;
     var msg;

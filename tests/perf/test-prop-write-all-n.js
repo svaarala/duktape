@@ -12,7 +12,7 @@ function test(n) {
     var code = [];
     code.push('(function (obj) { for (var count = 1e7; count > 0;) {');
     for (i = 0; i < 100; i++) {
-        code.push('void obj.prop' + (i % n) + ';');
+        code.push('obj.prop' + (i % n) + '= 123;');
     }
     code.push('count -= 100;');
     code.push('} })');
