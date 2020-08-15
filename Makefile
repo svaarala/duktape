@@ -1184,7 +1184,7 @@ massif-arcfour: massif-test-dev-arcfour
 .PHONY: docker-prepare
 docker-prepare:
 	cd docker && for subdir in duktape-*; do \
-		if [ -f ~/.gitconfig ]; then cp ~/.gitconfig $$subdir/gitconfig; else touch docker/$$subdir/gitconfig; fi; \
+		if [ -f ~/.gitconfig ]; then cp ~/.gitconfig $$subdir/gitconfig; else touch $$subdir/gitconfig; fi; \
 		cp prepare_repo.sh $$subdir/; \
 	done
 
