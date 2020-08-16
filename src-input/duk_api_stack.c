@@ -68,15 +68,14 @@ DUK_LOCAL const duk_uint_t duk__type_mask_from_tag[] = {
 
 DUK_LOCAL duk_small_uint_t duk__get_symbol_type(duk_hstring *h) {
 	const duk_uint8_t *data;
-	duk_size_t len;
+	duk_size_t blen;
 
 	DUK_ASSERT(h != NULL);
 	DUK_ASSERT(DUK_HSTRING_HAS_SYMBOL(h));
-	DUK_ASSERT(DUK_HSTRING_GET_BYTELEN(h) >= 1); /* always true, symbol prefix */
+	DUK_ASSERT(duk_hstring_get_bytelen(h) >= 1); /* always true, symbol prefix */
 
-	data = (const duk_uint8_t *) DUK_HSTRING_GET_DATA(h);
-	len = DUK_HSTRING_GET_BYTELEN(h);
-	DUK_ASSERT(len >= 1);
+	data = (const duk_uint8_t *) duk_hstring_get_data_and_bytelen(h, &blen);
+	DUK_ASSERT(blen >= 1);
 
 	/* XXX: differentiate between 0x82 and 0xff (hidden vs. internal?)? */
 
@@ -86,7 +85,7 @@ DUK_LOCAL duk_small_uint_t duk__get_symbol_type(duk_hstring *h) {
 		return DUK_SYMBOL_TYPE_HIDDEN;
 	} else if (data[0] == 0x80U) {
 		return DUK_SYMBOL_TYPE_GLOBAL;
-	} else if (data[len - 1] != 0xffU) {
+	} else if (data[blen - 1] != 0xffU) {
 		return DUK_SYMBOL_TYPE_LOCAL;
 	} else {
 		return DUK_SYMBOL_TYPE_WELLKNOWN;
@@ -1710,50 +1709,56 @@ DUK_EXTERNAL duk_uint_t duk_opt_uint(duk_hthread *thr, duk_idx_t idx, duk_uint_t
 
 DUK_EXTERNAL const char *duk_get_lstring(duk_hthread *thr, duk_idx_t idx, duk_size_t *out_len) {
 	duk_hstring *h;
+	duk_size_t blen;
 	const char *ret;
-	duk_size_t len;
 
 	DUK_ASSERT_API_ENTRY(thr);
 
 	h = duk_get_hstring(thr, idx);
 	if (h != NULL) {
-		len = DUK_HSTRING_GET_BYTELEN(h);
-		ret = (const char *) DUK_HSTRING_GET_DATA(h);
+		ret = (const char *) duk_hstring_get_data_and_bytelen(h, &blen);
+		DUK_ASSERT(ret != NULL);
 	} else {
-		len = 0;
+		blen = 0;
 		ret = NULL;
 	}
 
-	if (out_len != NULL) {
-		*out_len = len;
+	if (DUK_LIKELY(out_len != NULL)) {
+		*out_len = blen;
 	}
 	return ret;
 }
 
 DUK_EXTERNAL const char *duk_require_lstring(duk_hthread *thr, duk_idx_t idx, duk_size_t *out_len) {
 	duk_hstring *h;
+	const char *ret;
 
 	DUK_ASSERT_API_ENTRY(thr);
 
 	h = duk_require_hstring(thr, idx);
 	DUK_ASSERT(h != NULL);
-	if (out_len) {
-		*out_len = DUK_HSTRING_GET_BYTELEN(h);
+	if (DUK_LIKELY(out_len != NULL)) {
+		*out_len = duk_hstring_get_bytelen(h);
 	}
-	return (const char *) DUK_HSTRING_GET_DATA(h);
+	ret = (const char *) duk_hstring_get_data(h);
+	DUK_ASSERT(ret != NULL);
+	return ret;
 }
 
 DUK_INTERNAL const char *duk_require_lstring_notsymbol(duk_hthread *thr, duk_idx_t idx, duk_size_t *out_len) {
 	duk_hstring *h;
+	const char *ret;
 
 	DUK_ASSERT_API_ENTRY(thr);
 
 	h = duk_require_hstring_notsymbol(thr, idx);
 	DUK_ASSERT(h != NULL);
-	if (out_len) {
-		*out_len = DUK_HSTRING_GET_BYTELEN(h);
+	if (DUK_LIKELY(out_len != NULL)) {
+		*out_len = duk_hstring_get_bytelen(h);
 	}
-	return (const char *) DUK_HSTRING_GET_DATA(h);
+	ret = (const char *) duk_hstring_get_data(h);
+	DUK_ASSERT(ret != NULL);
+	return ret;
 }
 
 DUK_EXTERNAL const char *duk_get_string(duk_hthread *thr, duk_idx_t idx) {
@@ -1763,7 +1768,11 @@ DUK_EXTERNAL const char *duk_get_string(duk_hthread *thr, duk_idx_t idx) {
 
 	h = duk_get_hstring(thr, idx);
 	if (h != NULL) {
-		return (const char *) DUK_HSTRING_GET_DATA(h);
+		const char *ret;
+
+		ret = (const char *) duk_hstring_get_data(h);
+		DUK_ASSERT(ret != NULL);
+		return ret;
 	} else {
 		return NULL;
 	}
@@ -1777,7 +1786,7 @@ DUK_EXTERNAL const char *duk_opt_lstring(duk_hthread *thr,
 	DUK_ASSERT_API_ENTRY(thr);
 
 	if (duk_check_type_mask(thr, idx, DUK_TYPE_MASK_NONE | DUK_TYPE_MASK_UNDEFINED)) {
-		if (out_len != NULL) {
+		if (DUK_LIKELY(out_len != NULL)) {
 			*out_len = def_len;
 		}
 		return def_ptr;
@@ -1807,14 +1816,14 @@ DUK_EXTERNAL const char *duk_get_lstring_default(duk_hthread *thr,
 
 	h = duk_get_hstring(thr, idx);
 	if (h != NULL) {
-		len = DUK_HSTRING_GET_BYTELEN(h);
-		ret = (const char *) DUK_HSTRING_GET_DATA(h);
+		ret = (const char *) duk_hstring_get_data_and_bytelen(h, &len);
+		DUK_ASSERT(ret != NULL);
 	} else {
 		len = def_len;
 		ret = def_ptr;
 	}
 
-	if (out_len != NULL) {
+	if (DUK_LIKELY(out_len != NULL)) {
 		*out_len = len;
 	}
 	return ret;
@@ -1827,7 +1836,11 @@ DUK_EXTERNAL const char *duk_get_string_default(duk_hthread *thr, duk_idx_t idx,
 
 	h = duk_get_hstring(thr, idx);
 	if (h != NULL) {
-		return (const char *) DUK_HSTRING_GET_DATA(h);
+		const char *ret;
+
+		ret = (const char *) duk_hstring_get_data(h);
+		DUK_ASSERT(ret != NULL);
+		return ret;
 	} else {
 		return def_value;
 	}
@@ -1840,7 +1853,11 @@ DUK_INTERNAL const char *duk_get_string_notsymbol(duk_hthread *thr, duk_idx_t id
 
 	h = duk_get_hstring_notsymbol(thr, idx);
 	if (h) {
-		return (const char *) DUK_HSTRING_GET_DATA(h);
+		const char *ret;
+
+		ret = (const char *) duk_hstring_get_data(h);
+		DUK_ASSERT(ret != NULL);
+		return ret;
 	} else {
 		return NULL;
 	}
@@ -1854,12 +1871,15 @@ DUK_EXTERNAL const char *duk_require_string(duk_hthread *thr, duk_idx_t idx) {
 
 DUK_INTERNAL const char *duk_require_string_notsymbol(duk_hthread *thr, duk_idx_t idx) {
 	duk_hstring *h;
+	const char *ret;
 
 	DUK_ASSERT_API_ENTRY(thr);
 
 	h = duk_require_hstring_notsymbol(thr, idx);
 	DUK_ASSERT(h != NULL);
-	return (const char *) DUK_HSTRING_GET_DATA(h);
+	ret = (const char *) duk_hstring_get_data(h);
+	DUK_ASSERT(ret != NULL);
+	return ret;
 }
 
 DUK_EXTERNAL void duk_require_object(duk_hthread *thr, duk_idx_t idx) {
@@ -1961,7 +1981,7 @@ DUK_LOCAL void *duk__get_buffer_helper(duk_hthread *thr,
 
 	DUK_CTX_ASSERT_VALID(thr);
 
-	if (out_size != NULL) {
+	if (DUK_LIKELY(out_size != NULL)) {
 		*out_size = 0;
 	}
 
@@ -1982,7 +2002,7 @@ DUK_LOCAL void *duk__get_buffer_helper(duk_hthread *thr,
 		ret = def_ptr;
 	}
 
-	if (out_size != NULL) {
+	if (DUK_LIKELY(out_size != NULL)) {
 		*out_size = len;
 	}
 	return ret;
@@ -1998,7 +2018,7 @@ DUK_EXTERNAL void *duk_opt_buffer(duk_hthread *thr, duk_idx_t idx, duk_size_t *o
 	DUK_ASSERT_API_ENTRY(thr);
 
 	if (duk_check_type_mask(thr, idx, DUK_TYPE_MASK_NONE | DUK_TYPE_MASK_UNDEFINED)) {
-		if (out_size != NULL) {
+		if (DUK_LIKELY(out_size != NULL)) {
 			*out_size = def_size;
 		}
 		return def_ptr;
@@ -2041,7 +2061,7 @@ DUK_INTERNAL void *duk_get_buffer_data_raw(duk_hthread *thr,
 	if (out_isbuffer != NULL) {
 		*out_isbuffer = 0;
 	}
-	if (out_size != NULL) {
+	if (DUK_LIKELY(out_size != NULL)) {
 		*out_size = def_size;
 	}
 
@@ -2051,7 +2071,7 @@ DUK_INTERNAL void *duk_get_buffer_data_raw(duk_hthread *thr,
 	if (DUK_TVAL_IS_BUFFER(tv)) {
 		duk_hbuffer *h = DUK_TVAL_GET_BUFFER(tv);
 		DUK_ASSERT(h != NULL);
-		if (out_size != NULL) {
+		if (DUK_LIKELY(out_size != NULL)) {
 			*out_size = DUK_HBUFFER_GET_SIZE(h);
 		}
 		if (out_isbuffer != NULL) {
@@ -2074,7 +2094,7 @@ DUK_INTERNAL void *duk_get_buffer_data_raw(duk_hthread *thr,
 				duk_uint8_t *p;
 
 				p = (duk_uint8_t *) DUK_HBUFFER_GET_DATA_PTR(thr->heap, h_bufobj->buf);
-				if (out_size != NULL) {
+				if (DUK_LIKELY(out_size != NULL)) {
 					*out_size = (duk_size_t) h_bufobj->length;
 				}
 				if (out_isbuffer != NULL) {
@@ -2112,7 +2132,7 @@ DUK_EXTERNAL void *duk_opt_buffer_data(duk_hthread *thr, duk_idx_t idx, duk_size
 	DUK_ASSERT_API_ENTRY(thr);
 
 	if (duk_check_type_mask(thr, idx, DUK_TYPE_MASK_NONE | DUK_TYPE_MASK_UNDEFINED)) {
-		if (out_size != NULL) {
+		if (DUK_LIKELY(out_size != NULL)) {
 			*out_size = def_size;
 		}
 		return def_ptr;
@@ -2558,7 +2578,7 @@ DUK_INTERNAL duk_hobject *duk_require_hobject_with_class(duk_hthread *thr, duk_i
 		h_class = DUK_HTHREAD_GET_STRING(thr, DUK_HOBJECT_CLASS_NUMBER_TO_STRIDX(classnum));
 		DUK_UNREF(h_class);
 
-		DUK_ERROR_REQUIRE_TYPE_INDEX(thr, idx, (const char *) DUK_HSTRING_GET_DATA(h_class), DUK_STR_UNEXPECTED_TYPE);
+		DUK_ERROR_REQUIRE_TYPE_INDEX(thr, idx, (const char *) duk_hstring_get_data(h_class), DUK_STR_UNEXPECTED_TYPE);
 		DUK_WO_NORETURN(return NULL;);
 	}
 	return h;
@@ -2602,7 +2622,7 @@ DUK_EXTERNAL duk_size_t duk_get_length(duk_hthread *thr, duk_idx_t idx) {
 		if (DUK_UNLIKELY(DUK_HSTRING_HAS_SYMBOL(h))) {
 			return 0;
 		}
-		return (duk_size_t) DUK_HSTRING_GET_CHARLEN(h);
+		return (duk_size_t) duk_hstring_get_charlen(h);
 	}
 	case DUK_TAG_BUFFER: {
 		duk_hbuffer *h = DUK_TVAL_GET_BUFFER(tv);
@@ -3570,7 +3590,7 @@ DUK_EXTERNAL void *duk_to_buffer_raw(duk_hthread *thr, duk_idx_t idx, duk_size_t
 	duk_replace(thr, idx);
 skip_copy:
 
-	if (out_size) {
+	if (DUK_LIKELY(out_size != NULL)) {
 		*out_size = src_size;
 	}
 	return dst_data;
@@ -4433,6 +4453,7 @@ DUK_EXTERNAL void duk_push_nan(duk_hthread *thr) {
 DUK_EXTERNAL const char *duk_push_lstring(duk_hthread *thr, const char *str, duk_size_t len) {
 	duk_hstring *h;
 	duk_tval *tv_slot;
+	const char *ret;
 
 	DUK_ASSERT_API_ENTRY(thr);
 
@@ -4461,7 +4482,9 @@ DUK_EXTERNAL const char *duk_push_lstring(duk_hthread *thr, const char *str, duk
 	DUK_TVAL_SET_STRING(tv_slot, h);
 	DUK_HSTRING_INCREF(thr, h); /* no side effects */
 
-	return (const char *) DUK_HSTRING_GET_DATA(h);
+	ret = (const char *) duk_hstring_get_data(h);
+	DUK_ASSERT(ret != NULL);
+	return ret;
 }
 
 DUK_EXTERNAL const char *duk_push_string(duk_hthread *thr, const char *str) {
@@ -4480,6 +4503,7 @@ DUK_EXTERNAL const char *duk_push_string(duk_hthread *thr, const char *str) {
 DUK_EXTERNAL const char *duk_push_literal_raw(duk_hthread *thr, const char *str, duk_size_t len) {
 	duk_hstring *h;
 	duk_tval *tv_slot;
+	const char *ret;
 
 	DUK_ASSERT_API_ENTRY(thr);
 	DUK_ASSERT(str != NULL);
@@ -4498,7 +4522,9 @@ DUK_EXTERNAL const char *duk_push_literal_raw(duk_hthread *thr, const char *str,
 	DUK_TVAL_SET_STRING(tv_slot, h);
 	DUK_HSTRING_INCREF(thr, h); /* no side effects */
 
-	return (const char *) DUK_HSTRING_GET_DATA(h);
+	ret = (const char *) duk_hstring_get_data(h);
+	DUK_ASSERT(ret != NULL);
+	return ret;
 }
 #else /* DUK_USE_LITCACHE_SIZE */
 DUK_EXTERNAL const char *duk_push_literal_raw(duk_hthread *thr, const char *str, duk_size_t len) {
@@ -4746,9 +4772,12 @@ DUK_EXTERNAL const char *duk_push_vsprintf(duk_hthread *thr, const char *fmt, va
 	/* special handling of fmt==NULL */
 	if (!fmt) {
 		duk_hstring *h_str;
+
 		duk_push_hstring_empty(thr);
 		h_str = duk_known_hstring(thr, -1);
-		return (const char *) DUK_HSTRING_GET_DATA(h_str);
+		res = (const char *) duk_hstring_get_data(h_str);
+		DUK_ASSERT(res != NULL);
+		return res;
 	}
 
 	/* initial estimate based on format string */
@@ -6689,8 +6718,10 @@ DUK_LOCAL void duk__push_hstring_readable_unicode(duk_hthread *thr, duk_hstring 
 	DUK_ASSERT(h_input != NULL);
 	DUK_ASSERT(maxchars <= DUK__READABLE_SUMMARY_MAXCHARS);
 
-	p_start = (const duk_uint8_t *) DUK_HSTRING_GET_DATA(h_input);
-	p_end = p_start + DUK_HSTRING_GET_BYTELEN(h_input);
+	p_start = (const duk_uint8_t *) duk_hstring_get_data(h_input);
+	DUK_ASSERT(p_start != NULL);
+	p_end = p_start + duk_hstring_get_bytelen(h_input);
+	DUK_ASSERT(p_end >= p_start);
 	p = p_start;
 	q = buf;
 
@@ -6831,13 +6862,16 @@ DUK_INTERNAL void duk_push_symbol_descriptive_string(duk_hthread *thr, duk_hstri
 	const duk_uint8_t *p;
 	const duk_uint8_t *p_end;
 	const duk_uint8_t *q;
+	duk_size_t blen;
 
 	DUK_ASSERT_API_ENTRY(thr);
 
 	/* .toString() */
 	duk_push_literal(thr, "Symbol(");
-	p = (const duk_uint8_t *) DUK_HSTRING_GET_DATA(h);
-	p_end = p + DUK_HSTRING_GET_BYTELEN(h);
+	p = (const duk_uint8_t *) duk_hstring_get_data_and_bytelen(h, &blen);
+	DUK_ASSERT(p != NULL);
+	p_end = p + blen;
+	DUK_ASSERT(p_end >= p);
 	DUK_ASSERT(p[0] == 0xff || (p[0] & 0xc0) == 0x80);
 	p++;
 	for (q = p; q < p_end; q++) {

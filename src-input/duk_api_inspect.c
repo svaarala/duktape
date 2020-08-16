@@ -101,7 +101,7 @@ DUK_EXTERNAL void duk_inspect_value(duk_hthread *thr, duk_idx_t idx) {
 	switch ((duk_small_int_t) DUK_HEAPHDR_GET_TYPE(h)) {
 	case DUK_HTYPE_STRING: {
 		duk_hstring *h_str = (duk_hstring *) h;
-		vals[DUK__IDX_HBYTES] = (duk_int_t) (sizeof(duk_hstring) + DUK_HSTRING_GET_BYTELEN(h_str) + 1);
+		vals[DUK__IDX_HBYTES] = (duk_int_t) (sizeof(duk_hstring) + duk_hstring_get_bytelen(h_str) + 1);
 #if defined(DUK_USE_HSTRING_EXTDATA)
 		if (DUK_HSTRING_HAS_EXTDATA(h_str)) {
 			vals[DUK__IDX_VARIANT] = 1;

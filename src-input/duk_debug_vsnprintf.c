@@ -263,8 +263,8 @@ DUK_LOCAL void duk__print_hstring(duk__dprint_state *st, duk_hstring *h, duk_boo
 		return;
 	}
 
-	p = DUK_HSTRING_GET_DATA(h);
-	p_end = p + DUK_HSTRING_GET_BYTELEN(h);
+	p = duk_hstring_get_data(h);
+	p_end = p + duk_hstring_get_bytelen(h);
 
 	if (p_end > p && p[0] == DUK_ASC_UNDERSCORE) {
 		/* If property key begins with underscore, encode it with

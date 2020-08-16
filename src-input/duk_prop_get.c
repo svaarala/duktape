@@ -211,7 +211,7 @@ DUK_LOCAL duk_bool_t duk__prop_get_write_plainstr_length(duk_hthread *thr, duk_h
 
 	tv_out = thr->valstack_bottom + idx_out;
 	DUK_ASSERT(DUK_HTHREAD_TVAL_IN_VSFRAME(thr, tv_out));
-	len = (duk_uint32_t) DUK_HSTRING_GET_CHARLEN(h);
+	len = (duk_uint32_t) duk_hstring_get_charlen(h);
 	DUK_TVAL_SET_U32_UPDREF(thr, tv_out, len);
 	return 1;
 }
@@ -568,7 +568,7 @@ duk__get_own_prop_idxkey_stringobj(duk_hthread *thr, duk_hobject *obj, duk_uarri
 
 	h = duk_hobject_lookup_intvalue_hstring(thr, obj);
 	if (DUK_LIKELY(h != NULL)) {
-		if (DUK_LIKELY(!DUK_HSTRING_HAS_SYMBOL(h) && idx < DUK_HSTRING_GET_CHARLEN(h))) {
+		if (DUK_LIKELY(!DUK_HSTRING_HAS_SYMBOL(h) && idx < duk_hstring_get_charlen(h))) {
 			return (duk_small_int_t) duk__prop_getvalue_plainstr_index(thr, idx_recv, idx, idx_out, h);
 		}
 	}
@@ -1042,7 +1042,7 @@ DUK_LOCAL duk_bool_t duk__prop_getvalue_idx_outidx(duk_hthread *thr, duk_idx_t i
 		duk_hstring *h = DUK_TVAL_GET_STRING(tv_recv);
 
 		if (DUK_LIKELY(!DUK_HSTRING_HAS_SYMBOL(h))) {
-			if (DUK_LIKELY(idx < DUK_HSTRING_GET_CHARLEN(h))) {
+			if (DUK_LIKELY(idx < duk_hstring_get_charlen(h))) {
 				return duk__prop_getvalue_plainstr_index(thr, idx_recv, idx, idx_out, h);
 			}
 			next_bidx = DUK_BIDX_STRING_PROTOTYPE;
@@ -1159,7 +1159,7 @@ DUK_INTERNAL duk_bool_t duk_prop_getvalue_str_outidx(duk_hthread *thr, duk_idx_t
 	DUK_ASSERT(duk_is_valid_posidx(thr, idx_out));
 
 	if (DUK_UNLIKELY(DUK_HSTRING_HAS_ARRIDX(key))) {
-		return duk__prop_getvalue_idx_outidx(thr, idx_recv, DUK_HSTRING_GET_ARRIDX_FAST_KNOWN(key), idx_out);
+		return duk__prop_getvalue_idx_outidx(thr, idx_recv, duk_hstring_get_arridx_fast_known(key), idx_out);
 	} else {
 		return duk__prop_getvalue_str_outidx(thr, idx_recv, key, idx_out);
 	}
@@ -1238,7 +1238,7 @@ DUK_INTERNAL duk_bool_t duk_prop_getvalue_outidx(duk_hthread *thr, duk_idx_t idx
 	case DUK_TAG_STRING:
 		key = DUK_TVAL_GET_STRING(tv_key);
 		if (DUK_UNLIKELY(DUK_HSTRING_HAS_ARRIDX(key))) {
-			idx = DUK_HSTRING_GET_ARRIDX_FAST_KNOWN(key);
+			idx = duk_hstring_get_arridx_fast_known(key);
 			goto use_idx;
 		} else {
 			goto use_str;

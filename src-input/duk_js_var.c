@@ -1236,7 +1236,7 @@ duk_bool_t duk__getvar_helper(duk_hthread *thr, duk_hobject *env, duk_activation
 			DUK_ERROR_FMT1(thr,
 			               DUK_ERR_REFERENCE_ERROR,
 			               "identifier '%s' undefined",
-			               (const char *) DUK_HSTRING_GET_DATA(name));
+			               (const char *) duk_hstring_get_data(name));
 			DUK_WO_NORETURN(return 0;);
 		}
 
@@ -1363,7 +1363,7 @@ void duk__putvar_helper(duk_hthread *thr,
 		DUK_ERROR_FMT1(thr,
 		               DUK_ERR_REFERENCE_ERROR,
 		               "identifier '%s' undefined",
-		               (const char *) DUK_HSTRING_GET_DATA(name));
+		               (const char *) duk_hstring_get_data(name));
 		DUK_WO_NORETURN(return;);
 	}
 

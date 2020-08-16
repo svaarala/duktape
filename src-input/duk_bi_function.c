@@ -14,6 +14,8 @@ DUK_INTERNAL duk_ret_t duk_bi_function_prototype(duk_hthread *thr) {
 #if defined(DUK_USE_FUNCTION_BUILTIN)
 DUK_INTERNAL duk_ret_t duk_bi_function_constructor(duk_hthread *thr) {
 	duk_hstring *h_sourcecode;
+	const duk_uint8_t *source_data;
+	size_t source_blen;
 	duk_idx_t nargs;
 	duk_idx_t i;
 	duk_small_uint_t comp_flags;
@@ -64,10 +66,8 @@ DUK_INTERNAL duk_ret_t duk_bi_function_constructor(duk_hthread *thr) {
 
 	duk_push_hstring_stridx(thr, DUK_STRIDX_COMPILE); /* XXX: copy from caller? */ /* XXX: ignored now */
 	h_sourcecode = duk_require_hstring(thr, -2); /* no symbol check needed; -2 is concat'd code */
-	duk_js_compile(thr,
-	               (const duk_uint8_t *) DUK_HSTRING_GET_DATA(h_sourcecode),
-	               (duk_size_t) DUK_HSTRING_GET_BYTELEN(h_sourcecode),
-	               comp_flags);
+	source_data = duk_hstring_get_data_and_bytelen(h_sourcecode, &source_blen);
+	duk_js_compile(thr, source_data, source_blen, comp_flags);
 
 	/* Force .name to 'anonymous' (ES2015). */
 	duk_push_literal(thr, "anonymous");

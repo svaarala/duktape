@@ -70,7 +70,7 @@ DUK_INTERNAL duk_bool_t duk_js_toboolean(duk_tval *tv) {
 		 */
 		duk_hstring *h = DUK_TVAL_GET_STRING(tv);
 		DUK_ASSERT(h != NULL);
-		return (DUK_HSTRING_GET_BYTELEN(h) > 0 ? 1 : 0);
+		return (duk_hstring_get_bytelen(h) > 0 ? 1 : 0);
 	}
 	case DUK_TAG_OBJECT: {
 		return 1;
@@ -754,10 +754,10 @@ DUK_INTERNAL duk_small_int_t duk_js_string_compare(duk_hstring *h1, duk_hstring 
 	DUK_ASSERT(h1 != NULL);
 	DUK_ASSERT(h2 != NULL);
 
-	return duk_js_data_compare((const duk_uint8_t *) DUK_HSTRING_GET_DATA(h1),
-	                           (const duk_uint8_t *) DUK_HSTRING_GET_DATA(h2),
-	                           (duk_size_t) DUK_HSTRING_GET_BYTELEN(h1),
-	                           (duk_size_t) DUK_HSTRING_GET_BYTELEN(h2));
+	return duk_js_data_compare((const duk_uint8_t *) duk_hstring_get_data(h1),
+	                           (const duk_uint8_t *) duk_hstring_get_data(h2),
+	                           (duk_size_t) duk_hstring_get_bytelen(h1),
+	                           (duk_size_t) duk_hstring_get_bytelen(h2));
 }
 
 #if 0 /* unused */
@@ -1432,7 +1432,7 @@ DUK_INTERNAL duk_uarridx_t duk_js_to_arrayindex_hstring_fast_known(duk_hstring *
 	DUK_ASSERT(h != NULL);
 	DUK_ASSERT(DUK_HSTRING_HAS_ARRIDX(h));
 
-	p = DUK_HSTRING_GET_DATA(h);
+	p = duk_hstring_get_data(h);
 	res = 0;
 	for (;;) {
 		t = *p++;

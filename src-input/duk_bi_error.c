@@ -197,7 +197,7 @@ DUK_LOCAL duk_ret_t duk__error_getter_helper(duk_hthread *thr, duk_small_int_t o
 				h_name = duk_get_hstring_notsymbol(thr, -2); /* may be NULL */
 				funcname = (h_name == NULL || h_name == DUK_HTHREAD_STRING_EMPTY_STRING(thr)) ?
                                                "[anon]" :
-                                               (const char *) DUK_HSTRING_GET_DATA(h_name);
+                                               (const char *) duk_hstring_get_data(h_name);
 				filename = duk_get_string_notsymbol(thr, -1);
 				filename = filename ? filename : "";
 				DUK_ASSERT(funcname != NULL);

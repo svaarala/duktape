@@ -352,8 +352,8 @@ DUK_INTERNAL_DECL void duk_bw_assert_valid(duk_hthread *thr, duk_bufwriter_ctx *
 #define DUK_BW_WRITE_RAW_HSTRING(thr, bw_ctx, val) \
 	do { \
 		duk_size_t duk__val_len; \
-		duk__val_len = DUK_HSTRING_GET_BYTELEN((val)); \
-		duk_memcpy_unsafe((void *) ((bw_ctx)->p), (const void *) DUK_HSTRING_GET_DATA((val)), duk__val_len); \
+		duk__val_len = duk_hstring_get_bytelen((val)); \
+		duk_memcpy_unsafe((void *) ((bw_ctx)->p), (const void *) duk_hstring_get_data((val)), duk__val_len); \
 		(bw_ctx)->p += duk__val_len; \
 	} while (0)
 #define DUK_BW_WRITE_RAW_HBUFFER(thr, bw_ctx, val) \
@@ -471,9 +471,9 @@ DUK_INTERNAL_DECL void duk_bw_assert_valid(duk_hthread *thr, duk_bufwriter_ctx *
 #define DUK_BW_WRITE_ENSURE_HSTRING(thr, bw_ctx, val) \
 	do { \
 		duk_size_t duk__val_len; \
-		duk__val_len = DUK_HSTRING_GET_BYTELEN((val)); \
+		duk__val_len = duk_hstring_get_bytelen((val)); \
 		DUK_BW_ENSURE((thr), (bw_ctx), duk__val_len); \
-		duk_memcpy_unsafe((void *) ((bw_ctx)->p), (const void *) DUK_HSTRING_GET_DATA((val)), duk__val_len); \
+		duk_memcpy_unsafe((void *) ((bw_ctx)->p), (const void *) duk_hstring_get_data((val)), duk__val_len); \
 		(bw_ctx)->p += duk__val_len; \
 	} while (0)
 #define DUK_BW_WRITE_ENSURE_HBUFFER(thr, bw_ctx, val) \

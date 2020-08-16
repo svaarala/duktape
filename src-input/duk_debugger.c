@@ -818,8 +818,8 @@ DUK_INTERNAL void duk_debug_write_hstring(duk_hthread *thr, duk_hstring *h) {
 
 	/* XXX: differentiate null pointer from empty string? */
 	duk_debug_write_string(thr,
-	                       (h != NULL ? (const char *) DUK_HSTRING_GET_DATA(h) : NULL),
-	                       (h != NULL ? (duk_size_t) DUK_HSTRING_GET_BYTELEN(h) : 0));
+	                       (h != NULL ? (const char *) duk_hstring_get_data(h) : NULL),
+	                       (h != NULL ? (duk_size_t) duk_hstring_get_bytelen(h) : 0));
 }
 
 DUK_LOCAL void duk__debug_write_hstring_safe_top(duk_hthread *thr) {
@@ -1754,9 +1754,9 @@ DUK_LOCAL void duk__debug_dump_heaphdr(duk_hthread *thr, duk_heap *heap, duk_hea
 	case DUK_HTYPE_STRING: {
 		duk_hstring *h = (duk_hstring *) hdr;
 
-		duk_debug_write_uint(thr, (duk_uint32_t) DUK_HSTRING_GET_BYTELEN(h));
-		duk_debug_write_uint(thr, (duk_uint32_t) DUK_HSTRING_GET_CHARLEN(h));
-		duk_debug_write_uint(thr, (duk_uint32_t) DUK_HSTRING_GET_HASH(h));
+		duk_debug_write_uint(thr, (duk_uint32_t) duk_hstring_get_bytelen(h));
+		duk_debug_write_uint(thr, (duk_uint32_t) duk_hstring_get_charlen(h));
+		duk_debug_write_uint(thr, (duk_uint32_t) duk_hstring_get_hash(h));
 		duk_debug_write_hstring(thr, h);
 		break;
 	}
@@ -2160,9 +2160,9 @@ DUK_LOCAL void duk__debug_handle_get_heap_obj_info(duk_hthread *thr, duk_heap *h
 		                           duk__debug_getinfo_hstring_keys,
 		                           duk__debug_getinfo_hstring_masks,
 		                           DUK_HEAPHDR_GET_FLAGS_RAW(h));
-		duk__debug_getinfo_prop_uint(thr, "bytelen", (duk_uint_t) DUK_HSTRING_GET_BYTELEN(h_str));
-		duk__debug_getinfo_prop_uint(thr, "charlen", (duk_uint_t) DUK_HSTRING_GET_CHARLEN(h_str));
-		duk__debug_getinfo_prop_uint(thr, "hash", (duk_uint_t) DUK_HSTRING_GET_HASH(h_str));
+		duk__debug_getinfo_prop_uint(thr, "bytelen", (duk_uint_t) duk_hstring_get_bytelen(h_str));
+		duk__debug_getinfo_prop_uint(thr, "charlen", (duk_uint_t) duk_hstring_get_charlen(h_str));
+		duk__debug_getinfo_prop_uint(thr, "hash", (duk_uint_t) duk_hstring_get_hash(h_str));
 		duk__debug_getinfo_flags_key(thr, "data");
 		duk_debug_write_hstring(thr, h_str);
 		break;

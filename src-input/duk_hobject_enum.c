@@ -76,9 +76,9 @@ DUK_LOCAL duk__sort_key_t duk__hstring_sort_key(duk_hstring *x) {
 	 * the masked flag field into the arridx temporary.
 	 */
 	DUK_ASSERT(x != NULL);
-	DUK_ASSERT(!DUK_HSTRING_HAS_SYMBOL(x) || DUK_HSTRING_GET_ARRIDX_FAST(x) == DUK_HSTRING_NO_ARRAY_INDEX);
+	DUK_ASSERT(!DUK_HSTRING_HAS_SYMBOL(x) || duk_hstring_get_arridx_fast(x) == DUK_HSTRING_NO_ARRAY_INDEX);
 
-	val = (duk__sort_key_t) DUK_HSTRING_GET_ARRIDX_FAST(x);
+	val = (duk__sort_key_t) duk_hstring_get_arridx_fast(x);
 
 #if defined(DUK_USE_SYMBOL_BUILTIN)
 	val = val + (duk__sort_key_t) (DUK_HEAPHDR_GET_FLAGS_RAW((duk_heaphdr *) x) & DUK_HSTRING_FLAG_SYMBOL);
@@ -356,7 +356,7 @@ skip_proxy:
 				duk_hstring *h_val;
 				h_val = duk_hobject_get_internal_value_string(thr->heap, curr);
 				DUK_ASSERT(h_val != NULL); /* string objects must not created without internal value */
-				len = (duk_uint_fast32_t) DUK_HSTRING_GET_CHARLEN(h_val);
+				len = (duk_uint_fast32_t) duk_hstring_get_charlen(h_val);
 			}
 #if defined(DUK_USE_BUFFEROBJECT_SUPPORT)
 			else {

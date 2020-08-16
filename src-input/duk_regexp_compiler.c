@@ -1015,8 +1015,8 @@ DUK_LOCAL duk_uint32_t duk__parse_regexp_flags(duk_hthread *thr, duk_hstring *h)
 	const duk_uint8_t *p_end;
 	duk_uint32_t flags = 0;
 
-	p = DUK_HSTRING_GET_DATA(h);
-	p_end = p + DUK_HSTRING_GET_BYTELEN(h);
+	p = duk_hstring_get_data(h);
+	p_end = p + duk_hstring_get_bytelen(h);
 
 	/* Note: can be safely scanned as bytes (undecoded) */
 
@@ -1087,8 +1087,7 @@ DUK_LOCAL void duk__create_escaped_source(duk_hthread *thr, int idx_pattern) {
 	duk_uint_fast8_t c_prev, c;
 
 	h = duk_known_hstring(thr, idx_pattern);
-	p = (const duk_uint8_t *) DUK_HSTRING_GET_DATA(h);
-	n = (duk_size_t) DUK_HSTRING_GET_BYTELEN(h);
+	p = (const duk_uint8_t *) duk_hstring_get_data_and_bytelen(h, &n);
 
 	if (n == 0) {
 		duk_push_literal(thr, "(?:)");
@@ -1175,8 +1174,8 @@ DUK_INTERNAL void duk_regexp_compile(duk_hthread *thr) {
 	DUK_LEXER_INITCTX(&re_ctx.lex); /* duplicate zeroing, expect for (possible) NULL inits */
 	re_ctx.thr = thr;
 	re_ctx.lex.thr = thr;
-	re_ctx.lex.input = DUK_HSTRING_GET_DATA(h_pattern);
-	re_ctx.lex.input_length = DUK_HSTRING_GET_BYTELEN(h_pattern);
+	re_ctx.lex.input = duk_hstring_get_data(h_pattern);
+	re_ctx.lex.input_length = duk_hstring_get_bytelen(h_pattern);
 	re_ctx.lex.token_limit = DUK_RE_COMPILE_TOKEN_LIMIT;
 	re_ctx.recursion_limit = DUK_USE_REGEXP_COMPILER_RECLIMIT;
 	re_ctx.re_flags = duk__parse_regexp_flags(thr, h_flags);

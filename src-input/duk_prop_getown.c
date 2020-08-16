@@ -123,7 +123,7 @@ retry_target:
 	case DUK_HTYPE_STRING_OBJECT:
 		if (DUK_HSTRING_HAS_LENGTH(key)) {
 			duk_hstring *h = duk_hobject_lookup_intvalue_hstring(thr, target);
-			duk_push_u32(thr, DUK_HSTRING_GET_CHARLEN(h));
+			duk_push_u32(thr, duk_hstring_get_charlen(h));
 			rc = DUK_PROPDESC_FLAGS_NONE;
 			goto return_rc;
 		}
@@ -307,7 +307,7 @@ retry_target:
 		goto return_rc;
 	case DUK_HTYPE_STRING_OBJECT: {
 		duk_hstring *h = duk_hobject_lookup_intvalue_hstring(thr, target);
-		if (idx < DUK_HSTRING_GET_CHARLEN(h)) {
+		if (idx < duk_hstring_get_charlen(h)) {
 			duk_prop_push_plainstr_idx(thr, h, idx);
 			rc = DUK_PROPDESC_FLAGS_E;
 			goto return_rc;
@@ -387,7 +387,7 @@ DUK_INTERNAL duk_small_int_t duk_prop_getowndesc_obj_strkey(duk_hthread *thr, du
 	DUK_ASSERT(key != NULL);
 
 	if (DUK_UNLIKELY(DUK_HSTRING_HAS_ARRIDX(key))) {
-		return duk__prop_getowndesc_idxkey_unsafe(thr, obj, DUK_HSTRING_GET_ARRIDX_FAST_KNOWN(key));
+		return duk__prop_getowndesc_idxkey_unsafe(thr, obj, duk_hstring_get_arridx_fast_known(key));
 	} else {
 		return duk__prop_getowndesc_strkey_unsafe(thr, obj, key);
 	}

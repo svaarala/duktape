@@ -532,7 +532,7 @@ DUK_LOCAL DUK_COLD duk_bool_t duk__prop_defown_strkey_stringobj_length(duk_hthre
 		DUK_ASSERT((defprop_flags & (DUK_DEFPROP_HAVE_GETTER | DUK_DEFPROP_HAVE_SETTER)) == 0U);
 		if (defprop_flags & DUK_DEFPROP_HAVE_VALUE) {
 			duk_tval tv_tmp;
-			DUK_TVAL_SET_U32(&tv_tmp, DUK_HSTRING_GET_CHARLEN(h));
+			DUK_TVAL_SET_U32(&tv_tmp, duk_hstring_get_charlen(h));
 			if (!duk_js_samevalue(duk_require_tval(thr, idx_desc), &tv_tmp)) {
 				goto fail_invalid_desc;
 			}
@@ -1045,7 +1045,7 @@ DUK_LOCAL duk_small_int_t duk__prop_defown_idxkey_stringobj(duk_hthread *thr,
 
 	h = duk_hobject_lookup_intvalue_hstring(thr, obj);
 	if (DUK_LIKELY(h != NULL)) {
-		if (DUK_LIKELY(!DUK_HSTRING_HAS_SYMBOL(h) && idx < DUK_HSTRING_GET_CHARLEN(h))) {
+		if (DUK_LIKELY(!DUK_HSTRING_HAS_SYMBOL(h) && idx < duk_hstring_get_charlen(h))) {
 			if (duk__prop_validate_immutable_data_desc(DUK_PROPDESC_FLAGS_E, defprop_flags) == 0) {
 				goto fail_invalid_desc;
 			}
@@ -1335,7 +1335,7 @@ duk_prop_defown_strkey(duk_hthread *thr, duk_hobject *obj, duk_hstring *key, duk
 	DUK_ASSERT(idx_desc >= 0);
 
 	if (DUK_UNLIKELY(DUK_HSTRING_HAS_ARRIDX(key))) {
-		return duk__prop_defown_idxkey_unsafe(thr, obj, DUK_HSTRING_GET_ARRIDX_FAST_KNOWN(key), idx_desc, defprop_flags);
+		return duk__prop_defown_idxkey_unsafe(thr, obj, duk_hstring_get_arridx_fast_known(key), idx_desc, defprop_flags);
 	} else {
 		return duk__prop_defown_strkey_unsafe(thr, obj, key, idx_desc, defprop_flags);
 	}
@@ -1383,7 +1383,7 @@ duk_prop_defown(duk_hthread *thr, duk_hobject *obj, duk_tval *tv_key, duk_idx_t 
 	case DUK_TAG_STRING:
 		key = DUK_TVAL_GET_STRING(tv_key);
 		if (DUK_UNLIKELY(DUK_HSTRING_HAS_ARRIDX(key))) {
-			idx = DUK_HSTRING_GET_ARRIDX_FAST_KNOWN(key);
+			idx = duk_hstring_get_arridx_fast_known(key);
 			goto use_idx;
 		} else {
 			goto use_str;

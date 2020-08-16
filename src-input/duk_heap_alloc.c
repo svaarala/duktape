@@ -96,8 +96,8 @@ DUK_INTERNAL void duk_free_hstring(duk_heap *heap, duk_hstring *h) {
 #if defined(DUK_USE_HSTRING_EXTDATA) && defined(DUK_USE_EXTSTR_FREE)
 	if (DUK_HSTRING_HAS_EXTDATA(h)) {
 		DUK_DDD(
-		    DUK_DDDPRINT("free extstr: hstring %!O, extdata: %p", h, DUK_HSTRING_GET_EXTDATA((duk_hstring_external *) h)));
-		DUK_USE_EXTSTR_FREE(heap->heap_udata, (const void *) DUK_HSTRING_GET_EXTDATA((duk_hstring_external *) h));
+		    DUK_DDDPRINT("free extstr: hstring %!O, extdata: %p", h, duk_hstring_get_extdata((duk_hstring_external *) h)));
+		DUK_USE_EXTSTR_FREE(heap->heap_udata, (const void *) duk_hstring_get_extdata((duk_hstring_external *) h));
 	}
 #endif
 	DUK_FREE(heap, (void *) h);
@@ -451,12 +451,12 @@ DUK_LOCAL duk_bool_t duk__init_heap_strings(duk_heap *heap) {
 
 		h = duk_rom_strings_lookup[i];
 		while (h != NULL) {
-			hash = duk_heap_hashstring(heap, (const duk_uint8_t *) DUK_HSTRING_GET_DATA(h), DUK_HSTRING_GET_BYTELEN(h));
+			hash = duk_heap_hashstring(heap, (const duk_uint8_t *) duk_hstring_get_data(h), duk_hstring_get_bytelen(h));
 			DUK_DD(DUK_DDPRINT("duk_rom_strings_lookup[%d] -> hash 0x%08lx, computed 0x%08lx",
 			                   (int) i,
-			                   (unsigned long) DUK_HSTRING_GET_HASH(h),
+			                   (unsigned long) duk_hstring_get_hash(h),
 			                   (unsigned long) hash));
-			DUK_ASSERT(hash == (duk_uint32_t) DUK_HSTRING_GET_HASH(h));
+			DUK_ASSERT(hash == (duk_uint32_t) duk_hstring_get_hash(h));
 
 			h = (const duk_hstring *) h->hdr.h_next;
 		}

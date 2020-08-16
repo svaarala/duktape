@@ -116,7 +116,7 @@ DUK_LOCAL void duk__strtable_assert_checks(duk_heap *heap) {
 		for (i = 0; i < heap->st_size; i++) {
 			h = DUK__HEAPPTR_DEC16(heap, strtable[i]);
 			while (h != NULL) {
-				DUK_ASSERT((DUK_HSTRING_GET_HASH(h) & heap->st_mask) == i);
+				DUK_ASSERT((duk_hstring_get_hash(h) & heap->st_mask) == i);
 				count++;
 				h = h->hdr.h_next;
 			}
@@ -207,8 +207,8 @@ DUK_LOCAL duk_hstring *duk__strtable_alloc_hstring(duk_heap *heap,
 		data = (const duk_uint8_t *) data_tmp;
 	}
 
-	DUK_HSTRING_SET_BYTELEN(res, blen);
-	DUK_HSTRING_SET_HASH(res, strhash);
+	duk_hstring_set_bytelen(res, blen);
+	duk_hstring_set_hash(res, strhash);
 
 	DUK_ASSERT(!DUK_HSTRING_HAS_ARRIDX(res));
 #if defined(DUK_USE_HSTRING_ARRIDX)
@@ -254,8 +254,8 @@ DUK_LOCAL duk_hstring *duk__strtable_alloc_hstring(duk_heap *heap,
 	}
 
 	DUK_DDD(DUK_DDDPRINT("interned string, hash=0x%08lx, blen=%ld, has_arridx=%ld, has_extdata=%ld",
-	                     (unsigned long) DUK_HSTRING_GET_HASH(res),
-	                     (long) DUK_HSTRING_GET_BYTELEN(res),
+	                     (unsigned long) duk_hstring_get_hash(res),
+	                     (long) duk_hstring_get_bytelen(res),
 	                     (long) (DUK_HSTRING_HAS_ARRIDX(res) ? 1 : 0),
 	                     (long) (DUK_HSTRING_HAS_EXTDATA(res) ? 1 : 0)));
 
@@ -346,7 +346,7 @@ DUK_LOCAL void duk__strtable_grow_inplace(duk_heap *heap) {
 		while (h != NULL) {
 			duk_uint32_t mask;
 
-			DUK_ASSERT((DUK_HSTRING_GET_HASH(h) & heap->st_mask) == i);
+			DUK_ASSERT((duk_hstring_get_hash(h) & heap->st_mask) == i);
 			next = h->hdr.h_next;
 
 			/* Example: if previous size was 256, previous mask is 0xFF
@@ -355,7 +355,7 @@ DUK_LOCAL void duk__strtable_grow_inplace(duk_heap *heap) {
 			 */
 			DUK_ASSERT(heap->st_mask == old_st_size - 1);
 			mask = old_st_size;
-			if (DUK_HSTRING_GET_HASH(h) & mask) {
+			if (duk_hstring_get_hash(h) & mask) {
 				if (prev != NULL) {
 					prev->hdr.h_next = h->hdr.h_next;
 				} else {
@@ -709,12 +709,12 @@ DUK_LOCAL duk_hstring *duk__strtab_romstring_lookup(duk_heap *heap, const duk_ui
 	curr = (duk_hstring *) DUK_LOSE_CONST(duk_rom_strings_lookup[lookup_hash]);
 	while (curr != NULL) {
 		/* Unsafe memcmp() because for zero blen, str may be NULL. */
-		if (strhash == DUK_HSTRING_GET_HASH(curr) && blen == DUK_HSTRING_GET_BYTELEN(curr) &&
-		    duk_memcmp_unsafe((const void *) str, (const void *) DUK_HSTRING_GET_DATA(curr), blen) == 0) {
+		if (strhash == duk_hstring_get_hash(curr) && blen == duk_hstring_get_bytelen(curr) &&
+		    duk_memcmp_unsafe((const void *) str, (const void *) duk_hstring_get_data(curr), blen) == 0) {
 			DUK_DDD(DUK_DDDPRINT("intern check: rom string: %!O, computed hash 0x%08lx, rom hash 0x%08lx",
 			                     curr,
 			                     (unsigned long) strhash,
-			                     (unsigned long) DUK_HSTRING_GET_HASH(curr)));
+			                     (unsigned long) duk_hstring_get_hash(curr)));
 			return curr;
 		}
 		curr = curr->hdr.h_next;
@@ -860,8 +860,8 @@ DUK_INTERNAL duk_hstring *duk_heap_strtable_intern(duk_heap *heap, const duk_uin
 	h = heap->strtable[strhash & heap->st_mask];
 #endif
 	while (h != NULL) {
-		if (DUK_HSTRING_GET_HASH(h) == strhash && DUK_HSTRING_GET_BYTELEN(h) == blen &&
-		    duk_memcmp_unsafe((const void *) str, (const void *) DUK_HSTRING_GET_DATA(h), (size_t) blen) == 0) {
+		if (duk_hstring_get_hash(h) == strhash && duk_hstring_get_bytelen(h) == blen &&
+		    duk_memcmp_unsafe((const void *) str, (const void *) duk_hstring_get_data(h), (size_t) blen) == 0) {
 			/* Found existing entry. */
 			DUK_STATS_INC(heap, stats_strtab_intern_hit);
 			goto done;
@@ -1040,8 +1040,8 @@ DUK_INTERNAL void duk_heap_strtable_unlink(duk_heap *heap, duk_hstring *h) {
 	DUK_DDD(DUK_DDDPRINT("remove: heap=%p, h=%p, blen=%lu, strhash=%lx",
 	                     (void *) heap,
 	                     (void *) h,
-	                     (unsigned long) (h != NULL ? DUK_HSTRING_GET_BYTELEN(h) : 0),
-	                     (unsigned long) (h != NULL ? DUK_HSTRING_GET_HASH(h) : 0)));
+	                     (unsigned long) (h != NULL ? duk_hstring_get_bytelen(h) : 0),
+	                     (unsigned long) (h != NULL ? duk_hstring_get_hash(h) : 0)));
 
 	DUK_ASSERT(heap != NULL);
 	DUK_ASSERT(h != NULL);
@@ -1052,9 +1052,9 @@ DUK_INTERNAL void duk_heap_strtable_unlink(duk_heap *heap, duk_hstring *h) {
 #endif
 
 #if defined(DUK_USE_STRTAB_PTRCOMP)
-	slot = heap->strtable16 + (DUK_HSTRING_GET_HASH(h) & heap->st_mask);
+	slot = heap->strtable16 + (duk_hstring_get_hash(h) & heap->st_mask);
 #else
-	slot = heap->strtable + (DUK_HSTRING_GET_HASH(h) & heap->st_mask);
+	slot = heap->strtable + (duk_hstring_get_hash(h) & heap->st_mask);
 #endif
 	other = DUK__HEAPPTR_DEC16(heap, *slot);
 	DUK_ASSERT(other != NULL); /* At least argument string is in the chain. */
@@ -1091,8 +1091,8 @@ DUK_INTERNAL void duk_heap_strtable_unlink_prev(duk_heap *heap, duk_hstring *h, 
 	                     (void *) heap,
 	                     (void *) prev,
 	                     (void *) h,
-	                     (unsigned long) (h != NULL ? DUK_HSTRING_GET_BYTELEN(h) : 0),
-	                     (unsigned long) (h != NULL ? DUK_HSTRING_GET_HASH(h) : 0)));
+	                     (unsigned long) (h != NULL ? duk_hstring_get_bytelen(h) : 0),
+	                     (unsigned long) (h != NULL ? duk_hstring_get_hash(h) : 0)));
 
 	DUK_ASSERT(heap != NULL);
 	DUK_ASSERT(h != NULL);
@@ -1109,9 +1109,9 @@ DUK_INTERNAL void duk_heap_strtable_unlink_prev(duk_heap *heap, duk_hstring *h, 
 	} else {
 		/* Head of list. */
 #if defined(DUK_USE_STRTAB_PTRCOMP)
-		slot = heap->strtable16 + (DUK_HSTRING_GET_HASH(h) & heap->st_mask);
+		slot = heap->strtable16 + (duk_hstring_get_hash(h) & heap->st_mask);
 #else
-		slot = heap->strtable + (DUK_HSTRING_GET_HASH(h) & heap->st_mask);
+		slot = heap->strtable + (duk_hstring_get_hash(h) & heap->st_mask);
 #endif
 		DUK_ASSERT(DUK__HEAPPTR_DEC16(heap, *slot) == h);
 		*slot = DUK__HEAPPTR_ENC16(heap, h->hdr.h_next);

@@ -139,7 +139,7 @@ DUK_INTERNAL duk_ret_t duk_bi_symbol_key_for(duk_hthread *thr) {
 	h = duk_require_hstring(thr, 0);
 	DUK_ASSERT(h != NULL);
 
-	p = (const duk_uint8_t *) DUK_HSTRING_GET_DATA(h);
+	p = (const duk_uint8_t *) duk_hstring_get_data(h);
 	DUK_ASSERT(p != NULL);
 
 	/* Even for zero length strings there's at least one NUL byte so
@@ -147,7 +147,7 @@ DUK_INTERNAL duk_ret_t duk_bi_symbol_key_for(duk_hthread *thr) {
 	 */
 	if (p[0] == 0x80) {
 		/* Global symbol, return its key (bytes just after the initial byte). */
-		duk_push_lstring(thr, (const char *) (p + 1), (duk_size_t) (DUK_HSTRING_GET_BYTELEN(h) - 1));
+		duk_push_lstring(thr, (const char *) (p + 1), (duk_size_t) (duk_hstring_get_bytelen(h) - 1));
 		return 1;
 	} else if (p[0] == 0x81 || p[0] == 0x82 || p[0] == 0xff) {
 		/* Local symbol or hidden symbol, return undefined. */

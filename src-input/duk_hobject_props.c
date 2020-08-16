@@ -191,7 +191,7 @@ DUK_LOCAL duk_uint32_t duk__to_property_key(duk_hthread *thr, duk_idx_t idx, duk
 	DUK_ASSERT(h != NULL);
 	*out_h = h;
 
-	arr_idx = DUK_HSTRING_GET_ARRIDX_FAST(h);
+	arr_idx = duk_hstring_get_arridx_fast(h);
 	return arr_idx;
 }
 
@@ -995,7 +995,7 @@ DUK_INTERNAL void duk_hobject_realloc_props(duk_hthread *thr,
 			duk_uint32_t j, step;
 
 			DUK_ASSERT(key != NULL);
-			j = DUK_HSTRING_GET_HASH(key) & mask;
+			j = duk_hstring_get_hash(key) & mask;
 			step = 1; /* Cache friendly but clustering prone. */
 
 			for (;;) {
@@ -1399,7 +1399,7 @@ duk_hobject_find_entry(duk_heap *heap, duk_hobject *obj, duk_hstring *key, duk_i
 		h_base = DUK_HOBJECT_H_GET_BASE(heap, obj);
 		n = DUK_HOBJECT_GET_HSIZE(obj);
 		mask = n - 1;
-		i = DUK_HSTRING_GET_HASH(key) & mask;
+		i = duk_hstring_get_hash(key) & mask;
 		step = 1; /* Cache friendly but clustering prone. */
 
 		for (;;) {
@@ -1547,7 +1547,7 @@ DUK_LOCAL duk_int_t duk__hobject_alloc_entry_checked(duk_hthread *thr, duk_hobje
 
 		n = DUK_HOBJECT_GET_HSIZE(obj);
 		mask = n - 1;
-		i = DUK_HSTRING_GET_HASH(key) & mask;
+		i = duk_hstring_get_hash(key) & mask;
 		step = 1; /* Cache friendly but clustering prone. */
 
 		for (;;) {
@@ -2029,7 +2029,7 @@ DUK_LOCAL duk_bool_t duk__get_own_propdesc_raw(duk_hthread *thr,
 
 			h_val = duk_hobject_get_internal_value_string(thr->heap, obj);
 			DUK_ASSERT(h_val);
-			if (arr_idx < DUK_HSTRING_GET_CHARLEN(h_val)) {
+			if (arr_idx < duk_hstring_get_charlen(h_val)) {
 				DUK_DDD(DUK_DDDPRINT("-> found, array index inside string"));
 				if (flags & DUK_GETDESC_FLAG_PUSH_VALUE) {
 					duk_push_hstring(thr, h_val);
@@ -2057,7 +2057,7 @@ DUK_LOCAL duk_bool_t duk__get_own_propdesc_raw(duk_hthread *thr,
 			h_val = duk_hobject_get_internal_value_string(thr->heap, obj);
 			DUK_ASSERT(h_val != NULL);
 			if (flags & DUK_GETDESC_FLAG_PUSH_VALUE) {
-				duk_push_uint(thr, (duk_uint_t) DUK_HSTRING_GET_CHARLEN(h_val));
+				duk_push_uint(thr, (duk_uint_t) duk_hstring_get_charlen(h_val));
 			}
 			out_desc->flags = DUK_PROPDESC_FLAG_VIRTUAL; /* E5 Section 15.5.5.1 */
 			out_desc->get = NULL;
@@ -2217,7 +2217,7 @@ duk_hobject_get_own_propdesc(duk_hthread *thr, duk_hobject *obj, duk_hstring *ke
 	DUK_ASSERT(out_desc != NULL);
 	DUK_ASSERT_VALSTACK_SPACE(thr, DUK__VALSTACK_SPACE);
 
-	return duk__get_own_propdesc_raw(thr, obj, key, DUK_HSTRING_GET_ARRIDX_SLOW(key), out_desc, flags);
+	return duk__get_own_propdesc_raw(thr, obj, key, duk_hstring_get_arridx_slow(key), out_desc, flags);
 }
 
 /*
@@ -2254,7 +2254,7 @@ duk__get_propdesc(duk_hthread *thr, duk_hobject *obj, duk_hstring *key, duk_prop
 
 	DUK_STATS_INC(thr->heap, stats_getpropdesc_count);
 
-	arr_idx = DUK_HSTRING_GET_ARRIDX_FAST(key);
+	arr_idx = duk_hstring_get_arridx_fast(key);
 
 	DUK_DDD(DUK_DDDPRINT("duk__get_propdesc: thr=%p, obj=%p, key=%p, out_desc=%p, flags=%lx, "
 	                     "arr_idx=%ld (obj -> %!O, key -> %!O)",
@@ -2666,7 +2666,7 @@ DUK_INTERNAL duk_bool_t duk_hobject_getprop(duk_hthread *thr, duk_tval *tv_obj, 
 			pop_count = 1;
 		}
 
-		if (arr_idx != DUK__NO_ARRAY_INDEX && arr_idx < DUK_HSTRING_GET_CHARLEN(h)) {
+		if (arr_idx != DUK__NO_ARRAY_INDEX && arr_idx < duk_hstring_get_charlen(h)) {
 			duk_pop_n_unsafe(thr, pop_count);
 			duk_push_hstring(thr, h);
 			duk_substring(thr, -1, arr_idx, arr_idx + 1); /* [str] -> [substr] */
@@ -2692,7 +2692,7 @@ DUK_INTERNAL duk_bool_t duk_hobject_getprop(duk_hthread *thr, duk_tval *tv_obj, 
 
 		if (key == DUK_HTHREAD_STRING_LENGTH(thr)) {
 			duk_pop_unsafe(thr); /* [key] -> [] */
-			duk_push_uint(thr, (duk_uint_t) DUK_HSTRING_GET_CHARLEN(h)); /* [] -> [res] */
+			duk_push_uint(thr, (duk_uint_t) duk_hstring_get_charlen(h)); /* [] -> [res] */
 
 			DUK_STATS_INC(thr->heap, stats_getprop_stringlen);
 			DUK_DDD(DUK_DDDPRINT("-> %!T (base is string, key is 'length' after coercion -> "
@@ -3386,7 +3386,7 @@ duk_bool_t duk__handle_put_array_length_smaller(duk_hthread *thr,
 
 			DUK_ASSERT(
 			    DUK_HSTRING_HAS_ARRIDX(key)); /* XXX: macro checks for array index flag, which is unnecessary here */
-			arr_idx = DUK_HSTRING_GET_ARRIDX_SLOW(key);
+			arr_idx = duk_hstring_get_arridx_slow(key);
 			DUK_ASSERT(arr_idx != DUK__NO_ARRAY_INDEX);
 			DUK_ASSERT(arr_idx < old_len); /* consistency requires this */
 
@@ -3437,7 +3437,7 @@ duk_bool_t duk__handle_put_array_length_smaller(duk_hthread *thr,
 
 			DUK_ASSERT(
 			    DUK_HSTRING_HAS_ARRIDX(key)); /* XXX: macro checks for array index flag, which is unnecessary here */
-			arr_idx = DUK_HSTRING_GET_ARRIDX_SLOW(key);
+			arr_idx = duk_hstring_get_arridx_slow(key);
 			DUK_ASSERT(arr_idx != DUK__NO_ARRAY_INDEX);
 			DUK_ASSERT(arr_idx < old_len); /* consistency requires this */
 
@@ -3682,7 +3682,7 @@ duk_hobject_putprop(duk_hthread *thr, duk_tval *tv_obj, duk_tval *tv_key, duk_tv
 			goto fail_not_writable;
 		}
 
-		if (arr_idx != DUK__NO_ARRAY_INDEX && arr_idx < DUK_HSTRING_GET_CHARLEN(h)) {
+		if (arr_idx != DUK__NO_ARRAY_INDEX && arr_idx < duk_hstring_get_charlen(h)) {
 			goto fail_not_writable;
 		}
 
@@ -4482,7 +4482,7 @@ DUK_INTERNAL duk_bool_t duk_hobject_delprop_raw(duk_hthread *thr, duk_hobject *o
 
 	DUK_ASSERT_VALSTACK_SPACE(thr, DUK__VALSTACK_SPACE);
 
-	arr_idx = DUK_HSTRING_GET_ARRIDX_FAST(key);
+	arr_idx = duk_hstring_get_arridx_fast(key);
 
 	/* 0 = don't push current value */
 	if (!duk__get_own_propdesc_raw(thr, obj, key, arr_idx, &desc, 0 /*flags*/)) { /* don't push value */
@@ -4741,7 +4741,7 @@ DUK_INTERNAL duk_bool_t duk_hobject_delprop(duk_hthread *thr, duk_tval *tv_obj, 
 			goto fail_not_configurable;
 		}
 
-		if (arr_idx != DUK__NO_ARRAY_INDEX && arr_idx < DUK_HSTRING_GET_CHARLEN(h)) {
+		if (arr_idx != DUK__NO_ARRAY_INDEX && arr_idx < duk_hstring_get_charlen(h)) {
 			goto fail_not_configurable;
 		}
 	} else if (DUK_TVAL_IS_BUFFER(tv_obj)) {
@@ -4858,7 +4858,7 @@ DUK_INTERNAL void duk_hobject_define_property_internal(duk_hthread *thr,
 	DUK_ASSERT_VALSTACK_SPACE(thr, DUK__VALSTACK_SPACE);
 	DUK_ASSERT(duk_is_valid_index(thr, -1)); /* contains value */
 
-	arr_idx = DUK_HSTRING_GET_ARRIDX_SLOW(key);
+	arr_idx = duk_hstring_get_arridx_slow(key);
 
 	if (duk__get_own_propdesc_raw(thr, obj, key, arr_idx, &desc, 0 /*flags*/)) { /* don't push value */
 		if (desc.e_idx >= 0) {
@@ -5351,7 +5351,7 @@ duk_bool_t duk_hobject_define_property_helper(duk_hthread *thr,
 	is_configurable = (defprop_flags & DUK_DEFPROP_CONFIGURABLE);
 	force_flag = (defprop_flags & DUK_DEFPROP_FORCE);
 
-	arr_idx = DUK_HSTRING_GET_ARRIDX_SLOW(key);
+	arr_idx = duk_hstring_get_arridx_slow(key);
 
 	arridx_new_array_length = 0;
 	pending_write_protect = 0;
