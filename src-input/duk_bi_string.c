@@ -664,6 +664,7 @@ DUK_INTERNAL duk_ret_t duk_bi_string_prototype_replace(duk_hthread *thr) {
 #endif  /* DUK_USE_REGEXP_SUPPORT */
 			const duk_uint8_t *p_start, *p_end, *p;   /* input string scan */
 			const duk_uint8_t *q_start;               /* match string */
+			duk_size_t p_blen;
 			duk_size_t q_blen;
 
 #if defined(DUK_USE_REGEXP_SUPPORT)
@@ -672,13 +673,19 @@ DUK_INTERNAL duk_ret_t duk_bi_string_prototype_replace(duk_hthread *thr) {
 
 			p_start = DUK_HSTRING_GET_DATA(h_input);
 			p_end = p_start + DUK_HSTRING_GET_BYTELEN(h_input);
+			p_blen = (duk_size_t) DUK_HSTRING_GET_BYTELEN(h_input);
 			p = p_start;
 
 			h_search = duk_known_hstring(thr, 0);
 			q_start = DUK_HSTRING_GET_DATA(h_search);
 			q_blen = (duk_size_t) DUK_HSTRING_GET_BYTELEN(h_search);
 
+			if (q_blen > p_blen) {
+				break;  /* no match */
+			}
+
 			p_end -= q_blen;  /* ensure full memcmp() fits in while */
+			DUK_ASSERT(p_end >= p);
 
 			match_start_coff = 0;
 
