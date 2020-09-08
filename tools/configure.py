@@ -26,10 +26,25 @@ import glob
 import optparse
 import tarfile
 import json
-import yaml
 import tempfile
 import subprocess
 import atexit
+
+def import_warning(module, aptPackage, pipPackage):
+    sys.stderr.write('\n')
+    sys.stderr.write('*** NOTE: Could not "import %s".  Install it using e.g.:\n' % module)
+    sys.stderr.write('\n')
+    sys.stderr.write('    # Linux\n')
+    sys.stderr.write('    $ sudo apt-get install %s\n' % aptPackage)
+    sys.stderr.write('\n')
+    sys.stderr.write('    # Windows\n')
+    sys.stderr.write('    > pip install %s\n' % pipPackage)
+
+try:
+    import yaml
+except ImportError:
+    import_warning('yaml', 'python-yaml', 'PyYAML')
+    sys.exit(1)
 
 import genconfig
 
@@ -146,35 +161,6 @@ def get_duk_version(apiheader_filename):
                 return duk_version, duk_major, duk_minor, duk_patch, duk_version_formatted
 
     raise Exception('cannot figure out duktape version')
-
-# Python module check and friendly errors
-
-def check_python_modules():
-    # dist.py doesn't need yaml but other dist utils will; check for it and
-    # warn if it is missing.
-    failed = False
-
-    def _warning(module, aptPackage, pipPackage):
-        sys.stderr.write('\n')
-        sys.stderr.write('*** NOTE: Could not "import %s" needed for dist.  Install it using e.g.:\n' % module)
-        sys.stderr.write('\n')
-        sys.stderr.write('    # Linux\n')
-        sys.stderr.write('    $ sudo apt-get install %s\n' % aptPackage)
-        sys.stderr.write('\n')
-        sys.stderr.write('    # Windows\n')
-        sys.stderr.write('    > pip install %s\n' % pipPackage)
-
-    try:
-        import yaml
-    except ImportError:
-        _warning('yaml', 'python-yaml', 'PyYAML')
-        failed = True
-
-    if failed:
-        sys.stderr.write('\n')
-        raise Exception('Missing some required Python modules')
-
-check_python_modules()
 
 # Option parsing
 
