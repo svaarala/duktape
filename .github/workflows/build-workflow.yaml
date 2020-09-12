@@ -9,7 +9,8 @@ jobs:
         uses: actions/checkout@v2
       - name: Install packages
         run: |
-          sudo apt install build-essential make python python-yaml bc git
+          sudo apt -qqy update
+          sudo apt -qqy install build-essential make python python-yaml bc git
       - name: Build
         run: |
           make build/duk build/dukd build/duk-g++ build/duk-clang build/duk-fuzzilli

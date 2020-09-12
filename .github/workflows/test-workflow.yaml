@@ -9,7 +9,8 @@ jobs:
         uses: actions/checkout@v2
       - name: Install packages
         run: |
-          sudo apt install build-essential make python python-yaml bc git nodejs
+          sudo apt -qqy update
+          sudo apt -qqy install build-essential make python python-yaml bc git nodejs
       - name: Build
         run: |
           make build/duk
@@ -24,7 +25,8 @@ jobs:
         uses: actions/checkout@v2
       - name: Install packages
         run: |
-          sudo apt install build-essential make python python-yaml bc git nodejs
+          sudo apt -qqy update
+          sudo apt -qqy install build-essential make python python-yaml bc git nodejs
       - name: Build
         run: |
           make build/duk
@@ -39,7 +41,8 @@ jobs:
         uses: actions/checkout@v2
       - name: Install packages
         run: |
-          sudo apt install build-essential make python python-yaml bc git nodejs valgrind
+          sudo apt -qqy update
+          sudo apt -qqy install build-essential make python python-yaml bc git nodejs valgrind
       - name: Configure test
         run: |
           make configuretest
@@ -54,7 +57,8 @@ jobs:
         uses: actions/checkout@v2
       - name: Install packages
         run: |
-          sudo apt install build-essential make python python-yaml bc git tidy
+          sudo apt -qqy update
+          sudo apt -qqy install build-essential make python python-yaml bc git tidy
       - name: Codepolicycheck
         run: |
           CI=1 make codepolicycheck
