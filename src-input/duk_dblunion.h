@@ -322,7 +322,8 @@ typedef union duk_double_union duk_double_union;
 	} while (0)
 
 #define DUK__DBLUNION_NORMALIZE_NAN_CHECK_NOTFULL(u)  do { \
-		if (DUK__DBLUNION_IS_NAN_NOTFULL((u))) { \
+		/* Check must be full. */ \
+		if (DUK__DBLUNION_IS_NAN_FULL((u))) { \
 			DUK__DBLUNION_SET_NAN_NOTFULL((u)); \
 		} \
 	} while (0)
@@ -334,12 +335,11 @@ typedef union duk_double_union duk_double_union;
  */
 
 #if defined(DUK_USE_PACKED_TVAL)
-#if defined(DUK_USE_FULL_TVAL)
 #define DUK_DBLUNION_NORMALIZE_NAN_CHECK(u)  DUK__DBLUNION_NORMALIZE_NAN_CHECK_FULL((u))
 #define DUK_DBLUNION_IS_NAN(u)               DUK__DBLUNION_IS_NAN_FULL((u))
 #define DUK_DBLUNION_IS_NORMALIZED_NAN(u)    DUK__DBLUNION_IS_NORMALIZED_NAN_FULL((u))
 #define DUK_DBLUNION_SET_NAN(d)              DUK__DBLUNION_SET_NAN_FULL((d))
-#else
+#if 0
 #define DUK_DBLUNION_NORMALIZE_NAN_CHECK(u)  DUK__DBLUNION_NORMALIZE_NAN_CHECK_NOTFULL((u))
 #define DUK_DBLUNION_IS_NAN(u)               DUK__DBLUNION_IS_NAN_NOTFULL((u))
 #define DUK_DBLUNION_IS_NORMALIZED_NAN(u)    DUK__DBLUNION_IS_NORMALIZED_NAN_NOTFULL((u))
