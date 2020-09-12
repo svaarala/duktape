@@ -1375,4 +1375,5 @@ duktape_releases:
     - "Fix potentially unbounded recursion and assertion failure in JSON.parse() reviver walk by adding duk_native_stack_check() and depth limits (GH-2338, GH-2341)"
     - "Fix pointer handling bug in String.prototype.replace() which could be triggered when search string was longer than the input string (GH-2358)"
     - "Compile warning fixes (GH-2349)"
-    - "Improve warning for missing PyYAML in configure.py (GH-2361)
+    - "Improve warning for missing PyYAML in configure.py (GH-2361)"
+    - "Fix NaN normalization bug when using packed tval (32-bit target) (GH-2362)"
