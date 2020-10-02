@@ -89,6 +89,11 @@ void duk_trans_socket_finish(void) {
 	}
 }
 
+duk_bool_t duk_trans_socket_active(void)
+{
+	return server_sock >= 0;
+}
+
 void duk_trans_socket_waitconn(void) {
 	struct sockaddr_in addr;
 	socklen_t sz;
