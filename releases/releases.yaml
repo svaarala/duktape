@@ -1377,3 +1377,4 @@ duktape_releases:
     - "Compile warning fixes (GH-2349)"
     - "Improve warning for missing PyYAML in configure.py (GH-2361)"
     - "Fix NaN normalization bug when using packed tval (32-bit target) (GH-2362)"
+    - "Fix 64kb line limit for 'duk' example tool (GH-2367, GH-2368)"
