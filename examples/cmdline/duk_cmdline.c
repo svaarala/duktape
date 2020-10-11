@@ -121,7 +121,6 @@
 
 #define  MEM_LIMIT_NORMAL   (128*1024*1024)   /* 128 MB */
 #define  MEM_LIMIT_HIGH     (2047*1024*1024)  /* ~2 GB */
-#define  LINEBUF_SIZE       65536
 
 static int main_argc = 0;
 static const char **main_argv = NULL;
@@ -563,6 +562,9 @@ static int handle_fh(duk_context *ctx, FILE *f, const char *filename, const char
 			fprintf(stderr, "resizing read buffer: %ld -> %ld\n", (long) bufsz, (long) (bufsz * 2));
 #endif
 			newsz = bufsz + (bufsz >> 2) + 1024;  /* +25% and some extra */
+			if (newsz < bufsz) {
+				goto error;
+			}
 			buf_new = (char *) realloc(buf, newsz);
 			if (!buf_new) {
 				goto error;
@@ -812,18 +814,11 @@ static int handle_interactive(duk_context *ctx) {
 #else  /* DUK_CMDLINE_LINENOISE */
 static int handle_interactive(duk_context *ctx) {
 	const char *prompt = "duk> ";
+	size_t bufsize = 0;
 	char *buffer = NULL;
 	int retval = 0;
 	int rc;
 	int got_eof = 0;
-
-	buffer = (char *) malloc(LINEBUF_SIZE);
-	if (!buffer) {
-		fprintf(stderr, "failed to allocated a line buffer\n");
-		fflush(stderr);
-		retval = -1;
-		goto done;
-	}
 
 	while (!got_eof) {
 		size_t idx = 0;
@@ -832,17 +827,29 @@ static int handle_interactive(duk_context *ctx) {
 		fflush(stdout);
 
 		for (;;) {
-			int c = fgetc(stdin);
+			int c;
+
+			if (idx >= bufsize) {
+				size_t newsize = bufsize + (bufsize >> 2) + 1024;  /* +25% and some extra */
+				char *newptr;
+
+				if (newsize < bufsize) {
+					goto fail_realloc;
+				}
+				newptr = (char *) realloc(buffer, newsize);
+				if (!newptr) {
+					goto fail_realloc;
+				}
+				buffer = newptr;
+				bufsize = newsize;
+			}
+
+			c = fgetc(stdin);
 			if (c == EOF) {
 				got_eof = 1;
 				break;
 			} else if (c == '\n') {
 				break;
-			} else if (idx >= LINEBUF_SIZE) {
-				fprintf(stderr, "line too long\n");
-				fflush(stderr);
-				retval = -1;
-				goto done;
 			} else {
 				buffer[idx++] = (char) c;
 			}
@@ -876,6 +883,12 @@ static int handle_interactive(duk_context *ctx) {
 	}
 
 	return retval;
+
+ fail_realloc:
+	fprintf(stderr, "failed to extend line buffer\n");
+	fflush(stderr);
+	retval = -1;
+	goto done;
 }
 #endif  /* DUK_CMDLINE_LINENOISE */
 
