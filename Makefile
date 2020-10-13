@@ -40,6 +40,7 @@ WGET := $(shell command -v wget 2>/dev/null)
 JAVA := $(shell command -v java 2>/dev/null)
 VALGRIND := $(shell command -v valgrind 2>/dev/null)
 PYTHON := $(shell { command -v python2 || command -v python; } 2>/dev/null)
+DOCKER := docker
 SCAN_BUILD := scan-build-7
 GCC := gcc
 GXX := g++
@@ -612,19 +613,19 @@ test: apitest ecmatest
 .PHONY: fuzzillitest
 fuzzillitest: | tmp
 	@# Clean up previous rounds if necessary.
-	-docker stop fuzzilli_runner || true
-	-docker rm fuzzilli_runner || true
+	-$(DOCKER) stop fuzzilli_runner || true
+	-$(DOCKER) rm fuzzilli_runner || true
 	rm -rf tmp/fuzzilli_results
 	sudo sysctl -w 'kernel.core_pattern=|/bin/false' # Required to run fuzzilli on Linux
 	@echo "Running fuzzilli tests.  Run 'make fuzzillitest-stop' to stop."
-	docker run --name fuzzilli_runner -i fuzzilli ./Fuzzilli --profile=duktape --timeout=1000 --storagePath=/home/fuzzer/fuzz ./duktape/duk-fuzzilli || true
+	$(DOCKER) run --name fuzzilli_runner -i fuzzilli ./Fuzzilli --profile=duktape --timeout=1000 --storagePath=/home/fuzzer/fuzz ./duktape/duk-fuzzilli || true
 	@echo "Fuzzilli runner exited, pulling results out of the container."
-	docker cp fuzzilli_runner:/home/fuzzer/fuzz tmp/fuzzilli_results; docker rm fuzzilli_runner
+	$(DOCKER) cp fuzzilli_runner:/home/fuzzer/fuzz tmp/fuzzilli_results; $(DOCKER) rm fuzzilli_runner
 	@echo "Check tmp/fuzzilli_results for the results."
 
 .PHONY: fuzzillitest-stop
 fuzzillitest-stop:
-	docker stop fuzzilli_runner || true
+	$(DOCKER) stop fuzzilli_runner || true
 
 # Set of miscellaneous tests for release.
 .PHONY: releasetest
@@ -1190,25 +1191,25 @@ docker-prepare:
 
 .PHONY: docker-images-ubuntu-18.04-x64
 docker-images-ubuntu-18.04-x64: docker-prepare
-	docker build --build-arg UID=$(shell id -u) --build-arg GID=$(shell id -g) -t duktape-base-ubuntu-18.04-x64 docker/duktape-base-ubuntu-18.04-x64
-	docker build -t duktape-shell-ubuntu-18.04-x64 docker/duktape-shell-ubuntu-18.04-x64
-	docker build -t duktape-make-ubuntu-18.04-x64 docker/duktape-make-ubuntu-18.04-x64
-	docker build -t duktape-release-1-ubuntu-18.04-x64 docker/duktape-release-1-ubuntu-18.04-x64
+	$(DOCKER) build --build-arg UID=$(shell id -u) --build-arg GID=$(shell id -g) -t duktape-base-ubuntu-18.04-x64 docker/duktape-base-ubuntu-18.04-x64
+	$(DOCKER) build -t duktape-shell-ubuntu-18.04-x64 docker/duktape-shell-ubuntu-18.04-x64
+	$(DOCKER) build -t duktape-make-ubuntu-18.04-x64 docker/duktape-make-ubuntu-18.04-x64
+	$(DOCKER) build -t duktape-release-1-ubuntu-18.04-x64 docker/duktape-release-1-ubuntu-18.04-x64
 
 .PHONY: docker-images-ubuntu-20.04-x64
 docker-images-ubuntu-20.04-x64: docker-prepare
-	docker build --build-arg UID=$(shell id -u) --build-arg GID=$(shell id -g) -t duktape-base-ubuntu-20.04-x64 docker/duktape-base-ubuntu-20.04-x64
-	docker build -t duktape-shell-ubuntu-20.04-x64 docker/duktape-shell-ubuntu-20.04-x64
-	docker build -t duktape-make-ubuntu-20.04-x64 docker/duktape-make-ubuntu-20.04-x64
-	docker build -t duktape-release-1-ubuntu-20.04-x64 docker/duktape-release-1-ubuntu-20.04-x64
+	$(DOCKER) build --build-arg UID=$(shell id -u) --build-arg GID=$(shell id -g) -t duktape-base-ubuntu-20.04-x64 docker/duktape-base-ubuntu-20.04-x64
+	$(DOCKER) build -t duktape-shell-ubuntu-20.04-x64 docker/duktape-shell-ubuntu-20.04-x64
+	$(DOCKER) build -t duktape-make-ubuntu-20.04-x64 docker/duktape-make-ubuntu-20.04-x64
+	$(DOCKER) build -t duktape-release-1-ubuntu-20.04-x64 docker/duktape-release-1-ubuntu-20.04-x64
 
 .PHONY: docker-images-x64
 docker-images-x64: docker-images-ubuntu-20.04-x64
 
 .PHONY: docker-images-s390x
 docker-images-s390x: docker-prepare
-	docker build --build-arg UID=$(shell id -u) --build-arg GID=$(shell id -g) -t duktape-base-ubuntu-18.04-s390x docker/duktape-base-ubuntu-18.04-s390x
-	docker build -t duktape-shell-ubuntu-18.04-s390x docker/duktape-shell-ubuntu-18.04-s390x
+	$(DOCKER) build --build-arg UID=$(shell id -u) --build-arg GID=$(shell id -g) -t duktape-base-ubuntu-18.04-s390x docker/duktape-base-ubuntu-18.04-s390x
+	$(DOCKER) build -t duktape-shell-ubuntu-18.04-s390x docker/duktape-shell-ubuntu-18.04-s390x
 
 # Build Docker image for fuzzilli fuzz testing, tag as 'fuzzilli'.
 docker-image-fuzzilli: build/duk-fuzzilli deps/fuzzilli
@@ -1222,23 +1223,23 @@ docker-images: docker-images-x64
 .PHONY: docker-clean
 docker-clean:
 	-rm -f docker/*/gitconfig docker/*/prepare_repo.sh
-	-docker rmi duktape-release-1-ubuntu-18.04-x64:latest
-	-docker rmi duktape-make-ubuntu-18.04-x64:latest
-	-docker rmi duktape-shell-ubuntu-18.04-x64:latest
-	-docker rmi duktape-base-ubuntu-18.04-x64:latest
-	-docker rmi duktape-make-ubuntu-20.04-x64:latest
-	-docker rmi duktape-shell-ubuntu-20.04-x64:latest
-	-docker rmi duktape-base-ubuntu-20.04-x64:latest
-	-docker rmi duktape-shell-ubuntu-18.04-s390x:latest
-	-docker rmi duktape-base-ubuntu-18.04-s390x:latest
-	-docker rm fuzzilli_runner
-	-docker rmi fuzzilli
+	-$(DOCKER) rmi duktape-release-1-ubuntu-18.04-x64:latest
+	-$(DOCKER) rmi duktape-make-ubuntu-18.04-x64:latest
+	-$(DOCKER) rmi duktape-shell-ubuntu-18.04-x64:latest
+	-$(DOCKER) rmi duktape-base-ubuntu-18.04-x64:latest
+	-$(DOCKER) rmi duktape-make-ubuntu-20.04-x64:latest
+	-$(DOCKER) rmi duktape-shell-ubuntu-20.04-x64:latest
+	-$(DOCKER) rmi duktape-base-ubuntu-20.04-x64:latest
+	-$(DOCKER) rmi duktape-shell-ubuntu-18.04-s390x:latest
+	-$(DOCKER) rmi duktape-base-ubuntu-18.04-s390x:latest
+	-$(DOCKER) rm fuzzilli_runner
+	-$(DOCKER) rmi fuzzilli
 	@echo ""
 	@echo "Now run 'docker system prune' to free disk space."
 
 .PHONY: docker-dist-source-master
 docker-dist-source-master: | tmp
-	docker run --rm -i duktape-make-ubuntu-20.04-x64 clean dist-source > tmp/docker-output.zip
+	$(DOCKER) run --rm -i duktape-make-ubuntu-20.04-x64 clean dist-source > tmp/docker-output.zip
 	unzip -q -o tmp/docker-output.zip ; true  # avoid failure due to leading garbage
 
 .PHONY: docker-dist-source-wd
@@ -1246,13 +1247,13 @@ docker-dist-source-wd: | tmp
 	rm -f tmp/docker-input.zip tmp/docker-output.zip
 	@#git archive --format zip --output tmp/docker-input.zip HEAD
 	zip -1 -q -r tmp/docker-input.zip .
-	docker run --rm -i -e STDIN_ZIP=1 duktape-make-ubuntu-20.04-x64 clean dist-source < tmp/docker-input.zip > tmp/docker-output.zip
+	$(DOCKER) run --rm -i -e STDIN_ZIP=1 duktape-make-ubuntu-20.04-x64 clean dist-source < tmp/docker-input.zip > tmp/docker-output.zip
 	unzip -q -o tmp/docker-output.zip ; true  # avoid failure due to leading garbage
 
 .PHONY: docker-dist-site-master
 docker-dist-site-master: | tmp
 	rm -f tmp/docker-input.zip tmp/docker-output.zip
-	docker run --rm -i duktape-make-ubuntu-20.04-x64 clean dist-site > tmp/docker-output.zip
+	$(DOCKER) run --rm -i duktape-make-ubuntu-20.04-x64 clean dist-site > tmp/docker-output.zip
 	unzip -q -o tmp/docker-output.zip ; true  # avoid failure due to leading garbage
 
 .PHONY: docker-dist-site-wd
@@ -1260,13 +1261,13 @@ docker-dist-site-wd: | tmp
 	rm -f tmp/docker-input.zip tmp/docker-output.zip
 	@#git archive --format zip --output tmp/docker-input.zip HEAD
 	zip -1 -q -r tmp/docker-input.zip .
-	docker run --rm -i -e STDIN_ZIP=1 duktape-make-ubuntu-20.04-x64 clean dist-site < tmp/docker-input.zip > tmp/docker-output.zip
+	$(DOCKER) run --rm -i -e STDIN_ZIP=1 duktape-make-ubuntu-20.04-x64 clean dist-site < tmp/docker-input.zip > tmp/docker-output.zip
 	unzip -q -o tmp/docker-output.zip ; true  # avoid failure due to leading garbage
 
 .PHONY: docker-duk-master
 docker-duk-master: | tmp
 	rm -f tmp/docker-input.zip tmp/docker-output.zip
-	docker run --rm -i duktape-make-ubuntu-20.04-x64 clean build/duk build/duk.O2 > tmp/docker-output.zip
+	$(DOCKER) run --rm -i duktape-make-ubuntu-20.04-x64 clean build/duk build/duk.O2 > tmp/docker-output.zip
 	unzip -q -o tmp/docker-output.zip ; true
 
 .PHONY: docker-duk-wd
@@ -1274,24 +1275,24 @@ docker-duk-wd: | tmp
 	rm -f tmp/docker-input.zip tmp/docker-output.zip
 	@#git archive --format zip --output tmp/docker-input.zip HEAD
 	zip -1 -q -r tmp/docker-input.zip .
-	docker run --rm -i -e STDIN_ZIP=1 duktape-make-ubuntu-20.04-x64 clean build/duk build/duk.O2 < tmp/docker-input.zip > tmp/docker-output.zip
+	$(DOCKER) run --rm -i -e STDIN_ZIP=1 duktape-make-ubuntu-20.04-x64 clean build/duk build/duk.O2 < tmp/docker-input.zip > tmp/docker-output.zip
 	unzip -q -o tmp/docker-output.zip ; true
 
 .PHONY: docker-shell-master
 docker-shell-master: | tmp
-	docker run --rm -ti duktape-shell-ubuntu-20.04-x64
+	$(DOCKER) run --rm -ti duktape-shell-ubuntu-20.04-x64
 
 .PHONY: docker-shell-wd
 docker-shell-wd: | tmp
-	docker run -v $(shell pwd):/work/duktape-host --rm -ti duktape-shell-ubuntu-20.04-x64
+	$(DOCKER) run -v $(shell pwd):/work/duktape-host --rm -ti duktape-shell-ubuntu-20.04-x64
 
 .PHONY: docker-shell-wdmount
 docker-shell-wdmount: | tmp
-	docker run -v $(shell pwd):/work/duktape --rm -ti duktape-shell-ubuntu-20.04-x64
+	$(DOCKER) run -v $(shell pwd):/work/duktape --rm -ti duktape-shell-ubuntu-20.04-x64
 
 .PHONY: docker-release-1-wd
 docker-release-1-wd: | tmp
 	rm -f tmp/docker-input.zip tmp/docker-output.zip
 	@#git archive --format zip --output tmp/docker-input.zip HEAD
 	zip -1 -q -r tmp/docker-input.zip .
-	docker run --rm -i -e STDIN_ZIP=1 duktape-release-1-ubuntu-20.04-x64 < tmp/docker-input.zip
+	$(DOCKER) run --rm -i -e STDIN_ZIP=1 duktape-release-1-ubuntu-20.04-x64 < tmp/docker-input.zip

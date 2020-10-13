@@ -1339,7 +1339,7 @@ duktape_releases:
     - "Minor performance and footprint improvements (GH-2167, GH-2177)"
 
 - version: '2.6.0'
-  #release_date: 'XXXX-XX-XX'
+  release_date: '2020-10-13'
   description: 'maintenance release'
   filename: 'duktape-2.6.0.tar.xz'
   changes:
@@ -1348,8 +1348,24 @@ duktape_releases:
     - "Fix duk_opcodes.yaml metadata for TRYCATCH and CALLn (GH-2277)"
     - "Fix duk_suspend() handling of finalizers, if main thread was suspended finalizers triggered by other threads could consistenly fail (GH-2282)"
     - "Fix nested error handling bug for out-of-memory during error creation (GH-2278, GH-2290)"
+    - "Fix failing assert for CBOR.encode() when argument is a zero-size dynamic plain array (GH-2316, GH-2318)"
+    - "Fix potentially unbounded recursion in CBOR encode/decode by adding duk_native_stack_check() and depth limits to recursion paths (GH-2327, GH-2340)"
+    - "Fix pointer overflow in String.prototype.startsWith/endsWith() with certain arguments (GH-2320)"
+    - "Fix assertion failure and incorrect behavior in some enumeration cases involving inherited duplicate keys (GH-2322)"
+    - "Fix unstable pointer in 'putvar' which could trigger e.g. in a with(proxy) statement (GH-2323)"
+    - "Fix unsafe behavior in JSON.stringify() when replacer argument is an array and Array.prototype has inherited index properties (GH-2202, GH-2324)"
+    - "Fix RegExp exec() result object creation bug when Array.prototype has index properties (GH-2203, GH-2325)"
+    - "Fix Proxy 'ownKeys' trap postprocessing bug when Array.prototype has index properties (GH-2207, GH-2326)"
+    - "Fix coroutine yield() dangling pointer when the yielding coroutine is no longer reachable except via the resume/yield relationship (GH-2204, GH-2332)"
+    - "Fix potentially unbounded recursion and assertion failure in JSON.parse() reviver walk by adding duk_native_stack_check() and depth limits (GH-2338, GH-2341)"
+    - "Fix compile warning for duk_logging.c s(n)printf() (GH-2349)"
+    - "Fix pointer handling bug in String.prototype.replace() which could be triggered when search string was longer than the input string (GH-2358)"
+    - "Fix NaN normalization bug when using packed tval (32-bit target) (GH-2362)"
+    - "Fix 64kb line limit for 'duk' example tool (GH-2367, GH-2368)"
+    - "Improve warning for missing PyYAML in configure.py (GH-2361)"
 
 - version: '3.0.0'
+  #previous: '2.6.0'
   #release_date: 'XXXX-XX-XX'
   #state: 'planned'
   changes:
@@ -1360,21 +1376,4 @@ duktape_releases:
     - "Don't treat U+180E as whitespace e.g. for String trim() purposes, (ES2016, requires Unicode 8.0.0 or higher) (GH-2236)"
     - "Use wasm for dukweb.js compilation (including duktape.org site), fix async loading of emcc-compiled code in dukweb.html (GH-2244)"
     - "Fix duk_opcodes.yaml metadata for TRYCATCH and CALLn (GH-2277)"
-    - "Fix duk_suspend() handling of finalizers, if main thread was suspended finalizers triggered by other threads could consistenly fail (GH-2282)"
     - "Improve DUK_USE_OS_STRING for macOS, iOS, watchOS, and tvOS (GH-2288)"
-    - "Fix nested error handling bug for out-of-memory during error creation (GH-2278, GH-2290)"
-    - "Fix failing assert for CBOR.encode() when argument is a zero-size dynamic plain array (GH-2316, GH-2318)"
-    - "Fix pointer overflow in String.prototype.startsWith/endsWith() with certain arguments (GH-2320)"
-    - "Fix assertion failure and incorrect behavior in some enumeration cases involving inherited duplicate keys (GH-2322)"
-    - "Fix unstable pointer in 'putvar' which could trigger e.g. in a with(proxy) statement (GH-2323)"
-    - "Fix unsafe behavior in JSON.stringify() when replacer argument is an array and Array.prototype has inherited index properties (GH-2202, GH-2324)"
-    - "Fix RegExp exec() result object creation bug when Array.prototype has index properties (GH-2203, GH-2325)"
-    - "Fix Proxy 'ownKeys' trap postprocessing bug when Array.prototype has index properties (GH-2207, GH-2326)"
-    - "Fix coroutine yield() dangling pointer when the yielding coroutine is no longer reachable except via the resume/yield relationship (GH-2204, GH-2332)"
-    - "Fix potentially unbounded recursion in CBOR encode/decode by adding duk_native_stack_check() and depth limits to recursion paths (GH-2327, GH-2340)"
-    - "Fix potentially unbounded recursion and assertion failure in JSON.parse() reviver walk by adding duk_native_stack_check() and depth limits (GH-2338, GH-2341)"
-    - "Fix pointer handling bug in String.prototype.replace() which could be triggered when search string was longer than the input string (GH-2358)"
-    - "Compile warning fixes (GH-2349)"
-    - "Improve warning for missing PyYAML in configure.py (GH-2361)"
-    - "Fix NaN normalization bug when using packed tval (32-bit target) (GH-2362)"
-    - "Fix 64kb line limit for 'duk' example tool (GH-2367, GH-2368)"
