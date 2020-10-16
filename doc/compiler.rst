@@ -95,7 +95,7 @@ Compiler
 The compiler component uses a hand crafted recursive descent statement parser,
 with somewhat tricky handling of a few ECMAScript constructs (like the
 "for/for-in" statement).  In contrast, top-down operator parsing is used for
-parsing expressions (see http://javascript.crockford.com/tdop/tdop.html)
+parsing expressions (see https://www.crockford.com/javascript/tdop/tdop.html)
 which is nice in that it allows single pass parsing while generating mostly
 nice bytecode.
 
