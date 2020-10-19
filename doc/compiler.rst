@@ -95,7 +95,7 @@ Compiler
 The compiler component uses a hand crafted recursive descent statement parser,
 with somewhat tricky handling of a few ECMAScript constructs (like the
 "for/for-in" statement).  In contrast, top-down operator parsing is used for
-parsing expressions (see http://javascript.crockford.com/tdop/tdop.html)
+parsing expressions (see https://www.crockford.com/javascript/tdop/tdop.html)
 which is nice in that it allows single pass parsing while generating mostly
 nice bytecode.
 
@@ -380,7 +380,7 @@ Compilation state is encapsulated into ``duk_compiler_ctx``, which includes:
 * Various control flags which operate at the entry point level
 
 Intermediate values are represented by ``duk_ivalue`` and ``duk_ispec``.
-These need value value stack slots for storing values such as strings.
+These need value stack slots for storing values such as strings.
 
 A function being compiled is represented by the inner representation
 ``duk_compiler_func`` which is converted into an actual function object
