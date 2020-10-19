@@ -380,7 +380,7 @@ Compilation state is encapsulated into ``duk_compiler_ctx``, which includes:
 * Various control flags which operate at the entry point level
 
 Intermediate values are represented by ``duk_ivalue`` and ``duk_ispec``.
-These need value value stack slots for storing values such as strings.
+These need value stack slots for storing values such as strings.
 
 A function being compiled is represented by the inner representation
 ``duk_compiler_func`` which is converted into an actual function object
