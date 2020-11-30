@@ -712,7 +712,7 @@ def generateApiDoc(apidocdir, apitestdir):
             apifiles.append(filename)
     apifiles.sort()
     #print(apifiles)
-    print '%d api files' % len(apifiles)
+    print('%d api files' % len(apifiles))
 
     # scan api testcases for references to API calls
 
@@ -739,8 +739,8 @@ def generateApiDoc(apidocdir, apitestdir):
                 apidoc = None
                 raise Exception('parsed as string')
         except:
-            print 'WARNING: FAILED TO PARSE API DOC: ' + str(filename)
-            print traceback.format_exc()
+            print('WARNING: FAILED TO PARSE API DOC: ' + str(filename))
+            print(traceback.format_exc())
             pass
 
         funcname = os.path.splitext(os.path.basename(filename))[0]
@@ -757,7 +757,7 @@ def generateApiDoc(apidocdir, apitestdir):
                 apidoc['tags'].insert(0, apidoc['introduced'])
 
             if 'omit' in apidoc['tags']:
-                print 'Omit API doc: ' + str(funcname)
+                print('Omit API doc: ' + str(funcname))
                 continue
 
             for i in apidoc['tags']:
@@ -818,8 +818,8 @@ def generateApiDoc(apidocdir, apitestdir):
             data = processApiDoc(doc, testrefs, used_tags)
             res += data
         except:
-            print repr(data)
-            print 'FAIL: ' + repr(doc['name'])
+            print(repr(data))
+            print('FAIL: ' + repr(doc['name']))
             raise
 
     print('used tags: ' + repr(used_tags))
@@ -1116,37 +1116,37 @@ def main():
     releases_filename = '../build/RELEASES.rst'
 
     duk_verstr, duk_verint = scrapeDuktapeVersion()
-    print 'Scraped version number: ' + duk_verstr
+    print('Scraped version number: ' + duk_verstr)
 
-    print 'Generating style.css'
+    print('Generating style.css')
     data = generateStyleCss()
     writeFile(os.path.join(outdir, 'style.css'), data)
     #writeFile(os.path.join(outdir, 'reset.css'), readFile('reset.css'))
     #writeFile(os.path.join(outdir, 'highlight.css'), readFile('highlight.css'))
 
-    print 'Generating api.html'
+    print('Generating api.html')
     soup = generateApiDoc(apidocdir, apitestdir)
     soup = postProcess(soup, apiincdirs, autoAnchors=True, headingLinks=True, duktapeVersion=duk_verstr)
     writeFile(os.path.join(outdir, 'api.html'), soup.encode(out_charset))
 
-    print 'Generating guide.html'
+    print('Generating guide.html')
     soup = generateGuide()
     soup = postProcess(soup, guideincdirs, autoAnchors=True, headingLinks=True, duktapeVersion=duk_verstr)
     writeFile(os.path.join(outdir, 'guide.html'), soup.encode(out_charset))
 
-    print 'Generating index.html'
+    print('Generating index.html')
     soup = generateIndexPage()
     soup = postProcess(soup, None, duktapeVersion=duk_verstr)
     writeFile(os.path.join(outdir, 'index.html'), soup.encode(out_charset))
 
-    print 'Generating download.html'
+    print('Generating download.html')
     soup = generateDownloadPage(releases_filename)
     soup = postProcess(soup, None, duktapeVersion=duk_verstr)
     writeFile(os.path.join(outdir, 'download.html'), soup.encode(out_charset))
 
     # benchmarks.html is generated dynamically
 
-    print 'Copying misc files'
+    print('Copying misc files')
     for i in [ 'favicon.ico',
                'robots.txt',
                'startup_image_320x480.png',
@@ -1159,13 +1159,13 @@ def main():
                'touch-icon/touch_icon_72x72.png' ]:
         shutil.copyfile(os.path.join('./', i), os.path.join(outdir, os.path.basename(i)))
 
-    print 'Copying release binaries'
+    print('Copying release binaries')
     for i in os.listdir(os.path.join('..', 'deps', 'duktape-releases')):
         if re.match(r'^duktape-.*?.tar.xz$', i) is None:
             continue
         shutil.copyfile(os.path.join('..', 'deps', 'duktape-releases', i), os.path.join(outdir, i))
 
-    print 'Copying dukweb.js files'
+    print('Copying dukweb.js files')
     for i in [ '../build/dukweb.js',
                '../build/dukweb.wasm',
                '../deps/jquery-1.11.2.js',
@@ -1173,7 +1173,7 @@ def main():
                '../dukweb/dukweb.html' ]:
         shutil.copyfile(os.path.join('./', i), os.path.join(outdir, os.path.basename(i)))
 
-    print 'Copying benchmarks.html dependencies'
+    print('Copying benchmarks.html dependencies')
     shutil.copyfile(os.path.join('../deps/lz-string/libs/lz-string.js'), os.path.join(outdir, 'lz-string.js'))
 
 if __name__ == '__main__':
