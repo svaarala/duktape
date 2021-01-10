@@ -6,8 +6,6 @@
 /* E5.1 Section 15.12.13, main algorithm, step 4.b.ii.5 requires that an
  * implementation detect duplicates in the property list and refuse to
  * serialize the same property name twice.
- *
- * Note: both V8 and Rhino fail this test (but in different ways).
  */
 
 function dupTest1() {
