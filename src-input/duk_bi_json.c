@@ -2903,6 +2903,50 @@ void duk_bi_json_parse_helper(duk_hthread *thr,
 	DUK_ASSERT(duk_get_top(thr) == entry_top + 1);
 }
 
+DUK_LOCAL void duk__json_setup_plist_from_array(duk_hthread *thr, duk_json_enc_ctx *js_ctx, duk_idx_t idx_replacer) {
+	/* ES5.1 required enumeration, later specification versions use an
+	 * explicit index loop (and makes it clear inheritance is required).
+	 */
+
+	duk_uarridx_t repl_len;
+	duk_uarridx_t repl_idx;
+	duk_uarridx_t plist_idx = 0;
+
+	js_ctx->idx_proplist = duk_push_bare_array(thr);
+	(void) duk_push_bare_object(thr);
+
+	/* [ ... proplist found ] */
+
+	repl_len = (duk_uarridx_t) duk_get_length(thr, idx_replacer);
+	for (repl_idx = 0; repl_idx < repl_len; repl_idx++) {
+		(void) duk_get_prop_index(thr, idx_replacer, repl_idx);
+		/* Accept strings, numbers, Strings, and Numbers, and ignore
+		 * anything else.  Reject duplicates.
+		 */
+		if (duk__json_enc_allow_into_proplist(DUK_GET_TVAL_NEGIDX(thr, -1))) {
+			(void) duk_to_string(thr, -1);  /* extra coercion of strings is OK */
+			duk_dup_top(thr);  /* -> [ ... proplist found key key ] */
+			(void) duk_get_prop(thr, -3);  /* -> [ ... proplist found key found[key] ] */
+			if (duk_to_boolean(thr, -1)) {
+				duk_pop_2_unsafe(thr);
+			} else {
+				duk_pop_unsafe(thr);
+				duk_dup_top(thr);
+				duk_push_true(thr);  /* -> [ ... proplist found key key true ] */
+				(void) duk_put_prop(thr, -4);  /* -> [ ... proplist found key ] */
+				(void) duk_put_prop_index(thr, -3, plist_idx);  /* -> [ ... proplist found ] */
+				plist_idx++;
+			}
+		} else {
+			duk_pop_unsafe(thr);
+		}
+	}
+
+	duk_pop_unsafe(thr);
+
+	/* [ ... proplist ] */
+}
+
 DUK_INTERNAL
 void duk_bi_json_stringify_helper(duk_hthread *thr,
                                   duk_idx_t idx_value,
@@ -3023,41 +3067,7 @@ void duk_bi_json_stringify_helper(duk_hthread *thr,
 		if (DUK_HOBJECT_IS_CALLABLE(h)) {
 			js_ctx->h_replacer = h;
 		} else if (duk_js_isarray_hobject(h)) {
-			/* Here the specification requires correct array index enumeration
-			 * which is a bit tricky for sparse arrays (it is handled by the
-			 * enum setup code).  We now enumerate ancestors too, although the
-			 * specification is not very clear on whether that is required.
-			 */
-
-			duk_uarridx_t plist_idx = 0;
-			duk_small_uint_t enum_flags;
-
-			js_ctx->idx_proplist = duk_push_bare_array(thr);
-
-			enum_flags = DUK_ENUM_ARRAY_INDICES_ONLY |
-			             DUK_ENUM_SORT_ARRAY_INDICES;  /* expensive flag */
-			duk_enum(thr, idx_replacer, enum_flags);
-			while (duk_next(thr, -1 /*enum_index*/, 1 /*get_value*/)) {
-				/* [ ... proplist enum_obj key val ] */
-				if (duk__json_enc_allow_into_proplist(duk_get_tval(thr, -1))) {
-					/* XXX: duplicates should be eliminated here */
-					DUK_DDD(DUK_DDDPRINT("proplist enum: key=%!T, val=%!T --> accept",
-					                     (duk_tval *) duk_get_tval(thr, -2),
-					                     (duk_tval *) duk_get_tval(thr, -1)));
-					duk_to_string(thr, -1);  /* extra coercion of strings is OK */
-					duk_put_prop_index(thr, -4, plist_idx);  /* -> [ ... proplist enum_obj key ] */
-					plist_idx++;
-					duk_pop(thr);
-				} else {
-					DUK_DDD(DUK_DDDPRINT("proplist enum: key=%!T, val=%!T --> reject",
-					                     (duk_tval *) duk_get_tval(thr, -2),
-					                     (duk_tval *) duk_get_tval(thr, -1)));
-					duk_pop_2(thr);
-				}
-                        }
-                        duk_pop(thr);  /* pop enum */
-
-			/* [ ... proplist ] */
+			duk__json_setup_plist_from_array(thr, js_ctx, idx_replacer);
 		}
 	}
 
