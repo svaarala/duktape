@@ -1025,9 +1025,9 @@ def dump_metadata(meta, fn):
 def load_metadata(opts, rom=False, build_info=None, active_opts=None):
     # Load built-in strings and objects.
     with open(opts.strings_metadata, 'rb') as f:
-        strings_metadata = recursive_strings_to_bytes(yaml.load(f))
+        strings_metadata = recursive_strings_to_bytes(yaml.safe_load(f))
     with open(opts.objects_metadata, 'rb') as f:
-        objects_metadata = recursive_strings_to_bytes(yaml.load(f))
+        objects_metadata = recursive_strings_to_bytes(yaml.safe_load(f))
 
     # Merge strings and objects metadata as simple top level key merge.
     meta = {}
@@ -1041,7 +1041,7 @@ def load_metadata(opts, rom=False, build_info=None, active_opts=None):
     for fn in opts.builtin_files:
         logger.debug('Merging user builtin metadata file %s' % fn)
         with open(fn, 'rb') as f:
-            user_meta = recursive_strings_to_bytes(yaml.load(f))
+            user_meta = recursive_strings_to_bytes(yaml.safe_load(f))
         metadata_merge_user_objects(meta, user_meta)
 
     # Remove disabled objects and properties.  Also remove objects and
@@ -1114,7 +1114,7 @@ def load_metadata(opts, rom=False, build_info=None, active_opts=None):
         for fn in opts.builtin_files:
             # XXX: awkward second pass
             with open(fn, 'rb') as f:
-                user_meta = recursive_strings_to_bytes(yaml.load(f))
+                user_meta = recursive_strings_to_bytes(yaml.safe_load(f))
                 metadata_normalize_missing_strings(meta, user_meta)
         metadata_normalize_missing_strings(meta, {})  # in case no files
 

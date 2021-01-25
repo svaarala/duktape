@@ -340,7 +340,7 @@ def parse_metadata(data):
     res = {}
     for m in re_meta.finditer(data):
         assert(m is not None)
-        doc = yaml.load(m.group(1))  # YAML also accepts JSON
+        doc = yaml.safe_load(m.group(1))  # YAML also accepts JSON
         for k in doc.keys():
             res[k] = doc[k]
     return res
@@ -445,10 +445,10 @@ def parse_known_issue(data):
     if m is None:
         raise Exception('failed to parse known issue file')
     elif m.group(1) is not None and m.group(2) is not None:
-        meta = yaml.load(m.group(1))
+        meta = yaml.safe_load(m.group(1))
         meta['output'] = m.group(2)  # add expected (known issue, i.e. buggy) output as .output
     elif m.group(3) is not None:
-        meta = yaml.load(m.group(3))
+        meta = yaml.safe_load(m.group(3))
     else:
         raise Exception('failed to parse known issue file')
     return meta
