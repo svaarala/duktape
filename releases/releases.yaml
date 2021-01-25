@@ -1378,3 +1378,4 @@ duktape_releases:
     - "Use wasm for dukweb.js compilation (including duktape.org site), fix async loading of emcc-compiled code in dukweb.html (GH-2244)"
     - "Improve DUK_USE_OS_STRING for macOS, iOS, watchOS, and tvOS (GH-2288)"
     - "Fix JSON.stringify() handling of Array 'replacer' duplicates (e.g. JSON.stringify({foo: 123}, [\"foo\", \"foo\"])); previously incorrectly serialized multiple times, now only once (GH-2379)"
+    - "Use yaml.safe_load() instead of yaml.load() in Py2 tooling (GH-2384)"

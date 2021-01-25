@@ -504,7 +504,7 @@ def scan_use_defs(dirname):
         if not root.startswith('DUK_USE_') or ext != '.yaml':
             continue
         with open(os.path.join(dirname, fn), 'rb') as f:
-            doc = yaml.load(f)
+            doc = yaml.safe_load(f)
             if doc.get('example', False):
                 continue
             if doc.get('unimplemented', False):
@@ -535,7 +535,7 @@ def scan_opt_defs(dirname):
         if not root.startswith('DUK_OPT_') or ext != '.yaml':
             continue
         with open(os.path.join(dirname, fn), 'rb') as f:
-            doc = yaml.load(f)
+            doc = yaml.safe_load(f)
             if doc.get('example', False):
                 continue
             if doc.get('unimplemented', False):
@@ -571,7 +571,7 @@ def scan_tags_meta(filename):
     global tags_meta
 
     with open(filename, 'rb') as f:
-        tags_meta = yaml.load(f)
+        tags_meta = yaml.safe_load(f)
 
 def scan_helper_snippets(dirname):  # DUK_F_xxx snippets
     global helper_snippets
@@ -792,7 +792,7 @@ def get_forced_options(opts):
     # overridden by a more specific one).
     forced_opts = {}
     for val in opts.force_options_yaml:
-        doc = yaml.load(StringIO(val))
+        doc = yaml.safe_load(StringIO(val))
         for k in doc.keys():
             if use_defs.has_key(k):
                 pass  # key is known
@@ -995,13 +995,13 @@ def generate_duk_config_header(opts, meta_dir):
 
     platforms = None
     with open(os.path.join(meta_dir, 'platforms.yaml'), 'rb') as f:
-        platforms = yaml.load(f)
+        platforms = yaml.safe_load(f)
     architectures = None
     with open(os.path.join(meta_dir, 'architectures.yaml'), 'rb') as f:
-        architectures = yaml.load(f)
+        architectures = yaml.safe_load(f)
     compilers = None
     with open(os.path.join(meta_dir, 'compilers.yaml'), 'rb') as f:
-        compilers = yaml.load(f)
+        compilers = yaml.safe_load(f)
 
     # XXX: indicate feature option support, sanity checks enabled, etc
     # in general summary of options, perhaps genconfig command line?

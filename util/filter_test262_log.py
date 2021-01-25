@@ -7,7 +7,7 @@ import yaml
 
 def main():
     with open(sys.argv[1], 'rb') as f:
-        known_issues = yaml.load(f.read())
+        known_issues = yaml.safe_load(f.read())
 
     skipstrings = [
         'passed in strict mode',

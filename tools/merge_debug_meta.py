@@ -34,7 +34,7 @@ if __name__ == '__main__':
     res = {}
     def merge(fn):
         with open(fn, 'rb') as f:
-            doc = yaml.load(f)
+            doc = yaml.safe_load(f)
         for k in doc.keys():
             res[k] = doc[k]
 

@@ -255,7 +255,7 @@ def main():
         fn = os.path.join(ops_path, 'duk_opcodes.yaml')
         if os.path.isfile(fn):
             with open(fn) as f:
-                ops = yaml.load(f)['opcodes']
+                ops = yaml.safe_load(f)['opcodes']
 
     if ops is None:
         print('WARN: duk_opcodes.yaml not found, unable do dump opcodes!')
