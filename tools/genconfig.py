@@ -504,7 +504,7 @@ def scan_use_defs(dirname):
         if not root.startswith('DUK_USE_') or ext != '.yaml':
             continue
         with open(os.path.join(dirname, fn), 'rb') as f:
-            doc = yaml.load(f)
+            doc = yaml.safe_load(f)
             if doc.get('example', False):
                 continue
             if doc.get('unimplemented', False):
