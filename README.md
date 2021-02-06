@@ -86,7 +86,8 @@ For example, to enable fastint support (example for Linux):
 
     # src-custom/ will now contain: duktape.c, duktape.h, duk_config.h.
 
-You can download and install duktape using the [vcpkg](https://github.com/Microsoft/vcpkg) dependency manager:
+You can download and install Duktape using the
+[vcpkg](https://github.com/Microsoft/vcpkg) dependency manager:
    
     $ git clone https://github.com/Microsoft/vcpkg.git
     $ cd vcpkg
@@ -94,7 +95,10 @@ You can download and install duktape using the [vcpkg](https://github.com/Micros
     $ ./vcpkg integrate install
     $ vcpkg install duktape
     
-The duktape port in vcpkg is kept up to date by Microsoft team members and community contributors. If the version is out of date, please [create an issue or pull request](https://github.com/Microsoft/vcpkg) on the vcpkg repository.
+The Duktape port in vcpkg is kept up to date by Microsoft team members
+and community contributors.  If the version is out of date, please
+[create an issue or pull request](https://github.com/Microsoft/vcpkg) on
+the vcpkg repository.
 
 You can also clone this repository, make modifications, and build a source
 distributable on Linux, macOS, and Windows using `python util/dist.py`.
@@ -107,16 +111,19 @@ If you intend to change Duktape internals and want to rebuild the source
 distributable in Linux, macOS, or Windows:
 
     # Linux; can often install from packages or using 'pip'
+    # Install Node.js >= 14.x
     $ sudo apt-get install python python-yaml
     $ python util/dist.py
 
     # macOS
     # Install Python 2.7.x
+    # Install Node.js >= 14.x
     $ pip install PyYAML
     $ python util/dist.py
 
     # Windows
     ; Install Python 2.7.x from python.org, and add it to PATH
+    ; Install Node.js >= 14.x
     > pip install PyYAML
     > python util\dist.py
 

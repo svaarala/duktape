@@ -122,7 +122,7 @@ implementations, with no included code, of the following algorithms: Lua
 string hash (MIT license), djb2 hash, Murmurhash2 (MIT license), Adi
 Shamir's three-op hash algorithm, xoroshiro128+ PRNG (public domain),
 SplitMix64 PRNG (public domain), and CommonJS module loading specification
-(MIT license).
+(MIT license).  Duktape tooling relies on js-yaml (MIT license).
 
 Have fun!
 
