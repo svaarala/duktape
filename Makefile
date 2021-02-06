@@ -39,6 +39,7 @@ NODE := $(shell { command -v nodejs || command -v node; } 2>/dev/null)
 WGET := $(shell command -v wget 2>/dev/null)
 JAVA := $(shell command -v java 2>/dev/null)
 VALGRIND := $(shell command -v valgrind 2>/dev/null)
+#PYTHON := $(shell { command -v python3 || command -v python; } 2>/dev/null)
 PYTHON := $(shell { command -v python2 || command -v python; } 2>/dev/null)
 DOCKER := docker
 SCAN_BUILD := scan-build-7
@@ -153,7 +154,7 @@ CCOPTS_SHARED += -I./extras/print-alert
 CCOPTS_SHARED += -I./extras/console
 CCOPTS_SHARED += -I./extras/logging
 CCOPTS_SHARED += -I./extras/module-duktape
-#CCOPTS_SHARED += -m32   # force 32-bit compilation on a 64-bit host
+#CCOPTS_SHARED += -m32  # force 32-bit compilation on a 64-bit host
 #CCOPTS_SHARED += -mx32  # force X32 compilation on a 64-bit host
 #CCOPTS_SHARED += -fstack-usage  # enable manually, then e.g. $ make clean duk; python util/pretty_stack_usage.py duktape.su
 
@@ -249,6 +250,7 @@ clean:
 	@rm -rf oprofile_data/
 	@rm -f /tmp/duk-test-eval-file-temp.js  # used by tests/api/test-eval-file.js
 	@rm -f a.out
+	@cd src-tools; make clean
 
 .PHONY: cleanall
 cleanall: clean
@@ -257,6 +259,7 @@ cleanall: clean
 	@rm -f "references/ECMA-262 5th edition December 2009.pdf"
 	@rm -f "references/ECMA-262 5.1 edition June 2011.pdf"
 	@rm -f "references/ECMA-262.pdf"
+	@cd src-tools; make cleanall
 
 # External dependencies.
 deps:
@@ -274,63 +277,72 @@ build:
 dist:
 	@mkdir -p $@
 
+# Duktape configurations.
+prep:
+	@mkdir -p prep
+
 # Targets for tooling.
 build/duktool.js: | build
 	make -C src-tools
 	cp src-tools/duktool.js $@
 
 # Targets for preparing different Duktape configurations.
-prep:
-	@mkdir -p prep
-prep/nondebug: prep
+.PHONY: prep-duktool
+prep-duktool: src-tools/duktool.js
+src-tools/duktool.js:
+	@cd src-tools && make
+	@touch $@
+.PHONY: configure-deps
+configure-deps: prep-duktool
+prep/nondebug: configure-deps | prep
 	@rm -rf ./prep/nondebug
 	$(PYTHON) tools/configure.py --output-directory ./prep/nondebug --source-directory src-input --config-metadata config $(CONFIGOPTS_NONDEBUG) --line-directives
-prep/nondebug-scanbuild: prep
+prep/nondebug-scanbuild: configure-deps | prep
 	@rm -rf ./prep/nondebug-scanbuild
 	$(PYTHON) tools/configure.py --output-directory ./prep/nondebug-scanbuild --source-directory src-input --config-metadata config $(CONFIGOPTS_NONDEBUG_SCANBUILD) --separate-sources --line-directives
-prep/nondebug-perf: prep
+prep/nondebug-perf: configure-deps | prep
 	@rm -rf ./prep/nondebug-perf
 	$(PYTHON) tools/configure.py --output-directory ./prep/nondebug-perf --source-directory src-input --config-metadata config $(CONFIGOPTS_NONDEBUG_PERF) --line-directives
-prep/nondebug-size: prep
+prep/nondebug-size: configure-deps | prep
 	@rm -rf ./prep/nondebug-size
 	$(PYTHON) tools/configure.py --output-directory ./prep/nondebug-size --source-directory src-input --config-metadata config $(CONFIGOPTS_NONDEBUG_SIZE) --line-directives
-prep/nondebug-rom: prep
+prep/nondebug-rom: configure-deps | prep
 	@rm -rf ./prep/nondebug-rom
 	$(PYTHON) tools/configure.py --output-directory ./prep/nondebug-rom --source-directory src-input --config-metadata config $(CONFIGOPTS_NONDEBUG_ROM) --line-directives
-prep/debug: prep
+prep/debug: configure-deps | prep
 	@rm -rf ./prep/debug
 	$(PYTHON) tools/configure.py --output-directory ./prep/debug --source-directory src-input --config-metadata config $(CONFIGOPTS_DEBUG) --line-directives
-prep/fuzz: prep
+prep/fuzz: | prep
 	@rm -rf ./prep/fuzz
 	$(PYTHON) tools/configure.py --output-directory ./prep/fuzz --source-directory src-input --config-metadata config $(CONFIGOPTS_FUZZ) --line-directives
-prep/debug-scanbuild: prep
+prep/debug-scanbuild: configure-deps | prep
 	@rm -rf ./prep/debug-scanbuild
 	$(PYTHON) tools/configure.py --output-directory ./prep/debug-scanbuild --source-directory src-input --config-metadata config $(CONFIGOPTS_DEBUG_SCANBUILD) --separate-sources --line-directives
-prep/debug-rom: prep
+prep/debug-rom: configure-deps | prep
 	@rm -rf ./prep/debug-rom
 	$(PYTHON) tools/configure.py --output-directory ./prep/debug-rom --source-directory src-input --config-metadata config $(CONFIGOPTS_DEBUG_ROM) --line-directives
-prep/emduk: prep
+prep/emduk: configure-deps | prep
 	@rm -rf ./prep/emduk
 	$(PYTHON) tools/configure.py --output-directory ./prep/emduk --source-directory src-input --config-metadata config $(CONFIGOPTS_EMDUK) --line-directives
-prep/dukweb: prep
+prep/dukweb: configure-deps | prep
 	@rm -rf ./prep/dukweb
 	$(PYTHON) tools/configure.py --output-directory ./prep/dukweb --source-directory src-input --config-metadata config $(CONFIGOPTS_DUKWEB) --line-directives
-prep/duklow-nondebug: prep
+prep/duklow-nondebug: configure-deps | prep
 	@rm -rf ./prep/duklow-nondebug
 	$(PYTHON) tools/configure.py --output-directory ./prep/duklow-nondebug --source-directory src-input --config-metadata config $(CONFIGOPTS_NONDEBUG_DUKLOW) --line-directives
-prep/duklow-debug: prep
+prep/duklow-debug: configure-deps | prep
 	@rm -rf ./prep/duklow-debug
 	$(PYTHON) tools/configure.py --output-directory ./prep/duklow-debug --source-directory src-input --config-metadata config $(CONFIGOPTS_DEBUG_DUKLOW) --line-directives
-prep/duklow-nondebug-rom: prep
+prep/duklow-nondebug-rom: configure-deps | prep
 	@rm -rf ./prep/duklow-nondebug-rom
 	$(PYTHON) tools/configure.py --output-directory ./prep/duklow-nondebug-rom --source-directory src-input --config-metadata config $(CONFIGOPTS_NONDEBUG_DUKLOW_ROM) --line-directives
-prep/duklow-debug-rom: prep
+prep/duklow-debug-rom: configure-deps | prep
 	@rm -rf ./prep/duklow-debug-rom
 	$(PYTHON) tools/configure.py --output-directory ./prep/duklow-debug-rom --source-directory src-input --config-metadata config $(CONFIGOPTS_DEBUG_DUKLOW_ROM) --line-directives
-prep/duklow-nondebug-norefc: prep
+prep/duklow-nondebug-norefc: configure-deps | prep
 	@rm -rf ./prep/duklow-nondebug-norefc
 	$(PYTHON) tools/configure.py --output-directory ./prep/duklow-nondebug-norefc --source-directory src-input --config-metadata config $(CONFIGOPTS_NONDEBUG_DUKLOW_NOREFC) --line-directives
-prep/duklow-debug-norefc: prep
+prep/duklow-debug-norefc: configure-deps | prep
 	@rm -rf ./prep/duklow-debug-norefc
 	$(PYTHON) tools/configure.py --output-directory ./prep/duklow-debug-norefc --source-directory src-input --config-metadata config $(CONFIGOPTS_DEBUG_DUKLOW_NOREFC) --line-directives
 
@@ -351,11 +363,11 @@ DUK_SOURCE_DEPS=$(DUKTAPE_CMDLINE_SOURCES) $(LINENOISE_SOURCES) $(LINENOISE_HEAD
 
 duk: build/duk  # Convenience target.
 	cp $< $@
-build/duk: prep/nondebug $(DUK_SOURCE_DEPS) | build
+build/duk: $(DUK_SOURCE_DEPS) | build prep/nondebug
 	$(CC) -o $@ -Iprep/nondebug $(CCOPTS_NONDEBUG) prep/nondebug/duktape.c $(DUKTAPE_CMDLINE_SOURCES) $(LINENOISE_SOURCES) $(CCLIBS)
 	@ls -l $@
 	-@size $@
-build/duk-pgo: prep/nondebug $(DUK_SOURCE_DEPS) | build
+build/duk-pgo: $(DUK_SOURCE_DEPS) | build prep/nondebug
 	@echo "Compiling with -fprofile-generate..."
 	@rm -f *.gcda
 	$(CC) -o $@ -Iprep/nondebug $(CCOPTS_NONDEBUG) -fprofile-generate prep/nondebug/duktape.c $(DUKTAPE_CMDLINE_SOURCES) $(LINENOISE_SOURCES) $(CCLIBS)
@@ -369,31 +381,31 @@ build/duk-pgo: prep/nondebug $(DUK_SOURCE_DEPS) | build
 	$(CC) -o $@ -Iprep/nondebug $(CCOPTS_NONDEBUG) -fprofile-use prep/nondebug/duktape.c $(DUKTAPE_CMDLINE_SOURCES) $(LINENOISE_SOURCES) $(CCLIBS)
 	@ls -l $@
 	-@size $@
-build/duk-perf: prep/nondebug-perf $(DUK_SOURCE_DEPS) | build
+build/duk-perf: $(DUK_SOURCE_DEPS) | build prep/nondebug-perf
 	$(CC) -o $@ -Iprep/nondebug-perf $(CCOPTS_NONDEBUG) prep/nondebug-perf/duktape.c $(DUKTAPE_CMDLINE_SOURCES) $(LINENOISE_SOURCES) $(CCLIBS)
 	@ls -l $@
 	-@size $@
-build/duk-size: prep/nondebug-size $(DUK_SOURCE_DEPS) | build
+build/duk-size: $(DUK_SOURCE_DEPS) | build prep/nondebug-size
 	$(CC) -o $@ -Iprep/nondebug-size $(CCOPTS_NONDEBUG) prep/nondebug-size/duktape.c $(DUKTAPE_CMDLINE_SOURCES) $(LINENOISE_SOURCES) $(CCLIBS)
 	@ls -l $@
 	-@size $@
-build/duk-rom: prep/nondebug-rom $(DUK_SOURCE_DEPS) | build
+build/duk-rom: $(DUK_SOURCE_DEPS) | build prep/nondebug-rom
 	$(CC) -o $@ -Iprep/nondebug-rom $(CCOPTS_NONDEBUG) prep/nondebug-rom/duktape.c $(DUKTAPE_CMDLINE_SOURCES) $(LINENOISE_SOURCES) $(CCLIBS)
 	@ls -l $@
 	-@size $@
-build/dukd: prep/debug $(DUK_SOURCE_DEPS) | build
+build/dukd: $(DUK_SOURCE_DEPS) | build prep/debug
 	$(CC) -o $@ -Iprep/debug $(CCOPTS_DEBUG) prep/debug/duktape.c $(DUKTAPE_CMDLINE_SOURCES) $(LINENOISE_SOURCES) $(CCLIBS)
 	@ls -l $@
 	-@size $@
-build/dukd-rom: prep/debug-rom $(DUK_SOURCE_DEPS) | build
+build/dukd-rom: $(DUK_SOURCE_DEPS) | build prep/debug-rom
 	$(CC) -o $@ -Iprep/debug-rom $(CCOPTS_DEBUG) prep/debug-rom/duktape.c $(DUKTAPE_CMDLINE_SOURCES) $(LINENOISE_SOURCES) $(CCLIBS)
 	@ls -l $@
 	-@size $@
-build/duk.O2: prep/nondebug $(DUK_SOURCE_DEPS) | build
+build/duk.O2: $(DUK_SOURCE_DEPS) | build prep/nondebug
 	$(CC) -o $@ -Iprep/nondebug $(CCOPTS_NONDEBUG) -O2 prep/nondebug/duktape.c $(DUKTAPE_CMDLINE_SOURCES) $(LINENOISE_SOURCES) $(CCLIBS)
 	@ls -l $@
 	-@size $@
-build/duk-pgo.O2: prep/nondebug $(DUK_SOURCE_DEPS) | build
+build/duk-pgo.O2: $(DUK_SOURCE_DEPS) | build prep/nondebug
 	@echo "Compiling with -fprofile-generate..."
 	@rm -f *.gcda
 	$(CC) -o $@ -Iprep/nondebug $(CCOPTS_NONDEBUG) -O2 -fprofile-generate prep/nondebug/duktape.c $(DUKTAPE_CMDLINE_SOURCES) $(LINENOISE_SOURCES) $(CCLIBS)
@@ -407,11 +419,11 @@ build/duk-pgo.O2: prep/nondebug $(DUK_SOURCE_DEPS) | build
 	$(CC) -o $@ -Iprep/nondebug $(CCOPTS_NONDEBUG) -O2 -fprofile-use prep/nondebug/duktape.c $(DUKTAPE_CMDLINE_SOURCES) $(LINENOISE_SOURCES) $(CCLIBS)
 	@ls -l $@
 	-@size $@
-build/duk-perf.O2: prep/nondebug-perf $(DUK_SOURCE_DEPS) | build
+build/duk-perf.O2: $(DUK_SOURCE_DEPS) | build prep/nondebug-perf
 	$(CC) -o $@ -Iprep/nondebug-perf $(CCOPTS_NONDEBUG) -O2 prep/nondebug-perf/duktape.c $(DUKTAPE_CMDLINE_SOURCES) $(LINENOISE_SOURCES) $(CCLIBS)
 	@ls -l $@
 	-@size $@
-build/duk-perf-pgo.O2: prep/nondebug-perf $(DUK_SOURCE_DEPS) | build
+build/duk-perf-pgo.O2: $(DUK_SOURCE_DEPS) | build prep/nondebug-perf
 	@echo "Compiling with -fprofile-generate..."
 	@rm -f *.gcda
 	$(CC) -o $@ -Iprep/nondebug-perf $(CCOPTS_NONDEBUG) -O2 -fprofile-generate prep/nondebug-perf/duktape.c $(DUKTAPE_CMDLINE_SOURCES) $(LINENOISE_SOURCES) $(CCLIBS)
@@ -423,59 +435,59 @@ build/duk-perf-pgo.O2: prep/nondebug-perf $(DUK_SOURCE_DEPS) | build
 	@rm -f $@
 	@echo "Recompiling with -fprofile-use..."
 	$(CC) -o $@ -Iprep/nondebug-perf $(CCOPTS_NONDEBUG) -O2 -fprofile-use prep/nondebug-perf/duktape.c $(DUKTAPE_CMDLINE_SOURCES) $(LINENOISE_SOURCES) $(CCLIBS)
-build/duk.O3: prep/nondebug $(DUKTAPE_CMDLINE_SOURCES) $(LINENOISE_SOURCES) | deps/linenoise
+build/duk.O3: $(DUKTAPE_CMDLINE_SOURCES) $(LINENOISE_SOURCES) | deps/linenoise prep/nondebug
 	$(CC) -o $@ -Iprep/nondebug $(CCOPTS_NONDEBUG) -O3 prep/nondebug/duktape.c $(DUKTAPE_CMDLINE_SOURCES) $(LINENOISE_SOURCES) $(CCLIBS)
 	@ls -l $@
 	-@size $@
-build/duk-perf.O3: prep/nondebug-perf $(DUK_SOURCE_DEPS) | build
+build/duk-perf.O3: $(DUK_SOURCE_DEPS) | build prep/nondebug-perf
 	$(CC) -o $@ -Iprep/nondebug-perf $(CCOPTS_NONDEBUG) -O3 prep/nondebug-perf/duktape.c $(DUKTAPE_CMDLINE_SOURCES) $(LINENOISE_SOURCES) $(CCLIBS)
 	@ls -l $@
 	-@size $@
-build/duk.O4: prep/nondebug $(DUK_SOURCE_DEPS) | build
+build/duk.O4: $(DUK_SOURCE_DEPS) | build prep/nondebug
 	$(CC) -o $@ -Iprep/nondebug $(CCOPTS_NONDEBUG) -O4 prep/nondebug/duktape.c $(DUKTAPE_CMDLINE_SOURCES) $(LINENOISE_SOURCES) $(CCLIBS)
 	@ls -l $@
 	-@size $@
-build/duk-perf.O4: prep/nondebug-perf $(DUK_SOURCE_DEPS) | build
+build/duk-perf.O4: $(DUK_SOURCE_DEPS) | build prep/nondebug-perf
 	$(CC) -o $@ -Iprep/nondebug-perf $(CCOPTS_NONDEBUG) -O4 prep/nondebug-perf/duktape.c $(DUKTAPE_CMDLINE_SOURCES) $(LINENOISE_SOURCES) $(CCLIBS)
 	@ls -l $@
 	-@size $@
-build/duk-clang: prep/nondebug $(DUK_SOURCE_DEPS) | build
+build/duk-clang: $(DUK_SOURCE_DEPS) | build prep/nondebug
 	@# Use -Wcast-align to trigger issues like: https://github.com/svaarala/duktape/issues/270
 	@# Use -Wshift-sign-overflow to trigger issues like: https://github.com/svaarala/duktape/issues/812
 	@# -Weverything
 	$(CLANG) -o $@ -Wcast-align -Wshift-sign-overflow -Iprep/nondebug $(CLANG_CCOPTS_NONDEBUG) prep/nondebug/duktape.c $(DUKTAPE_CMDLINE_SOURCES) $(LINENOISE_SOURCES) $(CCLIBS)
 	@ls -l $@
 	-@size $@
-build/duk-sanitize-clang: prep/nondebug $(DUK_SOURCE_DEPS) | build
+build/duk-sanitize-clang: $(DUK_SOURCE_DEPS) | build prep/nondebug
 	$(CLANG) -o $@ -Wcast-align -Wshift-sign-overflow -fsanitize=undefined -Iprep/nondebug $(CLANG_CCOPTS_NONDEBUG) prep/nondebug/duktape.c $(DUKTAPE_CMDLINE_SOURCES) $(LINENOISE_SOURCES) $(CCLIBS)
 	@ls -l $@
 	-@size $@
-build/duk-fuzzilli: prep/fuzz $(DUK_SOURCE_DEPS) | build
+build/duk-fuzzilli: $(DUK_SOURCE_DEPS) | build prep/fuzz
 	# Target for fuzzilli.  Adds in the appropriate debug flags, without doing the debug prints.
 	$(CLANG) -O3 -o $@ -Wall -Wextra -Wcast-align -Wshift-sign-overflow -fsanitize=undefined -fsanitize-coverage=trace-pc-guard  -Iprep/fuzz $(CLANG_CCOPTS_DEBUG) prep/fuzz/duktape.c $(DUKTAPE_CMDLINE_SOURCES) $(LINENOISE_SOURCES) $(CCLIBS)
 	@ls -l $@
 	-@size $@
-build/duk-perf-clang: prep/nondebug-perf $(DUK_SOURCE_DEPS) | build
+build/duk-perf-clang: $(DUK_SOURCE_DEPS) | build prep/nondebug-perf
 	$(CLANG) -o $@ -Wcast-align -Wshift-sign-overflow -Iprep/nondebug-perf $(CLANG_CCOPTS_NONDEBUG) prep/nondebug-perf/duktape.c $(DUKTAPE_CMDLINE_SOURCES) $(LINENOISE_SOURCES) $(CCLIBS)
 	@ls -l $@
 	-@size $@
-build/duk-g++: prep/nondebug $(DUK_SOURCE_DEPS) | build
+build/duk-g++: $(DUK_SOURCE_DEPS) | build prep/nondebug
 	$(GXX) -o $@ -Iprep/nondebug $(GXXOPTS_NONDEBUG) prep/nondebug/duktape.c $(DUKTAPE_CMDLINE_SOURCES) $(CCLIBS)
 	@ls -l $@
 	-@size $@
-build/duk-perf-g++: prep/nondebug-perf $(DUK_SOURCE_DEPS) | build
+build/duk-perf-g++: $(DUK_SOURCE_DEPS) | build prep/nondebug-perf
 	$(GXX) -o $@ -Iprep/nondebug-perf $(GXXOPTS_NONDEBUG) prep/nondebug-perf/duktape.c $(DUKTAPE_CMDLINE_SOURCES) $(CCLIBS)
 	@ls -l $@
 	-@size $@
-build/dukd-g++: prep/debug $(DUK_SOURCE_DEPS) | build
+build/dukd-g++: $(DUK_SOURCE_DEPS) | build prep/debug
 	$(GXX) -o $@ -Iprep/debug $(GXXOPTS_DEBUG) prep/debug/duktape.c $(DUKTAPE_CMDLINE_SOURCES) $(CCLIBS)
 	@ls -l $@
 	-@size $@
 .PHONY: dukscanbuild
-build/dukscanbuild: prep/nondebug-scanbuild $(DUK_SOURCE_DEPS) | build tmp
+build/dukscanbuild: $(DUK_SOURCE_DEPS) | build tmp prep/nondebug-scanbuild
 	$(SCAN_BUILD) $(GCC) -otmp/duk.scanbuild -Iprep/nondebug-scanbuild $(CCOPTS_NONDEBUG) prep/nondebug-scanbuild/*.c $(DUKTAPE_CMDLINE_SOURCES) $(LINENOISE_SOURCES) $(CCLIBS)
 .PHONY: dukdscanbuild
-build/dukdscanbuild: prep/debug-scanbuild $(DUK_SOURCE_DEPS) | build tmp
+build/dukdscanbuild: $(DUK_SOURCE_DEPS) | build tmp prep/debug-scanbuild
 	$(SCAN_BUILD) $(GCC) -otmp/dukd.scanbuild -Iprep/debug-scanbuild $(CCOPTS_DEBUG) prep/debug-scanbuild/*.c $(DUKTAPE_CMDLINE_SOURCES) $(LINENOISE_SOURCES) $(CCLIBS)
 # Command line with a simple pool allocator, for low memory testing.
 # The pool sizes only make sense with -m32, so force that.  This forces
@@ -486,7 +498,7 @@ DUKTAPE_CMDLINE_LOWMEM_SOURCES=\
 		extras/alloc-pool/duk_alloc_pool.c
 DUK_LOWMEM_SOURCE_DEPS=$(DUKTAPE_CMDLINE_LOWMEM_SOURCES) $(LINENOISE_SOURCES) $(LINENOISE_HEADERS)
 
-build/duk-low: prep/duklow-nondebug $(DUK_LOWMEM_SOURCE_DEPS) | build
+build/duk-low: $(DUK_LOWMEM_SOURCE_DEPS) | build prep/duklow-nondebug
 	$(CC) -o $@ \
 		-Iextras/alloc-pool/ -Iprep/duklow-nondebug \
 		$(CCOPTS_NONDEBUG) $(CCOPTS_DUKLOW) \
@@ -495,7 +507,7 @@ build/duk-low: prep/duklow-nondebug $(DUK_LOWMEM_SOURCE_DEPS) | build
 	@echo "*** SUCCESS:"
 	@ls -l $@
 	-@size $@
-build/dukd-low: prep/duklow-debug $(DUK_LOWMEM_SOURCE_DEPS) | build
+build/dukd-low: $(DUK_LOWMEM_SOURCE_DEPS) | build prep/duklow-debug
 	$(CC) -o $@ \
 		-Iextras/alloc-pool/ -Iprep/duklow-debug \
 		$(CCOPTS_DEBUG) $(CCOPTS_DUKLOW) \
@@ -504,7 +516,7 @@ build/dukd-low: prep/duklow-debug $(DUK_LOWMEM_SOURCE_DEPS) | build
 	@echo "*** SUCCESS:"
 	@ls -l $@
 	-@size $@
-build/duk-low-rom: prep/duklow-nondebug-rom $(DUK_LOWMEM_SOURCE_DEPS) | build
+build/duk-low-rom: $(DUK_LOWMEM_SOURCE_DEPS) | build prep/duklow-nondebug-rom
 	$(CC) -o $@ \
 		-Iextras/alloc-pool/ -Iprep/duklow-nondebug-rom \
 		$(CCOPTS_NONDEBUG) $(CCOPTS_DUKLOW) \
@@ -513,7 +525,7 @@ build/duk-low-rom: prep/duklow-nondebug-rom $(DUK_LOWMEM_SOURCE_DEPS) | build
 	@echo "*** SUCCESS:"
 	@ls -l $@
 	-@size $@
-build/dukd-low-rom: prep/duklow-debug-rom $(DUK_LOWMEM_SOURCE_DEPS) | build
+build/dukd-low-rom: $(DUK_LOWMEM_SOURCE_DEPS) | build prep/duklow-debug-rom
 	$(CC) -o $@ \
 		-Iextras/alloc-pool/ -Iprep/duklow-debug-rom \
 		$(CCOPTS_DEBUG) $(CCOPTS_DUKLOW) \
@@ -522,7 +534,7 @@ build/dukd-low-rom: prep/duklow-debug-rom $(DUK_LOWMEM_SOURCE_DEPS) | build
 	@echo "*** SUCCESS:"
 	@ls -l $@
 	-@size $@
-build/duk-low-norefc: prep/duklow-nondebug-norefc $(DUK_LOWMEM_SOURCE_DEPS) | build
+build/duk-low-norefc: $(DUK_LOWMEM_SOURCE_DEPS) | build prep/duklow-nondebug-norefc
 	$(CC) -o $@ \
 		-Iextras/alloc-pool/ -Iprep/duklow-nondebug-norefc \
 		$(CCOPTS_NONDEBUG) $(CCOPTS_DUKLOW) \
@@ -531,7 +543,7 @@ build/duk-low-norefc: prep/duklow-nondebug-norefc $(DUK_LOWMEM_SOURCE_DEPS) | bu
 	@echo "*** SUCCESS:"
 	@ls -l $@
 	-@size $@
-build/dukd-low-norefc: prep/duklow-debug-norefc $(DUK_LOWMEM_SOURCE_DEPS) | build
+build/dukd-low-norefc: $(DUK_LOWMEM_SOURCE_DEPS) | build prep/duklow-debug-norefc
 	$(CC) -o $@ \
 		-Iextras/alloc-pool/ -Iprep/duklow-debug-norefc \
 		$(CCOPTS_DEBUG) $(CCOPTS_DUKLOW) \
@@ -547,7 +559,7 @@ build/dukd-low-norefc: prep/duklow-debug-norefc $(DUK_LOWMEM_SOURCE_DEPS) | buil
 build/emduk: emduk.js | build
 	cat util/emduk_wrapper.sh | sed "s|WORKDIR|$(shell pwd)|" > $@
 	chmod ugo+x $@
-build/emduk.js: prep/emduk examples/cmdline/duk_cmdline.c extras/print-alert/duk_print_alert.c | build tmp
+build/emduk.js: examples/cmdline/duk_cmdline.c extras/print-alert/duk_print_alert.c | build tmp prep/emduk
 	$(EMCC) $(EMCCOPTS) -Iprep/emduk -Iexamples/cmdline -Iextras/print-alert \
 		$(EMDUKOPTS) \
 		prep/emduk/duktape.c examples/cmdline/duk_cmdline.c extras/print-alert/duk_print_alert.c \
@@ -558,13 +570,13 @@ build/emduk.js: prep/emduk examples/cmdline/duk_cmdline.c extras/print-alert/duk
 # This is a prototype of running Duktape in a web environment with Emscripten,
 # and providing an eval() facility from both sides.  This is a placeholder now
 # and doesn't do anything useful yet.
-build/dukweb.js: prep/dukweb dukweb/dukweb_extra.js dukweb/dukweb.c | build
+build/dukweb.js: dukweb/dukweb_extra.js dukweb/dukweb.c | build prep/dukweb
 	@rm -f build/dukweb.js build/dukweb.asm
 	$(EMCC) $(EMCCOPTS_DUKVM_WASM) $(EMCCOPTS_DUKWEB_EXPORT) --post-js dukweb/dukweb_extra.js \
 		-Iprep/dukweb prep/dukweb/duktape.c dukweb/dukweb.c -o $@
 	@wc build/dukweb.js build/dukweb.wasm
 
-build/literal_intern_test: prep/nondebug misc/literal_intern_test.c | build
+build/literal_intern_test: misc/literal_intern_test.c | build prep/nondebug
 	$(CC) -o $@ -std=c99 -O2 -fstrict-aliasing -Wall -Wextra \
 		-Iprep/nondebug prep/nondebug/duktape.c misc/literal_intern_test.c -lm
 .PHONY: literalinterntest
@@ -652,8 +664,8 @@ apitest: runtestsdeps build/libduktape.so.1.0.0 | tmp
 	@echo "### apitest"
 	"$(NODE)" runtests/runtests.js $(RUNTESTSOPTS) --num-threads 1 --log-file=tmp/duk-api-test.log tests/api/
 
-# Configure.py test.
-configuretest:
+# Configure tests.
+configuretest: configure-deps
 	@echo "### configuretest"
 	bash tests/configure/test_minimal.sh
 
@@ -997,8 +1009,9 @@ doc/%.html: doc/%.txt
 	rst2html $< $@
 
 # Source distributable for end users.
-dist/source: | codepolicycheck dist
-	$(PYTHON) util/dist.py
+dist/source: prep-duktool | codepolicycheck dist
+	$(PYTHON) util/dist.py --output-directory $@
+	cp src-tools/duktool.js $@/tools/
 dist/duktape-$(DUK_VERSION_FORMATTED).tar: dist/source | dist
 	rm -rf dist/duktape-$(DUK_VERSION_FORMATTED) dist/duktape-$(DUK_VERSION_FORMATTED).*
 	mkdir dist/duktape-$(DUK_VERSION_FORMATTED) && cp -r dist/source/* dist/duktape-$(DUK_VERSION_FORMATTED)/

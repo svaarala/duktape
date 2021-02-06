@@ -2,7 +2,7 @@
 # Some commented out options are kept so that it's easy to
 # tweak common development time options manually.
 
-# If an unknown option is used, configure.py/genconfig.py will warn about it.
+# If an unknown option is used, configure will warn about it.
 #DUK_USE_SOME_UNKNOWN_OPTION: true
 
 DUK_USE_TARGET_INFO: "\"duk command built from Duktape repo\""

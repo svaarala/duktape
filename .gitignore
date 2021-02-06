@@ -34,3 +34,11 @@ ms_print.*
 /references/ECMA-262 5.1 edition June 2011.pdf
 /references/ECMA-262.pdf
 /tests/octane/octane
+/src-tools/from-xml
+/src-tools/js-yaml
+/src-tools/node_modules
+/src-tools/lib/extdeps
+/src-tools/lib/extdeps/from-xml.js
+/src-tools/lib/extdeps/js-yaml.js
+/src-tools/package-lock.json
+/src-tools/duktool.js

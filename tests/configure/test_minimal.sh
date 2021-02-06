@@ -12,7 +12,6 @@ reinit() {
 	fi
 
 	rm -rf /tmp/duk-configure-test
-	mkdir /tmp/duk-configure-test
 }
 
 # Test for command line -D with macro arguments, GH-2013 / GH-2014.
