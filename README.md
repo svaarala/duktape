@@ -3,7 +3,6 @@ Duktape
 
 [![Build status](https://github.com/svaarala/duktape/workflows/Build/badge.svg?branch=master)](https://github.com/svaarala/duktape/actions)
 [![Test status](https://github.com/svaarala/duktape/workflows/Test/badge.svg?branch=master)](https://github.com/svaarala/duktape/actions)
-[![AppVeyor status](https://ci.appveyor.com/api/projects/status/github/svaarala/duktape?branch=master&svg=true)](https://ci.appveyor.com/project/svaarala/duktape)
 
 :warning: **Master branch is undergoing incompatible changes for Duktape 3.x**.
 To track Duktape 2.x, follow the `v2-maintenance` branch.
