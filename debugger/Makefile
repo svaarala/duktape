@@ -1,5 +1,7 @@
-NODE:=$(shell { command -v nodejs || command -v node; } 2>/dev/null)
-DUKLUV:=$(shell command -v dukluv 2>/dev/null)
+NODEJS ?= $(shell { command -v nodejs || command -v node; } 2>/dev/null)
+NODEJS := $(NODEJS)
+DUKLUV ?= $(shell command -v dukluv 2>/dev/null)
+DUKLUV := $(DUKLUV)
 
 # Try to get a useful default --source-dirs which works both in the Duktape
 # repo and in the distributable.  We don't want to add '..' because it would
@@ -15,15 +17,15 @@ all: run
 
 .PHONY: run
 run: node_modules static/socket.io-1.2.0.js static/jquery-1.11.1.min.js static/reset.css static/jquery-ui.min.js static/jquery-ui.min.css static/images
-	"$(NODE)" duk_debug.js --source-dirs=$(SOURCEDIRS)
+	"$(NODEJS)" duk_debug.js --source-dirs=$(SOURCEDIRS)
 
 rundebug: node_modules static/socket.io-1.2.0.js static/jquery-1.11.1.min.js static/reset.css static/jquery-ui.min.js static/jquery-ui.min.css static/images
-	"$(NODE)" duk_debug.js --source-dirs=$(SOURCEDIRS) --verbose --log-messages /tmp/dukdebug-messages --dump-debug-pretty /tmp/dukdebug-pretty
+	"$(NODEJS)" duk_debug.js --source-dirs=$(SOURCEDIRS) --verbose --log-messages /tmp/dukdebug-messages --dump-debug-pretty /tmp/dukdebug-pretty
 
 .PHONY: runproxynodejs
 runproxynodejs: node_modules static/socket.io-1.2.0.js static/jquery-1.11.1.min.js static/reset.css static/jquery-ui.min.js static/jquery-ui.min.css static/images
 	@echo "Running Node.js based debug proxy"
-	"$(NODE)" duk_debug.js --json-proxy
+	"$(NODEJS)" duk_debug.js --json-proxy
 
 .PHONY: runproxydukluv
 runproxydukluv: duk_debug_meta.json
