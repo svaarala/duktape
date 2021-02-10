@@ -34,18 +34,29 @@
 # A few commands which may need to be edited.  NodeJS is sometimes found
 # as 'nodejs', sometimes as 'node'; sometimes 'node' is unrelated to NodeJS
 # so check 'nodejs' first.
-GIT := $(shell command -v git 2>/dev/null)
-NODE := $(shell { command -v nodejs || command -v node; } 2>/dev/null)
-WGET := $(shell command -v wget 2>/dev/null)
-JAVA := $(shell command -v java 2>/dev/null)
-VALGRIND := $(shell command -v valgrind 2>/dev/null)
-#PYTHON := $(shell { command -v python3 || command -v python; } 2>/dev/null)
-PYTHON := $(shell { command -v python2 || command -v python; } 2>/dev/null)
-DOCKER := docker
-SCAN_BUILD := scan-build-7
-GCC := gcc
-GXX := g++
-CLANG := clang
+GIT ?= $(shell command -v git 2>/dev/null)
+GIT := $(GIT)
+NODEJS ?= $(shell { command -v nodejs || command -v node; } 2>/dev/null)
+NODEJS := $(NODEJS)
+WGET ?= $(shell command -v wget 2>/dev/null)
+WGET := $(WGET)
+JAVA ?= $(shell command -v java 2>/dev/null)
+JAVA := $(JAVA)
+VALGRIND ?= $(shell command -v valgrind 2>/dev/null)
+VALGRIND := $(VALGRIND)
+#PYTHON ?= $(shell { command -v python3 || command -v python; } 2>/dev/null)
+PYTHON ?= $(shell { command -v python2 || command -v python; } 2>/dev/null)
+PYTHON := $(PYTHON)
+DOCKER ?= docker
+DOCKER := $(DOCKER)
+SCAN_BUILD ?= scan-build-7
+SCAN_BUILD := $(SCAN_BUILD)
+GCC ?= gcc
+GCC := $(GCC)
+GXX ?= g++
+GXX := $(GXX)
+CLANG ?= clang
+CLANG := $(CLANG)
 
 # Scrape version from the public header; convert from e.g. 10203 -> '1.2.3'.
 DUK_VERSION := $(shell cat src-input/duktape.h.in | grep 'define ' | grep DUK_VERSION | tr -s ' ' ' ' | cut -d ' ' -f 3 | tr -d 'L')
@@ -654,15 +665,15 @@ runtests/node_modules:
 .PHONY: ecmatest
 ecmatest: runtestsdeps build/duk | tmp
 	@echo "### ecmatest"
-	"$(NODE)" runtests/runtests.js $(RUNTESTSOPTS) --run-duk --cmd-duk=$(shell pwd)/build/duk --num-threads 4 --log-file=tmp/duk-test.log tests/ecmascript/
+	"$(NODEJS)" runtests/runtests.js $(RUNTESTSOPTS) --run-duk --cmd-duk=$(shell pwd)/build/duk --num-threads 4 --log-file=tmp/duk-test.log tests/ecmascript/
 .PHONY: ecmatest-comparison
 ecmatest-comparison: runtestsdeps build/duk | tmp
 	@echo "### ecmatest"
-	"$(NODE)" runtests/runtests.js $(RUNTESTSOPTS) --run-duk --cmd-duk=$(shell pwd)/build/duk --report-diff-to-other --run-nodejs --run-rhino --num-threads 4 --log-file=tmp/duk-test.log tests/ecmascript/
+	"$(NODEJS)" runtests/runtests.js $(RUNTESTSOPTS) --run-duk --cmd-duk=$(shell pwd)/build/duk --report-diff-to-other --run-nodejs --run-rhino --num-threads 4 --log-file=tmp/duk-test.log tests/ecmascript/
 .PHONY: apitest
 apitest: runtestsdeps build/libduktape.so.1.0.0 | tmp
 	@echo "### apitest"
-	"$(NODE)" runtests/runtests.js $(RUNTESTSOPTS) --num-threads 1 --log-file=tmp/duk-api-test.log tests/api/
+	"$(NODEJS)" runtests/runtests.js $(RUNTESTSOPTS) --num-threads 1 --log-file=tmp/duk-api-test.log tests/api/
 
 # Configure tests.
 configuretest: configure-deps
@@ -757,11 +768,11 @@ emscriptenduktest: prep/emduk | tmp
 	@echo "### emscriptenduktest"
 	@rm -f tmp/duk-emcc-duktest.js
 	$(EMCC) $(EMCCOPTS_DUKVM) -Iprep/emduk prep/emduk/duktape.c examples/eval/eval.c -o tmp/duk-emcc-duktest.js
-	"$(NODE)" tmp/duk-emcc-duktest.js \
+	"$(NODEJS)" tmp/duk-emcc-duktest.js \
 		'print("Hello from Duktape running inside Emscripten/NodeJS");' \
 		'for(i=0;i++<100;)print((i%3?"":"Fizz")+(i%5?"":"Buzz")||i)' | tee tmp/duk-emcc-duktest-1.out
 	if [ `md5sum tmp/duk-emcc-duktest-1.out | cut -f 1 -d ' '` != "3c22acb0ec822d4c85f5d427e42826dc" ]; then false; fi
-	"$(NODE)" tmp/duk-emcc-duktest.js "eval(new Buffer(Duktape.dec('base64', '$(MAND_BASE64)')).toString())" | tee tmp/duk-emcc-duktest-2.out
+	"$(NODEJS)" tmp/duk-emcc-duktest.js "eval(new Buffer(Duktape.dec('base64', '$(MAND_BASE64)')).toString())" | tee tmp/duk-emcc-duktest-2.out
 	if [ `md5sum tmp/duk-emcc-duktest-2.out | cut -f 1 -d ' '` != "c78521c68b60065e6ed0652bebd7af0b" ]; then false; fi
 LUASRC=	lapi.c lauxlib.c lbaselib.c lbitlib.c lcode.c lcorolib.c lctype.c \
 	ldblib.c ldebug.c ldo.c ldump.c lfunc.c lgc.c linit.c liolib.c \
@@ -1037,7 +1048,7 @@ dist-source-iso: dist/duktape-$(DUK_VERSION_FORMATTED)-$(BUILD_DATETIME)-$(GIT_I
 duktape-releases-update: | deps/duktape-releases
 	cd deps/duktape-releases/; git pull --rebase
 build/RELEASES.rst: build/duktool.js releases/releases.yaml | build
-	$(NODE) $< generate-releases-rst --input releases/releases.yaml --output $@
+	$(NODEJS) $< generate-releases-rst --input releases/releases.yaml --output $@
 
 .PHONY: tidy-site
 tidy-site:
