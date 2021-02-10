@@ -134,11 +134,11 @@ Getting started: other development (Linux only)
 -----------------------------------------------
 
 Other development stuff, such as building the website and running test cases,
-is based on a `Makefile` **intended for Linux only**.  See detailed
-instructions in http://wiki.duktape.org/DevelopmentSetup.html.
+is based on a `Makefile` **supported for Linux x86-64 only**.
 
-There are some Docker images which can simplify the development setup.
-These are also **intended for Linux only**.  For example:
+There are some Docker images which can simplify the development setup and also
+document the needed packages.  These are also **supported for Linux x86-64 only**.
+For example:
 
     # Build Docker images.  This takes a long time.
     $ make docker-images
@@ -156,6 +156,11 @@ These are also **intended for Linux only**.  For example:
 
     # For non-native images you may need:
     # https://github.com/multiarch/qemu-user-static
+
+There is limited support for developing on macOS via Docker.  On Apple M1:
+
+    $ make docker-images-arm64
+    $ DOCKER_ARCH=arm64 make docker-shell-wdmount
 
 Branch policy
 -------------
