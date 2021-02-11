@@ -73,6 +73,10 @@ GIT_INFO := $(GIT_DESCRIBE)-$(GIT_BRANCH)
 endif
 BUILD_DATETIME := $(shell date +%Y%m%d%H%M%S)
 
+# Docker image suffix, e.g. duktape-base-ubuntu-20.04-$(DOCKER_ARCH).  Example override:
+# DOCKER_ARCH=arm64.
+DOCKER_ARCH ?= x64
+
 # Source lists.
 DUKTAPE_CMDLINE_SOURCES = \
 	examples/cmdline/duk_cmdline.c \
@@ -1227,8 +1231,18 @@ docker-images-ubuntu-20.04-x64: docker-prepare
 	$(DOCKER) build -t duktape-make-ubuntu-20.04-x64 docker/duktape-make-ubuntu-20.04-x64
 	$(DOCKER) build -t duktape-release-1-ubuntu-20.04-x64 docker/duktape-release-1-ubuntu-20.04-x64
 
+.PHONY: docker-images-ubuntu-20.04-arm64
+docker-images-ubuntu-20.04-arm64: docker-prepare
+	$(DOCKER) build --build-arg UID=$(shell id -u) --build-arg GID=$(shell id -g) -t duktape-base-ubuntu-20.04-arm64 docker/duktape-base-ubuntu-20.04-arm64
+	$(DOCKER) build -t duktape-shell-ubuntu-20.04-arm64 docker/duktape-shell-ubuntu-20.04-arm64
+	$(DOCKER) build -t duktape-make-ubuntu-20.04-arm64 docker/duktape-make-ubuntu-20.04-arm64
+	$(DOCKER) build -t duktape-release-1-ubuntu-20.04-arm64 docker/duktape-release-1-ubuntu-20.04-arm64
+
 .PHONY: docker-images-x64
 docker-images-x64: docker-images-ubuntu-20.04-x64
+
+.PHONY: docker-images-arm64
+docker-images-arm64: docker-images-ubuntu-20.04-arm64
 
 .PHONY: docker-images-s390x
 docker-images-s390x: docker-prepare
@@ -1251,9 +1265,14 @@ docker-clean:
 	-$(DOCKER) rmi duktape-make-ubuntu-18.04-x64:latest
 	-$(DOCKER) rmi duktape-shell-ubuntu-18.04-x64:latest
 	-$(DOCKER) rmi duktape-base-ubuntu-18.04-x64:latest
+	-$(DOCKER) rmi duktape-release-1-ubuntu-20.04-x64:latest
 	-$(DOCKER) rmi duktape-make-ubuntu-20.04-x64:latest
 	-$(DOCKER) rmi duktape-shell-ubuntu-20.04-x64:latest
 	-$(DOCKER) rmi duktape-base-ubuntu-20.04-x64:latest
+	-$(DOCKER) rmi duktape-release-1-ubuntu-20.04-arm64:latest
+	-$(DOCKER) rmi duktape-make-ubuntu-20.04-arm64:latest
+	-$(DOCKER) rmi duktape-shell-ubuntu-20.04-arm64:latest
+	-$(DOCKER) rmi duktape-base-ubuntu-20.04-arm64:latest
 	-$(DOCKER) rmi duktape-shell-ubuntu-18.04-s390x:latest
 	-$(DOCKER) rmi duktape-base-ubuntu-18.04-s390x:latest
 	-$(DOCKER) rm fuzzilli_runner
@@ -1263,7 +1282,7 @@ docker-clean:
 
 .PHONY: docker-dist-source-master
 docker-dist-source-master: | tmp
-	$(DOCKER) run --rm -i duktape-make-ubuntu-20.04-x64 clean dist-source > tmp/docker-output.zip
+	$(DOCKER) run --rm -i duktape-make-ubuntu-20.04-$(DOCKER_ARCH) clean dist-source > tmp/docker-output.zip
 	unzip -q -o tmp/docker-output.zip ; true  # avoid failure due to leading garbage
 
 .PHONY: docker-dist-source-wd
@@ -1271,13 +1290,13 @@ docker-dist-source-wd: | tmp
 	rm -f tmp/docker-input.zip tmp/docker-output.zip
 	@#git archive --format zip --output tmp/docker-input.zip HEAD
 	zip -1 -q -r tmp/docker-input.zip .
-	$(DOCKER) run --rm -i -e STDIN_ZIP=1 duktape-make-ubuntu-20.04-x64 clean dist-source < tmp/docker-input.zip > tmp/docker-output.zip
+	$(DOCKER) run --rm -i -e STDIN_ZIP=1 duktape-make-ubuntu-20.04-$(DOCKER_ARCH) clean dist-source < tmp/docker-input.zip > tmp/docker-output.zip
 	unzip -q -o tmp/docker-output.zip ; true  # avoid failure due to leading garbage
 
 .PHONY: docker-dist-site-master
 docker-dist-site-master: | tmp
 	rm -f tmp/docker-input.zip tmp/docker-output.zip
-	$(DOCKER) run --rm -i duktape-make-ubuntu-20.04-x64 clean dist-site > tmp/docker-output.zip
+	$(DOCKER) run --rm -i duktape-make-ubuntu-20.04-$(DOCKER_ARCH) clean dist-site > tmp/docker-output.zip
 	unzip -q -o tmp/docker-output.zip ; true  # avoid failure due to leading garbage
 
 .PHONY: docker-dist-site-wd
@@ -1285,13 +1304,13 @@ docker-dist-site-wd: | tmp
 	rm -f tmp/docker-input.zip tmp/docker-output.zip
 	@#git archive --format zip --output tmp/docker-input.zip HEAD
 	zip -1 -q -r tmp/docker-input.zip .
-	$(DOCKER) run --rm -i -e STDIN_ZIP=1 duktape-make-ubuntu-20.04-x64 clean dist-site < tmp/docker-input.zip > tmp/docker-output.zip
+	$(DOCKER) run --rm -i -e STDIN_ZIP=1 duktape-make-ubuntu-20.04-$(DOCKER_ARCH) clean dist-site < tmp/docker-input.zip > tmp/docker-output.zip
 	unzip -q -o tmp/docker-output.zip ; true  # avoid failure due to leading garbage
 
 .PHONY: docker-duk-master
 docker-duk-master: | tmp
 	rm -f tmp/docker-input.zip tmp/docker-output.zip
-	$(DOCKER) run --rm -i duktape-make-ubuntu-20.04-x64 clean build/duk build/duk.O2 > tmp/docker-output.zip
+	$(DOCKER) run --rm -i duktape-make-ubuntu-20.04-$(DOCKER_ARCH) clean build/duk build/duk.O2 > tmp/docker-output.zip
 	unzip -q -o tmp/docker-output.zip ; true
 
 .PHONY: docker-duk-wd
@@ -1299,24 +1318,24 @@ docker-duk-wd: | tmp
 	rm -f tmp/docker-input.zip tmp/docker-output.zip
 	@#git archive --format zip --output tmp/docker-input.zip HEAD
 	zip -1 -q -r tmp/docker-input.zip .
-	$(DOCKER) run --rm -i -e STDIN_ZIP=1 duktape-make-ubuntu-20.04-x64 clean build/duk build/duk.O2 < tmp/docker-input.zip > tmp/docker-output.zip
+	$(DOCKER) run --rm -i -e STDIN_ZIP=1 duktape-make-ubuntu-20.04-$(DOCKER_ARCH) clean build/duk build/duk.O2 < tmp/docker-input.zip > tmp/docker-output.zip
 	unzip -q -o tmp/docker-output.zip ; true
 
 .PHONY: docker-shell-master
 docker-shell-master: | tmp
-	$(DOCKER) run --rm -ti duktape-shell-ubuntu-20.04-x64
+	$(DOCKER) run --rm -ti duktape-shell-ubuntu-20.04-$(DOCKER_ARCH)
 
 .PHONY: docker-shell-wd
 docker-shell-wd: | tmp
-	$(DOCKER) run -v $(shell pwd):/work/duktape-host --rm -ti duktape-shell-ubuntu-20.04-x64
+	$(DOCKER) run -v $(shell pwd):/work/duktape-host --rm -ti duktape-shell-ubuntu-20.04-$(DOCKER_ARCH)
 
 .PHONY: docker-shell-wdmount
 docker-shell-wdmount: | tmp
-	$(DOCKER) run -v $(shell pwd):/work/duktape --rm -ti duktape-shell-ubuntu-20.04-x64
+	$(DOCKER) run -v $(shell pwd):/work/duktape --rm -ti duktape-shell-ubuntu-20.04-$(DOCKER_ARCH)
 
 .PHONY: docker-release-1-wd
 docker-release-1-wd: | tmp
 	rm -f tmp/docker-input.zip tmp/docker-output.zip
 	@#git archive --format zip --output tmp/docker-input.zip HEAD
 	zip -1 -q -r tmp/docker-input.zip .
-	$(DOCKER) run --rm -i -e STDIN_ZIP=1 duktape-release-1-ubuntu-20.04-x64 < tmp/docker-input.zip
+	$(DOCKER) run --rm -i -e STDIN_ZIP=1 duktape-release-1-ubuntu-20.04-$(DOCKER_ARCH) < tmp/docker-input.zip
