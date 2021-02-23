@@ -16,6 +16,8 @@ duk_size_t duk_trans_socket_peek_cb(void *udata);
 void duk_trans_socket_read_flush_cb(void *udata);
 void duk_trans_socket_write_flush_cb(void *udata);
 
+duk_bool_t duk_trans_socket_active(void);
+
 #if defined(__cplusplus)
 }
 #endif  /* end 'extern "C"' wrapper */
