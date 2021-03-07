@@ -490,6 +490,17 @@ DUK_INTERNAL void duk_hobject_enumerator_create(duk_hthread *thr, duk_small_uint
 			/* [enum_target res] */
 		}
 
+		/*
+		 *  On-demand created .prototype property.
+		 */
+
+		/* FIXME: helper for condition */
+		if ((enum_flags & DUK_ENUM_INCLUDE_NONENUMERABLE) &&
+		    DUK_HOBJECT_HAS_CONSTRUCTABLE(curr) &&
+		    !DUK_HOBJECT_HAS_NATFUNC(curr)) {
+			duk__add_enum_key_stridx(thr, DUK_STRIDX_PROTOTYPE);
+		}
+
 		/* Sort enumerated keys according to ES2015 requirements for
 		 * the "inheritance level" just processed.  This is far from
 		 * optimal, ES2015 semantics could be achieved more efficiently
