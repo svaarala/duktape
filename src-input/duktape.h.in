@@ -24,6 +24,10 @@
 
 @DUK_SINGLE_FILE@
 
+#ifndef __GLIBC__
+#undef _FORTIFY_SOURCE
+#endif
+
 /*
  *  BEGIN PUBLIC API
  */
