@@ -1297,6 +1297,8 @@ DUK_LOCAL void duk__debug_handle_resume(duk_hthread *thr, duk_heap *heap) {
 
 	duk_debug_clear_paused(heap);
 
+	/* FIXME: explicit flags */
+
 	pause_flags = 0;
 #if 0  /* manual testing */
 	pause_flags |= DUK_PAUSE_FLAG_ONE_OPCODE;
@@ -1315,6 +1317,10 @@ DUK_LOCAL void duk__debug_handle_resume(duk_hthread *thr, duk_heap *heap) {
 
 DUK_LOCAL void duk__debug_handle_step(duk_hthread *thr, duk_heap *heap, duk_int32_t cmd) {
 	duk_small_uint_t pause_flags;
+
+	/* Deprecated command: replaced by Resume with explicit flags.
+	 * To be removed in a future release.
+	 */
 
 	DUK_D(DUK_DPRINT("debug command StepInto/StepOver/StepOut: %d", (int) cmd));
 

@@ -268,14 +268,16 @@ typedef void *(*duk_mem_getptr)(duk_heap *heap, void *ud);
 /* Milliseconds between status notify and transport peeks. */
 #define DUK_HEAP_DBG_RATELIMIT_MILLISECS  200
 
-/* Debugger pause flags. */
+/* Debugger pause flags.  These must match the debugger protocol where they
+ * are used 1:1.
+ */
 #define DUK_PAUSE_FLAG_ONE_OPCODE        (1U << 0)   /* pause when a single opcode has been executed */
-#define DUK_PAUSE_FLAG_ONE_OPCODE_ACTIVE (1U << 1)   /* one opcode pause actually active; artifact of current implementation */
-#define DUK_PAUSE_FLAG_LINE_CHANGE       (1U << 2)   /* pause when current line number changes */
-#define DUK_PAUSE_FLAG_FUNC_ENTRY        (1U << 3)   /* pause when entering a function */
-#define DUK_PAUSE_FLAG_FUNC_EXIT         (1U << 4)   /* pause when exiting current function */
-#define DUK_PAUSE_FLAG_CAUGHT_ERROR      (1U << 5)   /* pause when about to throw an error that is caught */
-#define DUK_PAUSE_FLAG_UNCAUGHT_ERROR    (1U << 6)   /* pause when about to throw an error that won't be caught */
+#define DUK_PAUSE_FLAG_LINE_CHANGE       (1U << 1)   /* pause when current line number changes */
+#define DUK_PAUSE_FLAG_FUNC_ENTRY        (1U << 2)   /* pause when entering a function */
+#define DUK_PAUSE_FLAG_FUNC_EXIT         (1U << 3)   /* pause when exiting current function */
+#define DUK_PAUSE_FLAG_CAUGHT_ERROR      (1U << 4)   /* pause when about to throw an error that is caught */
+#define DUK_PAUSE_FLAG_UNCAUGHT_ERROR    (1U << 5)   /* pause when about to throw an error that won't be caught */
+#define DUK_PAUSE_FLAG_ONE_OPCODE_ACTIVE (1U << 15)  /* one opcode pause actually active; artifact of current implementation */
 
 struct duk_breakpoint {
 	duk_hstring *filename;
