@@ -3,21 +3,18 @@
 #
 
 CC = gcc
+LD = $(CC)
 
-evloop:
+evloop: $(OBJECTS)
 	@echo "NOTE: The eventloop is an example intended to be used on Linux"
 	@echo "      or other common UNIX variants.  It is not fully portable."
 	@echo ""
 
-	$(CC) -o $@ -std=c99 -Wall -Wextra -O2 -Isrc \
-		examples/eventloop/main.c \
-		examples/eventloop/c_eventloop.c \
-		examples/eventloop/poll.c \
-		examples/eventloop/socket.c \
-		examples/eventloop/fileio.c \
-		src/duktape.c \
-		-lm
+	$(LD) -o $@ $(OBJECTS) $(LDFLAGS)
 
 	@echo ""
 	@echo "NOTE: You must 'cd examples/eventloop' before you execute the"
-	@echo "      eventloop binary: it relies on finding .js files in CWD"
+	@echo "	  eventloop binary: it relies on finding .js files in CWD"
+
+clean:
+	$(RM) $(OBJECTS) evloop

@@ -3,8 +3,20 @@
 #
 
 CC = gcc
+LD = $(CC)
+CFLAGS = -std=c99 -Wall -Wextra -O2
+CFLAGS += -Isrc  # for combined sources
+LDFLAGS = -lm
 
-jxpretty:
-	$(CC) -o $@ -std=c99 -Wall -Wextra -O2 -Isrc \
-		src/duktape.c examples/jxpretty/jxpretty.c \
-		-lm
+%.o: %.c
+	$(CC) $(CFLAGS) -c $< -o $@
+
+OBJECTS = src/duktape.o examples/jxpretty/jxpretty.o
+
+jxpretty: $(OBJECTS)
+	$(LD) -o $@ $(OBJECTS) $(LDFLAGS)
+
+all: jxpretty
+
+clean:
+	$(RM) $(OBJECTS) jxpretty
