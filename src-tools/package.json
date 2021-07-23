@@ -1,6 +1,7 @@
 {
-    "name": "duktool",
+    "name": "@duktape/duktool",
     "version": "3.0.0",
+    "private": true,
     "module": "./index.js",
     "dependencies": {},
     "devDependencies": {
