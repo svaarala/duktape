@@ -1,7 +1,8 @@
 {
-    "name": "duk-runtests",
+    "name": "@duktape/duk-runtests",
     "version": "0.1.0",
     "description": "Duktape test runner",
+    "private": true,
     "author": {
         "name": "Sami Vaarala",
         "email": "sami.vaarala@iki.fi"

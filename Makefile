@@ -44,8 +44,11 @@ JAVA ?= $(shell command -v java 2>/dev/null)
 JAVA := $(JAVA)
 VALGRIND ?= $(shell command -v valgrind 2>/dev/null)
 VALGRIND := $(VALGRIND)
-#PYTHON ?= $(shell { command -v python3 || command -v python; } 2>/dev/null)
-PYTHON ?= $(shell { command -v python2 || command -v python; } 2>/dev/null)
+PYTHON3 ?= $(shell { command -v python3 || command -v python; } 2>/dev/null)
+PYTHON3 := $(PYTHON3)
+PYTHON2 ?= $(shell { command -v python2 || command -v python; } 2>/dev/null)
+PYTHON2 := $(PYTHON2)
+PYTHON ?= $(PYTHON2)
 PYTHON := $(PYTHON)
 DOCKER ?= docker
 DOCKER := $(DOCKER)
@@ -59,10 +62,13 @@ CLANG ?= clang
 CLANG := $(CLANG)
 
 # Scrape version from the public header; convert from e.g. 10203 -> '1.2.3'.
-DUK_VERSION := $(shell cat src-input/duktape.h.in | grep 'define ' | grep DUK_VERSION | tr -s ' ' ' ' | cut -d ' ' -f 3 | tr -d 'L')
-DUK_MAJOR := $(shell echo "$(DUK_VERSION) / 10000" | bc)
-DUK_MINOR := $(shell echo "$(DUK_VERSION) % 10000 / 100" | bc)
-DUK_PATCH := $(shell echo "$(DUK_VERSION) % 100" | bc)
+DUK_VERSION_PACKAGE_JSON := $(shell $(NODEJS) -e 'var t = JSON.parse(require("fs").readFileSync("package.json")).version.split("."); require("process").stdout.write(String(Number(t[0]) * 1e4 + Number(t[1]) * 1e2 + Number(t[2])));')
+DUK_VERSION_HEADER := $(shell cat src-input/duktape.h.in | grep 'define ' | grep DUK_VERSION | tr -s ' ' ' ' | cut -d ' ' -f 3 | tr -d 'L')
+DUK_VERSION := $(DUK_VERSION_HEADER)
+#DUK_VERSION := $(DUK_VERSION_PACKAGE_JSON)
+DUK_MAJOR := $(shell $(NODEJS) -e 'require("process").stdout.write(String(Math.floor(Number(process.argv[1]) / 10000)))' $(DUK_VERSION))
+DUK_MINOR := $(shell $(NODEJS) -e 'require("process").stdout.write(String(Math.floor(Number(process.argv[1]) % 10000 / 100)))' $(DUK_VERSION))
+DUK_PATCH := $(shell $(NODEJS) -e 'require("process").stdout.write(String(Math.floor(Number(process.argv[1]) % 100)))' $(DUK_VERSION))
 DUK_VERSION_FORMATTED := $(DUK_MAJOR).$(DUK_MINOR).$(DUK_PATCH)
 GIT_BRANCH := $(shell $(GIT) rev-parse --abbrev-ref HEAD)
 GIT_DESCRIBE := $(shell $(GIT) describe --always --dirty)
@@ -72,6 +78,12 @@ else
 GIT_INFO := $(GIT_DESCRIBE)-$(GIT_BRANCH)
 endif
 BUILD_DATETIME := $(shell date +%Y%m%d%H%M%S)
+
+ifeq ($(OS),Windows_NT)
+DETECTED_OS := Windows
+else
+DETECTED_OS := $(shell uname -s)
+endif
 
 # Docker image suffix, e.g. duktape-base-ubuntu-20.04-$(DOCKER_ARCH).  Example override:
 # DOCKER_ARCH=arm64.
@@ -237,7 +249,7 @@ EMDUKOPTS += -DEMSCRIPTEN  # enable stdin workaround in duk_cmdline.c
 MAND_BASE64 = dyA9IDgwOyBoID0gNDA7IGl0ZXIgPSAxMDA7IGZvciAoaSA9IDA7IGkgLSBoOyBpICs9IDEpIHsgeTAgPSAoaSAvIGgpICogNC4wIC0gMi4wOyByZXMgPSBbXTsgZm9yIChqID0gMDsgaiAtIHc7IGogKz0gMSkgeyB4MCA9IChqIC8gdykgKiA0LjAgLSAyLjA7IHh4ID0gMDsgeXkgPSAwOyBjID0gIiMiOyBmb3IgKGsgPSAwOyBrIC0gaXRlcjsgayArPSAxKSB7IHh4MiA9IHh4Knh4OyB5eTIgPSB5eSp5eTsgaWYgKE1hdGgubWF4KDAsIDQuMCAtICh4eDIgKyB5eTIpKSkgeyB5eSA9IDIqeHgqeXkgKyB5MDsgeHggPSB4eDIgLSB5eTIgKyB4MDsgfSBlbHNlIHsgYyA9ICIuIjsgYnJlYWs7IH0gfSByZXNbcmVzLmxlbmd0aF0gPSBjOyB9IHByaW50KHJlcy5qb2luKCIiKSk7IH0K
 
 # Options for runtests.js.
-RUNTESTSOPTS = --python-command $(PYTHON) --prep-test-path util/prep_test.py --minify-uglifyjs2 deps/UglifyJS/bin/uglifyjs --util-include-path tests/ecmascript --known-issues doc/testcase-known-issues.yaml
+RUNTESTSOPTS = --python-command $(PYTHON2) --prep-test-path util/prep_test.py --minify-uglifyjs2 deps/UglifyJS/bin/uglifyjs --util-include-path tests/ecmascript --known-issues doc/testcase-known-issues.yaml
 
 # Compile 'duk' only by default.
 .PHONY: all
@@ -270,7 +282,7 @@ clean:
 .PHONY: cleanall
 cleanall: clean
 	@# Don't delete these in 'clean' to avoid re-downloading them over and over
-	@rm -rf deps
+	@rm -rf deps node_modules
 	@rm -f "references/ECMA-262 5th edition December 2009.pdf"
 	@rm -f "references/ECMA-262 5.1 edition June 2011.pdf"
 	@rm -f "references/ECMA-262.pdf"
@@ -362,16 +374,25 @@ prep/duklow-debug-norefc: configure-deps | prep
 	$(PYTHON) tools/configure.py --output-directory ./prep/duklow-debug-norefc --source-directory src-input --config-metadata config $(CONFIGOPTS_DEBUG_DUKLOW_NOREFC) --line-directives
 
 # Library targets.
+ifeq ($(DETECTED_OS),Darwin)
+build/libduktape.1.0.0.so: prep/nondebug | build
+	rm -f $(subst .1.0.0.so,.1.so,$@) $(subst .1.0.0.so,.1.0.0.so,$@) $(subst .1.0.0.so,.so,$@)
+	$(CC) -o $@ -shared -Wl,-install_name,$(subst .1.0.0.so,.1.so,$@) -fPIC -I./prep/nondebug $(CCOPTS_NONDEBUG) prep/nondebug/duktape.c $(CCLIBS)
+	ln -s $(@F) $(subst .1.0.0.so,.1.so,$@) && ln -s $(@F) $(subst .1.0.0.so,.so,$@)
+build/libduktaped.1.0.0.so: prep/debug | build
+	rm -f $(subst .1.0.0.so,.1.so,$@) $(subst .1.0.0.so,.1.0.0.so,$@) $(subst .1.0.0.so,.so,$@)
+	$(CC) -o $@ -shared -Wl,-install_name,$(subst .1.0.0.so,.1.so,$@) -fPIC -I./prep/debug $(CCOPTS_DEBUG) prep/debug/duktape.c $(CCLIBS)
+	ln -s $(@F) $(subst .1.0.0.so,.1.so,$@) && ln -s $(@F) $(subst .1.0.0.so,.so,$@)
+else
 build/libduktape.so.1.0.0: prep/nondebug | build
 	rm -f $(subst .so.1.0.0,.so.1,$@) $(subst .so.1.0.0,.so.1.0.0,$@) $(subst .so.1.0.0,.so,$@)
 	$(CC) -o $@ -shared -Wl,-soname,$(subst .so.1.0.0,.so.1,$@) -fPIC -I./prep/nondebug $(CCOPTS_NONDEBUG) prep/nondebug/duktape.c $(CCLIBS)
-	ln -s $(@F) $(subst .so.1.0.0,.so.1,$@)
-	ln -s $(@F) $(subst .so.1.0.0,.so,$@)
+	ln -s $(@F) $(subst .so.1.0.0,.so.1,$@) && ln -s $(@F) $(subst .so.1.0.0,.so,$@)
 build/libduktaped.so.1.0.0: prep/debug | build
 	rm -f $(subst .so.1.0.0,.so.1,$@) $(subst .so.1.0.0,.so.1.0.0,$@) $(subst .so.1.0.0,.so,$@)
 	$(CC) -o $@ -shared -Wl,-soname,$(subst .so.1.0.0,.so.1,$@) -fPIC -I./prep/debug $(CCOPTS_DEBUG) prep/debug/duktape.c $(CCLIBS)
-	ln -s $(@F) $(subst .so.1.0.0,.so.1,$@)
-	ln -s $(@F) $(subst .so.1.0.0,.so,$@)
+	ln -s $(@F) $(subst .so.1.0.0,.so.1,$@) && ln -s $(@F) $(subst .so.1.0.0,.so,$@)
+endif
 
 # Various 'duk' command line tool targets.
 DUK_SOURCE_DEPS=$(DUKTAPE_CMDLINE_SOURCES) $(LINENOISE_SOURCES) $(LINENOISE_HEADERS)
@@ -579,7 +600,7 @@ build/emduk.js: examples/cmdline/duk_cmdline.c extras/print-alert/duk_print_aler
 		$(EMDUKOPTS) \
 		prep/emduk/duktape.c examples/cmdline/duk_cmdline.c extras/print-alert/duk_print_alert.c \
 		-o tmp/duk-emduk.js
-	cat tmp/duk-emduk.js | $(PYTHON) util/fix_emscripten.py > $@
+	cat tmp/duk-emduk.js | $(PYTHON2) util/fix_emscripten.py > $@
 	@ls -l $@
 
 # This is a prototype of running Duktape in a web environment with Emscripten,
@@ -606,7 +627,7 @@ dump-public: build/duk | tmp
 	@(grep duk__ tmp/duk-public.txt ; true)  # check for leaked file local symbols (does not cover internal, but not public symbols)
 .PHONY: duksizes
 duksizes: build/duk | tmp
-	$(PYTHON) util/genexesizereport.py $< > tmp/duk_sizes.html
+	$(PYTHON2) util/genexesizereport.py $< > tmp/duk_sizes.html
 .PHONY: issuecount
 issuecount:
 	@echo "FIXME:     `grep FIXME: src-input/*.c src-input/*.h src-input/*.in | wc -l | tr -d ' '`"
@@ -675,7 +696,11 @@ ecmatest-comparison: runtestsdeps build/duk | tmp
 	@echo "### ecmatest"
 	"$(NODEJS)" runtests/runtests.js $(RUNTESTSOPTS) --run-duk --cmd-duk=$(shell pwd)/build/duk --report-diff-to-other --run-nodejs --run-rhino --num-threads 4 --log-file=tmp/duk-test.log tests/ecmascript/
 .PHONY: apitest
+ifeq ($(DETECTED_OS),Darwin)
+apitest: runtestsdeps build/libduktape.1.0.0.so | tmp
+else
 apitest: runtestsdeps build/libduktape.so.1.0.0 | tmp
+endif
 	@echo "### apitest"
 	"$(NODEJS)" runtests/runtests.js $(RUNTESTSOPTS) --num-threads 1 --log-file=tmp/duk-api-test.log tests/api/
 
@@ -727,8 +752,8 @@ test262test: build/duk | deps/test262-es5-tests tmp
 	@echo "### test262test"
 	@# http://wiki.ecmascript.org/doku.php?id=test262:command
 	rm -f tmp/duk-test262.log tmp/duk-test262-filtered.log
-	-cd deps/test262-es5-tests; $(PYTHON) tools/packaging/test262.py --command "../../$< {{path}}" --summary >../../tmp/duk-test262.log
-	cat tmp/duk-test262.log | $(PYTHON) util/filter_test262_log.py doc/test262-known-issues.yaml > tmp/duk-test262-filtered.log
+	-cd deps/test262-es5-tests; $(PYTHON2) tools/packaging/test262.py --command "../../$< {{path}}" --summary >../../tmp/duk-test262.log
+	cat tmp/duk-test262.log | $(PYTHON2) util/filter_test262_log.py doc/test262-known-issues.yaml > tmp/duk-test262-filtered.log
 	cat tmp/duk-test262-filtered.log
 # Awkward helper to write out a testcase, the awkwardness is that it
 # reads command line arguments and complains about missing targets etc:
@@ -736,13 +761,13 @@ test262test: build/duk | deps/test262-es5-tests tmp
 .PHONY: test262cat
 test262cat: | deps/test262-es5-tests
 	@echo "NOTE: this Makefile target will print a 'No rule...' error, ignore it" >&2
-	-@cd deps/test262-es5-tests; $(PYTHON) tools/packaging/test262.py --command "../../$< {{path}}" --cat $(filter-out $@,$(MAKECMDGOALS)) 2>/dev/null
+	-@cd deps/test262-es5-tests; $(PYTHON2) tools/packaging/test262.py --command "../../$< {{path}}" --cat $(filter-out $@,$(MAKECMDGOALS)) 2>/dev/null
 .PHONY: emscriptentest
 emscriptentest: build/duk | tmp
 	@echo "### emscriptentest"
 	@rm -f tmp/duk-emcc-test*
 	$(EMCC) $(EMCCOPTS) tests/emscripten/helloworld.c -o tmp/duk-emcc-test.js
-	cat tmp/duk-emcc-test.js | $(PYTHON) util/fix_emscripten.py > tmp/duk-emcc-test-fixed.js
+	cat tmp/duk-emcc-test.js | $(PYTHON2) util/fix_emscripten.py > tmp/duk-emcc-test-fixed.js
 	@ls -l tmp/duk-emcc-test*
 	$< tmp/duk-emcc-test.js | tee tmp/duk-emcc-test.out
 	if [ `md5sum tmp/duk-emcc-test.out | cut -f 1 -d ' '` != "59ca0efa9f5633cb0371bbc0355478d8" ]; then false; fi
@@ -751,7 +776,7 @@ emscriptenmandeltest: build/duk | tmp
 	@echo "### emscriptenmandeltest"
 	@rm -f tmp/duk-emcc-test*
 	$(EMCC) $(EMCCOPTS) tests/emscripten/mandelbrot.c -o tmp/duk-emcc-test.js
-	cat tmp/duk-emcc-test.js | $(PYTHON) util/fix_emscripten.py > tmp/duk-emcc-test-fixed.js
+	cat tmp/duk-emcc-test.js | $(PYTHON2) util/fix_emscripten.py > tmp/duk-emcc-test-fixed.js
 	@ls -l tmp/duk-emcc-test*
 	$< tmp/duk-emcc-test.js | tee tmp/duk-emcc-test.out
 	if [ `md5sum tmp/duk-emcc-test.out | cut -f 1 -d ' '` != "a0b2daf2e979e192d9838d976920f213" ]; then false; fi
@@ -762,7 +787,7 @@ emscripteninceptiontest: build/duk prep/nondebug | tmp
 	@echo "### emscripteninceptiontest"
 	@rm -f tmp/duk-emcc-test*
 	$(EMCC) $(EMCCOPTS) -Iprep/nondebug prep/nondebug/duktape.c examples/hello/hello.c -o tmp/duk-emcc-test.js
-	cat tmp/duk-emcc-test.js | $(PYTHON) util/fix_emscripten.py > tmp/duk-emcc-test-fixed.js
+	cat tmp/duk-emcc-test.js | $(PYTHON2) util/fix_emscripten.py > tmp/duk-emcc-test-fixed.js
 	@ls -l tmp/duk-emcc-test*
 	$< tmp/duk-emcc-test.js | tee tmp/duk-emcc-test.out
 	if [ `md5sum tmp/duk-emcc-test.out | cut -f 1 -d ' '` != "8521f9d969cdc0a2fa26661a151cef04" ]; then false; fi
@@ -789,7 +814,7 @@ emscriptenluatest: build/duk | deps/lua-5.2.3 tmp
 	@echo "### emscriptenluatest"
 	@rm -f tmp/duk-emcc-luatest*
 	$(EMCC) $(EMCCOPTS) -Ideps/lua-5.2.3/src/ $(patsubst %,deps/lua-5.2.3/src/%,$(LUASRC)) -o tmp/duk-emcc-luatest.js
-	cat tmp/duk-emcc-luatest.js | $(PYTHON) util/fix_emscripten.py > tmp/duk-emcc-luatest-fixed.js
+	cat tmp/duk-emcc-luatest.js | $(PYTHON2) util/fix_emscripten.py > tmp/duk-emcc-luatest-fixed.js
 	@ls -l tmp/duk-emcc-luatest*
 	$< tmp/duk-emcc-luatest.js | tee tmp/duk-emcc-luatest.out
 	if [ `md5sum tmp/duk-emcc-luatest.out | cut -f 1 -d ' '` != "280db36b7805a00f887d559c1ba8285d" ]; then false; fi
@@ -1060,7 +1085,7 @@ tidy-site:
 dist/site: build/dukweb.js build/dukweb.wasm build/RELEASES.rst deps/jquery-1.11.2.js | deps/lz-string deps/duktape-releases dist
 	mkdir -p $@
 	-cd deps/duktape-releases/; git pull --rebase  # get binaries up-to-date, but allow errors for offline use
-	cd website/; $(PYTHON) buildsite.py ../dist/site/
+	cd website/; $(PYTHON2) buildsite.py ../dist/site/
 	for i in dist/site/*.html; do echo "tidy checking $$i"; tidy -q -e -xml -utf8 $$i; done
 dist/duktape-site-$(DUK_VERSION_FORMATTED).tar: dist/site | dist
 	rm -rf dist/duktape-site-$(DUK_VERSION_FORMATTED) dist/duktape-site-$(DUK_VERSION_FORMATTED).*
@@ -1083,7 +1108,7 @@ endif
 .PHONY: codepolicycheck
 codepolicycheck:
 	@echo Code policy check
-	@$(PYTHON) util/check_code_policy.py \
+	@$(PYTHON2) util/check_code_policy.py \
 		$(CODEPOLICYOPTS) \
 		--check-debug-log-calls \
 		--check-carriage-returns \
@@ -1100,7 +1125,7 @@ codepolicycheck:
 		--check-longlong-constants \
 		--dump-vim-commands \
 		src-input/*.c src-input/*.h src-input/*.h.in tests/api/*.c
-	@$(PYTHON) util/check_code_policy.py \
+	@$(PYTHON2) util/check_code_policy.py \
 		$(CODEPOLICYOPTS) \
 		--check-carriage-returns \
 		--check-fixme \
@@ -1110,7 +1135,7 @@ codepolicycheck:
 		--check-tab-indent \
 		--dump-vim-commands \
 		src-input/*.py tools/*.py util/*.py debugger/*/*.py examples/*/*.py testrunner/*.py tests/perf/*.py
-	@$(PYTHON) util/check_code_policy.py \
+	@$(PYTHON2) util/check_code_policy.py \
 		$(CODEPOLICYOPTS) \
 		--check-debug-log-calls \
 		--check-carriage-returns \
@@ -1122,7 +1147,7 @@ codepolicycheck:
 		--check-nonleading-tab \
 		--dump-vim-commands \
 		tests/ecmascript/*.js
-	@$(PYTHON) util/check_code_policy.py \
+	@$(PYTHON2) util/check_code_policy.py \
 		$(CODEPOLICYOPTS) \
 		--check-carriage-returns \
 		--check-fixme \
@@ -1135,7 +1160,7 @@ codepolicycheck:
 		--dump-vim-commands \
 		examples/*/*.c examples/*/*.h \
 		extras/*/*.c extras/*/*.h
-	@$(PYTHON) util/check_code_policy.py \
+	@$(PYTHON2) util/check_code_policy.py \
 		$(CODEPOLICYOPTS) \
 		--check-carriage-returns \
 		--check-fixme \
@@ -1149,7 +1174,7 @@ codepolicycheck:
 		config/feature-options/*.yaml \
 		config/examples/* config/header-snippets/* config/helper-snippets/* \
 		config/*.yaml
-	@$(PYTHON) util/check_code_policy.py \
+	@$(PYTHON2) util/check_code_policy.py \
 		$(CODEPOLICYOPTS) \
 		--check-carriage-returns \
 		--check-fixme \
@@ -1159,7 +1184,7 @@ codepolicycheck:
 		--check-nonleading-tab \
 		--dump-vim-commands \
 		config/config-options/*.yaml
-	@$(PYTHON) util/check_code_policy.py \
+	@$(PYTHON2) util/check_code_policy.py \
 		$(CODEPOLICYOPTS) \
 		--check-carriage-returns \
 		--check-fixme \
@@ -1169,7 +1194,7 @@ codepolicycheck:
 		--check-nonleading-tab \
 		--dump-vim-commands \
 		debugger/*.yaml
-	@$(PYTHON) util/check_code_policy.py \
+	@$(PYTHON2) util/check_code_policy.py \
 		$(CODEPOLICYOPTS) \
 		--check-carriage-returns \
 		--check-fixme \
@@ -1179,14 +1204,14 @@ codepolicycheck:
 		--check-nonleading-tab \
 		--dump-vim-commands \
 		website/api/*.yaml website/api/*.html
-	@$(PYTHON) util/check_code_policy.py \
+	@$(PYTHON2) util/check_code_policy.py \
 		$(CODEPOLICYOPTS) \
 		--check-carriage-returns \
 		--dump-vim-commands \
 		doc/*.rst
 .PHONY: codepolicycheckvim
 codepolicycheckvim:
-	-$(PYTHON) util/check_code_policy.py --dump-vim-commands src-input/*.c src-input/*.h src-input/*.h.in tests/api/*.c
+	-$(PYTHON2) util/check_code_policy.py --dump-vim-commands src-input/*.c src-input/*.h src-input/*.h.in tests/api/*.c
 
 # Simple heap graph and peak usage using valgrind --tool=massif, for quick
 # and dirty baseline comparison.  Say e.g. 'make massif-test-dev-hello-world'.

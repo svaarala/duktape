@@ -1,0 +1,26 @@
+{
+    "name": "@duktape/duktape-repo",
+    "version": "2.99.99",
+    "description": "Dummy package for Duktape repository",
+    "license": "SEE LICENSE IN LICENSE.txt",
+    "private": true,
+    "homepage": "https://duktape.org/",
+    "author": {
+        "name": "Sami Vaarala",
+        "email": "sami.vaarala@iki.fi"
+    },
+    "contributors": [],
+    "repository": "github:svaarala/duktape",
+    "scripts": {},
+    "bugs": {
+        "url": "https://github.com/svaarala/duktape/issues",
+        "email": "sami.vaarala@iki.fi"
+    },
+    "engines": {
+        "node": ">=14"
+    },
+    "org_duktape": {
+        "comment": "All custom properties should go here.",
+        "extDependencies": {}
+    }
+}
