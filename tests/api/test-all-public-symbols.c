@@ -16,6 +16,8 @@ dummy - return here
 ===*/
 
 static duk_ret_t test_func(duk_context *ctx, void *udata) {
+	va_list dummy_ap;
+
 	(void) udata;
 
 	if (ctx) {
@@ -72,10 +74,10 @@ static duk_ret_t test_func(duk_context *ctx, void *udata) {
 	(void) duk_dup(ctx, 0);
 	(void) duk_enum(ctx, 0, 0);
 	(void) duk_equals(ctx, 0, 0);
-	duk_error_va(ctx, 0, "dummy", NULL);
+	duk_error_va(ctx, 0, "dummy", dummy_ap);
 	duk_error(ctx, 0, "dummy");  /* (void) cast won't work without variadic macros */
 	duk_eval_error(ctx, "dummy");
-	duk_eval_error_va(ctx, "dummy", NULL);
+	duk_eval_error_va(ctx, "dummy", dummy_ap);
 	(void) duk_eval_lstring_noresult(ctx, "dummy", 0);
 	(void) duk_eval_lstring(ctx, "dummy", 0);
 	(void) duk_eval_noresult(ctx);
@@ -88,7 +90,7 @@ static duk_ret_t test_func(duk_context *ctx, void *udata) {
 	(void) duk_freeze(ctx, 0);
 	(void) duk_gc(ctx, 0);
 	duk_generic_error(ctx, "dummy");
-	duk_generic_error_va(ctx, "dummy", NULL);
+	duk_generic_error_va(ctx, "dummy", dummy_ap);
 	(void) duk_get_boolean(ctx, 0);
 	(void) duk_get_boolean_default(ctx, 0, 0);
 	(void) duk_get_buffer_data(ctx, 0, NULL);
@@ -235,7 +237,7 @@ static duk_ret_t test_func(duk_context *ctx, void *udata) {
 	(void) duk_push_current_function(ctx);
 	(void) duk_push_current_thread(ctx);
 	(void) duk_push_dynamic_buffer(ctx, 0);
-	(void) duk_push_error_object_va(ctx, 0, NULL, NULL);
+	(void) duk_push_error_object_va(ctx, 0, NULL, dummy_ap);
 	(void) duk_push_error_object(ctx, 0, "dummy");
 	(void) duk_push_external_buffer(ctx);
 	(void) duk_push_false(ctx);
@@ -263,7 +265,7 @@ static duk_ret_t test_func(duk_context *ctx, void *udata) {
 	(void) duk_push_true(ctx);
 	(void) duk_push_uint(ctx, 0);
 	(void) duk_push_undefined(ctx);
-	(void) duk_push_vsprintf(ctx, "dummy", NULL);
+	(void) duk_push_vsprintf(ctx, "dummy", dummy_ap);
 	(void) duk_put_function_list(ctx, 0, NULL);
 	(void) duk_put_global_heapptr(ctx, NULL);
 	(void) duk_put_global_literal(ctx, "dummy");
@@ -278,11 +280,11 @@ static duk_ret_t test_func(duk_context *ctx, void *udata) {
 	(void) duk_put_prop(ctx, 0);
 	(void) duk_random(ctx);
 	duk_range_error(ctx, "dummy");
-	duk_range_error_va(ctx, "dummy", NULL);
+	duk_range_error_va(ctx, "dummy", dummy_ap);
 	(void) duk_realloc_raw(ctx, NULL, 0);
 	(void) duk_realloc(ctx, NULL, 0);
 	duk_reference_error(ctx, "dummy");
-	duk_reference_error_va(ctx, "dummy", NULL);
+	duk_reference_error_va(ctx, "dummy", dummy_ap);
 	(void) duk_remove(ctx, 0);
 	(void) duk_replace(ctx, 0);
 	(void) duk_require_boolean(ctx, 0);
@@ -332,7 +334,7 @@ static duk_ret_t test_func(duk_context *ctx, void *udata) {
 	(void) duk_swap_top(ctx, 0);
 	(void) duk_swap(ctx, 0, 0);
 	duk_syntax_error(ctx, "dummy");
-	duk_syntax_error_va(ctx, "dummy", NULL);
+	duk_syntax_error_va(ctx, "dummy", dummy_ap);
 	(void) duk_throw(ctx);
 	(void) duk_time_to_components(ctx, 0.0, NULL);
 	(void) duk_to_boolean(ctx, 0);
@@ -355,9 +357,9 @@ static duk_ret_t test_func(duk_context *ctx, void *udata) {
 	(void) duk_to_undefined(ctx, 0);
 	(void) duk_trim(ctx, 0);
 	duk_type_error(ctx, "dummy");
-	duk_type_error_va(ctx, "dummy", NULL);
+	duk_type_error_va(ctx, "dummy", dummy_ap);
 	duk_uri_error(ctx, "dummy");
-	duk_uri_error_va(ctx, "dummy", NULL);
+	duk_uri_error_va(ctx, "dummy", dummy_ap);
 	(void) duk_xcopy_top(ctx, NULL, 0);
 	(void) duk_xmove_top(ctx, NULL, 0);
 
