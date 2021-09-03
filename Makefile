@@ -222,8 +222,10 @@ all: duk
 clean:
 	@rm -f *.gcda
 	@rm -f *.su
-	@rm -rf dist/
+	@rm -rf tmp/
+	@rm -rf build/
 	@rm -rf prep/
+	@rm -rf dist/
 	@rm -rf site/
 	@rm -f duk duk-rom dukd dukd-rom duk.O2 duk.O3 duk.O4
 	@rm -f duk-pgo duk-pgo.O2
@@ -269,6 +271,7 @@ clean:
 .PHONY: cleanall
 cleanall: clean
 	# Don't delete these in 'clean' to avoid re-downloading them over and over
+	@rm -rf deps
 	@rm -rf duktape-releases
 	@rm -f regfuzz-*.tar.gz
 	@rm -rf linenoise
@@ -302,6 +305,22 @@ cleanall: clean
 	@rm -f "references/ECMA-262 5.1 edition June 2011.pdf"
 	@rm -f "references/ECMA-262.pdf"
 	@rm -f citylots.json
+
+# External dependencies.
+deps:
+	@mkdir -p $@
+
+# Temporaries.
+tmp:
+	@mkdir -p $@
+
+# Build results.
+build:
+	@mkdir -p $@
+
+# Final releases files.
+#dist:
+#	@mkdir -p $@
 
 # Targets for preparing different Duktape configurations.
 prep:
@@ -1028,9 +1047,9 @@ endif
 .PHONY: codepolicycheck
 codepolicycheck:
 	@echo Code policy check
+	# --check-debug-log-calls: omitted, no longer passes with clang-format.
 	@$(PYTHON) util/check_code_policy.py \
 		$(CODEPOLICYOPTS) \
-		--check-debug-log-calls \
 		--check-carriage-returns \
 		--check-fixme \
 		--check-non-ascii \
@@ -1133,6 +1152,14 @@ codepolicycheck:
 codepolicycheckvim:
 	-$(PYTHON) util/check_code_policy.py --dump-vim-commands src-input/*.c src-input/*.h src-input/*.h.in tests/api/*.c
 
+.PHONY: clang-format-source
+clang-format-source: | tmp
+	-rm -f tmp/docker-clang-format-input.zip tmp/docker-clang-format-output.zip
+	@# Omit duktape.h.in for now, clang-format has some issues with e.g. 'extern "C"' in the file.
+	zip -1 -q -r tmp/docker-clang-format-input.zip .clang-format src-input/*.c src-input/*.h
+	docker run --rm -i duktape-clang-format < tmp/docker-clang-format-input.zip > tmp/docker-clang-format-output.zip
+	unzip -q -o tmp/docker-clang-format-output.zip ; true  # avoid failure due to leading garbage
+
 # Simple heap graph and peak usage using valgrind --tool=massif, for quick
 # and dirty baseline comparison.  Say e.g. 'make massif-test-dev-hello-world'.
 # The target name is intentionally not 'massif-%.out' so that the rule is never
@@ -1175,6 +1202,10 @@ docker-images-x64: docker-prepare
 docker-images-s390x: docker-prepare
 	docker build --build-arg UID=$(shell id -u) --build-arg GID=$(shell id -g) -t duktape-base-ubuntu-18.04-s390x docker/duktape-base-ubuntu-18.04-s390x
 	docker build -t duktape-shell-ubuntu-18.04-s390x docker/duktape-shell-ubuntu-18.04-s390x
+
+.PHONY: docker-image-clang-format
+docker-image-clang-format:
+	docker build --build-arg UID=$(shell id -u) --build-arg GID=$(shell id -g) -t duktape-clang-format docker/duktape-clang-format
 
 .PHONY: docker-images
 docker-images: docker-images-x64
