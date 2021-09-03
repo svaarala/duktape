@@ -454,6 +454,84 @@ DUK_LOCAL DUK_INLINE duk_tval *duk__obtain_arridx_slot(duk_hthread *thr, duk_uin
 }
 
 /*
+ *  On-demand .prototype for functions
+ *
+ *  The automatic .prototype property of function objects is writable, but
+ *  not enumerable or configurable.  We create the property on-demand when
+ *  its presence matters:
+ *
+ *    - On a direct property access with the property key "prototype".
+ *    - Object.defineProperty().
+ *    - Object.getOwnPropertyKeys() or other enumeration which also includes
+ *      non-enumerable keys.  In these cases only the string "prototype"
+ *      must be returned, the property itself doesn't (yet) need to be created.
+ *
+ *  Because .prototype is non-configurable, it cannot be deleted.  So it should
+ *  be safe to add the property if it is missing and then never delete it.
+ */
+
+/* XXX: separate flag for virtual .prototype, not just any constructable
+ * function lacking the property?
+ */
+/* XXX: DUK_DEFPROP_FORCE vs. deletion of .prototype */
+/* XXX: enumeration order */
+
+DUK_INTERNAL duk_bool_t duk_hobject_ondemand_proto_check(duk_hthread *thr, duk_hobject *obj) {
+	duk_int_t e_idx;
+	duk_int_t h_idx;
+	duk_hstring **keyptr;
+	duk_bool_t rc;
+
+	/* Automatic .prototype property only applies to constructable
+	 * functions, e.g. function expressions, not e.g. object literal
+	 * getters/setters, arrow functions, etc.
+	 */
+	if (!DUK_HOBJECT_HAS_CONSTRUCTABLE(obj)) {
+		return 0;
+	}
+
+	/* While adding automatic .prototype objects for Duktape/C functions
+	 * would be nice, it'd be an incompatible change in 2.x so skip that
+	 * for now.
+	 */
+	if (DUK_HOBJECT_HAS_NATFUNC(obj)) {
+		return 0;
+	}
+
+	/* Assumption: caller has already checked that the property doesn't
+	 * exist.
+	 */
+	DUK_STATS_INC(thr->heap, stats_object_proto_create);
+	DUK_D(DUK_DPRINT("create .prototype on-demand for %!O", obj));
+	duk_push_hobject(thr, obj);
+	duk_push_object(thr);  /* -> [ ... func proto ] */
+	duk_dup_m2(thr);       /* -> [ ... func proto func ] */
+	duk_xdef_prop_stridx(thr, -2, DUK_STRIDX_CONSTRUCTOR, DUK_PROPDESC_FLAGS_WC | DUK_DEFPROP_FORCE);  /* -> [ ... func proto ] */
+	duk_compact(thr, -1);  /* compact the prototype */
+
+	/* When we add the .prototype property we don't want to do a property
+	 * descriptor lookup because it'd cause infinite recursion.  For now,
+	 * define the property using a different name and then rename it in
+	 * place.
+	 */
+	duk_xdef_prop_stridx(thr, -2, DUK_STRIDX_INT_TARGET, DUK_PROPDESC_FLAGS_W | DUK_DEFPROP_FORCE);     /* -> [ ... func ] */
+
+	rc = duk_hobject_find_existing_entry(thr->heap, obj, DUK_HTHREAD_STRING_INT_TARGET(thr), &e_idx, &h_idx);
+	DUK_UNREF(rc);
+	DUK_ASSERT(rc != 0);
+	DUK_ASSERT(e_idx >= 0);
+	keyptr = DUK_HOBJECT_E_GET_KEY_PTR(thr->heap, obj, e_idx);
+	DUK_ASSERT(keyptr != NULL);
+	DUK_ASSERT(*keyptr == DUK_HTHREAD_STRING_INT_TARGET(thr));
+	*keyptr = DUK_HTHREAD_STRING_PROTOTYPE(thr);
+	DUK_HSTRING_INCREF(thr, DUK_HTHREAD_STRING_PROTOTYPE(thr));
+	DUK_HSTRING_DECREF(thr, DUK_HTHREAD_STRING_INT_TARGET(thr));
+
+	duk_pop_unsafe(thr);
+	return 1;
+}
+
+/*
  *  Proxy helpers
  */
 
@@ -1917,6 +1995,21 @@ DUK_LOCAL duk_bool_t duk__get_own_propdesc_raw(duk_hthread *thr, duk_hobject *ob
 	/*
 	 *  Not found as a concrete property, check for virtual properties.
 	 */
+
+	/* If object has an on-demand .prototype property, create it now and
+	 * retry via recursion.
+	 */
+	/* XXX: faster check for key, e.g. by adding DUK_HSTRING_IS_PROTOTYPE */
+	/* XXX: enable "has virtual properties" for at least constructable functions,
+	 * so that we can avoid this check in the fast path?
+	 */
+	if (DUK_UNLIKELY(key == DUK_HTHREAD_STRING_PROTOTYPE(thr))) {
+		DUK_D(DUK_DPRINT("ondemand .property, missing -> create?"));
+		if (duk_hobject_ondemand_proto_check(thr, obj)) {
+			DUK_D(DUK_DPRINT("ondemand .property, retry own propdesc lookup"));
+			return duk__get_own_propdesc_raw(thr, obj, key, arr_idx, out_desc, flags);
+		}
+	}
 
 	if (!DUK_HOBJECT_HAS_VIRTUAL_PROPERTIES(obj)) {
 		/* Quick skip. */

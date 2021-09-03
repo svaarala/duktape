@@ -41,6 +41,7 @@
 /* With lowmem builds the high 16 bits of duk_heaphdr are used for other
  * purposes, so this leaves 7 duk_heaphdr flags and 9 duk_hstring flags.
  */
+/* FIXME: eval_or_arguments -> FLAG_PROTOTYPE */
 #define DUK_HSTRING_FLAG_ASCII                      DUK_HEAPHDR_USER_FLAG(0)  /* string is ASCII, clen == blen */
 #define DUK_HSTRING_FLAG_ARRIDX                     DUK_HEAPHDR_USER_FLAG(1)  /* string is a valid array index */
 #define DUK_HSTRING_FLAG_SYMBOL                     DUK_HEAPHDR_USER_FLAG(2)  /* string is a symbol (invalid utf-8) */
