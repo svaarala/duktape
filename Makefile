@@ -1216,7 +1216,8 @@ codepolicycheckvim:
 .PHONY: clang-format-source
 clang-format-source: | tmp
 	-rm -f tmp/docker-clang-format-input.zip tmp/docker-clang-format-output.zip
-	zip -1 -q -r tmp/docker-clang-format-input.zip .clang-format src-input
+	@# Omit duktape.h.in for now, clang-format has some issues with e.g. 'extern "C"' in the file.
+	zip -1 -q -r tmp/docker-clang-format-input.zip .clang-format src-input/*.c src-input/*.h
 	$(DOCKER) run --rm -i duktape-clang-format < tmp/docker-clang-format-input.zip > tmp/docker-clang-format-output.zip
 	unzip -q -o tmp/docker-clang-format-output.zip ; true  # avoid failure due to leading garbage
 
