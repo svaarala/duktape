@@ -1213,6 +1213,13 @@ codepolicycheck:
 codepolicycheckvim:
 	-$(PYTHON2) util/check_code_policy.py --dump-vim-commands src-input/*.c src-input/*.h src-input/*.h.in tests/api/*.c
 
+.PHONY: clang-format-source
+clang-format-source: | tmp
+	-rm -f tmp/docker-clang-format-input.zip tmp/docker-clang-format-output.zip
+	zip -1 -q -r tmp/docker-clang-format-input.zip .clang-format src-input
+	$(DOCKER) run --rm -i duktape-clang-format < tmp/docker-clang-format-input.zip > tmp/docker-clang-format-output.zip
+	unzip -q -o tmp/docker-clang-format-output.zip ; true  # avoid failure due to leading garbage
+
 # Simple heap graph and peak usage using valgrind --tool=massif, for quick
 # and dirty baseline comparison.  Say e.g. 'make massif-test-dev-hello-world'.
 # The target name is intentionally not 'massif-%.out' so that the rule is never
@@ -1275,10 +1282,15 @@ docker-images-s390x: docker-prepare
 	$(DOCKER) build -t duktape-shell-ubuntu-18.04-s390x docker/duktape-shell-ubuntu-18.04-s390x
 
 # Build Docker image for fuzzilli fuzz testing, tag as 'fuzzilli'.
+.PHONY: docker-image-fuzzilli
 docker-image-fuzzilli: build/duk-fuzzilli deps/fuzzilli
 	mkdir -p deps/fuzzilli/Cloud/Docker/DuktapeBuilder/out
 	cp build/duk-fuzzilli deps/fuzzilli/Cloud/Docker/DuktapeBuilder/out/
 	cd deps/fuzzilli/Cloud/Docker; ./build.sh fuzzilli # Don't use duktape build option here, as duk-fuzzilli is already present
+
+.PHONY: docker-image-clang-format
+docker-image-clang-format:
+	$(DOCKER) build --build-arg UID=$(shell id -u) --build-arg GID=$(shell id -g) -t duktape-clang-format docker/duktape-clang-format
 
 .PHONY: docker-images
 docker-images: docker-images-x64
