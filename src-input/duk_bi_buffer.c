@@ -1183,6 +1183,7 @@ DUK_INTERNAL duk_ret_t duk_bi_uint8array_plainof(duk_hthread *thr) {
 
 #if defined(DUK_USE_BUFFEROBJECT_SUPPORT)
 DUK_INTERNAL duk_ret_t duk_bi_nodejs_buffer_tostring(duk_hthread *thr) {
+	const char* encoding;
 	duk_hbufobj *h_this;
 	duk_int_t start_offset, end_offset;
 	duk_uint8_t *buf_slice;
@@ -1196,7 +1197,18 @@ DUK_INTERNAL duk_ret_t duk_bi_nodejs_buffer_tostring(duk_hthread *thr) {
 	}
 	DUK_HBUFOBJ_ASSERT_VALID(h_this);
 
-	/* Ignore encoding for now. */
+	/* TODO: support other encodings.  currently only 'utf8' is supported. */
+	if (duk_is_undefined(thr, 0)) {
+		encoding = "utf8";
+	} else if (duk_is_string(thr, 0)) {
+		encoding = duk_to_string(thr, 0);
+		DUK_ASSERT(duk_is_string(thr, 0));
+		if(DUK_STRCMP(encoding, "utf8") != 0) {
+			DUK_DCERROR_TYPE_INVALID_ARGS(thr);
+		}
+	} else {
+		DUK_DCERROR_TYPE_INVALID_ARGS(thr);
+	}
 
 	duk__clamp_startend_nonegidx_noshift(thr,
 	                                     (duk_int_t) h_this->length,
