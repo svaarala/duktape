@@ -69,6 +69,7 @@ and agreed to irrevocably license their contributions under the Duktape
 * Nancy Li (https://github.com/NancyLi1013)
 * William Parks (https://github.com/WilliamParks)
 * Sam Hellawell (https://github.com/samhellawell)
+* SheetJS (https://github.com/SheetJS)
 
 Other contributions
 ===================
