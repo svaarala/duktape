@@ -24,6 +24,11 @@ true
 "ABC"
 "ABC"
 "ABC"
+"ABC"
+"ABC"
+"ABC"
+"TypeError"
+"TypeError"
 "DEFG"
 "EFG"
 "E"
@@ -241,20 +246,31 @@ function nodejsBufferToStringTest() {
     // buf.toString([encoding], [start], [end])
 
     // Without arguments encoding defaults to UTF-8 and the entire
-    // buffer is converted to string.  At least undefined and null
+    // buffer is converted to string.  At least undefined
     // are accepted as "not defined" for encoding.
     b = new Buffer('ABC');
     safePrintString(b.toString());
     safePrintString(b.toString(undefined));
-    safePrintString(b.toString(null));
+
+    // supported encodings
+    safePrintString(b.toString("utf8"));
+    safePrintString(b.toString("utf-8"));
+
+    // encodings are case insensitive
+    safePrintString(b.toString("UtF8"));
+    safePrintString(b.toString("uTf-8"));
+
+    // invalid encodings should throw a TypeError
+    try { safePrintString(b.toString(null)); } catch(e) { safePrintString(e.name); }
+    try { safePrintString(b.toString("wtf")); } catch(e) { safePrintString(e.name); }
 
     // If the buffer is a slice of an underlying buffer, only that slice
     // is string converted.  Offsets are relative to the slice.
     b = new Buffer('ABCDEFGH');
     b = b.slice(3, 7);  // DEFG
     safePrintString(b.toString());
-    safePrintString(b.toString(null, 1));
-    safePrintString(b.toString(null, 1, 2));
+    safePrintString(b.toString(undefined, 1));
+    safePrintString(b.toString(undefined, 1, 2));
 
     // When the buffer data is legal UTF-8 and the chosen encoding
     // is UTF-8 (default), Duktape internal representation is correct
