@@ -23,6 +23,12 @@ false
 true
 "ABC"
 "ABC"
+"ABC"
+"ABC"
+"ABC"
+"ABC"
+"TypeError"
+"TypeError"
 "DEFG"
 "EFG"
 "E"
@@ -245,8 +251,18 @@ function nodejsBufferToStringTest() {
     b = new Buffer('ABC');
     safePrintString(b.toString());
     safePrintString(b.toString(undefined));
-    // null is not a valid encoding
-    try { safePrintString(b.toString(null)); } catch(e) { }
+
+    // supported encodings
+    safePrintString(b.toString("utf8"));
+    safePrintString(b.toString("utf-8"));
+
+    // encodings are case insensitive
+    safePrintString(b.toString("UtF8"));
+    safePrintString(b.toString("uTf-8"));
+
+    // invalid encodings should throw a TypeError
+    try { safePrintString(b.toString(null)); } catch(e) { safePrintString(e.name); }
+    try { safePrintString(b.toString("wtf")); } catch(e) { safePrintString(e.name); }
 
     // If the buffer is a slice of an underlying buffer, only that slice
     // is string converted.  Offsets are relative to the slice.

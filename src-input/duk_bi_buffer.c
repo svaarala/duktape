@@ -114,6 +114,42 @@ static duk_uint16_t duk__buffer_elemtype_copy_compatible[9] = {
 };
 #endif  /* !DUK_USE_PREFER_SIZE */
 
+#if defined(DUK_USE_BUFFEROBJECT_SUPPORT)
+/* Buffer supported encodings */
+
+#define DUK_BUF_ENC_UNKNOWN              0
+#define DUK_BUF_ENC_UTF8                 1
+
+/* longest encoding string + 1 -- should be updated when longer strings are added */
+#define DUK_BUFFER_ENCODING_MAX_LEN      7
+
+#define DUK_BUFFER_ENCODING_COUNT        2
+DUK_LOCAL const char * const duk__buffer_encoding_names[DUK_BUFFER_ENCODING_COUNT] = {
+	"utf8",
+	"utf-8"
+};
+
+DUK_LOCAL const duk_int_t duk__buffer_encoding_type_from_name[DUK_BUFFER_ENCODING_COUNT] = {
+	DUK_BUF_ENC_UTF8,
+	DUK_BUF_ENC_UTF8
+};
+
+DUK_LOCAL duk_int_t duk__parse_string_encoding(const char *encoding) {
+	duk_uint8_t i;
+	char buf[DUK_BUFFER_ENCODING_MAX_LEN];
+	/* the valid nodejs buffer encodings only contain letters numbers and hyphens */
+	for (i = 0; i < DUK_BUFFER_ENCODING_MAX_LEN; ++i) {
+		if (encoding[i] == 0) { buf[i] = 0; break; }
+		buf[i] = (char) (encoding[i] | 0x20);
+	}
+	for (i = 0; i < DUK_BUFFER_ENCODING_COUNT; ++i) {
+		if(DUK_STRCMP((const char *)buf, duk__buffer_encoding_names[i]) == 0) return duk__buffer_encoding_type_from_name[i];
+	}
+	return DUK_BUF_ENC_UNKNOWN;
+}
+#undef DUK_BUFFER_ENCODING_COUNT
+#endif  /* DUK_USE_BUFFEROBJECT_SUPPORT */
+
 DUK_LOCAL duk_hbufobj *duk__hbufobj_promote_this(duk_hthread *thr) {
 	duk_tval *tv_dst;
 	duk_hbufobj *res;
@@ -1183,11 +1219,13 @@ DUK_INTERNAL duk_ret_t duk_bi_uint8array_plainof(duk_hthread *thr) {
 
 #if defined(DUK_USE_BUFFEROBJECT_SUPPORT)
 DUK_INTERNAL duk_ret_t duk_bi_nodejs_buffer_tostring(duk_hthread *thr) {
-	const char* encoding;
+	const char *encoding;
+	duk_int_t encoding_type;
 	duk_hbufobj *h_this;
 	duk_int_t start_offset, end_offset;
 	duk_uint8_t *buf_slice;
 	duk_size_t slice_length;
+
 
 	h_this = duk__get_bufobj_this(thr);
 	if (h_this == NULL) {
@@ -1197,17 +1235,10 @@ DUK_INTERNAL duk_ret_t duk_bi_nodejs_buffer_tostring(duk_hthread *thr) {
 	}
 	DUK_HBUFOBJ_ASSERT_VALID(h_this);
 
-	/* TODO: support other encodings.  currently only 'utf8' is supported. */
-	if (duk_is_undefined(thr, 0)) {
-		encoding = "utf8";
-	} else if (duk_is_string(thr, 0)) {
-		encoding = duk_to_string(thr, 0);
-		DUK_ASSERT(duk_is_string(thr, 0));
-		if(DUK_STRCMP(encoding, "utf8") != 0) {
+	encoding = duk_opt_string(thr, 0, "utf8");
+	encoding_type = duk__parse_string_encoding(encoding);
+	if(encoding_type == DUK_BUF_ENC_UNKNOWN) {
 			DUK_DCERROR_TYPE_INVALID_ARGS(thr);
-		}
-	} else {
-		DUK_DCERROR_TYPE_INVALID_ARGS(thr);
 	}
 
 	duk__clamp_startend_nonegidx_noshift(thr,
@@ -1244,6 +1275,7 @@ DUK_INTERNAL duk_ret_t duk_bi_nodejs_buffer_tostring(duk_hthread *thr) {
 	 */
 	duk_replace(thr, 0);
 	duk_set_top(thr, 1);
+	/* TODO: support other encodings.  currently only 'utf8' is supported. */
 	return duk_textdecoder_decode_utf8_nodejs(thr);
 }
 #endif  /* DUK_USE_BUFFEROBJECT_SUPPORT */
@@ -2072,11 +2104,9 @@ DUK_INTERNAL duk_ret_t duk_bi_buffer_slice_shared(duk_hthread *thr) {
 DUK_INTERNAL duk_ret_t duk_bi_nodejs_buffer_is_encoding(duk_hthread *thr) {
 	const char *encoding;
 
-	/* only accept lowercase 'utf8' now. */
-
 	encoding = duk_to_string(thr, 0);
 	DUK_ASSERT(duk_is_string(thr, 0));  /* guaranteed by duk_to_string() */
-	duk_push_boolean(thr, DUK_STRCMP(encoding, "utf8") == 0);
+	duk_push_boolean(thr, duk__parse_string_encoding(encoding) != DUK_BUF_ENC_UNKNOWN);
 	return 1;
 }
 #endif  /* DUK_USE_BUFFEROBJECT_SUPPORT */
