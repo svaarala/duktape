@@ -15,16 +15,17 @@ isEncoding test
 empty: false
 undefined: false
 utf8: true
-utf-8: false
-UTF8: false
-UTF-8: false
-Utf8: false
-Utf-8: false
-uTf8: false
-uTf-8: false
+utf-8: true
+UTF8: true
+UTF-8: true
+Utf8: true
+Utf-8: true
+uTf8: true
+uTf-8: true
 ascii: false
 ASCII: false
 AsCiI: false
+binary: false
 dummy: false
 undefined: false
 null: false
@@ -41,7 +42,6 @@ function isEncodingTest() {
 
     [
         // Any capitalization (and dash / no dash) is accepted by Node.js.
-        // Duktape accepts 'utf8' only for now.
         'utf8', 'utf-8', 'UTF8', 'UTF-8',
         'Utf8', 'Utf-8', 'uTf8', 'uTf-8',
 
@@ -49,6 +49,7 @@ function isEncodingTest() {
         'ascii',
         'ASCII',
         'AsCiI',
+        'binary',
         'dummy',
 
         // Non-string values
