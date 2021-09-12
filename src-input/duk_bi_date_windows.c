@@ -28,20 +28,20 @@ DUK_LOCAL void duk__convert_filetime_to_ularge(const FILETIME *ft, ULARGE_INTEGE
 	res->LowPart = ft->dwLowDateTime;
 	res->HighPart = ft->dwHighDateTime;
 }
-#endif  /* DUK_USE_DATE_NOW_WINDOWS_SUBMS */
+#endif /* DUK_USE_DATE_NOW_WINDOWS_SUBMS */
 
 DUK_LOCAL void duk__set_systime_jan1970(SYSTEMTIME *st) {
 	duk_memzero((void *) st, sizeof(*st));
 	st->wYear = 1970;
 	st->wMonth = 1;
-	st->wDayOfWeek = 4;  /* not sure whether or not needed; Thursday */
+	st->wDayOfWeek = 4; /* not sure whether or not needed; Thursday */
 	st->wDay = 1;
 	DUK_ASSERT(st->wHour == 0);
 	DUK_ASSERT(st->wMinute == 0);
 	DUK_ASSERT(st->wSecond == 0);
 	DUK_ASSERT(st->wMilliseconds == 0);
 }
-#endif  /* defined(DUK_USE_DATE_NOW_WINDOWS) || defined(DUK_USE_DATE_TZO_WINDOWS) */
+#endif /* defined(DUK_USE_DATE_NOW_WINDOWS) || defined(DUK_USE_DATE_TZO_WINDOWS) */
 
 #if defined(DUK_USE_DATE_NOW_WINDOWS)
 DUK_INTERNAL duk_double_t duk_bi_date_get_now_windows(void) {
@@ -63,7 +63,7 @@ DUK_INTERNAL duk_double_t duk_bi_date_get_now_windows(void) {
 	 */
 	return (duk_double_t) ((LONGLONG) tmp1.QuadPart - (LONGLONG) tmp2.QuadPart) / 10000.0;
 }
-#endif  /* DUK_USE_DATE_NOW_WINDOWS */
+#endif /* DUK_USE_DATE_NOW_WINDOWS */
 
 #if defined(DUK_USE_DATE_NOW_WINDOWS_SUBMS)
 DUK_INTERNAL duk_double_t duk_bi_date_get_now_windows_subms(void) {
@@ -85,7 +85,7 @@ DUK_INTERNAL duk_double_t duk_bi_date_get_now_windows_subms(void) {
 	 */
 	return (duk_double_t) ((LONGLONG) tmp1.QuadPart - (LONGLONG) tmp2.QuadPart) / 10000.0;
 }
-#endif  /* DUK_USE_DATE_NOW_WINDOWS */
+#endif /* DUK_USE_DATE_NOW_WINDOWS */
 
 #if defined(DUK_USE_DATE_TZO_WINDOWS)
 DUK_INTERNAL duk_int_t duk_bi_date_get_local_tzoffset_windows(duk_double_t d) {
@@ -110,8 +110,8 @@ DUK_INTERNAL duk_int_t duk_bi_date_get_local_tzoffset_windows(duk_double_t d) {
 
 	duk__set_systime_jan1970(&st1);
 	duk__convert_systime_to_ularge((const SYSTEMTIME *) &st1, &tmp1);
-	tmp2.QuadPart = (ULONGLONG) (d * 10000.0);  /* millisec -> 100ns units since jan 1, 1970 */
-	tmp2.QuadPart += tmp1.QuadPart;             /* input 'd' in Windows UTC, 100ns units */
+	tmp2.QuadPart = (ULONGLONG) (d * 10000.0); /* millisec -> 100ns units since jan 1, 1970 */
+	tmp2.QuadPart += tmp1.QuadPart; /* input 'd' in Windows UTC, 100ns units */
 
 	ft1.dwLowDateTime = tmp2.LowPart;
 	ft1.dwHighDateTime = tmp2.HighPart;
@@ -126,9 +126,9 @@ DUK_INTERNAL duk_int_t duk_bi_date_get_local_tzoffset_windows(duk_double_t d) {
 	duk__convert_systime_to_ularge((const SYSTEMTIME *) &st3, &tmp3);
 
 	/* Positive if local time ahead of UTC. */
-	return (duk_int_t) (((LONGLONG) tmp3.QuadPart - (LONGLONG) tmp2.QuadPart) / DUK_I64_CONSTANT(10000000));  /* seconds */
+	return (duk_int_t) (((LONGLONG) tmp3.QuadPart - (LONGLONG) tmp2.QuadPart) / DUK_I64_CONSTANT(10000000)); /* seconds */
 }
-#endif  /* DUK_USE_DATE_TZO_WINDOWS */
+#endif /* DUK_USE_DATE_TZO_WINDOWS */
 
 #if defined(DUK_USE_DATE_TZO_WINDOWS_NO_DST)
 DUK_INTERNAL duk_int_t duk_bi_date_get_local_tzoffset_windows_no_dst(duk_double_t d) {
@@ -163,17 +163,19 @@ DUK_INTERNAL duk_int_t duk_bi_date_get_local_tzoffset_windows_no_dst(duk_double_
 	}
 	duk__convert_systime_to_ularge((const SYSTEMTIME *) &st2, &tmp2);
 
-	return (duk_int_t) (((LONGLONG) tmp2.QuadPart - (LONGLONG) tmp1.QuadPart) / DUK_I64_CONSTANT(10000000));  /* seconds */
+	return (duk_int_t) (((LONGLONG) tmp2.QuadPart - (LONGLONG) tmp1.QuadPart) / DUK_I64_CONSTANT(10000000)); /* seconds */
 }
-#endif  /* DUK_USE_DATE_TZO_WINDOWS_NO_DST */
+#endif /* DUK_USE_DATE_TZO_WINDOWS_NO_DST */
 
 #if defined(DUK_USE_GET_MONOTONIC_TIME_WINDOWS_QPC)
 DUK_INTERNAL duk_double_t duk_bi_date_get_monotonic_time_windows_qpc(void) {
 	LARGE_INTEGER count, freq;
 
 	/* There are legacy issues with QueryPerformanceCounter():
-	 * - Potential jumps: https://support.microsoft.com/en-us/help/274323/performance-counter-value-may-unexpectedly-leap-forward
-	 * - Differences between cores (XP): https://msdn.microsoft.com/en-us/library/windows/desktop/dn553408(v=vs.85).aspx#qpc_support_in_windows_versions
+	 * - Potential jumps:
+	 * https://support.microsoft.com/en-us/help/274323/performance-counter-value-may-unexpectedly-leap-forward
+	 * - Differences between cores (XP):
+	 * https://msdn.microsoft.com/en-us/library/windows/desktop/dn553408(v=vs.85).aspx#qpc_support_in_windows_versions
 	 *
 	 * We avoid these by enabling QPC by default only for Vista or later.
 	 */
@@ -190,4 +192,4 @@ DUK_INTERNAL duk_double_t duk_bi_date_get_monotonic_time_windows_qpc(void) {
 		return 0.0;
 	}
 }
-#endif  /* DUK_USE_GET_MONOTONIC_TIME_WINDOWS_QPC */
+#endif /* DUK_USE_GET_MONOTONIC_TIME_WINDOWS_QPC */

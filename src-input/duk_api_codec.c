@@ -18,15 +18,16 @@
  * is guaranteed to be non-NULL, even for zero length input.
  */
 DUK_LOCAL const duk_uint8_t *duk__prep_codec_arg(duk_hthread *thr, duk_idx_t idx, duk_size_t *out_len) {
-	const void *def_ptr = (const void *) out_len;  /* Any non-NULL pointer will do. */
+	const void *def_ptr = (const void *) out_len; /* Any non-NULL pointer will do. */
 	const void *ptr;
 	duk_bool_t isbuffer;
 
 	DUK_ASSERT(out_len != NULL);
 	DUK_ASSERT(def_ptr != NULL);
-	DUK_ASSERT(duk_is_valid_index(thr, idx));  /* checked by caller */
+	DUK_ASSERT(duk_is_valid_index(thr, idx)); /* checked by caller */
 
-	ptr = (const void *) duk_get_buffer_data_raw(thr, idx, out_len, NULL /*def_ptr*/, 0 /*def_size*/, 0 /*throw_flag*/, &isbuffer);
+	ptr = (const void *)
+	    duk_get_buffer_data_raw(thr, idx, out_len, NULL /*def_ptr*/, 0 /*def_size*/, 0 /*throw_flag*/, &isbuffer);
 	if (isbuffer) {
 		DUK_ASSERT(ptr != NULL || *out_len == 0U);
 		if (DUK_UNLIKELY(ptr == NULL)) {
@@ -51,21 +52,21 @@ DUK_LOCAL const duk_uint8_t *duk__prep_codec_arg(duk_hthread *thr, duk_idx_t idx
 #if defined(DUK_USE_BASE64_SUPPORT)
 /* Bytes emitted for number of padding characters in range [0,4]. */
 DUK_LOCAL const duk_int8_t duk__base64_decode_nequal_step[5] = {
-	3,   /* #### -> 24 bits, emit 3 bytes */
-	2,   /* ###= -> 18 bits, emit 2 bytes */
-	1,   /* ##== -> 12 bits, emit 1 byte */
-	-1,  /* #=== -> 6 bits, error */
-	0,   /* ==== -> 0 bits, emit 0 bytes */
+	3, /* #### -> 24 bits, emit 3 bytes */
+	2, /* ###= -> 18 bits, emit 2 bytes */
+	1, /* ##== -> 12 bits, emit 1 byte */
+	-1, /* #=== -> 6 bits, error */
+	0, /* ==== -> 0 bits, emit 0 bytes */
 };
 
 #if defined(DUK_USE_BASE64_FASTPATH)
 DUK_LOCAL const duk_uint8_t duk__base64_enctab_fast[64] = {
-	0x41U, 0x42U, 0x43U, 0x44U, 0x45U, 0x46U, 0x47U, 0x48U, 0x49U, 0x4aU, 0x4bU, 0x4cU, 0x4dU, 0x4eU, 0x4fU, 0x50U,  /* A...P */
-	0x51U, 0x52U, 0x53U, 0x54U, 0x55U, 0x56U, 0x57U, 0x58U, 0x59U, 0x5aU, 0x61U, 0x62U, 0x63U, 0x64U, 0x65U, 0x66U,  /* Q...f */
-	0x67U, 0x68U, 0x69U, 0x6aU, 0x6bU, 0x6cU, 0x6dU, 0x6eU, 0x6fU, 0x70U, 0x71U, 0x72U, 0x73U, 0x74U, 0x75U, 0x76U,  /* g...v */
-	0x77U, 0x78U, 0x79U, 0x7aU, 0x30U, 0x31U, 0x32U, 0x33U, 0x34U, 0x35U, 0x36U, 0x37U, 0x38U, 0x39U, 0x2bU, 0x2fU   /* w.../ */
+	0x41U, 0x42U, 0x43U, 0x44U, 0x45U, 0x46U, 0x47U, 0x48U, 0x49U, 0x4aU, 0x4bU, 0x4cU, 0x4dU, 0x4eU, 0x4fU, 0x50U, /* A...P */
+	0x51U, 0x52U, 0x53U, 0x54U, 0x55U, 0x56U, 0x57U, 0x58U, 0x59U, 0x5aU, 0x61U, 0x62U, 0x63U, 0x64U, 0x65U, 0x66U, /* Q...f */
+	0x67U, 0x68U, 0x69U, 0x6aU, 0x6bU, 0x6cU, 0x6dU, 0x6eU, 0x6fU, 0x70U, 0x71U, 0x72U, 0x73U, 0x74U, 0x75U, 0x76U, /* g...v */
+	0x77U, 0x78U, 0x79U, 0x7aU, 0x30U, 0x31U, 0x32U, 0x33U, 0x34U, 0x35U, 0x36U, 0x37U, 0x38U, 0x39U, 0x2bU, 0x2fU /* w.../ */
 };
-#endif  /* DUK_USE_BASE64_FASTPATH */
+#endif /* DUK_USE_BASE64_FASTPATH */
 
 #if defined(DUK_USE_BASE64_FASTPATH)
 /* Decode table for one byte of input:
@@ -75,24 +76,24 @@ DUK_LOCAL const duk_uint8_t duk__base64_enctab_fast[64] = {
  *    0...63 decoded bytes
  */
 DUK_LOCAL const duk_int8_t duk__base64_dectab_fast[256] = {
-	-3, -3, -3, -3, -3, -3, -3, -3, -3, -1, -1, -3, -3, -1, -3, -3,  /* 0x00...0x0f */
-	-3, -3, -3, -3, -3, -3, -3, -3, -3, -3, -3, -3, -3, -3, -3, -3,  /* 0x10...0x1f */
-	-1, -3, -3, -3, -3, -3, -3, -3, -3, -3, -3, 62, -3, -3, -3, 63,  /* 0x20...0x2f */
-	52, 53, 54, 55, 56, 57, 58, 59, 60, 61, -3, -3, -3, -2, -3, -3,  /* 0x30...0x3f */
-	-3,  0,  1,  2,  3,  4,  5,  6,  7,  8,  9, 10, 11, 12, 13, 14,  /* 0x40...0x4f */
-	15, 16, 17, 18, 19, 20, 21, 22, 23, 24, 25, -3, -3, -3, -3, -3,  /* 0x50...0x5f */
-	-3, 26, 27, 28, 29, 30, 31, 32, 33, 34, 35, 36, 37, 38, 39, 40,  /* 0x60...0x6f */
-	41, 42, 43, 44, 45, 46, 47, 48, 49, 50, 51, -3, -3, -3, -3, -3,  /* 0x70...0x7f */
-	-3, -3, -3, -3, -3, -3, -3, -3, -3, -3, -3, -3, -3, -3, -3, -3,  /* 0x80...0x8f */
-	-3, -3, -3, -3, -3, -3, -3, -3, -3, -3, -3, -3, -3, -3, -3, -3,  /* 0x90...0x9f */
-	-3, -3, -3, -3, -3, -3, -3, -3, -3, -3, -3, -3, -3, -3, -3, -3,  /* 0xa0...0xaf */
-	-3, -3, -3, -3, -3, -3, -3, -3, -3, -3, -3, -3, -3, -3, -3, -3,  /* 0xb0...0xbf */
-	-3, -3, -3, -3, -3, -3, -3, -3, -3, -3, -3, -3, -3, -3, -3, -3,  /* 0xc0...0xcf */
-	-3, -3, -3, -3, -3, -3, -3, -3, -3, -3, -3, -3, -3, -3, -3, -3,  /* 0xd0...0xdf */
-	-3, -3, -3, -3, -3, -3, -3, -3, -3, -3, -3, -3, -3, -3, -3, -3,  /* 0xe0...0xef */
-	-3, -3, -3, -3, -3, -3, -3, -3, -3, -3, -3, -3, -3, -3, -3, -3   /* 0xf0...0xff */
+	-3, -3, -3, -3, -3, -3, -3, -3, -3, -1, -1, -3, -3, -1, -3, -3, /* 0x00...0x0f */
+	-3, -3, -3, -3, -3, -3, -3, -3, -3, -3, -3, -3, -3, -3, -3, -3, /* 0x10...0x1f */
+	-1, -3, -3, -3, -3, -3, -3, -3, -3, -3, -3, 62, -3, -3, -3, 63, /* 0x20...0x2f */
+	52, 53, 54, 55, 56, 57, 58, 59, 60, 61, -3, -3, -3, -2, -3, -3, /* 0x30...0x3f */
+	-3, 0,  1,  2,  3,  4,  5,  6,  7,  8,  9,  10, 11, 12, 13, 14, /* 0x40...0x4f */
+	15, 16, 17, 18, 19, 20, 21, 22, 23, 24, 25, -3, -3, -3, -3, -3, /* 0x50...0x5f */
+	-3, 26, 27, 28, 29, 30, 31, 32, 33, 34, 35, 36, 37, 38, 39, 40, /* 0x60...0x6f */
+	41, 42, 43, 44, 45, 46, 47, 48, 49, 50, 51, -3, -3, -3, -3, -3, /* 0x70...0x7f */
+	-3, -3, -3, -3, -3, -3, -3, -3, -3, -3, -3, -3, -3, -3, -3, -3, /* 0x80...0x8f */
+	-3, -3, -3, -3, -3, -3, -3, -3, -3, -3, -3, -3, -3, -3, -3, -3, /* 0x90...0x9f */
+	-3, -3, -3, -3, -3, -3, -3, -3, -3, -3, -3, -3, -3, -3, -3, -3, /* 0xa0...0xaf */
+	-3, -3, -3, -3, -3, -3, -3, -3, -3, -3, -3, -3, -3, -3, -3, -3, /* 0xb0...0xbf */
+	-3, -3, -3, -3, -3, -3, -3, -3, -3, -3, -3, -3, -3, -3, -3, -3, /* 0xc0...0xcf */
+	-3, -3, -3, -3, -3, -3, -3, -3, -3, -3, -3, -3, -3, -3, -3, -3, /* 0xd0...0xdf */
+	-3, -3, -3, -3, -3, -3, -3, -3, -3, -3, -3, -3, -3, -3, -3, -3, /* 0xe0...0xef */
+	-3, -3, -3, -3, -3, -3, -3, -3, -3, -3, -3, -3, -3, -3, -3, -3 /* 0xf0...0xff */
 };
-#endif  /* DUK_USE_BASE64_FASTPATH */
+#endif /* DUK_USE_BASE64_FASTPATH */
 
 #if defined(DUK_USE_BASE64_FASTPATH)
 DUK_LOCAL DUK_ALWAYS_INLINE void duk__base64_encode_fast_3(const duk_uint8_t *src, duk_uint8_t *dst) {
@@ -124,9 +125,13 @@ DUK_LOCAL DUK_ALWAYS_INLINE void duk__base64_encode_fast_2(const duk_uint8_t *sr
 
 	t = (duk_uint_t) src[0];
 	t = (t << 8) + (duk_uint_t) src[1];
-	dst[0] = duk__base64_enctab_fast[t >> 10];           /* XXXXXX-- -------- */
-	dst[1] = duk__base64_enctab_fast[(t >> 4) & 0x3fU];  /* ------XX XXXX---- */
-	dst[2] = duk__base64_enctab_fast[(t << 2) & 0x3fU];  /* -------- ----XXXX */
+
+	/* XXXXXX-- -------- */
+	/* ------XX XXXX---- */
+	/* -------- ----XXXX */
+	dst[0] = duk__base64_enctab_fast[t >> 10];
+	dst[1] = duk__base64_enctab_fast[(t >> 4) & 0x3fU];
+	dst[2] = duk__base64_enctab_fast[(t << 2) & 0x3fU];
 	dst[3] = DUK_ASC_EQUALS;
 }
 
@@ -134,8 +139,11 @@ DUK_LOCAL DUK_ALWAYS_INLINE void duk__base64_encode_fast_1(const duk_uint8_t *sr
 	duk_uint_t t;
 
 	t = (duk_uint_t) src[0];
-	dst[0] = duk__base64_enctab_fast[t >> 2];            /* XXXXXX-- */
-	dst[1] = duk__base64_enctab_fast[(t << 4) & 0x3fU];  /* ------XX */
+
+	/* XXXXXX-- */
+	/* ------XX */
+	dst[0] = duk__base64_enctab_fast[t >> 2];
+	dst[1] = duk__base64_enctab_fast[(t << 4) & 0x3fU];
 	dst[2] = DUK_ASC_EQUALS;
 	dst[3] = DUK_ASC_EQUALS;
 }
@@ -183,24 +191,24 @@ DUK_LOCAL void duk__base64_encode_helper(const duk_uint8_t *src, duk_size_t srcl
 	DUK_ASSERT(n == 0U || n == 1U || n == 2U);
 	if (n == 1U) {
 		duk__base64_encode_fast_1(p, q);
-#if 0  /* Unnecessary. */
+#if 0 /* Unnecessary. */
 		p += 1;
 		q += 4;
 		n -= 1U;
 #endif
 	} else if (n == 2U) {
 		duk__base64_encode_fast_2(p, q);
-#if 0  /* Unnecessary. */
+#if 0 /* Unnecessary. */
 		p += 2;
 		q += 4;
 		n -= 2U;
 #endif
 	} else {
-		DUK_ASSERT(n == 0U);  /* nothing to do */
+		DUK_ASSERT(n == 0U); /* nothing to do */
 		;
 	}
 }
-#else  /* DUK_USE_BASE64_FASTPATH */
+#else /* DUK_USE_BASE64_FASTPATH */
 DUK_LOCAL void duk__base64_encode_helper(const duk_uint8_t *src, duk_size_t srclen, duk_uint8_t *dst) {
 	duk_small_uint_t i, npad;
 	duk_uint_t t, x, y;
@@ -272,10 +280,13 @@ DUK_LOCAL void duk__base64_encode_helper(const duk_uint8_t *src, duk_size_t srcl
 		npad--;
 	}
 }
-#endif  /* DUK_USE_BASE64_FASTPATH */
+#endif /* DUK_USE_BASE64_FASTPATH */
 
 #if defined(DUK_USE_BASE64_FASTPATH)
-DUK_LOCAL duk_bool_t duk__base64_decode_helper(const duk_uint8_t *src, duk_size_t srclen, duk_uint8_t *dst, duk_uint8_t **out_dst_final) {
+DUK_LOCAL duk_bool_t duk__base64_decode_helper(const duk_uint8_t *src,
+                                               duk_size_t srclen,
+                                               duk_uint8_t *dst,
+                                               duk_uint8_t **out_dst_final) {
 	duk_int_t x;
 	duk_uint_t t;
 	duk_small_uint_t n_equal;
@@ -285,11 +296,11 @@ DUK_LOCAL duk_bool_t duk__base64_decode_helper(const duk_uint8_t *src, duk_size_
 	const duk_uint8_t *p_end_safe;
 	duk_uint8_t *q;
 
-	DUK_ASSERT(src != NULL);  /* Required by pointer arithmetic below, which fails for NULL. */
+	DUK_ASSERT(src != NULL); /* Required by pointer arithmetic below, which fails for NULL. */
 
 	p = src;
 	p_end = src + srclen;
-	p_end_safe = p_end - 8;  /* If 'src <= src_end_safe', safe to read 8 bytes. */
+	p_end_safe = p_end - 8; /* If 'src <= src_end_safe', safe to read 8 bytes. */
 	q = dst;
 
 	/* Alternate between a fast path which processes clean groups with no
@@ -319,7 +330,9 @@ DUK_LOCAL duk_bool_t duk__base64_decode_helper(const duk_uint8_t *src, duk_size_
 			 * bytes to minimize aliasing.
 			 */
 			DUK_DDD(DUK_DDDPRINT("fast loop: p=%p, p_end_safe=%p, p_end=%p",
-			                     (const void *) p, (const void *) p_end_safe, (const void *) p_end));
+			                     (const void *) p,
+			                     (const void *) p_end_safe,
+			                     (const void *) p_end));
 
 			t1 = (duk_int_t) duk__base64_dectab_fast[p[0]];
 			t1 = (duk_int_t) ((duk_uint_t) t1 << 6) | (duk_int_t) duk__base64_dectab_fast[p[1]];
@@ -344,17 +357,19 @@ DUK_LOCAL duk_bool_t duk__base64_decode_helper(const duk_uint8_t *src, duk_size_
 				p += 8;
 				q += 6;
 			} else if (t1 >= 0) {
-				DUK_DDD(DUK_DDDPRINT("fast loop first group was clean, second was not, process one slow path group"));
+				DUK_DDD(
+				    DUK_DDDPRINT("fast loop first group was clean, second was not, process one slow path group"));
 				DUK_ASSERT(t2 < 0);
 				p += 4;
 				q += 3;
 				break;
 			} else {
-				DUK_DDD(DUK_DDDPRINT("fast loop first group was not clean, second does not matter, process one slow path group"));
+				DUK_DDD(DUK_DDDPRINT(
+				    "fast loop first group was not clean, second does not matter, process one slow path group"));
 				DUK_ASSERT(t1 < 0);
 				break;
 			}
-		}  /* fast path */
+		} /* fast path */
 
 		/* Slow path step 1: try to scan a 4-character encoded group,
 		 * end-of-input, or start-of-padding.  We exit with:
@@ -369,7 +384,9 @@ DUK_LOCAL duk_bool_t duk__base64_decode_helper(const duk_uint8_t *src, duk_size_
 		t = 1UL;
 		for (;;) {
 			DUK_DDD(DUK_DDDPRINT("slow loop: p=%p, p_end=%p, t=%lu",
-			                     (const void *) p, (const void *) p_end, (unsigned long) t));
+			                     (const void *) p,
+			                     (const void *) p_end,
+			                     (unsigned long) t));
 
 			if (DUK_LIKELY(p < p_end)) {
 				x = duk__base64_dectab_fast[*p++];
@@ -380,18 +397,18 @@ DUK_LOCAL duk_bool_t duk__base64_decode_helper(const duk_uint8_t *src, duk_size_
 						break;
 					}
 				} else if (x == -1) {
-					continue;  /* allowed ascii whitespace */
+					continue; /* allowed ascii whitespace */
 				} else if (x == -2) {
 					p--;
-					break;  /* start of padding */
+					break; /* start of padding */
 				} else {
 					DUK_ASSERT(x == -3);
 					goto decode_error;
 				}
 			} else {
-				break;  /* end of input */
+				break; /* end of input */
 			}
-		}  /* slow path step 1 */
+		} /* slow path step 1 */
 
 		/* Complete the padding by simulating pad characters,
 		 * regardless of actual input padding chars.
@@ -450,28 +467,30 @@ DUK_LOCAL duk_bool_t duk__base64_decode_helper(const duk_uint8_t *src, duk_size_
 			}
 			x = duk__base64_dectab_fast[*p++];
 			if (x == -1 || x == -2) {
-				;  /* padding or whitespace, keep eating */
+				; /* padding or whitespace, keep eating */
 			} else {
 				p--;
-				break;  /* backtrack and go back to fast path, even for -1 */
+				break; /* backtrack and go back to fast path, even for -1 */
 			}
-		}  /* slow path step 3 */
-	}  /* outer fast+slow path loop */
+		} /* slow path step 3 */
+	} /* outer fast+slow path loop */
 
- done:
-	DUK_DDD(DUK_DDDPRINT("done; p=%p, p_end=%p",
-	                     (const void *) p, (const void *) p_end));
+done:
+	DUK_DDD(DUK_DDDPRINT("done; p=%p, p_end=%p", (const void *) p, (const void *) p_end));
 
 	DUK_ASSERT(p == p_end);
 
 	*out_dst_final = q;
 	return 1;
 
- decode_error:
+decode_error:
 	return 0;
 }
-#else  /* DUK_USE_BASE64_FASTPATH */
-DUK_LOCAL duk_bool_t duk__base64_decode_helper(const duk_uint8_t *src, duk_size_t srclen, duk_uint8_t *dst, duk_uint8_t **out_dst_final) {
+#else /* DUK_USE_BASE64_FASTPATH */
+DUK_LOCAL duk_bool_t duk__base64_decode_helper(const duk_uint8_t *src,
+                                               duk_size_t srclen,
+                                               duk_uint8_t *dst,
+                                               duk_uint8_t **out_dst_final) {
 	duk_uint_t t, x;
 	duk_int_t y;
 	duk_int8_t step;
@@ -557,7 +576,7 @@ DUK_LOCAL duk_bool_t duk__base64_decode_helper(const duk_uint8_t *src, duk_size_
 		} else {
 			/* Valid: whitespace. */
 			duk_uint32_t m;
-			DUK_ASSERT(x < 0x20U);  /* 0x00 to 0x1f */
+			DUK_ASSERT(x < 0x20U); /* 0x00 to 0x1f */
 			m = (1U << x);
 			if (mask_white & m) {
 				/* Allow basic ASCII whitespace. */
@@ -574,7 +593,7 @@ DUK_LOCAL duk_bool_t duk__base64_decode_helper(const duk_uint8_t *src, duk_size_
 		}
 		/* fall through; no padding will be added */
 
-	 simulate_padding:
+	simulate_padding:
 		n_equal = 0;
 		while (t < 0x1000000UL) {
 			t = (t << 6) + 0U;
@@ -606,10 +625,10 @@ DUK_LOCAL duk_bool_t duk__base64_decode_helper(const duk_uint8_t *src, duk_size_
 	*out_dst_final = q;
 	return 1;
 
- decode_error:
+decode_error:
 	return 0;
 }
-#endif  /* DUK_USE_BASE64_FASTPATH */
+#endif /* DUK_USE_BASE64_FASTPATH */
 
 DUK_EXTERNAL const char *duk_base64_encode(duk_hthread *thr, duk_idx_t idx) {
 	const duk_uint8_t *src;
@@ -638,11 +657,11 @@ DUK_EXTERNAL const char *duk_base64_encode(duk_hthread *thr, duk_idx_t idx) {
 
 	duk__base64_encode_helper((const duk_uint8_t *) src, srclen, dst);
 
-	ret = duk_buffer_to_string(thr, -1);  /* Safe, result is ASCII. */
+	ret = duk_buffer_to_string(thr, -1); /* Safe, result is ASCII. */
 	duk_replace(thr, idx);
 	return ret;
 
- type_error:
+type_error:
 	DUK_ERROR_TYPE(thr, DUK_STR_BASE64_ENCODE_FAILED);
 	DUK_WO_NORETURN(return NULL;);
 }
@@ -667,7 +686,7 @@ DUK_EXTERNAL void duk_base64_decode(duk_hthread *thr, duk_idx_t idx) {
 	 * Similarly, 'xx' may ecause 1+3 = bytes to be emitted and then
 	 * backtracked.
 	 */
-	dstlen = (srclen / 4) * 3 + 6;  /* upper limit, assuming no whitespace etc */
+	dstlen = (srclen / 4) * 3 + 6; /* upper limit, assuming no whitespace etc */
 	dst = (duk_uint8_t *) duk_push_dynamic_buffer(thr, dstlen);
 	/* Note: for dstlen=0, dst may be NULL */
 
@@ -680,11 +699,11 @@ DUK_EXTERNAL void duk_base64_decode(duk_hthread *thr, duk_idx_t idx) {
 	duk_replace(thr, idx);
 	return;
 
- type_error:
+type_error:
 	DUK_ERROR_TYPE(thr, DUK_STR_BASE64_DECODE_FAILED);
 	DUK_WO_NORETURN(return;);
 }
-#else  /* DUK_USE_BASE64_SUPPORT */
+#else /* DUK_USE_BASE64_SUPPORT */
 DUK_EXTERNAL const char *duk_base64_encode(duk_hthread *thr, duk_idx_t idx) {
 	DUK_UNREF(idx);
 	DUK_ERROR_UNSUPPORTED(thr);
@@ -696,7 +715,7 @@ DUK_EXTERNAL void duk_base64_decode(duk_hthread *thr, duk_idx_t idx) {
 	DUK_ERROR_UNSUPPORTED(thr);
 	DUK_WO_NORETURN(return;);
 }
-#endif  /* DUK_USE_BASE64_SUPPORT */
+#endif /* DUK_USE_BASE64_SUPPORT */
 
 /*
  *  Hex
@@ -725,7 +744,7 @@ DUK_EXTERNAL const char *duk_hex_encode(duk_hthread *thr, duk_idx_t idx) {
 	DUK_ASSERT(buf != NULL);
 
 #if defined(DUK_USE_HEX_FASTPATH)
-	DUK_ASSERT((((duk_size_t) buf) & 0x01U) == 0);   /* pointer is aligned, guaranteed for fixed buffer */
+	DUK_ASSERT((((duk_size_t) buf) & 0x01U) == 0); /* pointer is aligned, guaranteed for fixed buffer */
 	p16 = (duk_uint16_t *) (void *) buf;
 	len_safe = len & ~0x03U;
 	for (i = 0; i < len_safe; i += 4) {
@@ -738,14 +757,14 @@ DUK_EXTERNAL const char *duk_hex_encode(duk_hthread *thr, duk_idx_t idx) {
 	for (; i < len; i++) {
 		*p16++ = duk_hex_enctab[inp[i]];
 	}
-#else  /* DUK_USE_HEX_FASTPATH */
+#else /* DUK_USE_HEX_FASTPATH */
 	for (i = 0; i < len; i++) {
 		duk_small_uint_t t;
 		t = (duk_small_uint_t) inp[i];
-		buf[i*2 + 0] = duk_lc_digits[t >> 4];
-		buf[i*2 + 1] = duk_lc_digits[t & 0x0f];
+		buf[i * 2 + 0] = duk_lc_digits[t >> 4];
+		buf[i * 2 + 1] = duk_lc_digits[t & 0x0f];
 	}
-#endif  /* DUK_USE_HEX_FASTPATH */
+#endif /* DUK_USE_HEX_FASTPATH */
 
 	/* XXX: Using a string return value forces a string intern which is
 	 * not always necessary.  As a rough performance measure, hex encode
@@ -754,7 +773,7 @@ DUK_EXTERNAL const char *duk_hex_encode(duk_hthread *thr, duk_idx_t idx) {
 	 * caller coerce to string if necessary?
 	 */
 
-	ret = duk_buffer_to_string(thr, -1);  /* Safe, result is ASCII. */
+	ret = duk_buffer_to_string(thr, -1); /* Safe, result is ASCII. */
 	duk_replace(thr, idx);
 	return ret;
 }
@@ -789,20 +808,16 @@ DUK_EXTERNAL void duk_hex_decode(duk_hthread *thr, duk_idx_t idx) {
 	p = buf;
 	len_safe = len & ~0x07U;
 	for (i = 0; i < len_safe; i += 8) {
-		t = ((duk_int_t) duk_hex_dectab_shift4[inp[i]]) |
-		    ((duk_int_t) duk_hex_dectab[inp[i + 1]]);
+		t = ((duk_int_t) duk_hex_dectab_shift4[inp[i]]) | ((duk_int_t) duk_hex_dectab[inp[i + 1]]);
 		chk = t;
 		p[0] = (duk_uint8_t) t;
-		t = ((duk_int_t) duk_hex_dectab_shift4[inp[i + 2]]) |
-		    ((duk_int_t) duk_hex_dectab[inp[i + 3]]);
+		t = ((duk_int_t) duk_hex_dectab_shift4[inp[i + 2]]) | ((duk_int_t) duk_hex_dectab[inp[i + 3]]);
 		chk |= t;
 		p[1] = (duk_uint8_t) t;
-		t = ((duk_int_t) duk_hex_dectab_shift4[inp[i + 4]]) |
-		    ((duk_int_t) duk_hex_dectab[inp[i + 5]]);
+		t = ((duk_int_t) duk_hex_dectab_shift4[inp[i + 4]]) | ((duk_int_t) duk_hex_dectab[inp[i + 5]]);
 		chk |= t;
 		p[2] = (duk_uint8_t) t;
-		t = ((duk_int_t) duk_hex_dectab_shift4[inp[i + 6]]) |
-		    ((duk_int_t) duk_hex_dectab[inp[i + 7]]);
+		t = ((duk_int_t) duk_hex_dectab_shift4[inp[i + 6]]) | ((duk_int_t) duk_hex_dectab[inp[i + 7]]);
 		chk |= t;
 		p[3] = (duk_uint8_t) t;
 		p += 4;
@@ -824,7 +839,7 @@ DUK_EXTERNAL void duk_hex_decode(duk_hthread *thr, duk_idx_t idx) {
 		}
 		*p++ = (duk_uint8_t) t;
 	}
-#else  /* DUK_USE_HEX_FASTPATH */
+#else /* DUK_USE_HEX_FASTPATH */
 	for (i = 0; i < len; i += 2) {
 		/* For invalid characters the value -1 gets extended to
 		 * at least 16 bits.  If either nybble is invalid, the
@@ -837,16 +852,16 @@ DUK_EXTERNAL void duk_hex_decode(duk_hthread *thr, duk_idx_t idx) {
 		}
 		buf[i >> 1] = (duk_uint8_t) t;
 	}
-#endif  /* DUK_USE_HEX_FASTPATH */
+#endif /* DUK_USE_HEX_FASTPATH */
 
 	duk_replace(thr, idx);
 	return;
 
- type_error:
+type_error:
 	DUK_ERROR_TYPE(thr, DUK_STR_HEX_DECODE_FAILED);
 	DUK_WO_NORETURN(return;);
 }
-#else  /* DUK_USE_HEX_SUPPORT */
+#else /* DUK_USE_HEX_SUPPORT */
 DUK_EXTERNAL const char *duk_hex_encode(duk_hthread *thr, duk_idx_t idx) {
 	DUK_UNREF(idx);
 	DUK_ERROR_UNSUPPORTED(thr);
@@ -857,7 +872,7 @@ DUK_EXTERNAL void duk_hex_decode(duk_hthread *thr, duk_idx_t idx) {
 	DUK_ERROR_UNSUPPORTED(thr);
 	DUK_WO_NORETURN(return;);
 }
-#endif  /* DUK_USE_HEX_SUPPORT */
+#endif /* DUK_USE_HEX_SUPPORT */
 
 /*
  *  JSON
@@ -901,15 +916,12 @@ DUK_EXTERNAL void duk_json_decode(duk_hthread *thr, duk_idx_t idx) {
 #endif
 
 	idx = duk_require_normalize_index(thr, idx);
-	duk_bi_json_parse_helper(thr,
-	                         idx /*idx_value*/,
-	                         DUK_INVALID_INDEX /*idx_reviver*/,
-	                         0 /*flags*/);
+	duk_bi_json_parse_helper(thr, idx /*idx_value*/, DUK_INVALID_INDEX /*idx_reviver*/, 0 /*flags*/);
 	duk_replace(thr, idx);
 
 	DUK_ASSERT(duk_get_top(thr) == top_at_entry);
 }
-#else  /* DUK_USE_JSON_SUPPORT */
+#else /* DUK_USE_JSON_SUPPORT */
 DUK_EXTERNAL const char *duk_json_encode(duk_hthread *thr, duk_idx_t idx) {
 	DUK_ASSERT_API_ENTRY(thr);
 	DUK_UNREF(idx);
@@ -923,4 +935,4 @@ DUK_EXTERNAL void duk_json_decode(duk_hthread *thr, duk_idx_t idx) {
 	DUK_ERROR_UNSUPPORTED(thr);
 	DUK_WO_NORETURN(return;);
 }
-#endif  /* DUK_USE_JSON_SUPPORT */
+#endif /* DUK_USE_JSON_SUPPORT */

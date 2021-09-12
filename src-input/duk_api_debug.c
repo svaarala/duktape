@@ -26,25 +26,24 @@ DUK_EXTERNAL void duk_push_context_dump(duk_hthread *thr) {
 	 * Perhaps values need to be coerced individually?
 	 */
 	duk_bi_json_stringify_helper(thr,
-	                             duk_get_top_index(thr),  /*idx_value*/
-	                             DUK_INVALID_INDEX,  /*idx_replacer*/
-	                             DUK_INVALID_INDEX,  /*idx_space*/
-	                             DUK_JSON_FLAG_EXT_CUSTOM |
-	                             DUK_JSON_FLAG_ASCII_ONLY |
-	                             DUK_JSON_FLAG_AVOID_KEY_QUOTES /*flags*/);
+	                             duk_get_top_index(thr), /*idx_value*/
+	                             DUK_INVALID_INDEX, /*idx_replacer*/
+	                             DUK_INVALID_INDEX, /*idx_space*/
+	                             DUK_JSON_FLAG_EXT_CUSTOM | DUK_JSON_FLAG_ASCII_ONLY |
+	                                 DUK_JSON_FLAG_AVOID_KEY_QUOTES /*flags*/);
 
 	duk_push_sprintf(thr, "ctx: top=%ld, stack=%s", (long) top, (const char *) duk_safe_to_string(thr, -1));
-	duk_replace(thr, -3);  /* [ ... arr jsonx(arr) res ] -> [ ... res jsonx(arr) ] */
+	duk_replace(thr, -3); /* [ ... arr jsonx(arr) res ] -> [ ... res jsonx(arr) ] */
 	duk_pop(thr);
 	DUK_ASSERT(duk_is_string(thr, -1));
 }
-#else  /* DUK_USE_JSON_SUPPORT */
+#else /* DUK_USE_JSON_SUPPORT */
 DUK_EXTERNAL void duk_push_context_dump(duk_hthread *thr) {
 	DUK_ASSERT_API_ENTRY(thr);
 	DUK_ERROR_UNSUPPORTED(thr);
 	DUK_WO_NORETURN(return;);
 }
-#endif  /* DUK_USE_JSON_SUPPORT */
+#endif /* DUK_USE_JSON_SUPPORT */
 
 #if defined(DUK_USE_DEBUGGER_SUPPORT)
 
@@ -93,12 +92,13 @@ DUK_EXTERNAL void duk_debugger_attach(duk_hthread *thr,
 	heap->dbg_exec_counter = 0;
 	heap->dbg_last_counter = 0;
 	heap->dbg_last_time = 0.0;
-	duk_debug_set_paused(heap);  /* XXX: overlap with fields above */
+	duk_debug_set_paused(heap); /* XXX: overlap with fields above */
 
 	/* Send version identification and flush right afterwards.  Note that
 	 * we must write raw, unframed bytes here.
 	 */
-	duk_push_sprintf(thr, "%ld %ld %s %s\n",
+	duk_push_sprintf(thr,
+	                 "%ld %ld %s %s\n",
 	                 (long) DUK_DEBUG_PROTOCOL_VERSION,
 	                 (long) DUK_VERSION,
 	                 (const char *) DUK_GIT_DESCRIBE,
@@ -200,7 +200,7 @@ DUK_EXTERNAL void duk_debugger_pause(duk_hthread *thr) {
 	}
 }
 
-#else  /* DUK_USE_DEBUGGER_SUPPORT */
+#else /* DUK_USE_DEBUGGER_SUPPORT */
 
 DUK_EXTERNAL void duk_debugger_attach(duk_hthread *thr,
                                       duk_debug_read_function read_cb,
@@ -258,4 +258,4 @@ DUK_EXTERNAL void duk_debugger_pause(duk_hthread *thr) {
 	DUK_UNREF(thr);
 }
 
-#endif  /* DUK_USE_DEBUGGER_SUPPORT */
+#endif /* DUK_USE_DEBUGGER_SUPPORT */

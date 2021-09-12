@@ -74,7 +74,7 @@ DUK_EXTERNAL void duk_gc(duk_hthread *thr, duk_uint_t flags) {
 	DUK_ASSERT(heap != NULL);
 
 	DUK_D(DUK_DPRINT("mark-and-sweep requested by application"));
-	DUK_ASSERT(DUK_GC_COMPACT == DUK_MS_FLAG_EMERGENCY);  /* Compact flag is 1:1 with emergency flag which forces compaction. */
+	DUK_ASSERT(DUK_GC_COMPACT == DUK_MS_FLAG_EMERGENCY); /* Compact flag is 1:1 with emergency flag which forces compaction. */
 	ms_flags = (duk_small_uint_t) flags;
 	duk_heap_mark_and_sweep(heap, ms_flags);
 }

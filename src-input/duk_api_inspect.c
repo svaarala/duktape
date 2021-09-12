@@ -39,20 +39,20 @@ DUK_LOCAL void duk__inspect_multiple_uint(duk_hthread *thr, const char *fmt, duk
  * be security implications.
  */
 
-#define DUK__IDX_TYPE     0
-#define DUK__IDX_ITAG     1
-#define DUK__IDX_REFC     2
-#define DUK__IDX_HBYTES   3
-#define DUK__IDX_CLASS    4
-#define DUK__IDX_PBYTES   5
-#define DUK__IDX_ESIZE    6
-#define DUK__IDX_ENEXT    7
-#define DUK__IDX_ASIZE    8
-#define DUK__IDX_HSIZE    9
-#define DUK__IDX_BCBYTES  10
-#define DUK__IDX_DBYTES   11
-#define DUK__IDX_TSTATE   12
-#define DUK__IDX_VARIANT  13
+#define DUK__IDX_TYPE    0
+#define DUK__IDX_ITAG    1
+#define DUK__IDX_REFC    2
+#define DUK__IDX_HBYTES  3
+#define DUK__IDX_CLASS   4
+#define DUK__IDX_PBYTES  5
+#define DUK__IDX_ESIZE   6
+#define DUK__IDX_ENEXT   7
+#define DUK__IDX_ASIZE   8
+#define DUK__IDX_HSIZE   9
+#define DUK__IDX_BCBYTES 10
+#define DUK__IDX_DBYTES  11
+#define DUK__IDX_TSTATE  12
+#define DUK__IDX_VARIANT 13
 
 DUK_EXTERNAL void duk_inspect_value(duk_hthread *thr, duk_idx_t idx) {
 	duk_tval *tv;
@@ -67,7 +67,7 @@ DUK_EXTERNAL void duk_inspect_value(duk_hthread *thr, duk_idx_t idx) {
 
 	/* Assume two's complement and set everything to -1. */
 	duk_memset((void *) &vals, (int) 0xff, sizeof(vals));
-	DUK_ASSERT(vals[DUK__IDX_TYPE] == -1);  /* spot check one */
+	DUK_ASSERT(vals[DUK__IDX_TYPE] == -1); /* spot check one */
 
 	tv = duk_get_tval_or_unused(thr, idx);
 	h = (DUK_TVAL_IS_HEAP_ALLOCATED(tv) ? DUK_TVAL_GET_HEAPHDR(tv) : NULL);
@@ -75,7 +75,7 @@ DUK_EXTERNAL void duk_inspect_value(duk_hthread *thr, duk_idx_t idx) {
 	vals[DUK__IDX_TYPE] = duk_get_type_tval(tv);
 	vals[DUK__IDX_ITAG] = (duk_int_t) DUK_TVAL_GET_TAG(tv);
 
-	duk_push_bare_object(thr);  /* Invalidates 'tv'. */
+	duk_push_bare_object(thr); /* Invalidates 'tv'. */
 	tv = NULL;
 
 	if (h == NULL) {
@@ -157,30 +157,56 @@ DUK_EXTERNAL void duk_inspect_value(duk_hthread *thr, duk_idx_t idx) {
 
 		if (DUK_HBUFFER_HAS_DYNAMIC(h_buf)) {
 			if (DUK_HBUFFER_HAS_EXTERNAL(h_buf)) {
-				vals[DUK__IDX_VARIANT] = 2;  /* buffer variant 2: external */
+				vals[DUK__IDX_VARIANT] = 2; /* buffer variant 2: external */
 				vals[DUK__IDX_HBYTES] = (duk_uint_t) (sizeof(duk_hbuffer_external));
 			} else {
 				/* When alloc_size == 0 the second allocation may not
 				 * actually exist.
 				 */
-				vals[DUK__IDX_VARIANT] = 1;  /* buffer variant 1: dynamic */
+				vals[DUK__IDX_VARIANT] = 1; /* buffer variant 1: dynamic */
 				vals[DUK__IDX_HBYTES] = (duk_uint_t) (sizeof(duk_hbuffer_dynamic));
 			}
 			vals[DUK__IDX_DBYTES] = (duk_int_t) (DUK_HBUFFER_GET_SIZE(h_buf));
 		} else {
-			DUK_ASSERT(vals[DUK__IDX_VARIANT] == 0);  /* buffer variant 0: fixed */
+			DUK_ASSERT(vals[DUK__IDX_VARIANT] == 0); /* buffer variant 0: fixed */
 			vals[DUK__IDX_HBYTES] = (duk_int_t) (sizeof(duk_hbuffer_fixed) + DUK_HBUFFER_GET_SIZE(h_buf));
 		}
 		break;
 	}
 	}
 
- finish:
+finish:
 	duk__inspect_multiple_uint(thr,
-	    "type" "\x00" "itag" "\x00" "refc" "\x00" "hbytes" "\x00" "class" "\x00"
-	    "pbytes" "\x00" "esize" "\x00" "enext" "\x00" "asize" "\x00" "hsize" "\x00"
-	    "bcbytes" "\x00" "dbytes" "\x00" "tstate" "\x00" "variant" "\x00" "\x00",
-	    (duk_int_t *) &vals);
+	                           "type"
+	                           "\x00"
+	                           "itag"
+	                           "\x00"
+	                           "refc"
+	                           "\x00"
+	                           "hbytes"
+	                           "\x00"
+	                           "class"
+	                           "\x00"
+	                           "pbytes"
+	                           "\x00"
+	                           "esize"
+	                           "\x00"
+	                           "enext"
+	                           "\x00"
+	                           "asize"
+	                           "\x00"
+	                           "hsize"
+	                           "\x00"
+	                           "bcbytes"
+	                           "\x00"
+	                           "dbytes"
+	                           "\x00"
+	                           "tstate"
+	                           "\x00"
+	                           "variant"
+	                           "\x00"
+	                           "\x00",
+	                           (duk_int_t *) &vals);
 }
 
 DUK_EXTERNAL void duk_inspect_callstack_entry(duk_hthread *thr, duk_int_t level) {
