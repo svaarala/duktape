@@ -13,16 +13,16 @@
 #endif
 
 #if defined(DUK_USE_STRTAB_PTRCOMP)
-#define DUK__HEAPPTR_ENC16(heap,ptr)    DUK_USE_HEAPPTR_ENC16((heap)->heap_udata, (ptr))
-#define DUK__HEAPPTR_DEC16(heap,val)    DUK_USE_HEAPPTR_DEC16((heap)->heap_udata, (val))
-#define DUK__GET_STRTABLE(heap)         ((heap)->strtable16)
+#define DUK__HEAPPTR_ENC16(heap, ptr) DUK_USE_HEAPPTR_ENC16((heap)->heap_udata, (ptr))
+#define DUK__HEAPPTR_DEC16(heap, val) DUK_USE_HEAPPTR_DEC16((heap)->heap_udata, (val))
+#define DUK__GET_STRTABLE(heap)       ((heap)->strtable16)
 #else
-#define DUK__HEAPPTR_ENC16(heap,ptr)    (ptr)
-#define DUK__HEAPPTR_DEC16(heap,val)    (val)
-#define DUK__GET_STRTABLE(heap)         ((heap)->strtable)
+#define DUK__HEAPPTR_ENC16(heap, ptr) (ptr)
+#define DUK__HEAPPTR_DEC16(heap, val) (val)
+#define DUK__GET_STRTABLE(heap)       ((heap)->strtable)
 #endif
 
-#define DUK__STRTAB_U32_MAX_STRLEN      10               /* 4'294'967'295 */
+#define DUK__STRTAB_U32_MAX_STRLEN 10 /* 4'294'967'295 */
 
 /*
  *  Debug dump stringtable.
@@ -41,7 +41,7 @@ DUK_INTERNAL void duk_heap_strtable_dump(duk_heap *heap) {
 	duk_size_t count_chain;
 	duk_size_t count_chain_min = DUK_SIZE_MAX;
 	duk_size_t count_chain_max = 0;
-	duk_size_t count_len[8];  /* chain lengths from 0 to 7 */
+	duk_size_t count_len[8]; /* chain lengths from 0 to 7 */
 
 	if (heap == NULL) {
 		DUK_D(DUK_DPRINT("string table, heap=NULL"));
@@ -72,15 +72,21 @@ DUK_INTERNAL void duk_heap_strtable_dump(duk_heap *heap) {
 
 	DUK_D(DUK_DPRINT("string table, strtab=%p, count=%lu, chain min=%lu max=%lu avg=%lf: "
 	                 "counts: %lu %lu %lu %lu %lu %lu %lu %lu ...",
-	                 (void *) heap->strtable, (unsigned long) count_total,
-	                 (unsigned long) count_chain_min, (unsigned long) count_chain_max,
+	                 (void *) heap->strtable,
+	                 (unsigned long) count_total,
+	                 (unsigned long) count_chain_min,
+	                 (unsigned long) count_chain_max,
 	                 (double) count_total / (double) heap->st_size,
-	                 (unsigned long) count_len[0], (unsigned long) count_len[1],
-	                 (unsigned long) count_len[2], (unsigned long) count_len[3],
-	                 (unsigned long) count_len[4], (unsigned long) count_len[5],
-	                 (unsigned long) count_len[6], (unsigned long) count_len[7]));
+	                 (unsigned long) count_len[0],
+	                 (unsigned long) count_len[1],
+	                 (unsigned long) count_len[2],
+	                 (unsigned long) count_len[3],
+	                 (unsigned long) count_len[4],
+	                 (unsigned long) count_len[5],
+	                 (unsigned long) count_len[6],
+	                 (unsigned long) count_len[7]));
 }
-#endif  /* DUK_USE_DEBUG */
+#endif /* DUK_USE_DEBUG */
 
 /*
  *  Assertion helper to ensure strtable is populated correctly.
@@ -121,7 +127,7 @@ DUK_LOCAL void duk__strtable_assert_checks(duk_heap *heap) {
 	DUK_ASSERT(count == (duk_size_t) heap->st_count);
 #endif
 }
-#endif  /* DUK_USE_ASSERTIONS */
+#endif /* DUK_USE_ASSERTIONS */
 
 /*
  *  Allocate and initialize a duk_hstring.
@@ -172,16 +178,16 @@ DUK_LOCAL duk_hstring *duk__strtable_alloc_hstring(duk_heap *heap,
 #endif
 		DUK_HEAPHDR_SET_TYPE_AND_FLAGS(&res->hdr, DUK_HTYPE_STRING, DUK_HSTRING_FLAG_EXTDATA);
 
-		DUK_ASSERT(extdata[blen] == 0);  /* Application responsibility. */
+		DUK_ASSERT(extdata[blen] == 0); /* Application responsibility. */
 		data = extdata;
 		((duk_hstring_external *) res)->extdata = extdata;
 	} else
-#endif  /* DUK_USE_HSTRING_EXTDATA && DUK_USE_EXTSTR_INTERN_CHECK */
+#endif /* DUK_USE_HSTRING_EXTDATA && DUK_USE_EXTSTR_INTERN_CHECK */
 	{
 		duk_uint8_t *data_tmp;
 
 		/* NUL terminate for convenient C access */
-		DUK_ASSERT(sizeof(duk_hstring) + blen + 1 > blen);  /* No wrap, limits ensure. */
+		DUK_ASSERT(sizeof(duk_hstring) + blen + 1 > blen); /* No wrap, limits ensure. */
 		res = (duk_hstring *) DUK_ALLOC(heap, sizeof(duk_hstring) + blen + 1);
 		if (DUK_UNLIKELY(res == NULL)) {
 			goto alloc_error;
@@ -240,7 +246,7 @@ DUK_LOCAL duk_hstring *duk__strtable_alloc_hstring(duk_heap *heap,
 #if defined(DUK_USE_HSTRING_LAZY_CLEN)
 		/* Charlen initialized to 0, updated on-the-fly. */
 #else
-		duk_hstring_init_charlen(res);  /* Also sets ASCII flag. */
+		duk_hstring_init_charlen(res); /* Also sets ASCII flag. */
 #endif
 	}
 
@@ -253,7 +259,7 @@ DUK_LOCAL duk_hstring *duk__strtable_alloc_hstring(duk_heap *heap,
 	DUK_ASSERT(res != NULL);
 	return res;
 
- alloc_error:
+alloc_error:
 	return NULL;
 }
 
@@ -282,13 +288,13 @@ DUK_LOCAL void duk__strtable_grow_inplace(duk_heap *heap) {
 	DUK_ASSERT(heap != NULL);
 	DUK_ASSERT(heap->st_resizing == 1);
 	DUK_ASSERT(heap->st_size >= 2);
-	DUK_ASSERT((heap->st_size & (heap->st_size - 1)) == 0);  /* 2^N */
+	DUK_ASSERT((heap->st_size & (heap->st_size - 1)) == 0); /* 2^N */
 	DUK_ASSERT(DUK__GET_STRTABLE(heap) != NULL);
 
 	DUK_STATS_INC(heap, stats_strtab_resize_grow);
 
 	new_st_size = heap->st_size << 1U;
-	DUK_ASSERT(new_st_size > heap->st_size);  /* No overflow. */
+	DUK_ASSERT(new_st_size > heap->st_size); /* No overflow. */
 
 	/* Reallocate the strtable first and then work in-place to rehash
 	 * strings.  We don't need an indirect allocation here: even if GC
@@ -372,7 +378,7 @@ DUK_LOCAL void duk__strtable_grow_inplace(duk_heap *heap) {
 	duk__strtable_assert_checks(heap);
 #endif
 }
-#endif  /* DUK__STRTAB_RESIZE_CHECK */
+#endif /* DUK__STRTAB_RESIZE_CHECK */
 
 /*
  *  Shrink strtable allocation in-place.
@@ -400,7 +406,7 @@ DUK_LOCAL void duk__strtable_shrink_inplace(duk_heap *heap) {
 	DUK_ASSERT(heap != NULL);
 	DUK_ASSERT(heap->st_resizing == 1);
 	DUK_ASSERT(heap->st_size >= 2);
-	DUK_ASSERT((heap->st_size & (heap->st_size - 1)) == 0);  /* 2^N */
+	DUK_ASSERT((heap->st_size & (heap->st_size - 1)) == 0); /* 2^N */
 	DUK_ASSERT(DUK__GET_STRTABLE(heap) != NULL);
 
 	DUK_STATS_INC(heap, stats_strtab_resize_shrink);
@@ -458,7 +464,7 @@ DUK_LOCAL void duk__strtable_shrink_inplace(duk_heap *heap) {
 	duk__strtable_assert_checks(heap);
 #endif
 }
-#endif  /* DUK__STRTAB_RESIZE_CHECK */
+#endif /* DUK__STRTAB_RESIZE_CHECK */
 
 /*
  *  Grow/shrink check.
@@ -466,7 +472,7 @@ DUK_LOCAL void duk__strtable_shrink_inplace(duk_heap *heap) {
 
 #if defined(DUK__STRTAB_RESIZE_CHECK)
 DUK_LOCAL DUK_COLD DUK_NOINLINE void duk__strtable_resize_check(duk_heap *heap) {
-	duk_uint32_t load_factor;  /* fixed point */
+	duk_uint32_t load_factor; /* fixed point */
 
 	DUK_ASSERT(heap != NULL);
 #if defined(DUK_USE_STRTAB_PTRCOMP)
@@ -490,7 +496,8 @@ DUK_LOCAL DUK_COLD DUK_NOINLINE void duk__strtable_resize_check(duk_heap *heap) 
 	load_factor = heap->st_count / (heap->st_size >> 4U);
 
 	DUK_DD(DUK_DDPRINT("resize check string table: size=%lu, count=%lu, load_factor=%lu (fixed point .4; float %lf)",
-	                   (unsigned long) heap->st_size, (unsigned long) heap->st_count,
+	                   (unsigned long) heap->st_size,
+	                   (unsigned long) heap->st_count,
 	                   (unsigned long) load_factor,
 	                   (double) heap->st_count / (double) heap->st_size));
 
@@ -498,7 +505,9 @@ DUK_LOCAL DUK_COLD DUK_NOINLINE void duk__strtable_resize_check(duk_heap *heap) 
 		if (heap->st_size >= DUK_USE_STRTAB_MAXSIZE) {
 			DUK_DD(DUK_DDPRINT("want to grow strtable (based on load factor) but already maximum size"));
 		} else {
-			DUK_D(DUK_DPRINT("grow string table: %lu -> %lu", (unsigned long) heap->st_size, (unsigned long) heap->st_size * 2));
+			DUK_D(DUK_DPRINT("grow string table: %lu -> %lu",
+			                 (unsigned long) heap->st_size,
+			                 (unsigned long) heap->st_size * 2));
 #if defined(DUK_USE_DEBUG)
 			duk_heap_strtable_dump(heap);
 #endif
@@ -508,7 +517,9 @@ DUK_LOCAL DUK_COLD DUK_NOINLINE void duk__strtable_resize_check(duk_heap *heap) 
 		if (heap->st_size <= DUK_USE_STRTAB_MINSIZE) {
 			DUK_DD(DUK_DDPRINT("want to shrink strtable (based on load factor) but already minimum size"));
 		} else {
-			DUK_D(DUK_DPRINT("shrink string table: %lu -> %lu", (unsigned long) heap->st_size, (unsigned long) heap->st_size / 2));
+			DUK_D(DUK_DPRINT("shrink string table: %lu -> %lu",
+			                 (unsigned long) heap->st_size,
+			                 (unsigned long) heap->st_size / 2));
 #if defined(DUK_USE_DEBUG)
 			duk_heap_strtable_dump(heap);
 #endif
@@ -520,7 +531,7 @@ DUK_LOCAL DUK_COLD DUK_NOINLINE void duk__strtable_resize_check(duk_heap *heap) 
 
 	heap->st_resizing = 0;
 }
-#endif  /* DUK__STRTAB_RESIZE_CHECK */
+#endif /* DUK__STRTAB_RESIZE_CHECK */
 
 /*
  *  Torture grow/shrink: unconditionally grow and shrink back.
@@ -544,7 +555,7 @@ DUK_LOCAL void duk__strtable_resize_torture(duk_heap *heap) {
 	}
 	heap->st_resizing = 0;
 }
-#endif  /* DUK_USE_STRTAB_TORTURE && DUK__STRTAB_RESIZE_CHECK */
+#endif /* DUK_USE_STRTAB_TORTURE && DUK__STRTAB_RESIZE_CHECK */
 
 /*
  *  Raw intern; string already checked not to be present.
@@ -560,8 +571,12 @@ DUK_LOCAL duk_hstring *duk__strtable_do_intern(duk_heap *heap, const duk_uint8_t
 #endif
 
 	DUK_DDD(DUK_DDDPRINT("do_intern: heap=%p, str=%p, blen=%lu, strhash=%lx, st_size=%lu, st_count=%lu, load=%lf",
-	                     (void *) heap, (const void *) str, (unsigned long) blen, (unsigned long) strhash,
-	                     (unsigned long) heap->st_size, (unsigned long) heap->st_count,
+	                     (void *) heap,
+	                     (const void *) str,
+	                     (unsigned long) blen,
+	                     (unsigned long) strhash,
+	                     (unsigned long) heap->st_size,
+	                     (unsigned long) heap->st_count,
 	                     (double) heap->st_count / (double) heap->st_size));
 
 	DUK_ASSERT(heap != NULL);
@@ -577,7 +592,7 @@ DUK_LOCAL duk_hstring *duk__strtable_do_intern(duk_heap *heap, const duk_uint8_t
 	 */
 
 	heap->pf_prevent_count++;
-	DUK_ASSERT(heap->pf_prevent_count != 0);  /* Wrap. */
+	DUK_ASSERT(heap->pf_prevent_count != 0); /* Wrap. */
 
 #if defined(DUK_USE_STRTAB_TORTURE) && defined(DUK__STRTAB_RESIZE_CHECK)
 	duk__strtable_resize_torture(heap);
@@ -604,7 +619,8 @@ DUK_LOCAL duk_hstring *duk__strtable_do_intern(duk_heap *heap, const duk_uint8_t
 	/* External string check (low memory optimization). */
 
 #if defined(DUK_USE_HSTRING_EXTDATA) && defined(DUK_USE_EXTSTR_INTERN_CHECK)
-	extdata = (const duk_uint8_t *) DUK_USE_EXTSTR_INTERN_CHECK(heap->heap_udata, (void *) DUK_LOSE_CONST(str), (duk_size_t) blen);
+	extdata =
+	    (const duk_uint8_t *) DUK_USE_EXTSTR_INTERN_CHECK(heap->heap_udata, (void *) DUK_LOSE_CONST(str), (duk_size_t) blen);
 #else
 	extdata = (const duk_uint8_t *) NULL;
 #endif
@@ -642,7 +658,7 @@ DUK_LOCAL duk_hstring *duk__strtable_do_intern(duk_heap *heap, const duk_uint8_t
 #else
 	slot = heap->strtable + (strhash & heap->st_mask);
 #endif
-	DUK_ASSERT(res->hdr.h_next == NULL);  /* This is the case now, but unnecessary zeroing/NULLing. */
+	DUK_ASSERT(res->hdr.h_next == NULL); /* This is the case now, but unnecessary zeroing/NULLing. */
 	res->hdr.h_next = DUK__HEAPPTR_DEC16(heap, *slot);
 	*slot = DUK__HEAPPTR_ENC16(heap, res);
 
@@ -689,11 +705,12 @@ DUK_LOCAL duk_hstring *duk__strtab_romstring_lookup(duk_heap *heap, const duk_ui
 	curr = (duk_hstring *) DUK_LOSE_CONST(duk_rom_strings_lookup[lookup_hash]);
 	while (curr != NULL) {
 		/* Unsafe memcmp() because for zero blen, str may be NULL. */
-		if (strhash == DUK_HSTRING_GET_HASH(curr) &&
-		    blen == DUK_HSTRING_GET_BYTELEN(curr) &&
+		if (strhash == DUK_HSTRING_GET_HASH(curr) && blen == DUK_HSTRING_GET_BYTELEN(curr) &&
 		    duk_memcmp_unsafe((const void *) str, (const void *) DUK_HSTRING_GET_DATA(curr), blen) == 0) {
 			DUK_DDD(DUK_DDDPRINT("intern check: rom string: %!O, computed hash 0x%08lx, rom hash 0x%08lx",
-			                     curr, (unsigned long) strhash, (unsigned long) DUK_HSTRING_GET_HASH(curr)));
+			                     curr,
+			                     (unsigned long) strhash,
+			                     (unsigned long) DUK_HSTRING_GET_HASH(curr)));
 			return curr;
 		}
 		curr = curr->hdr.h_next;
@@ -701,7 +718,7 @@ DUK_LOCAL duk_hstring *duk__strtab_romstring_lookup(duk_heap *heap, const duk_ui
 
 	return NULL;
 }
-#endif  /* DUK_USE_ROM_STRINGS */
+#endif /* DUK_USE_ROM_STRINGS */
 
 DUK_INTERNAL duk_hstring *duk_heap_strtable_intern(duk_heap *heap, const duk_uint8_t *str, duk_uint32_t blen) {
 	duk_uint32_t strhash;
@@ -714,7 +731,7 @@ DUK_INTERNAL duk_hstring *duk_heap_strtable_intern(duk_heap *heap, const duk_uin
 	/* XXX: maybe just require 'str != NULL' even for zero size? */
 	DUK_ASSERT(heap != NULL);
 	DUK_ASSERT(blen == 0 || str != NULL);
-	DUK_ASSERT(blen <= DUK_HSTRING_MAX_BYTELEN);  /* Caller is responsible for ensuring this. */
+	DUK_ASSERT(blen <= DUK_HSTRING_MAX_BYTELEN); /* Caller is responsible for ensuring this. */
 	strhash = duk_heap_hashstring(heap, str, (duk_size_t) blen);
 
 	/* String table lookup. */
@@ -728,8 +745,7 @@ DUK_INTERNAL duk_hstring *duk_heap_strtable_intern(duk_heap *heap, const duk_uin
 	h = heap->strtable[strhash & heap->st_mask];
 #endif
 	while (h != NULL) {
-		if (DUK_HSTRING_GET_HASH(h) == strhash &&
-		    DUK_HSTRING_GET_BYTELEN(h) == blen &&
+		if (DUK_HSTRING_GET_HASH(h) == strhash && DUK_HSTRING_GET_BYTELEN(h) == blen &&
 		    duk_memcmp_unsafe((const void *) str, (const void *) DUK_HSTRING_GET_DATA(h), (size_t) blen) == 0) {
 			/* Found existing entry. */
 			DUK_STATS_INC(heap, stats_strtab_intern_hit);
@@ -755,7 +771,7 @@ DUK_INTERNAL duk_hstring *duk_heap_strtable_intern(duk_heap *heap, const duk_uin
 
 	DUK_STATS_INC(heap, stats_strtab_intern_miss);
 	h = duk__strtable_do_intern(heap, str, blen, strhash);
-	return h;  /* may be NULL */
+	return h; /* may be NULL */
 }
 
 /*
@@ -778,7 +794,7 @@ DUK_INTERNAL duk_hstring *duk_heap_strtable_intern_u32(duk_heap *heap, duk_uint3
 		p--;
 		*p = duk_lc_digits[val % 10];
 		val = val / 10;
-	} while (val != 0);  /* For val == 0, emit exactly one '0'. */
+	} while (val != 0); /* For val == 0, emit exactly one '0'. */
 	DUK_ASSERT(p >= buf);
 
 	return duk_heap_strtable_intern(heap, (const duk_uint8_t *) p, (duk_uint32_t) ((buf + sizeof(buf)) - p));
@@ -816,7 +832,7 @@ DUK_LOCAL duk_uint_t duk__strtable_litcache_key(const duk_uint8_t *str, duk_uint
 	DUK_ASSERT(DUK_IS_POWER_OF_TWO((duk_uint_t) DUK_USE_LITCACHE_SIZE));
 
 	key = (duk_uintptr_t) blen ^ (duk_uintptr_t) str;
-	key &= (duk_uintptr_t) (DUK_USE_LITCACHE_SIZE - 1);  /* Assumes size is power of 2. */
+	key &= (duk_uintptr_t) (DUK_USE_LITCACHE_SIZE - 1); /* Assumes size is power of 2. */
 	/* Due to masking, cast is in 32-bit range. */
 	DUK_ASSERT(key <= DUK_UINT_MAX);
 	return (duk_uint_t) key;
@@ -832,7 +848,9 @@ DUK_INTERNAL duk_hstring *duk_heap_strtable_intern_literal_checked(duk_hthread *
 	ent = thr->heap->litcache + key;
 	if (ent->addr == str) {
 		DUK_DD(DUK_DDPRINT("intern check for cached, pinned literal: str=%p, blen=%ld -> duk_hstring %!O",
-		                   (const void *) str, (long) blen, (duk_heaphdr *) ent->h));
+		                   (const void *) str,
+		                   (long) blen,
+		                   (duk_heaphdr *) ent->h));
 		DUK_ASSERT(ent->h != NULL);
 		DUK_ASSERT(DUK_HSTRING_HAS_PINNED_LITERAL(ent->h));
 		DUK_STATS_INC(thr->heap, stats_strtab_litcache_hit);
@@ -862,7 +880,7 @@ DUK_INTERNAL duk_hstring *duk_heap_strtable_intern_literal_checked(duk_hthread *
 
 	return h;
 }
-#endif  /* DUK_USE_LITCACHE_SIZE */
+#endif /* DUK_USE_LITCACHE_SIZE */
 
 DUK_INTERNAL duk_hstring *duk_heap_strtable_intern_u32_checked(duk_hthread *thr, duk_uint32_t val) {
 	duk_hstring *res;
@@ -897,7 +915,8 @@ DUK_INTERNAL void duk_heap_strtable_unlink(duk_heap *heap, duk_hstring *h) {
 	duk_hstring *prev;
 
 	DUK_DDD(DUK_DDDPRINT("remove: heap=%p, h=%p, blen=%lu, strhash=%lx",
-	                     (void *) heap, (void *) h,
+	                     (void *) heap,
+	                     (void *) h,
 	                     (unsigned long) (h != NULL ? DUK_HSTRING_GET_BYTELEN(h) : 0),
 	                     (unsigned long) (h != NULL ? DUK_HSTRING_GET_HASH(h) : 0)));
 
@@ -915,13 +934,13 @@ DUK_INTERNAL void duk_heap_strtable_unlink(duk_heap *heap, duk_hstring *h) {
 	slot = heap->strtable + (DUK_HSTRING_GET_HASH(h) & heap->st_mask);
 #endif
 	other = DUK__HEAPPTR_DEC16(heap, *slot);
-	DUK_ASSERT(other != NULL);  /* At least argument string is in the chain. */
+	DUK_ASSERT(other != NULL); /* At least argument string is in the chain. */
 
 	prev = NULL;
 	while (other != h) {
 		prev = other;
 		other = other->hdr.h_next;
-		DUK_ASSERT(other != NULL);  /* We'll eventually find 'h'. */
+		DUK_ASSERT(other != NULL); /* We'll eventually find 'h'. */
 	}
 	if (prev != NULL) {
 		/* Middle of list. */
@@ -935,7 +954,7 @@ DUK_INTERNAL void duk_heap_strtable_unlink(duk_heap *heap, duk_hstring *h) {
 	 * intern will do one.
 	 */
 }
-#endif  /* DUK_USE_REFERENCE_COUNTING */
+#endif /* DUK_USE_REFERENCE_COUNTING */
 
 /* Unlink with a 'prev' pointer. */
 DUK_INTERNAL void duk_heap_strtable_unlink_prev(duk_heap *heap, duk_hstring *h, duk_hstring *prev) {
@@ -946,7 +965,9 @@ DUK_INTERNAL void duk_heap_strtable_unlink_prev(duk_heap *heap, duk_hstring *h, 
 #endif
 
 	DUK_DDD(DUK_DDDPRINT("remove: heap=%p, prev=%p, h=%p, blen=%lu, strhash=%lx",
-	                     (void *) heap, (void *) prev, (void *) h,
+	                     (void *) heap,
+	                     (void *) prev,
+	                     (void *) h,
 	                     (unsigned long) (h != NULL ? DUK_HSTRING_GET_BYTELEN(h) : 0),
 	                     (unsigned long) (h != NULL ? DUK_HSTRING_GET_HASH(h) : 0)));
 

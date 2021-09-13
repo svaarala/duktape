@@ -12,9 +12,14 @@
 
 #if defined(DUK_USE_ASSERTIONS)
 DUK_INTERNAL_DECL void duk_hboundfunc_assert_valid(duk_hboundfunc *h);
-#define DUK_HBOUNDFUNC_ASSERT_VALID(h)  do { duk_hboundfunc_assert_valid((h)); } while (0)
+#define DUK_HBOUNDFUNC_ASSERT_VALID(h) \
+	do { \
+		duk_hboundfunc_assert_valid((h)); \
+	} while (0)
 #else
-#define DUK_HBOUNDFUNC_ASSERT_VALID(h)  do {} while (0)
+#define DUK_HBOUNDFUNC_ASSERT_VALID(h) \
+	do { \
+	} while (0)
 #endif
 
 struct duk_hboundfunc {
@@ -30,8 +35,8 @@ struct duk_hboundfunc {
 	duk_tval this_binding;
 
 	/* Arguments to prepend. */
-	duk_tval *args;  /* Separate allocation. */
+	duk_tval *args; /* Separate allocation. */
 	duk_idx_t nargs;
 };
 
-#endif  /* DUK_HBOUNDFUNC_H_INCLUDED */
+#endif /* DUK_HBOUNDFUNC_H_INCLUDED */

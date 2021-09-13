@@ -21,7 +21,7 @@ DUK_LOCAL void duk__init_object_parts(duk_heap *heap, duk_uint_t hobject_flags, 
 	/* Zeroed by caller. */
 
 	obj->hdr.h_flags = hobject_flags | DUK_HTYPE_OBJECT;
-	DUK_ASSERT(DUK_HEAPHDR_GET_TYPE(&obj->hdr) == DUK_HTYPE_OBJECT);  /* Assume zero shift. */
+	DUK_ASSERT(DUK_HEAPHDR_GET_TYPE(&obj->hdr) == DUK_HTYPE_OBJECT); /* Assume zero shift. */
 
 #if defined(DUK_USE_EXPLICIT_NULL_INIT)
 	DUK_HOBJECT_SET_PROTOTYPE(heap, obj, NULL);
@@ -157,7 +157,7 @@ DUK_INTERNAL duk_hbufobj *duk_hbufobj_alloc(duk_hthread *thr, duk_uint_t hobject
 	DUK_HBUFOBJ_ASSERT_VALID(res);
 	return res;
 }
-#endif  /* DUK_USE_BUFFEROBJECT_SUPPORT */
+#endif /* DUK_USE_BUFFEROBJECT_SUPPORT */
 
 /* Allocate a new thread.
  *

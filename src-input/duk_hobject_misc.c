@@ -4,7 +4,10 @@
 
 #include "duk_internal.h"
 
-DUK_INTERNAL duk_bool_t duk_hobject_prototype_chain_contains(duk_hthread *thr, duk_hobject *h, duk_hobject *p, duk_bool_t ignore_loop) {
+DUK_INTERNAL duk_bool_t duk_hobject_prototype_chain_contains(duk_hthread *thr,
+                                                             duk_hobject *h,
+                                                             duk_hobject *p,
+                                                             duk_bool_t ignore_loop) {
 	duk_uint_t sanity;
 
 	DUK_ASSERT(thr != NULL);
@@ -43,7 +46,7 @@ DUK_INTERNAL void duk_hobject_set_prototype_updref(duk_hthread *thr, duk_hobject
 	DUK_ASSERT(h);
 	tmp = DUK_HOBJECT_GET_PROTOTYPE(thr->heap, h);
 	DUK_HOBJECT_SET_PROTOTYPE(thr->heap, h, p);
-	DUK_HOBJECT_INCREF_ALLOWNULL(thr, p);  /* avoid problems if p == h->prototype */
+	DUK_HOBJECT_INCREF_ALLOWNULL(thr, p); /* avoid problems if p == h->prototype */
 	DUK_HOBJECT_DECREF_ALLOWNULL(thr, tmp);
 #else
 	DUK_ASSERT(h);

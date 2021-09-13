@@ -24,14 +24,14 @@ DUK_LOCAL duk_ret_t duk__fake_global_finalizer(duk_hthread *thr) {
 
 	/* Inner function call, error throw. */
 	duk_eval_string_noresult(thr,
-		"(function dummy() {\n"
-		"    dummy.prototype = null;  /* break reference loop */\n"
-		"    try {\n"
-		"        throw 'fake-finalizer-dummy-error';\n"
-		"    } catch (e) {\n"
-		"        void e;\n"
-		"    }\n"
-		"})()");
+	                         "(function dummy() {\n"
+	                         "    dummy.prototype = null;  /* break reference loop */\n"
+	                         "    try {\n"
+	                         "        throw 'fake-finalizer-dummy-error';\n"
+	                         "    } catch (e) {\n"
+	                         "        void e;\n"
+	                         "    }\n"
+	                         "})()");
 
 	/* The above creates garbage (e.g. a function instance).  Because
 	 * the function/prototype reference loop is broken, it gets collected
@@ -63,7 +63,7 @@ DUK_LOCAL void duk__run_global_torture_finalizer(duk_hthread *thr) {
 	(void) duk_pcall(thr, 0 /*nargs*/);
 	duk_pop(thr);
 }
-#endif  /* DUK_USE_FINALIZER_TORTURE */
+#endif /* DUK_USE_FINALIZER_TORTURE */
 
 /*
  *  Process the finalize_list to completion.
@@ -175,12 +175,13 @@ DUK_INTERNAL void duk_heap_process_finalize_list(duk_heap *heap) {
 
 		DUK_DD(DUK_DDPRINT("processing finalize_list entry: %p -> %!iO", (void *) curr, curr));
 
-		DUK_ASSERT(DUK_HEAPHDR_GET_TYPE(curr) == DUK_HTYPE_OBJECT);  /* Only objects have finalizers. */
+		DUK_ASSERT(DUK_HEAPHDR_GET_TYPE(curr) == DUK_HTYPE_OBJECT); /* Only objects have finalizers. */
 		DUK_ASSERT(!DUK_HEAPHDR_HAS_REACHABLE(curr));
 		DUK_ASSERT(!DUK_HEAPHDR_HAS_TEMPROOT(curr));
-		DUK_ASSERT(DUK_HEAPHDR_HAS_FINALIZABLE(curr));  /* All objects on finalize_list will have this flag (except object being finalized right now). */
-		DUK_ASSERT(!DUK_HEAPHDR_HAS_FINALIZED(curr));   /* Queueing code ensures. */
-		DUK_ASSERT(!DUK_HEAPHDR_HAS_READONLY(curr));  /* ROM objects never get freed (or finalized). */
+		DUK_ASSERT(DUK_HEAPHDR_HAS_FINALIZABLE(
+		    curr)); /* All objects on finalize_list will have this flag (except object being finalized right now). */
+		DUK_ASSERT(!DUK_HEAPHDR_HAS_FINALIZED(curr)); /* Queueing code ensures. */
+		DUK_ASSERT(!DUK_HEAPHDR_HAS_READONLY(curr)); /* ROM objects never get freed (or finalized). */
 
 #if defined(DUK_USE_ASSERTIONS)
 		DUK_ASSERT(heap->currently_finalizing == NULL);
@@ -208,11 +209,11 @@ DUK_INTERNAL void duk_heap_process_finalize_list(duk_heap *heap) {
 			 */
 #if defined(DUK_USE_REFERENCE_COUNTING)
 			DUK_ASSERT(DUK_HEAPHDR_GET_REFCOUNT(curr) >= 1);
-			had_zero_refcount = (DUK_HEAPHDR_GET_REFCOUNT(curr) == 1);  /* Preincremented on finalize_list insert. */
+			had_zero_refcount = (DUK_HEAPHDR_GET_REFCOUNT(curr) == 1); /* Preincremented on finalize_list insert. */
 #endif
 
 			DUK_ASSERT(!DUK_HEAPHDR_HAS_FINALIZED(curr));
-			duk_heap_run_finalizer(heap, (duk_hobject *) curr);  /* must never longjmp */
+			duk_heap_run_finalizer(heap, (duk_hobject *) curr); /* must never longjmp */
 			DUK_ASSERT(DUK_HEAPHDR_HAS_FINALIZED(curr));
 			/* XXX: assert that object is still in finalize_list
 			 * when duk_push_heapptr() allows automatic rescue.
@@ -220,12 +221,14 @@ DUK_INTERNAL void duk_heap_process_finalize_list(duk_heap *heap) {
 
 #if defined(DUK_USE_REFERENCE_COUNTING)
 			DUK_DD(DUK_DDPRINT("refcount after finalizer (includes bump): %ld", (long) DUK_HEAPHDR_GET_REFCOUNT(curr)));
-			if (DUK_HEAPHDR_GET_REFCOUNT(curr) == 1) {  /* Only artificial bump in refcount? */
+			if (DUK_HEAPHDR_GET_REFCOUNT(curr) == 1) { /* Only artificial bump in refcount? */
 #if defined(DUK_USE_DEBUG)
 				if (had_zero_refcount) {
-					DUK_DD(DUK_DDPRINT("finalized object's refcount is zero -> free immediately (refcount queued)"));
+					DUK_DD(DUK_DDPRINT(
+					    "finalized object's refcount is zero -> free immediately (refcount queued)"));
 				} else {
-					DUK_DD(DUK_DDPRINT("finalized object's refcount is zero -> free immediately (mark-and-sweep queued)"));
+					DUK_DD(DUK_DDPRINT(
+					    "finalized object's refcount is zero -> free immediately (mark-and-sweep queued)"));
 				}
 #endif
 				queue_back = 0;
@@ -275,21 +278,21 @@ DUK_INTERNAL void duk_heap_process_finalize_list(duk_heap *heap) {
 			 * decision.
 			 */
 			DUK_ASSERT(DUK_HEAPHDR_GET_REFCOUNT(curr) >= 1);
-			DUK_HEAPHDR_PREDEC_REFCOUNT(curr);  /* Remove artificial refcount bump. */
+			DUK_HEAPHDR_PREDEC_REFCOUNT(curr); /* Remove artificial refcount bump. */
 			DUK_HEAPHDR_CLEAR_FINALIZABLE(curr);
 			DUK_HEAP_INSERT_INTO_HEAP_ALLOCATED(heap, curr);
 		} else {
 			/* No need to remove the refcount bump here. */
-			DUK_ASSERT(DUK_HEAPHDR_GET_TYPE(curr) == DUK_HTYPE_OBJECT);  /* currently, always the case */
+			DUK_ASSERT(DUK_HEAPHDR_GET_TYPE(curr) == DUK_HTYPE_OBJECT); /* currently, always the case */
 			DUK_DD(DUK_DDPRINT("refcount finalize after finalizer call: %!O", curr));
 			duk_hobject_refcount_finalize_norz(heap, (duk_hobject *) curr);
 			duk_free_hobject(heap, (duk_hobject *) curr);
 			DUK_DD(DUK_DDPRINT("freed hobject after finalization: %p", (void *) curr));
 		}
-#else  /* DUK_USE_REFERENCE_COUNTING */
+#else /* DUK_USE_REFERENCE_COUNTING */
 		DUK_HEAPHDR_CLEAR_FINALIZABLE(curr);
 		DUK_HEAP_INSERT_INTO_HEAP_ALLOCATED(heap, curr);
-#endif  /* DUK_USE_REFERENCE_COUNTING */
+#endif /* DUK_USE_REFERENCE_COUNTING */
 
 #if defined(DUK_USE_DEBUG)
 		count++;
@@ -355,11 +358,11 @@ DUK_LOCAL duk_ret_t duk__finalize_helper(duk_hthread *thr, void *udata) {
 	 * caller must ensure that this function is not called if the target is
 	 * a Proxy.
 	 */
-	duk_get_prop_stridx_short(thr, -1, DUK_STRIDX_INT_FINALIZER);  /* -> [... obj finalizer] */
+	duk_get_prop_stridx_short(thr, -1, DUK_STRIDX_INT_FINALIZER); /* -> [... obj finalizer] */
 	duk_dup_m2(thr);
 	duk_push_boolean(thr, DUK_HEAP_HAS_FINALIZER_NORESCUE(thr->heap));
 	DUK_DDD(DUK_DDDPRINT("calling finalizer"));
-	duk_call(thr, 2);  /* [ ... obj finalizer obj heapDestruct ]  -> [ ... obj retval ] */
+	duk_call(thr, 2); /* [ ... obj finalizer obj heapDestruct ]  -> [ ... obj retval ] */
 	DUK_DDD(DUK_DDDPRINT("finalizer returned successfully"));
 	return 0;
 
@@ -408,7 +411,7 @@ DUK_INTERNAL void duk_heap_run_finalizer(duk_heap *heap, duk_hobject *obj) {
 		return;
 	}
 #endif
-	DUK_HEAPHDR_SET_FINALIZED((duk_heaphdr *) obj);  /* ensure never re-entered until rescue cycle complete */
+	DUK_HEAPHDR_SET_FINALIZED((duk_heaphdr *) obj); /* ensure never re-entered until rescue cycle complete */
 
 #if defined(DUK_USE_ES6_PROXY)
 	if (DUK_HOBJECT_IS_PROXY(obj)) {
@@ -420,26 +423,27 @@ DUK_INTERNAL void duk_heap_run_finalizer(duk_heap *heap, duk_hobject *obj) {
 		DUK_D(DUK_DPRINT("object is a Proxy, skip finalizer call"));
 		return;
 	}
-#endif  /* DUK_USE_ES6_PROXY */
+#endif /* DUK_USE_ES6_PROXY */
 
-	duk_push_hobject(thr, obj);  /* this also increases refcount by one */
-	rc = duk_safe_call(thr, duk__finalize_helper, NULL /*udata*/, 0 /*nargs*/, 1 /*nrets*/);  /* -> [... obj retval/error] */
-	DUK_ASSERT_TOP(thr, entry_top + 2);  /* duk_safe_call discipline */
+	duk_push_hobject(thr, obj); /* this also increases refcount by one */
+	rc = duk_safe_call(thr, duk__finalize_helper, NULL /*udata*/, 0 /*nargs*/, 1 /*nrets*/); /* -> [... obj retval/error] */
+	DUK_ASSERT_TOP(thr, entry_top + 2); /* duk_safe_call discipline */
 
 	if (rc != DUK_EXEC_SUCCESS) {
 		/* Note: we ask for one return value from duk_safe_call to get this
 		 * error debugging here.
 		 */
 		DUK_D(DUK_DPRINT("wrapped finalizer call failed for object %p (ignored); error: %!T",
-		                 (void *) obj, (duk_tval *) duk_get_tval(thr, -1)));
+		                 (void *) obj,
+		                 (duk_tval *) duk_get_tval(thr, -1)));
 	}
-	duk_pop_2(thr);  /* -> [...] */
+	duk_pop_2(thr); /* -> [...] */
 
 	DUK_ASSERT_TOP(thr, entry_top);
 }
 
-#else  /* DUK_USE_FINALIZER_SUPPORT */
+#else /* DUK_USE_FINALIZER_SUPPORT */
 
 /* nothing */
 
-#endif  /* DUK_USE_FINALIZER_SUPPORT */
+#endif /* DUK_USE_FINALIZER_SUPPORT */
