@@ -5,9 +5,9 @@
 #include "duk_internal.h"
 
 /* Outcome for existence check. */
-#define DUK__HASOWN_NOTFOUND             0  /* not found, continue to parent */
-#define DUK__HASOWN_FOUND                1  /* found, stop walk */
-#define DUK__HASOWN_DONE_NOTFOUND        2  /* not found, stop walk */
+#define DUK__HASOWN_NOTFOUND      0 /* not found, continue to parent */
+#define DUK__HASOWN_FOUND         1 /* found, stop walk */
+#define DUK__HASOWN_DONE_NOTFOUND 2 /* not found, stop walk */
 
 DUK_LOCAL_DECL duk_bool_t duk__prop_has_obj_strkey_unsafe(duk_hthread *thr, duk_hobject *obj, duk_hstring *key);
 DUK_LOCAL_DECL duk_bool_t duk__prop_has_obj_strkey_safe(duk_hthread *thr, duk_hobject *obj, duk_hstring *key);
@@ -78,12 +78,11 @@ DUK_LOCAL duk_small_int_t duk__prop_hasown_idxkey_typedarray(duk_hthread *thr, d
 
 	return DUK__HASOWN_DONE_NOTFOUND;
 
- fail_detached:
+fail_detached:
 	/* Unconditional TypeError even for checking index existence. */
 	DUK_ERROR_TYPE_BUFFER_DETACHED(thr);
 	DUK_WO_NORETURN(return 0;);
 }
-
 
 DUK_LOCAL duk_small_int_t duk__prop_hasown_strkey(duk_hthread *thr, duk_hobject *obj, duk_hstring *key) {
 	duk_small_uint_t htype;
@@ -175,7 +174,7 @@ DUK_LOCAL duk_small_int_t duk__prop_hasown_idxkey(duk_hthread *thr, duk_hobject 
 					return DUK__HASOWN_NOTFOUND;
 				}
 			}
-			return DUK__HASOWN_NOTFOUND;  /* Comprehensiveness. */
+			return DUK__HASOWN_NOTFOUND; /* Comprehensiveness. */
 		}
 		break;
 	case DUK_HTYPE_ARGUMENTS:
@@ -219,11 +218,11 @@ DUK_LOCAL duk_bool_t duk__prop_has_proxy_tail(duk_hthread *thr) {
 
 	/* [ ... trap handler target key ] */
 	duk_dup_top(thr);
-	duk_insert(thr, -5);  /* [ ... key trap handler target key ] */
+	duk_insert(thr, -5); /* [ ... key trap handler target key ] */
 	duk_dup_m2(thr);
-	duk_insert(thr, -6);  /* [ ... target key trap handler target key ] */
+	duk_insert(thr, -6); /* [ ... target key trap handler target key ] */
 
-	duk_call_method(thr, 2);  /* [ ... target key trap handler target key ] -> [ ... target key result ] */
+	duk_call_method(thr, 2); /* [ ... target key trap handler target key ] -> [ ... target key result ] */
 	rc = duk_to_boolean(thr, -1);
 
 	if (!rc) {
@@ -247,12 +246,17 @@ DUK_LOCAL duk_bool_t duk__prop_has_proxy_tail(duk_hthread *thr) {
 	DUK_ASSERT(rc == DUK__HASOWN_NOTFOUND || rc == DUK__HASOWN_FOUND);
 	return rc;
 
- invalid_result:
+invalid_result:
 	DUK_ERROR_TYPE(thr, DUK_STR_INVALID_TRAP_RESULT);
 	DUK_WO_NORETURN(return 0;);
 }
 
-DUK_LOCAL DUK_ALWAYS_INLINE duk_bool_t duk__prop_has_obj_stroridx_helper(duk_hthread *thr, duk_hobject *obj, duk_hstring *key, duk_uarridx_t idx, duk_bool_t use_key, duk_bool_t side_effect_safe) {
+DUK_LOCAL DUK_ALWAYS_INLINE duk_bool_t duk__prop_has_obj_stroridx_helper(duk_hthread *thr,
+                                                                         duk_hobject *obj,
+                                                                         duk_hstring *key,
+                                                                         duk_uarridx_t idx,
+                                                                         duk_bool_t use_key,
+                                                                         duk_bool_t side_effect_safe) {
 	duk_small_int_t rc;
 	duk_small_uint_t sanity;
 
@@ -281,7 +285,7 @@ DUK_LOCAL DUK_ALWAYS_INLINE duk_bool_t duk__prop_has_obj_stroridx_helper(duk_hth
 		if (rc >= 1) {
 			DUK_ASSERT(DUK__HASOWN_DONE_NOTFOUND == 2);
 			DUK_ASSERT((DUK__HASOWN_DONE_NOTFOUND & 0x01) == 0);
-			rc &= 0x01U;  /* convert 'done, not found' (= 2) to 0 (not found) */
+			rc &= 0x01U; /* convert 'done, not found' (= 2) to 0 (not found) */
 			goto done;
 		}
 
@@ -318,7 +322,7 @@ DUK_LOCAL DUK_ALWAYS_INLINE duk_bool_t duk__prop_has_obj_stroridx_helper(duk_hth
 			goto done;
 		}
 
-	 go_next:
+	go_next:
 		DUK_ASSERT(next != NULL);
 		if (side_effect_safe) {
 			obj = duk_prop_switch_stabilized_target_top(thr, obj, next);
@@ -330,14 +334,14 @@ DUK_LOCAL DUK_ALWAYS_INLINE duk_bool_t duk__prop_has_obj_stroridx_helper(duk_hth
 	DUK_ERROR_RANGE_PROTO_SANITY(thr);
 	DUK_WO_NORETURN(return 0;);
 
- done:
+done:
 	if (side_effect_safe) {
 		duk_pop_unsafe(thr);
 	}
 
 	return rc;
 
- switch_to_safe:
+switch_to_safe:
 	if (use_key) {
 		return duk__prop_has_obj_strkey_safe(thr, obj, key);
 	} else {
@@ -554,9 +558,9 @@ DUK_INTERNAL duk_bool_t duk_prop_has(duk_hthread *thr, duk_tval *tv_obj, duk_tva
 	duk_pop_2_unsafe(thr);
 	return rc;
 
- use_idx:
+use_idx:
 	return duk__prop_has_idxkey(thr, tv_obj, idx);
 
- use_str:
+use_str:
 	return duk__prop_has_strkey(thr, tv_obj, key);
 }

@@ -13,45 +13,87 @@
 
 #include "duk_internal.h"
 
-DUK_LOCAL_DECL duk_bool_t duk__prop_delete_obj_strkey_ordinary(duk_hthread *thr, duk_hobject *obj, duk_hstring *key, duk_small_uint_t delprop_flags);
-DUK_LOCAL_DECL duk_bool_t duk__prop_delete_obj_idxkey_ordinary(duk_hthread *thr, duk_hobject *obj, duk_uarridx_t idx, duk_small_uint_t delprop_flags);
+DUK_LOCAL_DECL duk_bool_t duk__prop_delete_obj_strkey_ordinary(duk_hthread *thr,
+                                                               duk_hobject *obj,
+                                                               duk_hstring *key,
+                                                               duk_small_uint_t delprop_flags);
+DUK_LOCAL_DECL duk_bool_t duk__prop_delete_obj_idxkey_ordinary(duk_hthread *thr,
+                                                               duk_hobject *obj,
+                                                               duk_uarridx_t idx,
+                                                               duk_small_uint_t delprop_flags);
 
-DUK_LOCAL_DECL duk_bool_t duk__prop_delete_obj_strkey_unsafe(duk_hthread *thr, duk_hobject *obj, duk_hstring *key, duk_small_uint_t delprop_flags);
-DUK_LOCAL_DECL duk_bool_t duk__prop_delete_obj_strkey_safe(duk_hthread *thr, duk_hobject *obj, duk_hstring *key, duk_small_uint_t delprop_flags);
-DUK_LOCAL_DECL duk_bool_t duk__prop_delete_obj_idxkey_unsafe(duk_hthread *thr, duk_hobject *obj, duk_uarridx_t idx, duk_small_uint_t delprop_flags);
-DUK_LOCAL_DECL duk_bool_t duk__prop_delete_obj_idxkey_safe(duk_hthread *thr, duk_hobject *obj, duk_uarridx_t idx, duk_small_uint_t delprop_flags);
+DUK_LOCAL_DECL duk_bool_t duk__prop_delete_obj_strkey_unsafe(duk_hthread *thr,
+                                                             duk_hobject *obj,
+                                                             duk_hstring *key,
+                                                             duk_small_uint_t delprop_flags);
+DUK_LOCAL_DECL duk_bool_t duk__prop_delete_obj_strkey_safe(duk_hthread *thr,
+                                                           duk_hobject *obj,
+                                                           duk_hstring *key,
+                                                           duk_small_uint_t delprop_flags);
+DUK_LOCAL_DECL duk_bool_t duk__prop_delete_obj_idxkey_unsafe(duk_hthread *thr,
+                                                             duk_hobject *obj,
+                                                             duk_uarridx_t idx,
+                                                             duk_small_uint_t delprop_flags);
+DUK_LOCAL_DECL duk_bool_t duk__prop_delete_obj_idxkey_safe(duk_hthread *thr,
+                                                           duk_hobject *obj,
+                                                           duk_uarridx_t idx,
+                                                           duk_small_uint_t delprop_flags);
 
 #if defined(DUK_USE_PARANOID_ERRORS)
-DUK_LOCAL duk_bool_t duk__prop_delete_error_shared_obj(duk_hthread *thr, duk_hobject *obj, duk_hstring *key, duk_small_uint_t delprop_flags) {
+DUK_LOCAL duk_bool_t duk__prop_delete_error_shared_obj(duk_hthread *thr,
+                                                       duk_hobject *obj,
+                                                       duk_hstring *key,
+                                                       duk_small_uint_t delprop_flags) {
 	if (delprop_flags & DUK_DELPROP_FLAG_THROW) {
 		DUK_TYPE_ERROR(thr, "cannot delete property of object");
 	}
 	return 0;
 }
-DUK_LOCAL duk_bool_t duk__prop_delete_error_shared_objidx(duk_hthread *thr, duk_idx_t idx_obj, duk_hstring *key, duk_small_uint_t delprop_flags) {
+DUK_LOCAL duk_bool_t duk__prop_delete_error_shared_objidx(duk_hthread *thr,
+                                                          duk_idx_t idx_obj,
+                                                          duk_hstring *key,
+                                                          duk_small_uint_t delprop_flags) {
 	if (delprop_flags & DUK_DELPROP_FLAG_THROW) {
 		const char *str1 = duk_get_type_name(thr, idx_obj);
 		DUK_ERROR_FMT1(thr, DUK_ERR_TYPE_ERROR, "cannot delete property of %s", str1);
 	}
 	return 0;
 }
-DUK_LOCAL DUK_COLD duk_bool_t duk__prop_delete_error_obj_strkey(duk_hthread *thr, duk_hobject *obj, duk_hstring *key, duk_small_uint_t delprop_flags) {
+DUK_LOCAL DUK_COLD duk_bool_t duk__prop_delete_error_obj_strkey(duk_hthread *thr,
+                                                                duk_hobject *obj,
+                                                                duk_hstring *key,
+                                                                duk_small_uint_t delprop_flags) {
 	return duk__prop_delete_error_shared_obj(thr, obj, key, delprop_flags);
 }
-DUK_LOCAL DUK_COLD duk_bool_t duk__prop_delete_error_objidx_strkey(duk_hthread *thr, duk_idx_t idx_obj, duk_hstring *key, duk_small_uint_t delprop_flags) {
+DUK_LOCAL DUK_COLD duk_bool_t duk__prop_delete_error_objidx_strkey(duk_hthread *thr,
+                                                                   duk_idx_t idx_obj,
+                                                                   duk_hstring *key,
+                                                                   duk_small_uint_t delprop_flags) {
 	return duk__prop_delete_error_shared_objidx(thr, idx_obj, key, delprop_flags);
 }
-DUK_LOCAL DUK_COLD duk_bool_t duk__prop_delete_error_obj_idxkey(duk_hthread *thr, duk_hobject *obj, duk_uarridx_t idx, duk_small_uint_t delprop_flags) {
+DUK_LOCAL DUK_COLD duk_bool_t duk__prop_delete_error_obj_idxkey(duk_hthread *thr,
+                                                                duk_hobject *obj,
+                                                                duk_uarridx_t idx,
+                                                                duk_small_uint_t delprop_flags) {
 	return duk__prop_delete_error_shared_obj(thr, obj, key, delprop_flags);
 }
-DUK_LOCAL DUK_COLD duk_bool_t duk__prop_delete_error_objidx_idxkey(duk_hthread *thr, duk_idx_t idx_obj, duk_uarridx_t idx, duk_small_uint_t delprop_flags) {
+DUK_LOCAL DUK_COLD duk_bool_t duk__prop_delete_error_objidx_idxkey(duk_hthread *thr,
+                                                                   duk_idx_t idx_obj,
+                                                                   duk_uarridx_t idx,
+                                                                   duk_small_uint_t delprop_flags) {
 	return duk__prop_delete_error_shared_objidx(thr, idx_obj, key, delprop_flags);
 }
-DUK_LOCAL DUK_COLD duk_bool_t duk__prop_delete_error_objidx_tvkey(duk_hthread *thr, duk_idx_t idx_obj, duk_tval *tv_key, duk_small_uint_t delprop_flags) {
+DUK_LOCAL DUK_COLD duk_bool_t duk__prop_delete_error_objidx_tvkey(duk_hthread *thr,
+                                                                  duk_idx_t idx_obj,
+                                                                  duk_tval *tv_key,
+                                                                  duk_small_uint_t delprop_flags) {
 	return duk__prop_delete_error_shared_objidx(thr, idx_obj, key, delprop_flags);
 }
 #elif defined(DUK_USE_VERBOSE_ERRORS)
-DUK_LOCAL DUK_COLD duk_bool_t duk__prop_delete_error_obj_strkey(duk_hthread *thr, duk_hobject *obj, duk_hstring *key, duk_small_uint_t delprop_flags) {
+DUK_LOCAL DUK_COLD duk_bool_t duk__prop_delete_error_obj_strkey(duk_hthread *thr,
+                                                                duk_hobject *obj,
+                                                                duk_hstring *key,
+                                                                duk_small_uint_t delprop_flags) {
 	if (delprop_flags & DUK_DELPROP_FLAG_THROW) {
 		const char *str1 = duk_push_readable_hobject(thr, obj);
 		const char *str2 = duk_push_readable_hstring(thr, key);
@@ -59,7 +101,10 @@ DUK_LOCAL DUK_COLD duk_bool_t duk__prop_delete_error_obj_strkey(duk_hthread *thr
 	}
 	return 0;
 }
-DUK_LOCAL DUK_COLD duk_bool_t duk__prop_delete_error_objidx_strkey(duk_hthread *thr, duk_idx_t idx_obj, duk_hstring *key, duk_small_uint_t delprop_flags) {
+DUK_LOCAL DUK_COLD duk_bool_t duk__prop_delete_error_objidx_strkey(duk_hthread *thr,
+                                                                   duk_idx_t idx_obj,
+                                                                   duk_hstring *key,
+                                                                   duk_small_uint_t delprop_flags) {
 	if (delprop_flags & DUK_DELPROP_FLAG_THROW) {
 		const char *str1 = duk_push_readable_idx(thr, idx_obj);
 		const char *str2 = duk_push_readable_hstring(thr, key);
@@ -67,21 +112,30 @@ DUK_LOCAL DUK_COLD duk_bool_t duk__prop_delete_error_objidx_strkey(duk_hthread *
 	}
 	return 0;
 }
-DUK_LOCAL DUK_COLD duk_bool_t duk__prop_delete_error_obj_idxkey(duk_hthread *thr, duk_hobject *obj, duk_uarridx_t idx, duk_small_uint_t delprop_flags) {
+DUK_LOCAL DUK_COLD duk_bool_t duk__prop_delete_error_obj_idxkey(duk_hthread *thr,
+                                                                duk_hobject *obj,
+                                                                duk_uarridx_t idx,
+                                                                duk_small_uint_t delprop_flags) {
 	if (delprop_flags & DUK_DELPROP_FLAG_THROW) {
 		const char *str1 = duk_push_readable_hobject(thr, obj);
 		DUK_ERROR_FMT2(thr, DUK_ERR_TYPE_ERROR, "cannot delete property %lu of %s", (unsigned long) idx, str1);
 	}
 	return 0;
 }
-DUK_LOCAL DUK_COLD duk_bool_t duk__prop_delete_error_objidx_idxkey(duk_hthread *thr, duk_idx_t idx_obj, duk_uarridx_t idx, duk_small_uint_t delprop_flags) {
+DUK_LOCAL DUK_COLD duk_bool_t duk__prop_delete_error_objidx_idxkey(duk_hthread *thr,
+                                                                   duk_idx_t idx_obj,
+                                                                   duk_uarridx_t idx,
+                                                                   duk_small_uint_t delprop_flags) {
 	if (delprop_flags & DUK_DELPROP_FLAG_THROW) {
 		const char *str1 = duk_push_readable_idx(thr, idx_obj);
 		DUK_ERROR_FMT2(thr, DUK_ERR_TYPE_ERROR, "cannot delete property %lu of %s", (unsigned long) idx, str1);
 	}
 	return 0;
 }
-DUK_LOCAL DUK_COLD duk_bool_t duk__prop_delete_error_objidx_tvkey(duk_hthread *thr, duk_idx_t idx_obj, duk_tval *tv_key, duk_small_uint_t delprop_flags) {
+DUK_LOCAL DUK_COLD duk_bool_t duk__prop_delete_error_objidx_tvkey(duk_hthread *thr,
+                                                                  duk_idx_t idx_obj,
+                                                                  duk_tval *tv_key,
+                                                                  duk_small_uint_t delprop_flags) {
 	if (delprop_flags & DUK_DELPROP_FLAG_THROW) {
 		const char *str1 = duk_push_readable_idx(thr, idx_obj);
 		const char *str2 = duk_push_readable_tval(thr, tv_key);
@@ -96,32 +150,47 @@ DUK_LOCAL duk_bool_t duk__prop_delete_error_shared(duk_hthread *thr, duk_small_u
 	}
 	return 0;
 }
-DUK_LOCAL DUK_COLD duk_bool_t duk__prop_delete_error_obj_strkey(duk_hthread *thr, duk_hobject *obj, duk_hstring *key, duk_small_uint_t delprop_flags) {
+DUK_LOCAL DUK_COLD duk_bool_t duk__prop_delete_error_obj_strkey(duk_hthread *thr,
+                                                                duk_hobject *obj,
+                                                                duk_hstring *key,
+                                                                duk_small_uint_t delprop_flags) {
 	DUK_UNREF(obj);
 	DUK_UNREF(key);
 	return duk__prop_delete_error_shared(thr, delprop_flags);
 }
-DUK_LOCAL DUK_COLD duk_bool_t duk__prop_delete_error_objidx_strkey(duk_hthread *thr, duk_idx_t idx_obj, duk_hstring *key, duk_small_uint_t delprop_flags) {
+DUK_LOCAL DUK_COLD duk_bool_t duk__prop_delete_error_objidx_strkey(duk_hthread *thr,
+                                                                   duk_idx_t idx_obj,
+                                                                   duk_hstring *key,
+                                                                   duk_small_uint_t delprop_flags) {
 	DUK_UNREF(idx_obj);
 	DUK_UNREF(key);
 	return duk__prop_delete_error_shared(thr, delprop_flags);
 }
-DUK_LOCAL DUK_COLD duk_bool_t duk__prop_delete_error_obj_idxkey(duk_hthread *thr, duk_hobject *obj, duk_uarridx_t idx, duk_small_uint_t delprop_flags) {
+DUK_LOCAL DUK_COLD duk_bool_t duk__prop_delete_error_obj_idxkey(duk_hthread *thr,
+                                                                duk_hobject *obj,
+                                                                duk_uarridx_t idx,
+                                                                duk_small_uint_t delprop_flags) {
 	DUK_UNREF(obj);
 	DUK_UNREF(idx);
 	return duk__prop_delete_error_shared(thr, delprop_flags);
 }
-DUK_LOCAL DUK_COLD duk_bool_t duk__prop_delete_error_objidx_idxkey(duk_hthread *thr, duk_idx_t idx_obj, duk_uarridx_t idx, duk_small_uint_t delprop_flags) {
+DUK_LOCAL DUK_COLD duk_bool_t duk__prop_delete_error_objidx_idxkey(duk_hthread *thr,
+                                                                   duk_idx_t idx_obj,
+                                                                   duk_uarridx_t idx,
+                                                                   duk_small_uint_t delprop_flags) {
 	DUK_UNREF(idx_obj);
 	DUK_UNREF(idx);
 	return duk__prop_delete_error_shared(thr, delprop_flags);
 }
-DUK_LOCAL DUK_COLD duk_bool_t duk__prop_delete_error_objidx_tvkey(duk_hthread *thr, duk_idx_t idx_obj, duk_tval *tv_key, duk_small_uint_t delprop_flags) {
+DUK_LOCAL DUK_COLD duk_bool_t duk__prop_delete_error_objidx_tvkey(duk_hthread *thr,
+                                                                  duk_idx_t idx_obj,
+                                                                  duk_tval *tv_key,
+                                                                  duk_small_uint_t delprop_flags) {
 	DUK_UNREF(idx_obj);
 	DUK_UNREF(tv_key);
 	return duk__prop_delete_error_shared(thr, delprop_flags);
 }
-#endif  /* error model */
+#endif /* error model */
 
 DUK_LOCAL void duk__prop_delete_ent_shared(duk_hthread *thr, duk_propvalue *pv_slot, duk_uint8_t attrs) {
 	if (DUK_UNLIKELY(attrs & DUK_PROPDESC_FLAG_ACCESSOR)) {
@@ -148,7 +217,7 @@ DUK_LOCAL duk_bool_t duk__prop_delete_proxy_tail(duk_hthread *thr) {
 
 	DUK_ASSERT(thr != NULL);
 
-	duk_call_method(thr, 2);  /* [ ... trap handler target key ] -> [ ... result ] */
+	duk_call_method(thr, 2); /* [ ... trap handler target key ] -> [ ... result ] */
 
 	res = duk_to_boolean(thr, -1);
 	duk_pop_unsafe(thr);
@@ -187,7 +256,10 @@ DUK_LOCAL duk_small_int_t duk__prop_delete_obj_idxkey_proxy(duk_hthread *thr, du
 	}
 }
 
-DUK_LOCAL duk_bool_t duk__prop_delete_obj_strkey_ordinary(duk_hthread *thr, duk_hobject *obj, duk_hstring *key, duk_small_uint_t delprop_flags) {
+DUK_LOCAL duk_bool_t duk__prop_delete_obj_strkey_ordinary(duk_hthread *thr,
+                                                          duk_hobject *obj,
+                                                          duk_hstring *key,
+                                                          duk_small_uint_t delprop_flags) {
 	duk_uint_fast32_t ent_idx;
 	duk_int_fast32_t hash_idx;
 
@@ -233,12 +305,16 @@ DUK_LOCAL duk_bool_t duk__prop_delete_obj_strkey_ordinary(duk_hthread *thr, duk_
 	}
 	return 1;
 
- fail_not_configurable:
+fail_not_configurable:
 	return duk__prop_delete_error_obj_strkey(thr, obj, key, delprop_flags);
 }
 
 /* [[Delete]] for duk_hobject, with string key. */
-DUK_LOCAL DUK_ALWAYS_INLINE duk_bool_t duk__prop_delete_obj_strkey_helper(duk_hthread *thr, duk_hobject *obj, duk_hstring *key, duk_small_uint_t delprop_flags, duk_bool_t side_effect_safe) {
+DUK_LOCAL DUK_ALWAYS_INLINE duk_bool_t duk__prop_delete_obj_strkey_helper(duk_hthread *thr,
+                                                                          duk_hobject *obj,
+                                                                          duk_hstring *key,
+                                                                          duk_small_uint_t delprop_flags,
+                                                                          duk_bool_t side_effect_safe) {
 	duk_small_uint_t htype;
 	duk_hobject *target;
 
@@ -252,7 +328,7 @@ DUK_LOCAL DUK_ALWAYS_INLINE duk_bool_t duk__prop_delete_obj_strkey_helper(duk_ht
 		duk_push_hobject(thr, target);
 	}
 
- retry_target:
+retry_target:
 	htype = DUK_HEAPHDR_GET_HTYPE((duk_heaphdr *) target);
 	DUK_ASSERT(DUK_HTYPE_IS_ANY_OBJECT(htype));
 
@@ -370,24 +446,27 @@ DUK_LOCAL DUK_ALWAYS_INLINE duk_bool_t duk__prop_delete_obj_strkey_helper(duk_ht
 		return duk__prop_delete_obj_strkey_ordinary(thr, target, key, delprop_flags);
 	}
 
- success:
+success:
 	if (side_effect_safe) {
 		duk_pop_unsafe(thr);
 	}
 	return 1;
 
- fail_not_configurable:
- fail_proxy:
+fail_not_configurable:
+fail_proxy:
 	if (side_effect_safe) {
 		duk_pop_unsafe(thr);
 	}
 	return duk__prop_delete_error_obj_strkey(thr, target, key, delprop_flags);
 
- switch_to_safe:
+switch_to_safe:
 	return duk__prop_delete_obj_strkey_safe(thr, obj, key, delprop_flags);
 }
 
-DUK_LOCAL duk_bool_t duk__prop_delete_obj_strkey_unsafe(duk_hthread *thr, duk_hobject *obj, duk_hstring *key, duk_small_uint_t delprop_flags) {
+DUK_LOCAL duk_bool_t duk__prop_delete_obj_strkey_unsafe(duk_hthread *thr,
+                                                        duk_hobject *obj,
+                                                        duk_hstring *key,
+                                                        duk_small_uint_t delprop_flags) {
 #if defined(DUK_USE_PREFER_SIZE)
 	return duk__prop_delete_obj_strkey_safe(thr, obj, key, delprop_flags);
 #else
@@ -395,7 +474,10 @@ DUK_LOCAL duk_bool_t duk__prop_delete_obj_strkey_unsafe(duk_hthread *thr, duk_ho
 #endif
 }
 
-DUK_LOCAL DUK_NOINLINE duk_bool_t duk__prop_delete_obj_strkey_safe(duk_hthread *thr, duk_hobject *obj, duk_hstring *key, duk_small_uint_t delprop_flags) {
+DUK_LOCAL DUK_NOINLINE duk_bool_t duk__prop_delete_obj_strkey_safe(duk_hthread *thr,
+                                                                   duk_hobject *obj,
+                                                                   duk_hstring *key,
+                                                                   duk_small_uint_t delprop_flags) {
 	return duk__prop_delete_obj_strkey_helper(thr, obj, key, delprop_flags, 1 /*side_effect_safe*/);
 }
 
@@ -428,7 +510,10 @@ DUK_LOCAL duk_bool_t duk__prop_delete_obj_idxkey_array(duk_hthread *thr, duk_hob
 	return 0;
 }
 
-DUK_LOCAL duk_bool_t duk__prop_delete_obj_idxkey_arguments(duk_hthread *thr, duk_hobject *obj, duk_uarridx_t idx, duk_small_uint_t delprop_flags) {
+DUK_LOCAL duk_bool_t duk__prop_delete_obj_idxkey_arguments(duk_hthread *thr,
+                                                           duk_hobject *obj,
+                                                           duk_uarridx_t idx,
+                                                           duk_small_uint_t delprop_flags) {
 	duk_harray *a = (duk_harray *) obj;
 	duk_hobject *map;
 	duk_hobject *env;
@@ -471,7 +556,10 @@ DUK_LOCAL duk_bool_t duk__prop_delete_obj_idxkey_arguments(duk_hthread *thr, duk
 	return 1;
 }
 
-DUK_LOCAL duk_bool_t duk__prop_delete_obj_idxkey_ordinary(duk_hthread *thr, duk_hobject *obj, duk_uarridx_t idx, duk_small_uint_t delprop_flags) {
+DUK_LOCAL duk_bool_t duk__prop_delete_obj_idxkey_ordinary(duk_hthread *thr,
+                                                          duk_hobject *obj,
+                                                          duk_uarridx_t idx,
+                                                          duk_small_uint_t delprop_flags) {
 	duk_uint_fast32_t ent_idx;
 	duk_int_fast32_t hash_idx;
 
@@ -514,11 +602,15 @@ DUK_LOCAL duk_bool_t duk__prop_delete_obj_idxkey_ordinary(duk_hthread *thr, duk_
 
 	return 1;
 
- fail_not_configurable:
+fail_not_configurable:
 	return duk__prop_delete_error_obj_idxkey(thr, obj, idx, delprop_flags);
 }
 
-DUK_LOCAL DUK_ALWAYS_INLINE duk_bool_t duk__prop_delete_obj_idxkey_helper(duk_hthread *thr, duk_hobject *obj, duk_uarridx_t idx, duk_small_uint_t delprop_flags, duk_bool_t side_effect_safe) {
+DUK_LOCAL DUK_ALWAYS_INLINE duk_bool_t duk__prop_delete_obj_idxkey_helper(duk_hthread *thr,
+                                                                          duk_hobject *obj,
+                                                                          duk_uarridx_t idx,
+                                                                          duk_small_uint_t delprop_flags,
+                                                                          duk_bool_t side_effect_safe) {
 	duk_small_uint_t htype;
 	duk_hobject *target;
 
@@ -532,7 +624,7 @@ DUK_LOCAL DUK_ALWAYS_INLINE duk_bool_t duk__prop_delete_obj_idxkey_helper(duk_ht
 		duk_push_hobject(thr, target);
 	}
 
- retry_target:
+retry_target:
 	/* Check HTYPE specific properties first.  Some special properties
 	 * cannot be deleted, even with force flag.
 	 */
@@ -640,24 +732,27 @@ DUK_LOCAL DUK_ALWAYS_INLINE duk_bool_t duk__prop_delete_obj_idxkey_helper(duk_ht
 		return duk__prop_delete_obj_idxkey_ordinary(thr, target, idx, delprop_flags);
 	}
 
- success:
+success:
 	if (side_effect_safe) {
 		duk_pop_unsafe(thr);
 	}
 	return 1;
 
- fail_not_configurable:
- fail_proxy:
+fail_not_configurable:
+fail_proxy:
 	if (side_effect_safe) {
 		duk_pop_unsafe(thr);
 	}
 	return duk__prop_delete_error_obj_idxkey(thr, target, idx, delprop_flags);
 
- switch_to_safe:
+switch_to_safe:
 	return duk__prop_delete_obj_idxkey_safe(thr, obj, idx, delprop_flags);
 }
 
-DUK_LOCAL duk_bool_t duk__prop_delete_obj_idxkey_unsafe(duk_hthread *thr, duk_hobject *obj, duk_uarridx_t idx, duk_small_uint_t delprop_flags) {
+DUK_LOCAL duk_bool_t duk__prop_delete_obj_idxkey_unsafe(duk_hthread *thr,
+                                                        duk_hobject *obj,
+                                                        duk_uarridx_t idx,
+                                                        duk_small_uint_t delprop_flags) {
 #if defined(DUK_USE_PREFER_SIZE)
 	return duk__prop_delete_obj_idxkey_safe(thr, obj, idx, delprop_flags);
 #else
@@ -665,11 +760,17 @@ DUK_LOCAL duk_bool_t duk__prop_delete_obj_idxkey_unsafe(duk_hthread *thr, duk_ho
 #endif
 }
 
-DUK_LOCAL DUK_NOINLINE duk_bool_t duk__prop_delete_obj_idxkey_safe(duk_hthread *thr, duk_hobject *obj, duk_uarridx_t idx, duk_small_uint_t delprop_flags) {
+DUK_LOCAL DUK_NOINLINE duk_bool_t duk__prop_delete_obj_idxkey_safe(duk_hthread *thr,
+                                                                   duk_hobject *obj,
+                                                                   duk_uarridx_t idx,
+                                                                   duk_small_uint_t delprop_flags) {
 	return duk__prop_delete_obj_idxkey_helper(thr, obj, idx, delprop_flags, 1 /*side_effect_safe*/);
 }
 
-DUK_INTERNAL duk_bool_t duk_prop_delete_obj_strkey(duk_hthread *thr, duk_hobject *obj, duk_hstring *key, duk_small_uint_t delprop_flags) {
+DUK_INTERNAL duk_bool_t duk_prop_delete_obj_strkey(duk_hthread *thr,
+                                                   duk_hobject *obj,
+                                                   duk_hstring *key,
+                                                   duk_small_uint_t delprop_flags) {
 	if (DUK_UNLIKELY(DUK_HSTRING_HAS_ARRIDX(key))) {
 		return duk__prop_delete_obj_idxkey_unsafe(thr, obj, DUK_HSTRING_GET_ARRIDX_FAST_KNOWN(key), delprop_flags);
 	} else {
@@ -677,7 +778,10 @@ DUK_INTERNAL duk_bool_t duk_prop_delete_obj_strkey(duk_hthread *thr, duk_hobject
 	}
 }
 
-DUK_INTERNAL duk_bool_t duk_prop_delete_obj_idxkey(duk_hthread *thr, duk_hobject *obj, duk_uarridx_t idx, duk_small_uint_t delprop_flags) {
+DUK_INTERNAL duk_bool_t duk_prop_delete_obj_idxkey(duk_hthread *thr,
+                                                   duk_hobject *obj,
+                                                   duk_uarridx_t idx,
+                                                   duk_small_uint_t delprop_flags) {
 	if (DUK_LIKELY(idx <= DUK_ARRIDX_MAX)) {
 		return duk__prop_delete_obj_idxkey_unsafe(thr, obj, idx, delprop_flags);
 	} else {
@@ -692,7 +796,10 @@ DUK_INTERNAL duk_bool_t duk_prop_delete_obj_idxkey(duk_hthread *thr, duk_hobject
 	}
 }
 
-DUK_LOCAL duk_bool_t duk__prop_delete_strkey(duk_hthread *thr, duk_idx_t idx_obj, duk_hstring *key, duk_small_uint_t delprop_flags) {
+DUK_LOCAL duk_bool_t duk__prop_delete_strkey(duk_hthread *thr,
+                                             duk_idx_t idx_obj,
+                                             duk_hstring *key,
+                                             duk_small_uint_t delprop_flags) {
 	duk_tval *tv_obj;
 
 	DUK_ASSERT(!DUK_HSTRING_HAS_ARRIDX(key));
@@ -744,13 +851,16 @@ DUK_LOCAL duk_bool_t duk__prop_delete_strkey(duk_hthread *thr, duk_idx_t idx_obj
 	/* No property found, success. */
 	return 1;
 
- fail_not_configurable:
+fail_not_configurable:
 	return duk__prop_delete_error_objidx_strkey(thr, idx_obj, key, delprop_flags);
- fail_invalid_base_uncond:
+fail_invalid_base_uncond:
 	return duk__prop_delete_error_objidx_strkey(thr, idx_obj, key, DUK_DELPROP_FLAG_THROW);
 }
 
-DUK_LOCAL duk_bool_t duk__prop_delete_idxkey(duk_hthread *thr, duk_idx_t idx_obj, duk_uarridx_t idx, duk_small_uint_t delprop_flags) {
+DUK_LOCAL duk_bool_t duk__prop_delete_idxkey(duk_hthread *thr,
+                                             duk_idx_t idx_obj,
+                                             duk_uarridx_t idx,
+                                             duk_small_uint_t delprop_flags) {
 	duk_tval *tv_obj;
 
 	tv_obj = thr->valstack_bottom + idx_obj;
@@ -794,13 +904,16 @@ DUK_LOCAL duk_bool_t duk__prop_delete_idxkey(duk_hthread *thr, duk_idx_t idx_obj
 	/* No property found, success. */
 	return 1;
 
- fail_not_configurable:
+fail_not_configurable:
 	return duk__prop_delete_error_objidx_idxkey(thr, idx_obj, idx, delprop_flags);
- fail_invalid_base_uncond:
+fail_invalid_base_uncond:
 	return duk__prop_delete_error_objidx_idxkey(thr, idx_obj, idx, DUK_DELPROP_FLAG_THROW);
 }
 
-DUK_INTERNAL duk_bool_t duk_prop_delete_strkey(duk_hthread *thr, duk_idx_t idx_obj, duk_hstring *key, duk_small_uint_t delprop_flags) {
+DUK_INTERNAL duk_bool_t duk_prop_delete_strkey(duk_hthread *thr,
+                                               duk_idx_t idx_obj,
+                                               duk_hstring *key,
+                                               duk_small_uint_t delprop_flags) {
 	if (DUK_UNLIKELY(DUK_HSTRING_HAS_ARRIDX(key))) {
 		return duk__prop_delete_idxkey(thr, idx_obj, DUK_HSTRING_GET_ARRIDX_FAST_KNOWN(key), delprop_flags);
 	} else {
@@ -808,7 +921,10 @@ DUK_INTERNAL duk_bool_t duk_prop_delete_strkey(duk_hthread *thr, duk_idx_t idx_o
 	}
 }
 
-DUK_INTERNAL duk_bool_t duk_prop_delete_idxkey(duk_hthread *thr, duk_idx_t idx_obj, duk_uarridx_t idx, duk_small_uint_t delprop_flags) {
+DUK_INTERNAL duk_bool_t duk_prop_delete_idxkey(duk_hthread *thr,
+                                               duk_idx_t idx_obj,
+                                               duk_uarridx_t idx,
+                                               duk_small_uint_t delprop_flags) {
 	if (DUK_LIKELY(idx <= DUK_ARRIDX_MAX)) {
 		return duk__prop_delete_idxkey(thr, idx_obj, idx, delprop_flags);
 	} else {
@@ -902,9 +1018,9 @@ DUK_INTERNAL duk_bool_t duk_prop_deleteoper(duk_hthread *thr, duk_idx_t idx_obj,
 	duk_pop_unsafe(thr);
 	return rc;
 
- use_idx:
+use_idx:
 	return duk__prop_delete_idxkey(thr, idx_obj, idx, delprop_flags);
 
- use_str:
+use_str:
 	return duk__prop_delete_strkey(thr, idx_obj, key, delprop_flags);
 }

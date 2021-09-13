@@ -73,20 +73,31 @@
 #include "duk_internal.h"
 
 /* Outcome for [[GetOwnProperty]] check. */
-#define DUK__GETOWN_NOTFOUND            0   /* not found, continue to parent */
-#define DUK__GETOWN_FOUND               1   /* found, stop walk */
-#define DUK__GETOWN_DONE_NOTFOUND       2   /* not found, stop walk */
-#define DUK__GETOWN_CONTINUE_ORDINARY   -1  /* not found, check from ordinary property table */
+#define DUK__GETOWN_NOTFOUND          0 /* not found, continue to parent */
+#define DUK__GETOWN_FOUND             1 /* found, stop walk */
+#define DUK__GETOWN_DONE_NOTFOUND     2 /* not found, stop walk */
+#define DUK__GETOWN_CONTINUE_ORDINARY -1 /* not found, check from ordinary property table */
 
-DUK_LOCAL_DECL duk_bool_t duk__prop_getvalue_plainstr_index(duk_hthread *thr, duk_idx_t idx_recv, duk_uarridx_t idx, duk_idx_t idx_out, duk_hstring *h);
-DUK_LOCAL_DECL duk_bool_t duk__prop_get_str_unsafe(duk_hthread *thr, duk_hobject *target, duk_hstring *key, duk_idx_t idx_out, duk_idx_t idx_recv);
-DUK_LOCAL_DECL duk_bool_t duk__prop_get_str_safe(duk_hthread *thr, duk_hobject *target, duk_hstring *key, duk_idx_t idx_out, duk_idx_t idx_recv);
-DUK_LOCAL_DECL duk_bool_t duk__prop_get_idx_unsafe(duk_hthread *thr, duk_hobject *target, duk_uarridx_t idx, duk_idx_t idx_out, duk_idx_t idx_recv);
-DUK_LOCAL_DECL duk_bool_t duk__prop_get_idx_safe(duk_hthread *thr, duk_hobject *target, duk_uarridx_t idx, duk_idx_t idx_out, duk_idx_t idx_recv);
+DUK_LOCAL_DECL duk_bool_t
+duk__prop_getvalue_plainstr_index(duk_hthread *thr, duk_idx_t idx_recv, duk_uarridx_t idx, duk_idx_t idx_out, duk_hstring *h);
+DUK_LOCAL_DECL duk_bool_t
+duk__prop_get_str_unsafe(duk_hthread *thr, duk_hobject *target, duk_hstring *key, duk_idx_t idx_out, duk_idx_t idx_recv);
+DUK_LOCAL_DECL duk_bool_t
+duk__prop_get_str_safe(duk_hthread *thr, duk_hobject *target, duk_hstring *key, duk_idx_t idx_out, duk_idx_t idx_recv);
+DUK_LOCAL_DECL duk_bool_t
+duk__prop_get_idx_unsafe(duk_hthread *thr, duk_hobject *target, duk_uarridx_t idx, duk_idx_t idx_out, duk_idx_t idx_recv);
+DUK_LOCAL_DECL duk_bool_t
+duk__prop_get_idx_safe(duk_hthread *thr, duk_hobject *target, duk_uarridx_t idx, duk_idx_t idx_out, duk_idx_t idx_recv);
 
-DUK_NORETURN(DUK_LOCAL_DECL DUK_COLD duk_bool_t duk__prop_get_error_objidx_str(duk_hthread *thr, duk_idx_t idx_obj, duk_hstring *key));
-DUK_NORETURN(DUK_LOCAL_DECL DUK_COLD duk_bool_t duk__prop_get_error_objidx_idx(duk_hthread *thr, duk_idx_t idx_obj, duk_uarridx_t idx));
-DUK_NORETURN(DUK_LOCAL_DECL DUK_COLD duk_bool_t duk__prop_get_error_objidx_tvkey(duk_hthread *thr, duk_idx_t idx_obj, duk_tval *tv_key));
+DUK_NORETURN(DUK_LOCAL_DECL DUK_COLD duk_bool_t duk__prop_get_error_objidx_str(duk_hthread *thr,
+                                                                               duk_idx_t idx_obj,
+                                                                               duk_hstring *key));
+DUK_NORETURN(DUK_LOCAL_DECL DUK_COLD duk_bool_t duk__prop_get_error_objidx_idx(duk_hthread *thr,
+                                                                               duk_idx_t idx_obj,
+                                                                               duk_uarridx_t idx));
+DUK_NORETURN(DUK_LOCAL_DECL DUK_COLD duk_bool_t duk__prop_get_error_objidx_tvkey(duk_hthread *thr,
+                                                                                 duk_idx_t idx_obj,
+                                                                                 duk_tval *tv_key));
 
 #if defined(DUK_USE_PARANOID_ERRORS)
 DUK_NORETURN(DUK_LOCAL_DECL void duk__prop_get_error_shared(duk_hthread *thr, duk_idx_t idx_obj));
@@ -150,7 +161,7 @@ DUK_LOCAL DUK_COLD duk_bool_t duk__prop_get_error_objidx_tvkey(duk_hthread *thr,
 	duk__prop_get_error_shared(thr);
 	DUK_WO_NORETURN(return 0;);
 }
-#endif  /* error model */
+#endif /* error model */
 
 DUK_LOCAL DUK_ALWAYS_INLINE duk_bool_t duk__prop_get_write_tval_result(duk_hthread *thr, duk_idx_t idx_out, duk_tval *tv_src) {
 	duk_tval *tv_out;
@@ -205,7 +216,15 @@ DUK_LOCAL duk_bool_t duk__prop_get_write_plainstr_length(duk_hthread *thr, duk_h
 	return 1;
 }
 
-DUK_LOCAL DUK_ALWAYS_INLINE duk_bool_t duk__get_own_prop_found_getter_helper(duk_hthread *thr, duk_hobject *obj, duk_hstring *key, duk_uarridx_t idx, duk_idx_t idx_out, duk_idx_t idx_recv, duk_propvalue *pv, duk_uint8_t attrs, duk_uint_t force_key) {
+DUK_LOCAL DUK_ALWAYS_INLINE duk_bool_t duk__get_own_prop_found_getter_helper(duk_hthread *thr,
+                                                                             duk_hobject *obj,
+                                                                             duk_hstring *key,
+                                                                             duk_uarridx_t idx,
+                                                                             duk_idx_t idx_out,
+                                                                             duk_idx_t idx_recv,
+                                                                             duk_propvalue *pv,
+                                                                             duk_uint8_t attrs,
+                                                                             duk_uint_t force_key) {
 	duk_propaccessor *pa;
 
 	DUK_ASSERT(thr != NULL);
@@ -221,8 +240,8 @@ DUK_LOCAL DUK_ALWAYS_INLINE duk_bool_t duk__get_own_prop_found_getter_helper(duk
 
 	pa = &pv->a;
 	if (DUK_LIKELY(pa->get != NULL)) {
-		duk_push_hobject(thr, pa->get);  /* get function */
-		duk_dup(thr, idx_recv);          /* receiver; original uncoerced base */
+		duk_push_hobject(thr, pa->get); /* get function */
+		duk_dup(thr, idx_recv); /* receiver; original uncoerced base */
 #if defined(DUK_USE_NONSTD_GETTER_KEY_ARGUMENT)
 		if (force_key || key != NULL) {
 			DUK_ASSERT(key != NULL);
@@ -230,12 +249,12 @@ DUK_LOCAL DUK_ALWAYS_INLINE duk_bool_t duk__get_own_prop_found_getter_helper(duk
 		} else {
 			(void) duk_push_u32_tostring(thr, idx);
 		}
-		duk_call_method(thr, 1);         /* [ getter receiver(= this) key ] -> [ retval ] */
+		duk_call_method(thr, 1); /* [ getter receiver(= this) key ] -> [ retval ] */
 #else
 		DUK_UNREF(key);
 		DUK_UNREF(idx);
 		DUK_UNREF(force_key);
-		duk_call_method(thr, 0);         /* [ getter receiver(= this) ] -> [ retval ] */
+		duk_call_method(thr, 0); /* [ getter receiver(= this) ] -> [ retval ] */
 #endif
 	} else {
 		/* If getter is missing, return undefined. */
@@ -246,7 +265,13 @@ DUK_LOCAL DUK_ALWAYS_INLINE duk_bool_t duk__get_own_prop_found_getter_helper(duk
 }
 
 #if defined(DUK_USE_NONSTD_GETTER_KEY_ARGUMENT)
-DUK_LOCAL DUK_NOINLINE duk_bool_t duk__get_own_prop_found_getter_withkey(duk_hthread *thr, duk_hobject *obj, duk_hstring *key, duk_idx_t idx_out, duk_idx_t idx_recv, duk_propvalue *pv, duk_uint8_t attrs) {
+DUK_LOCAL DUK_NOINLINE duk_bool_t duk__get_own_prop_found_getter_withkey(duk_hthread *thr,
+                                                                         duk_hobject *obj,
+                                                                         duk_hstring *key,
+                                                                         duk_idx_t idx_out,
+                                                                         duk_idx_t idx_recv,
+                                                                         duk_propvalue *pv,
+                                                                         duk_uint8_t attrs) {
 	DUK_ASSERT(thr != NULL);
 	DUK_ASSERT(obj != NULL);
 	DUK_ASSERT(key != NULL);
@@ -256,7 +281,13 @@ DUK_LOCAL DUK_NOINLINE duk_bool_t duk__get_own_prop_found_getter_withkey(duk_hth
 
 	return duk__get_own_prop_found_getter_helper(thr, obj, key, 0, idx_out, idx_recv, pv, attrs, 1 /*force_key*/);
 }
-DUK_LOCAL DUK_NOINLINE duk_bool_t duk__get_own_prop_found_getter_withidx(duk_hthread *thr, duk_hobject *obj, duk_uarridx_t idx, duk_idx_t idx_out, duk_idx_t idx_recv, duk_propvalue *pv, duk_uint8_t attrs) {
+DUK_LOCAL DUK_NOINLINE duk_bool_t duk__get_own_prop_found_getter_withidx(duk_hthread *thr,
+                                                                         duk_hobject *obj,
+                                                                         duk_uarridx_t idx,
+                                                                         duk_idx_t idx_out,
+                                                                         duk_idx_t idx_recv,
+                                                                         duk_propvalue *pv,
+                                                                         duk_uint8_t attrs) {
 	DUK_ASSERT(thr != NULL);
 	DUK_ASSERT(obj != NULL);
 	DUK_ASSERT(duk_is_valid_posidx(thr, idx_out));
@@ -266,7 +297,12 @@ DUK_LOCAL DUK_NOINLINE duk_bool_t duk__get_own_prop_found_getter_withidx(duk_hth
 	return duk__get_own_prop_found_getter_helper(thr, obj, NULL, idx, idx_out, idx_recv, pv, attrs, 0 /*force_key*/);
 }
 #else
-DUK_LOCAL DUK_NOINLINE duk_bool_t duk__get_own_prop_found_getter_nokey(duk_hthread *thr, duk_hobject *obj, duk_idx_t idx_out, duk_idx_t idx_recv, duk_propvalue *pv, duk_uint8_t attrs) {
+DUK_LOCAL DUK_NOINLINE duk_bool_t duk__get_own_prop_found_getter_nokey(duk_hthread *thr,
+                                                                       duk_hobject *obj,
+                                                                       duk_idx_t idx_out,
+                                                                       duk_idx_t idx_recv,
+                                                                       duk_propvalue *pv,
+                                                                       duk_uint8_t attrs) {
 	DUK_ASSERT(thr != NULL);
 	DUK_ASSERT(obj != NULL);
 	DUK_ASSERT(duk_is_valid_posidx(thr, idx_out));
@@ -277,7 +313,8 @@ DUK_LOCAL DUK_NOINLINE duk_bool_t duk__get_own_prop_found_getter_nokey(duk_hthre
 }
 #endif
 
-DUK_LOCAL duk_bool_t duk__get_own_prop_strkey_ordinary(duk_hthread *thr, duk_hobject *obj, duk_hstring *key, duk_idx_t idx_out, duk_idx_t idx_recv) {
+DUK_LOCAL duk_bool_t
+duk__get_own_prop_strkey_ordinary(duk_hthread *thr, duk_hobject *obj, duk_hstring *key, duk_idx_t idx_out, duk_idx_t idx_recv) {
 	duk_propvalue *pv;
 	duk_uint8_t attrs;
 
@@ -304,7 +341,8 @@ DUK_LOCAL duk_bool_t duk__get_own_prop_strkey_ordinary(duk_hthread *thr, duk_hob
 	}
 }
 
-DUK_LOCAL duk_bool_t duk__get_own_prop_idxkey_ordinary(duk_hthread *thr, duk_hobject *obj, duk_uarridx_t idx, duk_idx_t idx_out, duk_idx_t idx_recv) {
+DUK_LOCAL duk_bool_t
+duk__get_own_prop_idxkey_ordinary(duk_hthread *thr, duk_hobject *obj, duk_uarridx_t idx, duk_idx_t idx_out, duk_idx_t idx_recv) {
 	duk_propvalue *pv;
 	duk_uint8_t attrs;
 
@@ -337,7 +375,7 @@ DUK_LOCAL duk_bool_t duk__prop_get_own_proxy_tail(duk_hthread *thr, duk_idx_t id
 	DUK_ASSERT(duk_is_valid_posidx(thr, idx_recv));
 
 	duk_dup(thr, idx_recv);
-	duk_call_method(thr, 3);  /* [ ... trap handler target key recv ] -> [ ... result ] */
+	duk_call_method(thr, 3); /* [ ... trap handler target key recv ] -> [ ... result ] */
 
 #if 0
 	/* XXX: Proxy policy check, requires [[GetOwnProperty]] for Proxy target. */
@@ -347,7 +385,8 @@ DUK_LOCAL duk_bool_t duk__prop_get_own_proxy_tail(duk_hthread *thr, duk_idx_t id
 	return DUK__GETOWN_FOUND;
 }
 
-DUK_LOCAL DUK_NOINLINE duk_bool_t duk__get_own_prop_strkey_proxy(duk_hthread *thr, duk_hobject *obj, duk_hstring *key, duk_idx_t idx_out, duk_idx_t idx_recv) {
+DUK_LOCAL DUK_NOINLINE duk_bool_t
+duk__get_own_prop_strkey_proxy(duk_hthread *thr, duk_hobject *obj, duk_hstring *key, duk_idx_t idx_out, duk_idx_t idx_recv) {
 	DUK_ASSERT(thr != NULL);
 	DUK_ASSERT(obj != NULL);
 	DUK_ASSERT(DUK_HOBJECT_GET_HTYPE(obj) == DUK_HTYPE_PROXY);
@@ -363,7 +402,8 @@ DUK_LOCAL DUK_NOINLINE duk_bool_t duk__get_own_prop_strkey_proxy(duk_hthread *th
 	}
 }
 
-DUK_LOCAL DUK_NOINLINE duk_bool_t duk__get_own_prop_idxkey_proxy(duk_hthread *thr, duk_hobject *obj, duk_uarridx_t idx, duk_idx_t idx_out, duk_idx_t idx_recv) {
+DUK_LOCAL DUK_NOINLINE duk_bool_t
+duk__get_own_prop_idxkey_proxy(duk_hthread *thr, duk_hobject *obj, duk_uarridx_t idx, duk_idx_t idx_out, duk_idx_t idx_recv) {
 	DUK_ASSERT(thr != NULL);
 	DUK_ASSERT(obj != NULL);
 	DUK_ASSERT(DUK_HOBJECT_GET_HTYPE(obj) == DUK_HTYPE_PROXY);
@@ -393,14 +433,15 @@ DUK_LOCAL duk_bool_t duk__prop_get_check_arguments_map_for_get(duk_hthread *thr,
 		return 0;
 	}
 
-	(void) duk_js_getvar_envrec(thr, env, varname, 1 /*throw*/);  /* -> [ ... value this_binding ] */
+	(void) duk_js_getvar_envrec(thr, env, varname, 1 /*throw*/); /* -> [ ... value this_binding ] */
 	duk_pop_unsafe(thr);
 
 	/* leave result on stack top */
 	return 1;
 }
 
-DUK_LOCAL DUK_NOINLINE duk_bool_t duk__get_own_prop_idxkey_arguments(duk_hthread *thr, duk_hobject *obj, duk_uarridx_t idx, duk_idx_t idx_out, duk_idx_t idx_recv) {
+DUK_LOCAL DUK_NOINLINE duk_bool_t
+duk__get_own_prop_idxkey_arguments(duk_hthread *thr, duk_hobject *obj, duk_uarridx_t idx, duk_idx_t idx_out, duk_idx_t idx_recv) {
 	/* Conceptually: first perform OrdinaryGetOwnProperty() and then
 	 * apply arguments exotic map handling if the property is found.
 	 * This order only matters for getter properties, otherwise the
@@ -472,7 +513,7 @@ DUK_LOCAL DUK_NOINLINE duk_bool_t duk__get_own_prop_idxkey_arguments(duk_hthread
 	}
 	return DUK__GETOWN_NOTFOUND;
 
- found_do_map_check:
+found_do_map_check:
 	if (rc_map) {
 		/* idx_out already contains the result from a normal property
 		 * lookup, replace it with value found from arguments map.
@@ -487,7 +528,8 @@ DUK_LOCAL DUK_NOINLINE duk_bool_t duk__get_own_prop_idxkey_arguments(duk_hthread
 	return DUK__GETOWN_FOUND;
 }
 
-DUK_LOCAL duk_bool_t duk__get_own_prop_idxkey_arrayitems(duk_hthread *thr, duk_hobject *obj, duk_uarridx_t idx, duk_idx_t idx_out, duk_idx_t idx_recv) {
+DUK_LOCAL duk_bool_t
+duk__get_own_prop_idxkey_arrayitems(duk_hthread *thr, duk_hobject *obj, duk_uarridx_t idx, duk_idx_t idx_out, duk_idx_t idx_recv) {
 	duk_harray *a;
 
 	DUK_ASSERT(thr != NULL);
@@ -513,7 +555,8 @@ DUK_LOCAL duk_bool_t duk__get_own_prop_idxkey_arrayitems(duk_hthread *thr, duk_h
 	return DUK__GETOWN_NOTFOUND;
 }
 
-DUK_LOCAL DUK_NOINLINE duk_small_int_t duk__get_own_prop_idxkey_stringobj(duk_hthread *thr, duk_hobject *obj, duk_uarridx_t idx, duk_idx_t idx_out, duk_idx_t idx_recv) {
+DUK_LOCAL DUK_NOINLINE duk_small_int_t
+duk__get_own_prop_idxkey_stringobj(duk_hthread *thr, duk_hobject *obj, duk_uarridx_t idx, duk_idx_t idx_out, duk_idx_t idx_recv) {
 	duk_hstring *h;
 
 	DUK_ASSERT(thr != NULL);
@@ -530,10 +573,14 @@ DUK_LOCAL DUK_NOINLINE duk_small_int_t duk__get_own_prop_idxkey_stringobj(duk_ht
 		}
 	}
 
-	return DUK__GETOWN_CONTINUE_ORDINARY;  /* Continue to ordinary idxprops. */
+	return DUK__GETOWN_CONTINUE_ORDINARY; /* Continue to ordinary idxprops. */
 }
 
-DUK_LOCAL DUK_NOINLINE duk_bool_t duk__get_own_prop_strkey_stringobj_length(duk_hthread *thr, duk_hobject *obj, duk_hstring *key, duk_idx_t idx_out, duk_idx_t idx_recv) {
+DUK_LOCAL DUK_NOINLINE duk_bool_t duk__get_own_prop_strkey_stringobj_length(duk_hthread *thr,
+                                                                            duk_hobject *obj,
+                                                                            duk_hstring *key,
+                                                                            duk_idx_t idx_out,
+                                                                            duk_idx_t idx_recv) {
 	duk_hstring *h;
 
 	DUK_ASSERT(thr != NULL);
@@ -553,7 +600,8 @@ DUK_LOCAL DUK_NOINLINE duk_bool_t duk__get_own_prop_strkey_stringobj_length(duk_
 	return DUK__GETOWN_NOTFOUND;
 }
 
-DUK_LOCAL duk_bool_t duk__get_own_prop_strkey(duk_hthread *thr, duk_hobject *obj, duk_hstring *key, duk_idx_t idx_out, duk_idx_t idx_recv) {
+DUK_LOCAL duk_bool_t
+duk__get_own_prop_strkey(duk_hthread *thr, duk_hobject *obj, duk_hstring *key, duk_idx_t idx_out, duk_idx_t idx_recv) {
 	duk_small_uint_t htype;
 
 	DUK_ASSERT(thr != NULL);
@@ -663,7 +711,7 @@ DUK_LOCAL duk_bool_t duk__get_own_prop_strkey(duk_hthread *thr, duk_hobject *obj
 			 * for these keys).  In any case we must not continue
 			 * prototype walk to the parent.
 			 */
-			return DUK__GETOWN_DONE_NOTFOUND;  /* Short circuit, don't continue walk. */
+			return DUK__GETOWN_DONE_NOTFOUND; /* Short circuit, don't continue walk. */
 		}
 	default:
 		break;
@@ -675,7 +723,8 @@ DUK_LOCAL duk_bool_t duk__get_own_prop_strkey(duk_hthread *thr, duk_hobject *obj
 	return duk__get_own_prop_strkey_ordinary(thr, obj, key, idx_out, idx_recv);
 }
 
-DUK_LOCAL duk_bool_t duk__get_own_prop_idxkey(duk_hthread *thr, duk_hobject *obj, duk_uarridx_t idx, duk_idx_t idx_out, duk_idx_t idx_recv) {
+DUK_LOCAL duk_bool_t
+duk__get_own_prop_idxkey(duk_hthread *thr, duk_hobject *obj, duk_uarridx_t idx, duk_idx_t idx_out, duk_idx_t idx_recv) {
 	duk_small_uint_t htype;
 
 	DUK_ASSERT(thr != NULL);
@@ -731,7 +780,7 @@ DUK_LOCAL duk_bool_t duk__get_own_prop_idxkey(duk_hthread *thr, duk_hobject *obj
 			duk_replace_posidx_unsafe(thr, idx_out);
 			return DUK__GETOWN_FOUND;
 		}
-		return DUK__GETOWN_DONE_NOTFOUND;  /* Short circuit. */
+		return DUK__GETOWN_DONE_NOTFOUND; /* Short circuit. */
 	default:
 		break;
 	}
@@ -739,7 +788,14 @@ DUK_LOCAL duk_bool_t duk__get_own_prop_idxkey(duk_hthread *thr, duk_hobject *obj
 	return duk__get_own_prop_idxkey_ordinary(thr, obj, idx, idx_out, idx_recv);
 }
 
-DUK_LOCAL DUK_ALWAYS_INLINE duk_bool_t duk__prop_get_stroridx_helper(duk_hthread *thr, duk_hobject *target, duk_hstring *key, duk_uarridx_t idx, duk_idx_t idx_out, duk_idx_t idx_recv, duk_bool_t use_key, duk_bool_t side_effect_safe) {
+DUK_LOCAL DUK_ALWAYS_INLINE duk_bool_t duk__prop_get_stroridx_helper(duk_hthread *thr,
+                                                                     duk_hobject *target,
+                                                                     duk_hstring *key,
+                                                                     duk_uarridx_t idx,
+                                                                     duk_idx_t idx_out,
+                                                                     duk_idx_t idx_recv,
+                                                                     duk_bool_t use_key,
+                                                                     duk_bool_t side_effect_safe) {
 	duk_bool_t rc;
 	duk_small_uint_t sanity;
 
@@ -879,13 +935,13 @@ DUK_LOCAL DUK_ALWAYS_INLINE duk_bool_t duk__prop_get_stroridx_helper(duk_hthread
 	DUK_ERROR_RANGE_PROTO_SANITY(thr);
 	return 0;
 
- not_found:
+not_found:
 	if (side_effect_safe) {
 		duk_pop_unsafe(thr);
 	}
 	return duk__prop_get_write_notfound_result(thr, idx_out);
 
- found:
+found:
 	DUK_ASSERT(rc == 1);
 	if (side_effect_safe) {
 		duk_pop_unsafe(thr);
@@ -895,7 +951,8 @@ DUK_LOCAL DUK_ALWAYS_INLINE duk_bool_t duk__prop_get_stroridx_helper(duk_hthread
 	}
 }
 
-DUK_LOCAL duk_bool_t duk__prop_get_str_unsafe(duk_hthread *thr, duk_hobject *target, duk_hstring *key, duk_idx_t idx_out, duk_idx_t idx_recv) {
+DUK_LOCAL duk_bool_t
+duk__prop_get_str_unsafe(duk_hthread *thr, duk_hobject *target, duk_hstring *key, duk_idx_t idx_out, duk_idx_t idx_recv) {
 #if defined(DUK_USE_PREFER_SIZE)
 	return duk__prop_get_str_safe(thr, target, key, idx_out, idx_recv);
 #else
@@ -903,19 +960,22 @@ DUK_LOCAL duk_bool_t duk__prop_get_str_unsafe(duk_hthread *thr, duk_hobject *tar
 #endif
 }
 
-DUK_LOCAL DUK_NOINLINE duk_bool_t duk__prop_get_str_safe(duk_hthread *thr, duk_hobject *target, duk_hstring *key, duk_idx_t idx_out, duk_idx_t idx_recv) {
+DUK_LOCAL DUK_NOINLINE duk_bool_t
+duk__prop_get_str_safe(duk_hthread *thr, duk_hobject *target, duk_hstring *key, duk_idx_t idx_out, duk_idx_t idx_recv) {
 	return duk__prop_get_stroridx_helper(thr, target, key, 0, idx_out, idx_recv, 1 /*use_key*/, 1 /*side_effect_safe*/);
 }
 
 /* [[Get]] for any duk_hobject, with string/symbol key, excluding indexes handled by
  * duk__prop_get_idx() and variants.
  */
-DUK_LOCAL duk_bool_t duk__prop_get_str(duk_hthread *thr, duk_hobject *target, duk_hstring *key, duk_idx_t idx_out, duk_idx_t idx_recv) {
+DUK_LOCAL duk_bool_t
+duk__prop_get_str(duk_hthread *thr, duk_hobject *target, duk_hstring *key, duk_idx_t idx_out, duk_idx_t idx_recv) {
 	return duk__prop_get_str_unsafe(thr, target, key, idx_out, idx_recv);
 }
 
 /* [[Get]] for duk_hobjects with ordinary behavior, with index key. */
-DUK_LOCAL duk_bool_t duk__prop_get_idx_unsafe(duk_hthread *thr, duk_hobject *target, duk_uarridx_t idx, duk_idx_t idx_out, duk_idx_t idx_recv) {
+DUK_LOCAL duk_bool_t
+duk__prop_get_idx_unsafe(duk_hthread *thr, duk_hobject *target, duk_uarridx_t idx, duk_idx_t idx_out, duk_idx_t idx_recv) {
 #if defined(DUK_USE_PREFER_SIZE)
 	return duk__prop_get_idx_safe(thr, target, idx, idx_out, idx_recv);
 #else
@@ -923,16 +983,19 @@ DUK_LOCAL duk_bool_t duk__prop_get_idx_unsafe(duk_hthread *thr, duk_hobject *tar
 #endif
 }
 
-DUK_LOCAL DUK_NOINLINE duk_bool_t duk__prop_get_idx_safe(duk_hthread *thr, duk_hobject *target, duk_uarridx_t idx, duk_idx_t idx_out, duk_idx_t idx_recv) {
+DUK_LOCAL DUK_NOINLINE duk_bool_t
+duk__prop_get_idx_safe(duk_hthread *thr, duk_hobject *target, duk_uarridx_t idx, duk_idx_t idx_out, duk_idx_t idx_recv) {
 	return duk__prop_get_stroridx_helper(thr, target, NULL, idx, idx_out, idx_recv, 0 /*use_key*/, 1 /*side_effect_safe*/);
 }
 
 /* [[Get]] for any duk_hobject, with index key. */
-DUK_LOCAL duk_bool_t duk__prop_get_idx(duk_hthread *thr, duk_hobject *target, duk_uarridx_t idx, duk_idx_t idx_out, duk_idx_t idx_recv) {
+DUK_LOCAL duk_bool_t
+duk__prop_get_idx(duk_hthread *thr, duk_hobject *target, duk_uarridx_t idx, duk_idx_t idx_out, duk_idx_t idx_recv) {
 	return duk__prop_get_idx_unsafe(thr, target, idx, idx_out, idx_recv);
 }
 
-DUK_LOCAL duk_bool_t duk__prop_getvalue_plainstr_index(duk_hthread *thr, duk_idx_t idx_recv, duk_uarridx_t idx, duk_idx_t idx_out, duk_hstring *h) {
+DUK_LOCAL duk_bool_t
+duk__prop_getvalue_plainstr_index(duk_hthread *thr, duk_idx_t idx_recv, duk_uarridx_t idx, duk_idx_t idx_out, duk_hstring *h) {
 	DUK_ASSERT(thr != NULL);
 	DUK_ASSERT(duk_is_valid_posidx(thr, idx_recv));
 	DUK_ASSERT_ARRIDX_VALID(idx);
@@ -1013,7 +1076,7 @@ DUK_LOCAL duk_bool_t duk__prop_getvalue_idx_outidx(duk_hthread *thr, duk_idx_t i
 	next = thr->builtins[next_bidx];
 	/* fall thru */
 
- go_next:
+go_next:
 	return duk__prop_get_idx(thr, next, idx, idx_out, idx_recv);
 }
 
@@ -1081,7 +1144,7 @@ DUK_LOCAL duk_bool_t duk__prop_getvalue_str_outidx(duk_hthread *thr, duk_idx_t i
 	next = thr->builtins[next_bidx];
 	/* fall thru */
 
- go_next:
+go_next:
 	return duk__prop_get_str(thr, next, key, idx_out, idx_recv);
 }
 
@@ -1247,10 +1310,10 @@ DUK_INTERNAL duk_bool_t duk_prop_getvalue_outidx(duk_hthread *thr, duk_idx_t idx
 	duk_pop_unsafe(thr);
 	return rc;
 
- use_idx:
+use_idx:
 	return duk__prop_getvalue_idx_outidx(thr, idx_recv, idx, idx_out);
 
- use_str:
+use_str:
 	DUK_ASSERT(!DUK_HSTRING_HAS_ARRIDX(key));
 	return duk__prop_getvalue_str_outidx(thr, idx_recv, key, idx_out);
 }
@@ -1268,7 +1331,10 @@ DUK_INTERNAL duk_bool_t duk_prop_getvalue_push(duk_hthread *thr, duk_idx_t idx_r
 	return duk_prop_getvalue_outidx(thr, idx_recv, tv_key, idx_out);
 }
 
-DUK_INTERNAL duk_bool_t duk_prop_getvalue_stridx_outidx(duk_hthread *thr, duk_idx_t idx_recv, duk_small_uint_t stridx, duk_idx_t idx_out) {
+DUK_INTERNAL duk_bool_t duk_prop_getvalue_stridx_outidx(duk_hthread *thr,
+                                                        duk_idx_t idx_recv,
+                                                        duk_small_uint_t stridx,
+                                                        duk_idx_t idx_out) {
 	DUK_ASSERT(thr != NULL);
 	DUK_ASSERT(duk_is_valid_posidx(thr, idx_recv));
 	DUK_ASSERT_STRIDX_VALID(stridx);
