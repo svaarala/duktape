@@ -37,7 +37,7 @@ DUK_EXTERNAL duk_double_t duk_get_now(duk_hthread *thr) {
 	return duk_time_get_ecmascript_time(thr);
 }
 
-#if 0  /* XXX: worth exposing? */
+#if 0 /* XXX: worth exposing? */
 DUK_EXTERNAL duk_double_t duk_get_monotonic_time(duk_hthread *thr) {
 	DUK_ASSERT_API_ENTRY(thr);
 	DUK_UNREF(thr);
@@ -52,7 +52,7 @@ DUK_EXTERNAL void duk_time_to_components(duk_hthread *thr, duk_double_t timeval,
 	duk_uint_t flags;
 
 	DUK_ASSERT_API_ENTRY(thr);
-	DUK_ASSERT(comp != NULL);  /* XXX: or check? */
+	DUK_ASSERT(comp != NULL); /* XXX: or check? */
 	DUK_UNREF(thr);
 
 	/* Convert as one-based, but change month to zero-based to match the
@@ -81,7 +81,7 @@ DUK_EXTERNAL duk_double_t duk_components_to_time(duk_hthread *thr, duk_time_comp
 	duk_uint_t flags;
 
 	DUK_ASSERT_API_ENTRY(thr);
-	DUK_ASSERT(comp != NULL);  /* XXX: or check? */
+	DUK_ASSERT(comp != NULL); /* XXX: or check? */
 	DUK_UNREF(thr);
 
 	/* Match Date constructor behavior (with UTC time).  Month is given
@@ -102,7 +102,7 @@ DUK_EXTERNAL duk_double_t duk_components_to_time(duk_hthread *thr, duk_time_comp
 	dparts[DUK_DATE_IDX_MINUTE] = comp->minutes;
 	dparts[DUK_DATE_IDX_SECOND] = comp->seconds;
 	dparts[DUK_DATE_IDX_MILLISECOND] = comp->milliseconds;
-	dparts[DUK_DATE_IDX_WEEKDAY] = 0;  /* ignored */
+	dparts[DUK_DATE_IDX_WEEKDAY] = 0; /* ignored */
 
 	d = duk_bi_date_get_timeval_from_dparts(dparts, flags);
 

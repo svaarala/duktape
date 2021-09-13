@@ -8,7 +8,8 @@ TabWidth: 8
 #ColumnLimit: 120
 ColumnLimit: 132
 ConstructorInitializerIndentWidth: 8
-ContinuationIndentWidth: 8
+#ContinuationIndentWidth: 8
+ContinuationIndentWidth: 4
 #UseTab: ForContinuationAndIndentation
 UseTab: AlignWithSpaces
 UseCRLF: false

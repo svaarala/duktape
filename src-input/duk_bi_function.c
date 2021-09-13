@@ -25,7 +25,7 @@ DUK_INTERNAL duk_ret_t duk_bi_function_constructor(duk_hthread *thr) {
 
 	nargs = duk_get_top(thr);
 	for (i = 0; i < nargs; i++) {
-		duk_to_string(thr, i);  /* Rejects Symbols during coercion. */
+		duk_to_string(thr, i); /* Rejects Symbols during coercion. */
 	}
 
 	if (nargs == 0) {
@@ -35,7 +35,7 @@ DUK_INTERNAL duk_ret_t duk_bi_function_constructor(duk_hthread *thr) {
 		/* XXX: cover this with the generic >1 case? */
 		duk_push_hstring_empty(thr);
 	} else {
-		duk_insert(thr, 0);   /* [ arg1 ... argN-1 body] -> [body arg1 ... argN-1] */
+		duk_insert(thr, 0); /* [ arg1 ... argN-1 body] -> [body arg1 ... argN-1] */
 		duk_push_literal(thr, ",");
 		duk_insert(thr, 1);
 		duk_join(thr, nargs - 1);
@@ -52,7 +52,7 @@ DUK_INTERNAL duk_ret_t duk_bi_function_constructor(duk_hthread *thr) {
 	duk_dup_1(thr);
 	duk_push_literal(thr, "){");
 	duk_dup_0(thr);
-	duk_push_literal(thr, "\n}");  /* Newline is important to handle trailing // comment. */
+	duk_push_literal(thr, "\n}"); /* Newline is important to handle trailing // comment. */
 	duk_concat(thr, 5);
 
 	/* [ body formals source ] */
@@ -62,8 +62,8 @@ DUK_INTERNAL duk_ret_t duk_bi_function_constructor(duk_hthread *thr) {
 	/* strictness is not inherited, intentional */
 	comp_flags = DUK_COMPILE_FUNCEXPR;
 
-	duk_push_hstring_stridx(thr, DUK_STRIDX_COMPILE);  /* XXX: copy from caller? */  /* XXX: ignored now */
-	h_sourcecode = duk_require_hstring(thr, -2);  /* no symbol check needed; -2 is concat'd code */
+	duk_push_hstring_stridx(thr, DUK_STRIDX_COMPILE); /* XXX: copy from caller? */ /* XXX: ignored now */
+	h_sourcecode = duk_require_hstring(thr, -2); /* no symbol check needed; -2 is concat'd code */
 	duk_js_compile(thr,
 	               (const duk_uint8_t *) DUK_HSTRING_GET_DATA(h_sourcecode),
 	               (duk_size_t) DUK_HSTRING_GET_BYTELEN(h_sourcecode),
@@ -92,7 +92,7 @@ DUK_INTERNAL duk_ret_t duk_bi_function_constructor(duk_hthread *thr) {
 
 	return 1;
 }
-#endif  /* DUK_USE_FUNCTION_BUILTIN */
+#endif /* DUK_USE_FUNCTION_BUILTIN */
 
 #if defined(DUK_USE_FUNCTION_BUILTIN)
 DUK_INTERNAL duk_ret_t duk_bi_function_prototype_to_string(duk_hthread *thr) {
@@ -158,7 +158,7 @@ DUK_INTERNAL duk_ret_t duk_bi_function_prototype_to_string(duk_hthread *thr) {
 
 	return 1;
 
- type_error:
+type_error:
 	DUK_DCERROR_TYPE_INVALID_ARGS(thr);
 }
 #endif
@@ -200,7 +200,7 @@ DUK_INTERNAL duk_ret_t duk_bi_reflect_construct(duk_hthread *thr) {
  */
 DUK_INTERNAL duk_ret_t duk_bi_function_prototype_bind(duk_hthread *thr) {
 	duk_hboundfunc *h_bound;
-	duk_idx_t nargs;  /* bound args, not counting 'this' binding */
+	duk_idx_t nargs; /* bound args, not counting 'this' binding */
 	duk_idx_t bound_nargs;
 	duk_int_t bound_len;
 	duk_tval *tv_prevbound;
@@ -213,7 +213,7 @@ DUK_INTERNAL duk_ret_t duk_bi_function_prototype_bind(duk_hthread *thr) {
 	/* Vararg function, careful arg handling, e.g. thisArg may not
 	 * be present.
 	 */
-	nargs = duk_get_top(thr) - 1;  /* actual args, not counting 'this' binding */
+	nargs = duk_get_top(thr) - 1; /* actual args, not counting 'this' binding */
 	if (nargs < 0) {
 		nargs++;
 		duk_push_undefined(thr);
@@ -308,7 +308,7 @@ DUK_INTERNAL duk_ret_t duk_bi_function_prototype_bind(duk_hthread *thr) {
 		DUK_HOBJECT_SET_PROTOTYPE_INIT_INCREF(thr, (duk_hobject *) h_bound, bound_proto);
 	}
 
-	DUK_TVAL_INCREF(thr, &h_bound->target);  /* old values undefined, no decref needed */
+	DUK_TVAL_INCREF(thr, &h_bound->target); /* old values undefined, no decref needed */
 	DUK_TVAL_INCREF(thr, &h_bound->this_binding);
 
 	bound_nargs = n_prevbound + nargs;
@@ -333,7 +333,7 @@ DUK_INTERNAL duk_ret_t duk_bi_function_prototype_bind(duk_hthread *thr) {
 	 * For lightfuncs, simply read the virtual property.
 	 */
 	duk_get_prop_stridx_short(thr, -2, DUK_STRIDX_LENGTH);
-	bound_len = duk_get_int(thr, -1);  /* ES2015: no coercion */
+	bound_len = duk_get_int(thr, -1); /* ES2015: no coercion */
 	if (bound_len < nargs) {
 		bound_len = 0;
 	} else {
@@ -347,8 +347,8 @@ DUK_INTERNAL duk_ret_t duk_bi_function_prototype_bind(duk_hthread *thr) {
 	tv_tmp = thr->valstack_top++;
 	DUK_ASSERT(DUK_TVAL_IS_UNDEFINED(tv_tmp));
 	DUK_ASSERT(!DUK_TVAL_NEEDS_REFCOUNT_UPDATE(tv_tmp));
-	DUK_TVAL_SET_U32(tv_tmp, (duk_uint32_t) bound_len);  /* in-place update, fastint */
-	duk_xdef_prop_stridx_short(thr, -2, DUK_STRIDX_LENGTH, DUK_PROPDESC_FLAGS_C);  /* attrs in E6 Section 9.2.4 */
+	DUK_TVAL_SET_U32(tv_tmp, (duk_uint32_t) bound_len); /* in-place update, fastint */
+	duk_xdef_prop_stridx_short(thr, -2, DUK_STRIDX_LENGTH, DUK_PROPDESC_FLAGS_C); /* attrs in E6 Section 9.2.4 */
 
 	/* XXX: could these be virtual? */
 	/* Caller and arguments must use the same thrower, [[ThrowTypeError]]. */
@@ -356,7 +356,7 @@ DUK_INTERNAL duk_ret_t duk_bi_function_prototype_bind(duk_hthread *thr) {
 	duk_xdef_prop_stridx_thrower(thr, -1, DUK_STRIDX_LC_ARGUMENTS);
 
 	/* Function name and fileName (non-standard). */
-	duk_push_literal(thr, "bound ");  /* ES2015 19.2.3.2. */
+	duk_push_literal(thr, "bound "); /* ES2015 19.2.3.2. */
 	duk_get_prop_stridx(thr, -3, DUK_STRIDX_NAME);
 	if (!duk_is_string_notsymbol(thr, -1)) {
 		/* ES2015 has requirement to check that .name of target is a string
@@ -377,7 +377,7 @@ DUK_INTERNAL duk_ret_t duk_bi_function_prototype_bind(duk_hthread *thr) {
 
 	return 1;
 }
-#endif  /* DUK_USE_FUNCTION_BUILTIN */
+#endif /* DUK_USE_FUNCTION_BUILTIN */
 
 /* %NativeFunctionPrototype% .length getter. */
 DUK_INTERNAL duk_ret_t duk_bi_native_function_length(duk_hthread *thr) {
@@ -408,7 +408,7 @@ DUK_INTERNAL duk_ret_t duk_bi_native_function_length(duk_hthread *thr) {
 	}
 	return 1;
 
- fail_type:
+fail_type:
 	DUK_DCERROR_TYPE_INVALID_ARGS(thr);
 }
 
@@ -437,7 +437,7 @@ DUK_INTERNAL duk_ret_t duk_bi_native_function_name(duk_hthread *thr) {
 	}
 	return 1;
 
- fail_type:
+fail_type:
 	DUK_DCERROR_TYPE_INVALID_ARGS(thr);
 }
 
@@ -450,4 +450,4 @@ DUK_INTERNAL duk_ret_t duk_bi_function_prototype_hasinstance(duk_hthread *thr) {
 	duk_push_boolean(thr, ret);
 	return 1;
 }
-#endif  /* DUK_USE_SYMBOL_BUILTIN */
+#endif /* DUK_USE_SYMBOL_BUILTIN */

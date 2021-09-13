@@ -194,7 +194,7 @@ DUK_LOCAL void duk__cbor_encode_double(duk_cbor_encode_context *enc_ctx, double 
 	p += 8;
 	enc_ctx->ptr = p;
 }
-#else  /* DUK_CBOR_DOUBLE_AS_IS */
+#else /* DUK_CBOR_DOUBLE_AS_IS */
 DUK_LOCAL void duk__cbor_encode_double_fp(duk_cbor_encode_context *enc_ctx, double d) {
 	duk_double_union u;
 	duk_uint16_t u16;
@@ -229,8 +229,7 @@ DUK_LOCAL void duk__cbor_encode_double_fp(duk_cbor_encode_context *enc_ctx, doub
 		duk_bool_t use_half_float;
 
 		use_half_float =
-		    (u.uc[0] == 0 && u.uc[1] == 0 && u.uc[2] == 0 && u.uc[3] == 0 &&
-		     u.uc[4] == 0 && (u.uc[5] & 0x03U) == 0);
+		    (u.uc[0] == 0 && u.uc[1] == 0 && u.uc[2] == 0 && u.uc[3] == 0 && u.uc[4] == 0 && (u.uc[5] & 0x03U) == 0);
 
 		if (use_half_float) {
 			duk_uint32_t t;
@@ -382,9 +381,9 @@ DUK_LOCAL void duk__cbor_encode_double(duk_cbor_encode_context *enc_ctx, double 
 	/* Most important path is integers.  The floor() test will be true
 	 * for Inf too (but not NaN).
 	 */
-	d_floor = DUK_FLOOR(d);  /* identity if d is +/- 0.0, NaN, or +/- Infinity */
+	d_floor = DUK_FLOOR(d); /* identity if d is +/- 0.0, NaN, or +/- Infinity */
 	if (DUK_LIKELY(duk_double_equals(d_floor, d) != 0)) {
-		DUK_ASSERT(!DUK_ISNAN(d));  /* NaN == NaN compares false. */
+		DUK_ASSERT(!DUK_ISNAN(d)); /* NaN == NaN compares false. */
 		if (DUK_SIGNBIT(d)) {
 			if (d >= -4294967296.0) {
 				d = -1.0 - d;
@@ -423,7 +422,7 @@ DUK_LOCAL void duk__cbor_encode_double(duk_cbor_encode_context *enc_ctx, double 
 	DUK_ASSERT(DUK_FPCLASSIFY(d) != DUK_FP_ZERO);
 	duk__cbor_encode_double_fp(enc_ctx, d);
 }
-#endif  /* DUK_CBOR_DOUBLE_AS_IS */
+#endif /* DUK_CBOR_DOUBLE_AS_IS */
 
 DUK_LOCAL void duk__cbor_encode_string_top(duk_cbor_encode_context *enc_ctx) {
 	const duk_uint8_t *str;
@@ -474,7 +473,8 @@ DUK_LOCAL void duk__cbor_encode_string_top(duk_cbor_encode_context *enc_ctx) {
 #elif defined(DUK_CBOR_BYTE_STRINGS)
 	duk__cbor_encode_uint32(enc_ctx, (duk_uint32_t) len, 0x40U);
 #else
-	duk__cbor_encode_uint32(enc_ctx, (duk_uint32_t) len,
+	duk__cbor_encode_uint32(enc_ctx,
+	                        (duk_uint32_t) len,
 	                        (DUK_LIKELY(duk_unicode_is_utf8_compatible(str, len) != 0) ? 0x60U : 0x40U));
 #endif
 	duk__cbor_encode_ensure(enc_ctx, len);
@@ -534,14 +534,14 @@ DUK_LOCAL void duk__cbor_encode_object(duk_cbor_encode_context *enc_ctx) {
 		 * indefinite length.  This works well up to 23
 		 * properties which is practical and good enough.
 		 */
-		off_ib = (duk_size_t) (enc_ctx->ptr - enc_ctx->buf);  /* XXX: get_offset? */
+		off_ib = (duk_size_t) (enc_ctx->ptr - enc_ctx->buf); /* XXX: get_offset? */
 		count = 0U;
 		p = enc_ctx->ptr;
-		*p++ = 0xa0U + 0x1fU;  /* indefinite length */
+		*p++ = 0xa0U + 0x1fU; /* indefinite length */
 		enc_ctx->ptr = p;
 		duk_enum(enc_ctx->thr, -1, DUK_ENUM_OWN_PROPERTIES_ONLY);
 		while (duk_next(enc_ctx->thr, -1, 1 /*get_value*/)) {
-			duk_insert(enc_ctx->thr, -2);  /* [ ... key value ] -> [ ... value key ] */
+			duk_insert(enc_ctx->thr, -2); /* [ ... key value ] -> [ ... value key ] */
 			duk__cbor_encode_value(enc_ctx);
 			duk__cbor_encode_value(enc_ctx);
 			count++;
@@ -556,7 +556,7 @@ DUK_LOCAL void duk__cbor_encode_object(duk_cbor_encode_context *enc_ctx) {
 		} else {
 			duk__cbor_encode_ensure(enc_ctx, 1);
 			p = enc_ctx->ptr;
-			*p++ = 0xffU;  /* break */
+			*p++ = 0xffU; /* break */
 			enc_ctx->ptr = p;
 		}
 	}
@@ -684,7 +684,7 @@ DUK_LOCAL void duk__cbor_encode_value(duk_cbor_encode_context *enc_ctx) {
 	duk_pop(enc_ctx->thr);
 	return;
 
- fail:
+fail:
 	duk__cbor_encode_error(enc_ctx);
 }
 
@@ -761,7 +761,7 @@ DUK_LOCAL duk_uint8_t duk__cbor_decode_peekbyte(duk_cbor_decode_context *dec_ctx
 }
 
 DUK_LOCAL void duk__cbor_decode_rewind(duk_cbor_decode_context *dec_ctx, duk_size_t len) {
-	DUK_ASSERT(len <= dec_ctx->off);  /* Caller must ensure. */
+	DUK_ASSERT(len <= dec_ctx->off); /* Caller must ensure. */
 	dec_ctx->off -= len;
 }
 
@@ -781,7 +781,7 @@ DUK_LOCAL const duk_uint8_t *duk__cbor_decode_consume(duk_cbor_decode_context *d
 		return res;
 	}
 
-	duk__cbor_decode_error(dec_ctx);  /* Not enough input. */
+	duk__cbor_decode_error(dec_ctx); /* Not enough input. */
 	return NULL;
 }
 
@@ -813,16 +813,16 @@ DUK_LOCAL void duk__cbor_decode_push_aival_int(duk_cbor_decode_context *dec_ctx,
 	}
 
 	switch (ai) {
-	case 0x18U:  /* 1 byte */
+	case 0x18U: /* 1 byte */
 		t = (duk_uint32_t) duk__cbor_decode_readbyte(dec_ctx);
 		goto shared_exit;
-	case 0x19U:  /* 2 byte */
+	case 0x19U: /* 2 byte */
 		t = (duk_uint32_t) duk__cbor_decode_read_u16(dec_ctx);
 		goto shared_exit;
-	case 0x1aU:  /* 4 byte */
+	case 0x1aU: /* 4 byte */
 		t = (duk_uint32_t) duk__cbor_decode_read_u32(dec_ctx);
 		goto shared_exit;
-	case 0x1bU:  /* 8 byte */
+	case 0x1bU: /* 8 byte */
 		/* For uint64 it's important to handle the -1.0 part before
 		 * casting to double: otherwise the adjustment might be lost
 		 * in the cast.  Uses: -1.0 - d <=> -(d + 1.0).
@@ -879,7 +879,7 @@ DUK_LOCAL void duk__cbor_decode_push_aival_int(duk_cbor_decode_context *dec_ctx,
 		 *
 		 * No fastint check for this path at present.
 		 */
-		d1 = (duk_double_t) t1;  /* XXX: cast helpers */
+		d1 = (duk_double_t) t1; /* XXX: cast helpers */
 		d2 = (duk_double_t) t2 * 4294967296.0;
 		if (negative) {
 			d1 += 1.0;
@@ -897,10 +897,10 @@ DUK_LOCAL void duk__cbor_decode_push_aival_int(duk_cbor_decode_context *dec_ctx,
 	duk__cbor_decode_error(dec_ctx);
 	return;
 
- shared_exit:
+shared_exit:
 	if (negative) {
 		/* XXX: a push and check for fastint API would be nice */
-		if ((duk_uint_t) t <= (duk_uint_t) -(DUK_INT_MIN + 1)) {
+		if ((duk_uint_t) t <= (duk_uint_t) - (DUK_INT_MIN + 1)) {
 			duk_push_int(dec_ctx->thr, -1 - ((duk_int_t) t));
 		} else {
 			duk_push_number(dec_ctx->thr, -1.0 - (duk_double_t) t);
@@ -911,10 +911,8 @@ DUK_LOCAL void duk__cbor_decode_push_aival_int(duk_cbor_decode_context *dec_ctx,
 }
 
 DUK_LOCAL void duk__cbor_decode_skip_aival_int(duk_cbor_decode_context *dec_ctx, duk_uint8_t ib) {
-	const duk_int8_t skips[32] = {
-		0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
-		0, 0, 0, 0, 0, 0, 0, 0, 1, 2, 4, 8, -1, -1, -1, -1
-	};
+	const duk_int8_t skips[32] = { 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,  0,  0,  0,
+		                       0, 0, 0, 0, 0, 0, 0, 0, 1, 2, 4, 8, -1, -1, -1, -1 };
 	duk_uint8_t ai;
 	duk_int8_t skip;
 
@@ -937,16 +935,16 @@ DUK_LOCAL duk_uint32_t duk__cbor_decode_aival_uint32(duk_cbor_decode_context *de
 	}
 
 	switch (ai) {
-	case 0x18U:  /* 1 byte */
+	case 0x18U: /* 1 byte */
 		t = (duk_uint32_t) duk__cbor_decode_readbyte(dec_ctx);
 		return t;
-	case 0x19U:  /* 2 byte */
+	case 0x19U: /* 2 byte */
 		t = (duk_uint32_t) duk__cbor_decode_read_u16(dec_ctx);
 		return t;
-	case 0x1aU:  /* 4 byte */
+	case 0x1aU: /* 4 byte */
 		t = (duk_uint32_t) duk__cbor_decode_read_u32(dec_ctx);
 		return t;
-	case 0x1bU:  /* 8 byte */
+	case 0x1bU: /* 8 byte */
 		t = (duk_uint32_t) duk__cbor_decode_read_u32(dec_ctx);
 		if (t != 0U) {
 			break;
@@ -980,7 +978,7 @@ DUK_LOCAL void duk__cbor_decode_buffer(duk_cbor_decode_context *dec_ctx, duk_uin
 DUK_LOCAL void duk__cbor_decode_join_buffers(duk_cbor_decode_context *dec_ctx, duk_idx_t count) {
 	duk_size_t total_size = 0;
 	duk_idx_t top = duk_get_top(dec_ctx->thr);
-	duk_idx_t base = top - count;  /* count is >= 1 */
+	duk_idx_t base = top - count; /* count is >= 1 */
 	duk_idx_t idx;
 	duk_uint8_t *p = NULL;
 
@@ -1001,7 +999,7 @@ DUK_LOCAL void duk__cbor_decode_join_buffers(duk_cbor_decode_context *dec_ctx, d
 				p += buf_size;
 			} else {
 				total_size += buf_size;
-				if (DUK_UNLIKELY(total_size < buf_size)) {  /* Wrap check. */
+				if (DUK_UNLIKELY(total_size < buf_size)) { /* Wrap check. */
 					duk__cbor_decode_error(dec_ctx);
 				}
 			}
@@ -1028,7 +1026,7 @@ DUK_LOCAL void duk__cbor_decode_and_join_strbuf(duk_cbor_decode_context *dec_ctx
 		duk_require_stack(dec_ctx->thr, 1);
 		duk__cbor_decode_buffer(dec_ctx, expected_base);
 		count++;
-		if (DUK_UNLIKELY(count <= 0)) {  /* Wrap check. */
+		if (DUK_UNLIKELY(count <= 0)) { /* Wrap check. */
 			duk__cbor_decode_error(dec_ctx);
 		}
 	}
@@ -1076,10 +1074,10 @@ DUK_LOCAL duk_double_t duk__cbor_decode_half_float(duk_cbor_decode_context *dec_
 			 */
 			u.uc[7] = 0x3fU;
 			u.uc[6] = 0x10U + (duk_uint8_t) ((u16 >> 6) & 0x0fU);
-			u.uc[5] = (duk_uint8_t) ((u16 << 2) & 0xffU);  /* Mask is really 0xfcU */
+			u.uc[5] = (duk_uint8_t) ((u16 << 2) & 0xffU); /* Mask is really 0xfcU */
 
 			duk_dblunion_little_to_host(&u);
-			res = u.d - 0.00006103515625;  /* 2^(-14) */
+			res = u.d - 0.00006103515625; /* 2^(-14) */
 			if (u16 & 0x8000U) {
 				res = -res;
 			}
@@ -1178,7 +1176,7 @@ DUK_LOCAL duk_bool_t duk__cbor_decode_array(duk_cbor_decode_context *dec_ctx, du
 
 	/* XXX: use bare array? */
 	duk_push_array(dec_ctx->thr);
-	for (idx = 0U; ;) {
+	for (idx = 0U;;) {
 		if (len == 0xffffffffUL && duk__cbor_decode_checkbreak(dec_ctx)) {
 			break;
 		}
@@ -1192,7 +1190,7 @@ DUK_LOCAL duk_bool_t duk__cbor_decode_array(duk_cbor_decode_context *dec_ctx, du
 		duk_put_prop_index(dec_ctx->thr, -2, (duk_uarridx_t) idx);
 		idx++;
 		if (idx == 0U) {
-			goto failure;  /* wrapped */
+			goto failure; /* wrapped */
 		}
 	}
 
@@ -1202,7 +1200,7 @@ DUK_LOCAL duk_bool_t duk__cbor_decode_array(duk_cbor_decode_context *dec_ctx, du
 	duk__cbor_decode_objarr_exit(dec_ctx);
 	return 1;
 
- failure:
+failure:
 	/* No need to unwind recursion checks, caller will throw. */
 	return 0;
 }
@@ -1254,7 +1252,7 @@ DUK_LOCAL duk_bool_t duk__cbor_decode_map(duk_cbor_decode_context *dec_ctx, duk_
 	duk__cbor_decode_objarr_exit(dec_ctx);
 	return 1;
 
- failure:
+failure:
 	/* No need to unwind recursion checks, caller will throw. */
 	return 0;
 }
@@ -1278,7 +1276,7 @@ DUK_LOCAL duk_double_t duk__cbor_decode_double(duk_cbor_decode_context *dec_ctx)
 }
 
 #if defined(DUK_CBOR_DECODE_FASTPATH)
-#define DUK__CBOR_AI  (ib & 0x1fU)
+#define DUK__CBOR_AI (ib & 0x1fU)
 
 DUK_LOCAL void duk__cbor_decode_value(duk_cbor_decode_context *dec_ctx) {
 	duk_uint8_t ib;
@@ -1288,7 +1286,7 @@ DUK_LOCAL void duk__cbor_decode_value(duk_cbor_decode_context *dec_ctx) {
 	 * here for simple paths like primitive values.
 	 */
 
- reread_initial_byte:
+reread_initial_byte:
 	DUK_DDD(DUK_DDDPRINT("cbor decode off=%ld len=%ld", (long) dec_ctx->off, (long) dec_ctx->len));
 
 	ib = duk__cbor_decode_readbyte(dec_ctx);
@@ -1297,107 +1295,292 @@ DUK_LOCAL void duk__cbor_decode_value(duk_cbor_decode_context *dec_ctx) {
 	/* XXX: Force full switch with no range check. */
 
 	switch (ib) {
-	case 0x00U: case 0x01U: case 0x02U: case 0x03U: case 0x04U: case 0x05U: case 0x06U: case 0x07U:
-	case 0x08U: case 0x09U: case 0x0aU: case 0x0bU: case 0x0cU: case 0x0dU: case 0x0eU: case 0x0fU:
-	case 0x10U: case 0x11U: case 0x12U: case 0x13U: case 0x14U: case 0x15U: case 0x16U: case 0x17U:
+	case 0x00U:
+	case 0x01U:
+	case 0x02U:
+	case 0x03U:
+	case 0x04U:
+	case 0x05U:
+	case 0x06U:
+	case 0x07U:
+	case 0x08U:
+	case 0x09U:
+	case 0x0aU:
+	case 0x0bU:
+	case 0x0cU:
+	case 0x0dU:
+	case 0x0eU:
+	case 0x0fU:
+	case 0x10U:
+	case 0x11U:
+	case 0x12U:
+	case 0x13U:
+	case 0x14U:
+	case 0x15U:
+	case 0x16U:
+	case 0x17U:
 		duk_push_uint(dec_ctx->thr, ib);
 		break;
-	case 0x18U: case 0x19U: case 0x1aU: case 0x1bU:
+	case 0x18U:
+	case 0x19U:
+	case 0x1aU:
+	case 0x1bU:
 		duk__cbor_decode_push_aival_int(dec_ctx, ib, 0 /*negative*/);
 		break;
-	case 0x1cU: case 0x1dU: case 0x1eU: case 0x1fU:
+	case 0x1cU:
+	case 0x1dU:
+	case 0x1eU:
+	case 0x1fU:
 		goto format_error;
-	case 0x20U: case 0x21U: case 0x22U: case 0x23U: case 0x24U: case 0x25U: case 0x26U: case 0x27U:
-	case 0x28U: case 0x29U: case 0x2aU: case 0x2bU: case 0x2cU: case 0x2dU: case 0x2eU: case 0x2fU:
-	case 0x30U: case 0x31U: case 0x32U: case 0x33U: case 0x34U: case 0x35U: case 0x36U: case 0x37U:
+	case 0x20U:
+	case 0x21U:
+	case 0x22U:
+	case 0x23U:
+	case 0x24U:
+	case 0x25U:
+	case 0x26U:
+	case 0x27U:
+	case 0x28U:
+	case 0x29U:
+	case 0x2aU:
+	case 0x2bU:
+	case 0x2cU:
+	case 0x2dU:
+	case 0x2eU:
+	case 0x2fU:
+	case 0x30U:
+	case 0x31U:
+	case 0x32U:
+	case 0x33U:
+	case 0x34U:
+	case 0x35U:
+	case 0x36U:
+	case 0x37U:
 		duk_push_int(dec_ctx->thr, -((duk_int_t) ((ib - 0x20U) + 1U)));
 		break;
-	case 0x38U: case 0x39U: case 0x3aU: case 0x3bU:
+	case 0x38U:
+	case 0x39U:
+	case 0x3aU:
+	case 0x3bU:
 		duk__cbor_decode_push_aival_int(dec_ctx, ib, 1 /*negative*/);
 		break;
-	case 0x3cU: case 0x3dU: case 0x3eU: case 0x3fU:
+	case 0x3cU:
+	case 0x3dU:
+	case 0x3eU:
+	case 0x3fU:
 		goto format_error;
-	case 0x40U: case 0x41U: case 0x42U: case 0x43U: case 0x44U: case 0x45U: case 0x46U: case 0x47U:
-	case 0x48U: case 0x49U: case 0x4aU: case 0x4bU: case 0x4cU: case 0x4dU: case 0x4eU: case 0x4fU:
-	case 0x50U: case 0x51U: case 0x52U: case 0x53U: case 0x54U: case 0x55U: case 0x56U: case 0x57U:
+	case 0x40U:
+	case 0x41U:
+	case 0x42U:
+	case 0x43U:
+	case 0x44U:
+	case 0x45U:
+	case 0x46U:
+	case 0x47U:
+	case 0x48U:
+	case 0x49U:
+	case 0x4aU:
+	case 0x4bU:
+	case 0x4cU:
+	case 0x4dU:
+	case 0x4eU:
+	case 0x4fU:
+	case 0x50U:
+	case 0x51U:
+	case 0x52U:
+	case 0x53U:
+	case 0x54U:
+	case 0x55U:
+	case 0x56U:
+	case 0x57U:
 		/* XXX: Avoid rewind, we know the length already. */
 		DUK_ASSERT(dec_ctx->off > 0U);
 		dec_ctx->off--;
 		duk__cbor_decode_buffer(dec_ctx, 0x40U);
 		break;
-	case 0x58U: case 0x59U: case 0x5aU: case 0x5bU:
+	case 0x58U:
+	case 0x59U:
+	case 0x5aU:
+	case 0x5bU:
 		/* XXX: Avoid rewind, decode length inline. */
 		DUK_ASSERT(dec_ctx->off > 0U);
 		dec_ctx->off--;
 		duk__cbor_decode_buffer(dec_ctx, 0x40U);
 		break;
-	case 0x5cU: case 0x5dU: case 0x5eU:
+	case 0x5cU:
+	case 0x5dU:
+	case 0x5eU:
 		goto format_error;
 	case 0x5fU:
 		duk__cbor_decode_and_join_strbuf(dec_ctx, 0x40U);
 		break;
-	case 0x60U: case 0x61U: case 0x62U: case 0x63U: case 0x64U: case 0x65U: case 0x66U: case 0x67U:
-	case 0x68U: case 0x69U: case 0x6aU: case 0x6bU: case 0x6cU: case 0x6dU: case 0x6eU: case 0x6fU:
-	case 0x70U: case 0x71U: case 0x72U: case 0x73U: case 0x74U: case 0x75U: case 0x76U: case 0x77U:
+	case 0x60U:
+	case 0x61U:
+	case 0x62U:
+	case 0x63U:
+	case 0x64U:
+	case 0x65U:
+	case 0x66U:
+	case 0x67U:
+	case 0x68U:
+	case 0x69U:
+	case 0x6aU:
+	case 0x6bU:
+	case 0x6cU:
+	case 0x6dU:
+	case 0x6eU:
+	case 0x6fU:
+	case 0x70U:
+	case 0x71U:
+	case 0x72U:
+	case 0x73U:
+	case 0x74U:
+	case 0x75U:
+	case 0x76U:
+	case 0x77U:
 		/* XXX: Avoid double decode of length. */
 		duk__cbor_decode_string(dec_ctx, ib, DUK__CBOR_AI);
 		break;
-	case 0x78U: case 0x79U: case 0x7aU: case 0x7bU:
+	case 0x78U:
+	case 0x79U:
+	case 0x7aU:
+	case 0x7bU:
 		/* XXX: Avoid double decode of length. */
 		duk__cbor_decode_string(dec_ctx, ib, DUK__CBOR_AI);
 		break;
-	case 0x7cU: case 0x7dU: case 0x7eU:
+	case 0x7cU:
+	case 0x7dU:
+	case 0x7eU:
 		goto format_error;
 	case 0x7fU:
 		duk__cbor_decode_string(dec_ctx, ib, DUK__CBOR_AI);
 		break;
-	case 0x80U: case 0x81U: case 0x82U: case 0x83U: case 0x84U: case 0x85U: case 0x86U: case 0x87U:
-	case 0x88U: case 0x89U: case 0x8aU: case 0x8bU: case 0x8cU: case 0x8dU: case 0x8eU: case 0x8fU:
-	case 0x90U: case 0x91U: case 0x92U: case 0x93U: case 0x94U: case 0x95U: case 0x96U: case 0x97U:
+	case 0x80U:
+	case 0x81U:
+	case 0x82U:
+	case 0x83U:
+	case 0x84U:
+	case 0x85U:
+	case 0x86U:
+	case 0x87U:
+	case 0x88U:
+	case 0x89U:
+	case 0x8aU:
+	case 0x8bU:
+	case 0x8cU:
+	case 0x8dU:
+	case 0x8eU:
+	case 0x8fU:
+	case 0x90U:
+	case 0x91U:
+	case 0x92U:
+	case 0x93U:
+	case 0x94U:
+	case 0x95U:
+	case 0x96U:
+	case 0x97U:
 		if (DUK_UNLIKELY(duk__cbor_decode_array(dec_ctx, ib, DUK__CBOR_AI) == 0)) {
 			goto format_error;
 		}
 		break;
-	case 0x98U: case 0x99U: case 0x9aU: case 0x9bU:
+	case 0x98U:
+	case 0x99U:
+	case 0x9aU:
+	case 0x9bU:
 		if (DUK_UNLIKELY(duk__cbor_decode_array(dec_ctx, ib, DUK__CBOR_AI) == 0)) {
 			goto format_error;
 		}
 		break;
-	case 0x9cU: case 0x9dU: case 0x9eU:
+	case 0x9cU:
+	case 0x9dU:
+	case 0x9eU:
 		goto format_error;
 	case 0x9fU:
 		if (DUK_UNLIKELY(duk__cbor_decode_array(dec_ctx, ib, DUK__CBOR_AI) == 0)) {
 			goto format_error;
 		}
 		break;
-	case 0xa0U: case 0xa1U: case 0xa2U: case 0xa3U: case 0xa4U: case 0xa5U: case 0xa6U: case 0xa7U:
-	case 0xa8U: case 0xa9U: case 0xaaU: case 0xabU: case 0xacU: case 0xadU: case 0xaeU: case 0xafU:
-	case 0xb0U: case 0xb1U: case 0xb2U: case 0xb3U: case 0xb4U: case 0xb5U: case 0xb6U: case 0xb7U:
+	case 0xa0U:
+	case 0xa1U:
+	case 0xa2U:
+	case 0xa3U:
+	case 0xa4U:
+	case 0xa5U:
+	case 0xa6U:
+	case 0xa7U:
+	case 0xa8U:
+	case 0xa9U:
+	case 0xaaU:
+	case 0xabU:
+	case 0xacU:
+	case 0xadU:
+	case 0xaeU:
+	case 0xafU:
+	case 0xb0U:
+	case 0xb1U:
+	case 0xb2U:
+	case 0xb3U:
+	case 0xb4U:
+	case 0xb5U:
+	case 0xb6U:
+	case 0xb7U:
 		if (DUK_UNLIKELY(duk__cbor_decode_map(dec_ctx, ib, DUK__CBOR_AI) == 0)) {
 			goto format_error;
 		}
 		break;
-	case 0xb8U: case 0xb9U: case 0xbaU: case 0xbbU:
+	case 0xb8U:
+	case 0xb9U:
+	case 0xbaU:
+	case 0xbbU:
 		if (DUK_UNLIKELY(duk__cbor_decode_map(dec_ctx, ib, DUK__CBOR_AI) == 0)) {
 			goto format_error;
 		}
 		break;
-	case 0xbcU: case 0xbdU: case 0xbeU:
+	case 0xbcU:
+	case 0xbdU:
+	case 0xbeU:
 		goto format_error;
 	case 0xbfU:
 		if (DUK_UNLIKELY(duk__cbor_decode_map(dec_ctx, ib, DUK__CBOR_AI) == 0)) {
 			goto format_error;
 		}
 		break;
-	case 0xc0U: case 0xc1U: case 0xc2U: case 0xc3U: case 0xc4U: case 0xc5U: case 0xc6U: case 0xc7U:
-	case 0xc8U: case 0xc9U: case 0xcaU: case 0xcbU: case 0xccU: case 0xcdU: case 0xceU: case 0xcfU:
-	case 0xd0U: case 0xd1U: case 0xd2U: case 0xd3U: case 0xd4U: case 0xd5U: case 0xd6U: case 0xd7U:
+	case 0xc0U:
+	case 0xc1U:
+	case 0xc2U:
+	case 0xc3U:
+	case 0xc4U:
+	case 0xc5U:
+	case 0xc6U:
+	case 0xc7U:
+	case 0xc8U:
+	case 0xc9U:
+	case 0xcaU:
+	case 0xcbU:
+	case 0xccU:
+	case 0xcdU:
+	case 0xceU:
+	case 0xcfU:
+	case 0xd0U:
+	case 0xd1U:
+	case 0xd2U:
+	case 0xd3U:
+	case 0xd4U:
+	case 0xd5U:
+	case 0xd6U:
+	case 0xd7U:
 		/* Tag 0-23: drop. */
 		goto reread_initial_byte;
-	case 0xd8U: case 0xd9U: case 0xdaU: case 0xdbU:
+	case 0xd8U:
+	case 0xd9U:
+	case 0xdaU:
+	case 0xdbU:
 		duk__cbor_decode_skip_aival_int(dec_ctx, ib);
 		goto reread_initial_byte;
-	case 0xdcU: case 0xddU: case 0xdeU: case 0xdfU:
+	case 0xdcU:
+	case 0xddU:
+	case 0xdeU:
+	case 0xdfU:
 		goto format_error;
 	case 0xe0U:
 		goto format_error;
@@ -1477,14 +1660,14 @@ DUK_LOCAL void duk__cbor_decode_value(duk_cbor_decode_context *dec_ctx) {
 	case 0xfeU:
 	case 0xffU:
 		goto format_error;
-	}  /* end switch */
+	} /* end switch */
 
 	return;
 
- format_error:
+format_error:
 	duk__cbor_decode_error(dec_ctx);
 }
-#else  /* DUK_CBOR_DECODE_FASTPATH */
+#else /* DUK_CBOR_DECODE_FASTPATH */
 DUK_LOCAL void duk__cbor_decode_value(duk_cbor_decode_context *dec_ctx) {
 	duk_uint8_t ib, mt, ai;
 
@@ -1493,7 +1676,7 @@ DUK_LOCAL void duk__cbor_decode_value(duk_cbor_decode_context *dec_ctx) {
 	 * here for simple paths like primitive values.
 	 */
 
- reread_initial_byte:
+reread_initial_byte:
 	DUK_DDD(DUK_DDDPRINT("cbor decode off=%ld len=%ld", (long) dec_ctx->off, (long) dec_ctx->len));
 
 	ib = duk__cbor_decode_readbyte(dec_ctx);
@@ -1509,15 +1692,15 @@ DUK_LOCAL void duk__cbor_decode_value(duk_cbor_decode_context *dec_ctx) {
 	 */
 
 	switch (mt) {
-	case 0U: {  /* unsigned integer */
+	case 0U: { /* unsigned integer */
 		duk__cbor_decode_push_aival_int(dec_ctx, ib, 0 /*negative*/);
 		break;
 	}
-	case 1U: {  /* negative integer */
+	case 1U: { /* negative integer */
 		duk__cbor_decode_push_aival_int(dec_ctx, ib, 1 /*negative*/);
 		break;
 	}
-	case 2U: {  /* byte string */
+	case 2U: { /* byte string */
 		if (ai == 0x1fU) {
 			duk__cbor_decode_and_join_strbuf(dec_ctx, 0x40U);
 		} else {
@@ -1526,23 +1709,23 @@ DUK_LOCAL void duk__cbor_decode_value(duk_cbor_decode_context *dec_ctx) {
 		}
 		break;
 	}
-	case 3U: {  /* text string */
+	case 3U: { /* text string */
 		duk__cbor_decode_string(dec_ctx, ib, ai);
 		break;
 	}
-	case 4U: {  /* array of data items */
+	case 4U: { /* array of data items */
 		if (DUK_UNLIKELY(duk__cbor_decode_array(dec_ctx, ib, ai) == 0)) {
 			goto format_error;
 		}
 		break;
 	}
-	case 5U: {  /* map of pairs of data items */
+	case 5U: { /* map of pairs of data items */
 		if (DUK_UNLIKELY(duk__cbor_decode_map(dec_ctx, ib, ai) == 0)) {
 			goto format_error;
 		}
 		break;
 	}
-	case 6U: {  /* semantic tagging */
+	case 6U: { /* semantic tagging */
 		/* Tags are ignored now, re-read initial byte.  A tagged
 		 * value may itself be tagged (an unlimited number of times)
 		 * so keep on peeling away tags.
@@ -1550,7 +1733,7 @@ DUK_LOCAL void duk__cbor_decode_value(duk_cbor_decode_context *dec_ctx) {
 		duk__cbor_decode_skip_aival_int(dec_ctx, ib);
 		goto reread_initial_byte;
 	}
-	case 7U: {  /* floating point numbers, simple data types, break; other */
+	case 7U: { /* floating point numbers, simple data types, break; other */
 		switch (ai) {
 		case 0x14U: {
 			duk_push_false(dec_ctx->thr);
@@ -1568,7 +1751,7 @@ DUK_LOCAL void duk__cbor_decode_value(duk_cbor_decode_context *dec_ctx) {
 			duk_push_undefined(dec_ctx->thr);
 			break;
 		}
-		case 0x18U: {  /* more simple values (1 byte) */
+		case 0x18U: { /* more simple values (1 byte) */
 			/* Simple value encoded in additional byte (none
 			 * are defined so far).  RFC 7049 states that the
 			 * follow-up byte must be 32-255 to minimize
@@ -1579,42 +1762,42 @@ DUK_LOCAL void duk__cbor_decode_value(duk_cbor_decode_context *dec_ctx) {
 			 */
 			goto format_error;
 		}
-		case 0x19U: {  /* half-float (2 bytes) */
+		case 0x19U: { /* half-float (2 bytes) */
 			duk_double_t d;
 			d = duk__cbor_decode_half_float(dec_ctx);
 			duk_push_number(dec_ctx->thr, d);
 			break;
 		}
-		case 0x1aU: {  /* float (4 bytes) */
+		case 0x1aU: { /* float (4 bytes) */
 			duk_double_t d;
 			d = duk__cbor_decode_float(dec_ctx);
 			duk_push_number(dec_ctx->thr, d);
 			break;
 		}
-		case 0x1bU: {  /* double (8 bytes) */
+		case 0x1bU: { /* double (8 bytes) */
 			duk_double_t d;
 			d = duk__cbor_decode_double(dec_ctx);
 			duk_push_number(dec_ctx->thr, d);
 			break;
 		}
-		case 0xffU:  /* unexpected break */
+		case 0xffU: /* unexpected break */
 		default: {
 			goto format_error;
 		}
-		}  /* end switch */
+		} /* end switch */
 		break;
 	}
 	default: {
-		goto format_error;  /* will never actually occur */
+		goto format_error; /* will never actually occur */
 	}
-	}  /* end switch */
+	} /* end switch */
 
 	return;
 
- format_error:
+format_error:
 	duk__cbor_decode_error(dec_ctx);
 }
-#endif  /* DUK_CBOR_DECODE_FASTPATH */
+#endif /* DUK_CBOR_DECODE_FASTPATH */
 
 DUK_LOCAL void duk__cbor_encode(duk_hthread *thr, duk_idx_t idx, duk_uint_t encode_flags) {
 	duk_cbor_encode_context enc_ctx;
@@ -1674,7 +1857,7 @@ DUK_LOCAL void duk__cbor_decode(duk_hthread *thr, duk_idx_t idx, duk_uint_t deco
 	duk_replace(thr, idx);
 }
 
-#else  /* DUK_USE_CBOR_SUPPORT */
+#else /* DUK_USE_CBOR_SUPPORT */
 
 DUK_LOCAL void duk__cbor_encode(duk_hthread *thr, duk_idx_t idx, duk_uint_t encode_flags) {
 	DUK_UNREF(idx);
@@ -1688,7 +1871,7 @@ DUK_LOCAL void duk__cbor_decode(duk_hthread *thr, duk_idx_t idx, duk_uint_t deco
 	DUK_ERROR_UNSUPPORTED(thr);
 }
 
-#endif  /* DUK_USE_CBOR_SUPPORT */
+#endif /* DUK_USE_CBOR_SUPPORT */
 
 /*
  *  Public APIs
@@ -1724,7 +1907,7 @@ DUK_INTERNAL duk_ret_t duk_bi_cbor_decode(duk_hthread *thr) {
 	duk__cbor_decode(thr, -1, 0 /*flags*/);
 	return 1;
 }
-#else  /* DUK_USE_CBOR_SUPPORT */
+#else /* DUK_USE_CBOR_SUPPORT */
 DUK_INTERNAL duk_ret_t duk_bi_cbor_encode(duk_hthread *thr) {
 	DUK_ERROR_UNSUPPORTED(thr);
 	DUK_WO_NORETURN(return 0;);
@@ -1733,5 +1916,5 @@ DUK_INTERNAL duk_ret_t duk_bi_cbor_decode(duk_hthread *thr) {
 	DUK_ERROR_UNSUPPORTED(thr);
 	DUK_WO_NORETURN(return 0;);
 }
-#endif  /* DUK_USE_CBOR_SUPPORT */
-#endif  /* DUK_USE_CBOR_BUILTIN */
+#endif /* DUK_USE_CBOR_SUPPORT */
+#endif /* DUK_USE_CBOR_BUILTIN */

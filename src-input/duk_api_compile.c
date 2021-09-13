@@ -6,7 +6,7 @@
 
 typedef struct duk__compile_raw_args duk__compile_raw_args;
 struct duk__compile_raw_args {
-	duk_size_t src_length;  /* should be first on 64-bit platforms */
+	duk_size_t src_length; /* should be first on 64-bit platforms */
 	const duk_uint8_t *src_buffer;
 	duk_uint_t flags;
 };
@@ -26,7 +26,10 @@ DUK_EXTERNAL duk_int_t duk_eval_raw(duk_hthread *thr, const char *src_buffer, du
 
 	/* [ ... source? filename? ] (depends on flags) */
 
-	rc = duk_compile_raw(thr, src_buffer, src_length, flags | DUK_COMPILE_EVAL);  /* may be safe, or non-safe depending on flags */
+	rc = duk_compile_raw(thr,
+	                     src_buffer,
+	                     src_length,
+	                     flags | DUK_COMPILE_EVAL); /* may be safe, or non-safe depending on flags */
 
 	/* [ ... closure/error ] */
 
@@ -35,7 +38,7 @@ DUK_EXTERNAL duk_int_t duk_eval_raw(duk_hthread *thr, const char *src_buffer, du
 		goto got_rc;
 	}
 
-	duk_push_global_object(thr);  /* explicit 'this' binding, see GH-164 */
+	duk_push_global_object(thr); /* explicit 'this' binding, see GH-164 */
 
 	if (flags & DUK_COMPILE_SAFE) {
 		rc = duk_pcall_method(thr, 0);
@@ -46,7 +49,7 @@ DUK_EXTERNAL duk_int_t duk_eval_raw(duk_hthread *thr, const char *src_buffer, du
 
 	/* [ ... result/error ] */
 
- got_rc:
+got_rc:
 	if (flags & DUK_COMPILE_NORESULT) {
 		duk_pop(thr);
 	}
@@ -86,8 +89,8 @@ DUK_LOCAL duk_ret_t duk__do_compile(duk_hthread *thr, void *udata) {
 		duk_hstring *h_sourcecode;
 
 		h_sourcecode = duk_get_hstring(thr, -2);
-		if ((flags & DUK_COMPILE_NOSOURCE) ||  /* args incorrect */
-		    (h_sourcecode == NULL)) {          /* e.g. duk_push_string_file_raw() pushed undefined */
+		if ((flags & DUK_COMPILE_NOSOURCE) || /* args incorrect */
+		    (h_sourcecode == NULL)) { /* e.g. duk_push_string_file_raw() pushed undefined */
 			DUK_ERROR_TYPE(thr, DUK_STR_NO_SOURCECODE);
 			DUK_WO_NORETURN(return 0;);
 		}
@@ -117,11 +120,11 @@ DUK_LOCAL duk_ret_t duk__do_compile(duk_hthread *thr, void *udata) {
 
 	h_templ = (duk_hcompfunc *) duk_known_hobject(thr, -1);
 	duk_js_push_closure(thr,
-	                   h_templ,
-	                   thr->builtins[DUK_BIDX_GLOBAL_ENV],
-	                   thr->builtins[DUK_BIDX_GLOBAL_ENV],
-	                   1 /*add_auto_proto*/);
-	duk_remove_m2(thr);   /* -> [ ... closure ] */
+	                    h_templ,
+	                    thr->builtins[DUK_BIDX_GLOBAL_ENV],
+	                    thr->builtins[DUK_BIDX_GLOBAL_ENV],
+	                    1 /*add_auto_proto*/);
+	duk_remove_m2(thr); /* -> [ ... closure ] */
 
 	/* [ ... closure ] */
 
@@ -157,8 +160,7 @@ DUK_EXTERNAL duk_int_t duk_compile_raw(duk_hthread *thr, const char *src_buffer,
 		 * directly into flags.
 		 */
 		nargs = flags & 0x07;
-		DUK_ASSERT(nargs == ((flags & DUK_COMPILE_NOSOURCE) ? 0 : 1) +
-		                    ((flags & DUK_COMPILE_NOFILENAME) ? 0 : 1));
+		DUK_ASSERT(nargs == ((flags & DUK_COMPILE_NOSOURCE) ? 0 : 1) + ((flags & DUK_COMPILE_NOFILENAME) ? 0 : 1));
 		rc = duk_safe_call(thr, duk__do_compile, (void *) comp_args, nargs, nrets);
 
 		/* [ ... closure ] */

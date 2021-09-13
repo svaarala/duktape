@@ -51,7 +51,7 @@ DUK_LOCAL duk_idx_t duk__call_get_idx_func(duk_hthread *thr, duk_idx_t nargs, du
 	DUK_ASSERT(other >= 0);
 
 	idx_func = duk_get_top(thr) - nargs - other;
-	if (DUK_UNLIKELY((idx_func | nargs) < 0)) {  /* idx_func < 0 || nargs < 0; OR sign bits */
+	if (DUK_UNLIKELY((idx_func | nargs) < 0)) { /* idx_func < 0 || nargs < 0; OR sign bits */
 		DUK_ERROR_TYPE_INVALID_ARGS(thr);
 		DUK_WO_NORETURN(return 0;);
 	}
@@ -85,12 +85,14 @@ DUK_LOCAL void duk__call_prop_prep_stack(duk_hthread *thr, duk_idx_t normalized_
 	DUK_ASSERT(nargs >= 0);
 
 	DUK_DDD(DUK_DDDPRINT("duk__call_prop_prep_stack, normalized_obj_idx=%ld, nargs=%ld, stacktop=%ld",
-	                     (long) normalized_obj_idx, (long) nargs, (long) duk_get_top(thr)));
+	                     (long) normalized_obj_idx,
+	                     (long) nargs,
+	                     (long) duk_get_top(thr)));
 
 	/* [... key arg1 ... argN] */
 
 	/* duplicate key */
-	duk_dup(thr, -nargs - 1);  /* Note: -nargs alone would fail for nargs == 0, this is OK */
+	duk_dup(thr, -nargs - 1); /* Note: -nargs alone would fail for nargs == 0, this is OK */
 	(void) duk_get_prop(thr, normalized_obj_idx);
 
 	DUK_DDD(DUK_DDDPRINT("func: %!T", (duk_tval *) duk_get_tval(thr, -1)));
@@ -133,7 +135,7 @@ DUK_EXTERNAL void duk_call(duk_hthread *thr, duk_idx_t nargs) {
 
 	duk_insert_undefined(thr, idx_func + 1);
 
-	call_flags = 0;  /* not protected, respect reclimit, not constructor */
+	call_flags = 0; /* not protected, respect reclimit, not constructor */
 	duk_handle_call_unprotected(thr, idx_func, call_flags);
 }
 
@@ -146,7 +148,7 @@ DUK_EXTERNAL void duk_call_method(duk_hthread *thr, duk_idx_t nargs) {
 	idx_func = duk__call_get_idx_func(thr, nargs, 2);
 	DUK_ASSERT(duk_is_valid_index(thr, idx_func));
 
-	call_flags = 0;  /* not protected, respect reclimit, not constructor */
+	call_flags = 0; /* not protected, respect reclimit, not constructor */
 	duk_handle_call_unprotected(thr, idx_func, call_flags);
 }
 
@@ -160,7 +162,7 @@ DUK_EXTERNAL void duk_call_prop(duk_hthread *thr, duk_idx_t obj_idx, duk_idx_t n
 
 	DUK_ASSERT_API_ENTRY(thr);
 
-	obj_idx = duk_require_normalize_index(thr, obj_idx);  /* make absolute */
+	obj_idx = duk_require_normalize_index(thr, obj_idx); /* make absolute */
 	if (DUK_UNLIKELY(nargs < 0)) {
 		DUK_ERROR_TYPE_INVALID_ARGS(thr);
 		DUK_WO_NORETURN(return;);
@@ -258,7 +260,7 @@ DUK_LOCAL duk_ret_t duk__pcall_prop_raw(duk_hthread *thr, void *udata) {
 
 	args = (duk__pcall_prop_args *) udata;
 
-	obj_idx = duk_require_normalize_index(thr, args->obj_idx);  /* make absolute */
+	obj_idx = duk_require_normalize_index(thr, args->obj_idx); /* make absolute */
 	duk__call_prop_prep_stack(thr, obj_idx, args->nargs);
 
 	ret = duk_handle_call_unprotected_nargs(thr, args->nargs, args->call_flags);
@@ -296,30 +298,30 @@ DUK_EXTERNAL duk_int_t duk_safe_call(duk_hthread *thr, duk_safe_call_function fu
 	 */
 	/* XXX: check for any reserve? */
 
-	if (DUK_UNLIKELY((nargs | nrets) < 0 ||  /* nargs < 0 || nrets < 0; OR sign bits */
-	                 thr->valstack_top < thr->valstack_bottom + nargs ||        /* nargs too large compared to top */
-	                 thr->valstack_end + nargs < thr->valstack_top + nrets)) {  /* nrets too large compared to reserve */
+	if (DUK_UNLIKELY((nargs | nrets) < 0 || /* nargs < 0 || nrets < 0; OR sign bits */
+	                 thr->valstack_top < thr->valstack_bottom + nargs || /* nargs too large compared to top */
+	                 thr->valstack_end + nargs < thr->valstack_top + nrets)) { /* nrets too large compared to reserve */
 		DUK_D(DUK_DPRINT("not enough stack reserve for safe call or invalid arguments: "
 		                 "nargs=%ld < 0 (?), nrets=%ld < 0 (?), top=%ld < bottom=%ld + nargs=%ld (?), "
 		                 "end=%ld + nargs=%ld < top=%ld + nrets=%ld (?)",
-		                  (long) nargs,
-		                  (long) nrets,
-		                  (long) (thr->valstack_top - thr->valstack),
-		                  (long) (thr->valstack_bottom - thr->valstack),
-		                  (long) nargs,
-		                  (long) (thr->valstack_end - thr->valstack),
-		                  (long) nargs,
-		                  (long) (thr->valstack_top - thr->valstack),
-		                  (long) nrets));
+		                 (long) nargs,
+		                 (long) nrets,
+		                 (long) (thr->valstack_top - thr->valstack),
+		                 (long) (thr->valstack_bottom - thr->valstack),
+		                 (long) nargs,
+		                 (long) (thr->valstack_end - thr->valstack),
+		                 (long) nargs,
+		                 (long) (thr->valstack_top - thr->valstack),
+		                 (long) nrets));
 		DUK_ERROR_TYPE_INVALID_ARGS(thr);
 		DUK_WO_NORETURN(return DUK_EXEC_ERROR;);
 	}
 
-	rc = duk_handle_safe_call(thr,           /* thread */
-	                          func,          /* func */
-	                          udata,         /* udata */
-	                          nargs,         /* num_stack_args */
-	                          nrets);        /* num_stack_res */
+	rc = duk_handle_safe_call(thr, /* thread */
+	                          func, /* func */
+	                          udata, /* udata */
+	                          nargs, /* num_stack_args */
+	                          nrets); /* num_stack_res */
 
 	return rc;
 }
@@ -332,7 +334,7 @@ DUK_EXTERNAL void duk_new(duk_hthread *thr, duk_idx_t nargs) {
 	idx_func = duk__call_get_idx_func(thr, nargs, 1);
 	DUK_ASSERT(duk_is_valid_index(thr, idx_func));
 
-	duk_push_object(thr);  /* default instance; internal proto updated by call handling */
+	duk_push_object(thr); /* default instance; internal proto updated by call handling */
 	duk_insert(thr, idx_func + 1);
 
 	duk_handle_call_unprotected(thr, idx_func, DUK_CALL_FLAG_CONSTRUCT);
@@ -460,7 +462,7 @@ DUK_EXTERNAL duk_int_t duk_get_magic(duk_hthread *thr, duk_idx_t idx) {
 	}
 
 	/* fall through */
- type_error:
+type_error:
 	DUK_ERROR_TYPE(thr, DUK_STR_UNEXPECTED_TYPE);
 	DUK_WO_NORETURN(return 0;);
 }

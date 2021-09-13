@@ -16,73 +16,71 @@
 /* Macros for creating and checking bitmasks for character encoding.
  * Bit number is a bit counterintuitive, but minimizes code size.
  */
-#define DUK__MKBITS(a,b,c,d,e,f,g,h)  ((duk_uint8_t) ( \
-	((a) << 0) | ((b) << 1) | ((c) << 2) | ((d) << 3) | \
-	((e) << 4) | ((f) << 5) | ((g) << 6) | ((h) << 7) \
-	))
-#define DUK__CHECK_BITMASK(table,cp)  ((table)[(cp) >> 3] & (1 << ((cp) & 0x07)))
+#define DUK__MKBITS(a, b, c, d, e, f, g, h) \
+	((duk_uint8_t) (((a) << 0) | ((b) << 1) | ((c) << 2) | ((d) << 3) | ((e) << 4) | ((f) << 5) | ((g) << 6) | ((h) << 7)))
+#define DUK__CHECK_BITMASK(table, cp) ((table)[(cp) >> 3] & (1 << ((cp) &0x07)))
 
 /* E5.1 Section 15.1.3.3: uriReserved + uriUnescaped + '#' */
 DUK_LOCAL const duk_uint8_t duk__encode_uriunescaped_table[16] = {
-	DUK__MKBITS(0, 0, 0, 0, 0, 0, 0, 0), DUK__MKBITS(0, 0, 0, 0, 0, 0, 0, 0),  /* 0x00-0x0f */
-	DUK__MKBITS(0, 0, 0, 0, 0, 0, 0, 0), DUK__MKBITS(0, 0, 0, 0, 0, 0, 0, 0),  /* 0x10-0x1f */
-	DUK__MKBITS(0, 1, 0, 1, 1, 0, 1, 1), DUK__MKBITS(1, 1, 1, 1, 1, 1, 1, 1),  /* 0x20-0x2f */
-	DUK__MKBITS(1, 1, 1, 1, 1, 1, 1, 1), DUK__MKBITS(1, 1, 1, 1, 0, 1, 0, 1),  /* 0x30-0x3f */
-	DUK__MKBITS(1, 1, 1, 1, 1, 1, 1, 1), DUK__MKBITS(1, 1, 1, 1, 1, 1, 1, 1),  /* 0x40-0x4f */
-	DUK__MKBITS(1, 1, 1, 1, 1, 1, 1, 1), DUK__MKBITS(1, 1, 1, 0, 0, 0, 0, 1),  /* 0x50-0x5f */
-	DUK__MKBITS(0, 1, 1, 1, 1, 1, 1, 1), DUK__MKBITS(1, 1, 1, 1, 1, 1, 1, 1),  /* 0x60-0x6f */
-	DUK__MKBITS(1, 1, 1, 1, 1, 1, 1, 1), DUK__MKBITS(1, 1, 1, 0, 0, 0, 1, 0),  /* 0x70-0x7f */
+	DUK__MKBITS(0, 0, 0, 0, 0, 0, 0, 0), DUK__MKBITS(0, 0, 0, 0, 0, 0, 0, 0), /* 0x00-0x0f */
+	DUK__MKBITS(0, 0, 0, 0, 0, 0, 0, 0), DUK__MKBITS(0, 0, 0, 0, 0, 0, 0, 0), /* 0x10-0x1f */
+	DUK__MKBITS(0, 1, 0, 1, 1, 0, 1, 1), DUK__MKBITS(1, 1, 1, 1, 1, 1, 1, 1), /* 0x20-0x2f */
+	DUK__MKBITS(1, 1, 1, 1, 1, 1, 1, 1), DUK__MKBITS(1, 1, 1, 1, 0, 1, 0, 1), /* 0x30-0x3f */
+	DUK__MKBITS(1, 1, 1, 1, 1, 1, 1, 1), DUK__MKBITS(1, 1, 1, 1, 1, 1, 1, 1), /* 0x40-0x4f */
+	DUK__MKBITS(1, 1, 1, 1, 1, 1, 1, 1), DUK__MKBITS(1, 1, 1, 0, 0, 0, 0, 1), /* 0x50-0x5f */
+	DUK__MKBITS(0, 1, 1, 1, 1, 1, 1, 1), DUK__MKBITS(1, 1, 1, 1, 1, 1, 1, 1), /* 0x60-0x6f */
+	DUK__MKBITS(1, 1, 1, 1, 1, 1, 1, 1), DUK__MKBITS(1, 1, 1, 0, 0, 0, 1, 0), /* 0x70-0x7f */
 };
 
 /* E5.1 Section 15.1.3.4: uriUnescaped */
 DUK_LOCAL const duk_uint8_t duk__encode_uricomponent_unescaped_table[16] = {
-	DUK__MKBITS(0, 0, 0, 0, 0, 0, 0, 0), DUK__MKBITS(0, 0, 0, 0, 0, 0, 0, 0),  /* 0x00-0x0f */
-	DUK__MKBITS(0, 0, 0, 0, 0, 0, 0, 0), DUK__MKBITS(0, 0, 0, 0, 0, 0, 0, 0),  /* 0x10-0x1f */
-	DUK__MKBITS(0, 1, 0, 0, 0, 0, 0, 1), DUK__MKBITS(1, 1, 1, 0, 0, 1, 1, 0),  /* 0x20-0x2f */
-	DUK__MKBITS(1, 1, 1, 1, 1, 1, 1, 1), DUK__MKBITS(1, 1, 0, 0, 0, 0, 0, 0),  /* 0x30-0x3f */
-	DUK__MKBITS(0, 1, 1, 1, 1, 1, 1, 1), DUK__MKBITS(1, 1, 1, 1, 1, 1, 1, 1),  /* 0x40-0x4f */
-	DUK__MKBITS(1, 1, 1, 1, 1, 1, 1, 1), DUK__MKBITS(1, 1, 1, 0, 0, 0, 0, 1),  /* 0x50-0x5f */
-	DUK__MKBITS(0, 1, 1, 1, 1, 1, 1, 1), DUK__MKBITS(1, 1, 1, 1, 1, 1, 1, 1),  /* 0x60-0x6f */
-	DUK__MKBITS(1, 1, 1, 1, 1, 1, 1, 1), DUK__MKBITS(1, 1, 1, 0, 0, 0, 1, 0),  /* 0x70-0x7f */
+	DUK__MKBITS(0, 0, 0, 0, 0, 0, 0, 0), DUK__MKBITS(0, 0, 0, 0, 0, 0, 0, 0), /* 0x00-0x0f */
+	DUK__MKBITS(0, 0, 0, 0, 0, 0, 0, 0), DUK__MKBITS(0, 0, 0, 0, 0, 0, 0, 0), /* 0x10-0x1f */
+	DUK__MKBITS(0, 1, 0, 0, 0, 0, 0, 1), DUK__MKBITS(1, 1, 1, 0, 0, 1, 1, 0), /* 0x20-0x2f */
+	DUK__MKBITS(1, 1, 1, 1, 1, 1, 1, 1), DUK__MKBITS(1, 1, 0, 0, 0, 0, 0, 0), /* 0x30-0x3f */
+	DUK__MKBITS(0, 1, 1, 1, 1, 1, 1, 1), DUK__MKBITS(1, 1, 1, 1, 1, 1, 1, 1), /* 0x40-0x4f */
+	DUK__MKBITS(1, 1, 1, 1, 1, 1, 1, 1), DUK__MKBITS(1, 1, 1, 0, 0, 0, 0, 1), /* 0x50-0x5f */
+	DUK__MKBITS(0, 1, 1, 1, 1, 1, 1, 1), DUK__MKBITS(1, 1, 1, 1, 1, 1, 1, 1), /* 0x60-0x6f */
+	DUK__MKBITS(1, 1, 1, 1, 1, 1, 1, 1), DUK__MKBITS(1, 1, 1, 0, 0, 0, 1, 0), /* 0x70-0x7f */
 };
 
 /* E5.1 Section 15.1.3.1: uriReserved + '#' */
 DUK_LOCAL const duk_uint8_t duk__decode_uri_reserved_table[16] = {
-	DUK__MKBITS(0, 0, 0, 0, 0, 0, 0, 0), DUK__MKBITS(0, 0, 0, 0, 0, 0, 0, 0),  /* 0x00-0x0f */
-	DUK__MKBITS(0, 0, 0, 0, 0, 0, 0, 0), DUK__MKBITS(0, 0, 0, 0, 0, 0, 0, 0),  /* 0x10-0x1f */
-	DUK__MKBITS(0, 0, 0, 1, 1, 0, 1, 0), DUK__MKBITS(0, 0, 0, 1, 1, 0, 0, 1),  /* 0x20-0x2f */
-	DUK__MKBITS(0, 0, 0, 0, 0, 0, 0, 0), DUK__MKBITS(0, 0, 1, 1, 0, 1, 0, 1),  /* 0x30-0x3f */
-	DUK__MKBITS(1, 0, 0, 0, 0, 0, 0, 0), DUK__MKBITS(0, 0, 0, 0, 0, 0, 0, 0),  /* 0x40-0x4f */
-	DUK__MKBITS(0, 0, 0, 0, 0, 0, 0, 0), DUK__MKBITS(0, 0, 0, 0, 0, 0, 0, 0),  /* 0x50-0x5f */
-	DUK__MKBITS(0, 0, 0, 0, 0, 0, 0, 0), DUK__MKBITS(0, 0, 0, 0, 0, 0, 0, 0),  /* 0x60-0x6f */
-	DUK__MKBITS(0, 0, 0, 0, 0, 0, 0, 0), DUK__MKBITS(0, 0, 0, 0, 0, 0, 0, 0),  /* 0x70-0x7f */
+	DUK__MKBITS(0, 0, 0, 0, 0, 0, 0, 0), DUK__MKBITS(0, 0, 0, 0, 0, 0, 0, 0), /* 0x00-0x0f */
+	DUK__MKBITS(0, 0, 0, 0, 0, 0, 0, 0), DUK__MKBITS(0, 0, 0, 0, 0, 0, 0, 0), /* 0x10-0x1f */
+	DUK__MKBITS(0, 0, 0, 1, 1, 0, 1, 0), DUK__MKBITS(0, 0, 0, 1, 1, 0, 0, 1), /* 0x20-0x2f */
+	DUK__MKBITS(0, 0, 0, 0, 0, 0, 0, 0), DUK__MKBITS(0, 0, 1, 1, 0, 1, 0, 1), /* 0x30-0x3f */
+	DUK__MKBITS(1, 0, 0, 0, 0, 0, 0, 0), DUK__MKBITS(0, 0, 0, 0, 0, 0, 0, 0), /* 0x40-0x4f */
+	DUK__MKBITS(0, 0, 0, 0, 0, 0, 0, 0), DUK__MKBITS(0, 0, 0, 0, 0, 0, 0, 0), /* 0x50-0x5f */
+	DUK__MKBITS(0, 0, 0, 0, 0, 0, 0, 0), DUK__MKBITS(0, 0, 0, 0, 0, 0, 0, 0), /* 0x60-0x6f */
+	DUK__MKBITS(0, 0, 0, 0, 0, 0, 0, 0), DUK__MKBITS(0, 0, 0, 0, 0, 0, 0, 0), /* 0x70-0x7f */
 };
 
 /* E5.1 Section 15.1.3.2: empty */
 DUK_LOCAL const duk_uint8_t duk__decode_uri_component_reserved_table[16] = {
-	DUK__MKBITS(0, 0, 0, 0, 0, 0, 0, 0), DUK__MKBITS(0, 0, 0, 0, 0, 0, 0, 0),  /* 0x00-0x0f */
-	DUK__MKBITS(0, 0, 0, 0, 0, 0, 0, 0), DUK__MKBITS(0, 0, 0, 0, 0, 0, 0, 0),  /* 0x10-0x1f */
-	DUK__MKBITS(0, 0, 0, 0, 0, 0, 0, 0), DUK__MKBITS(0, 0, 0, 0, 0, 0, 0, 0),  /* 0x20-0x2f */
-	DUK__MKBITS(0, 0, 0, 0, 0, 0, 0, 0), DUK__MKBITS(0, 0, 0, 0, 0, 0, 0, 0),  /* 0x30-0x3f */
-	DUK__MKBITS(0, 0, 0, 0, 0, 0, 0, 0), DUK__MKBITS(0, 0, 0, 0, 0, 0, 0, 0),  /* 0x40-0x4f */
-	DUK__MKBITS(0, 0, 0, 0, 0, 0, 0, 0), DUK__MKBITS(0, 0, 0, 0, 0, 0, 0, 0),  /* 0x50-0x5f */
-	DUK__MKBITS(0, 0, 0, 0, 0, 0, 0, 0), DUK__MKBITS(0, 0, 0, 0, 0, 0, 0, 0),  /* 0x60-0x6f */
-	DUK__MKBITS(0, 0, 0, 0, 0, 0, 0, 0), DUK__MKBITS(0, 0, 0, 0, 0, 0, 0, 0),  /* 0x70-0x7f */
+	DUK__MKBITS(0, 0, 0, 0, 0, 0, 0, 0), DUK__MKBITS(0, 0, 0, 0, 0, 0, 0, 0), /* 0x00-0x0f */
+	DUK__MKBITS(0, 0, 0, 0, 0, 0, 0, 0), DUK__MKBITS(0, 0, 0, 0, 0, 0, 0, 0), /* 0x10-0x1f */
+	DUK__MKBITS(0, 0, 0, 0, 0, 0, 0, 0), DUK__MKBITS(0, 0, 0, 0, 0, 0, 0, 0), /* 0x20-0x2f */
+	DUK__MKBITS(0, 0, 0, 0, 0, 0, 0, 0), DUK__MKBITS(0, 0, 0, 0, 0, 0, 0, 0), /* 0x30-0x3f */
+	DUK__MKBITS(0, 0, 0, 0, 0, 0, 0, 0), DUK__MKBITS(0, 0, 0, 0, 0, 0, 0, 0), /* 0x40-0x4f */
+	DUK__MKBITS(0, 0, 0, 0, 0, 0, 0, 0), DUK__MKBITS(0, 0, 0, 0, 0, 0, 0, 0), /* 0x50-0x5f */
+	DUK__MKBITS(0, 0, 0, 0, 0, 0, 0, 0), DUK__MKBITS(0, 0, 0, 0, 0, 0, 0, 0), /* 0x60-0x6f */
+	DUK__MKBITS(0, 0, 0, 0, 0, 0, 0, 0), DUK__MKBITS(0, 0, 0, 0, 0, 0, 0, 0), /* 0x70-0x7f */
 };
 
 #if defined(DUK_USE_SECTION_B)
 /* E5.1 Section B.2.2, step 7. */
 DUK_LOCAL const duk_uint8_t duk__escape_unescaped_table[16] = {
-	DUK__MKBITS(0, 0, 0, 0, 0, 0, 0, 0), DUK__MKBITS(0, 0, 0, 0, 0, 0, 0, 0),  /* 0x00-0x0f */
-	DUK__MKBITS(0, 0, 0, 0, 0, 0, 0, 0), DUK__MKBITS(0, 0, 0, 0, 0, 0, 0, 0),  /* 0x10-0x1f */
-	DUK__MKBITS(0, 0, 0, 0, 0, 0, 0, 0), DUK__MKBITS(0, 0, 1, 1, 0, 1, 1, 1),  /* 0x20-0x2f */
-	DUK__MKBITS(1, 1, 1, 1, 1, 1, 1, 1), DUK__MKBITS(1, 1, 0, 0, 0, 0, 0, 0),  /* 0x30-0x3f */
-	DUK__MKBITS(1, 1, 1, 1, 1, 1, 1, 1), DUK__MKBITS(1, 1, 1, 1, 1, 1, 1, 1),  /* 0x40-0x4f */
-	DUK__MKBITS(1, 1, 1, 1, 1, 1, 1, 1), DUK__MKBITS(1, 1, 1, 0, 0, 0, 0, 1),  /* 0x50-0x5f */
-	DUK__MKBITS(0, 1, 1, 1, 1, 1, 1, 1), DUK__MKBITS(1, 1, 1, 1, 1, 1, 1, 1),  /* 0x60-0x6f */
-	DUK__MKBITS(1, 1, 1, 1, 1, 1, 1, 1), DUK__MKBITS(1, 1, 1, 0, 0, 0, 0, 0)   /* 0x70-0x7f */
+	DUK__MKBITS(0, 0, 0, 0, 0, 0, 0, 0), DUK__MKBITS(0, 0, 0, 0, 0, 0, 0, 0), /* 0x00-0x0f */
+	DUK__MKBITS(0, 0, 0, 0, 0, 0, 0, 0), DUK__MKBITS(0, 0, 0, 0, 0, 0, 0, 0), /* 0x10-0x1f */
+	DUK__MKBITS(0, 0, 0, 0, 0, 0, 0, 0), DUK__MKBITS(0, 0, 1, 1, 0, 1, 1, 1), /* 0x20-0x2f */
+	DUK__MKBITS(1, 1, 1, 1, 1, 1, 1, 1), DUK__MKBITS(1, 1, 0, 0, 0, 0, 0, 0), /* 0x30-0x3f */
+	DUK__MKBITS(1, 1, 1, 1, 1, 1, 1, 1), DUK__MKBITS(1, 1, 1, 1, 1, 1, 1, 1), /* 0x40-0x4f */
+	DUK__MKBITS(1, 1, 1, 1, 1, 1, 1, 1), DUK__MKBITS(1, 1, 1, 0, 0, 0, 0, 1), /* 0x50-0x5f */
+	DUK__MKBITS(0, 1, 1, 1, 1, 1, 1, 1), DUK__MKBITS(1, 1, 1, 1, 1, 1, 1, 1), /* 0x60-0x6f */
+	DUK__MKBITS(1, 1, 1, 1, 1, 1, 1, 1), DUK__MKBITS(1, 1, 1, 0, 0, 0, 0, 0) /* 0x70-0x7f */
 };
-#endif  /* DUK_USE_SECTION_B */
+#endif /* DUK_USE_SECTION_B */
 
 typedef struct {
 	duk_hthread *thr;
@@ -123,7 +121,7 @@ DUK_LOCAL int duk__transform_helper(duk_hthread *thr, duk__transform_callback ca
 	tfm_ctx->h_str = duk_to_hstring(thr, 0);
 	DUK_ASSERT(tfm_ctx->h_str != NULL);
 
-	DUK_BW_INIT_PUSHBUF(thr, &tfm_ctx->bw, DUK_HSTRING_GET_BYTELEN(tfm_ctx->h_str));  /* initial size guess */
+	DUK_BW_INIT_PUSHBUF(thr, &tfm_ctx->bw, DUK_HSTRING_GET_BYTELEN(tfm_ctx->h_str)); /* initial size guess */
 
 	tfm_ctx->p_start = DUK_HSTRING_GET_DATA(tfm_ctx->h_str);
 	tfm_ctx->p_end = tfm_ctx->p_start + DUK_HSTRING_GET_BYTELEN(tfm_ctx->h_str);
@@ -136,7 +134,7 @@ DUK_LOCAL int duk__transform_helper(duk_hthread *thr, duk__transform_callback ca
 
 	DUK_BW_COMPACT(thr, &tfm_ctx->bw);
 
-	(void) duk_buffer_to_string(thr, -1);  /* Safe if transform is safe. */
+	(void) duk_buffer_to_string(thr, -1); /* Safe if transform is safe. */
 	return 1;
 }
 
@@ -162,7 +160,11 @@ DUK_LOCAL void duk__transform_callback_encode_uri(duk__transform_context *tfm_ct
 		goto uri_error;
 	} else if (cp >= 0xd800L && cp <= 0xdbffL) {
 		/* Needs lookahead */
-		if (duk_unicode_decode_xutf8(tfm_ctx->thr, &tfm_ctx->p, tfm_ctx->p_start, tfm_ctx->p_end, (duk_ucodepoint_t *) &cp2) == 0) {
+		if (duk_unicode_decode_xutf8(tfm_ctx->thr,
+		                             &tfm_ctx->p,
+		                             tfm_ctx->p_start,
+		                             tfm_ctx->p_end,
+		                             (duk_ucodepoint_t *) &cp2) == 0) {
 			goto uri_error;
 		}
 		if (!(cp2 >= 0xdc00L && cp2 <= 0xdfffL)) {
@@ -193,12 +195,12 @@ DUK_LOCAL void duk__transform_callback_encode_uri(duk__transform_context *tfm_ct
 		                      &tfm_ctx->bw,
 		                      DUK_ASC_PERCENT,
 		                      (duk_uint8_t) duk_uc_nybbles[t >> 4],
-                                      (duk_uint8_t) duk_uc_nybbles[t & 0x0f]);
+		                      (duk_uint8_t) duk_uc_nybbles[t & 0x0f]);
 	}
 
 	return;
 
- uri_error:
+uri_error:
 	DUK_ERROR_URI(tfm_ctx->thr, DUK_STR_INVALID_INPUT);
 	DUK_WO_NORETURN(return;);
 }
@@ -207,7 +209,7 @@ DUK_LOCAL void duk__transform_callback_decode_uri(duk__transform_context *tfm_ct
 	const duk_uint8_t *reserved_table = (const duk_uint8_t *) udata;
 	duk_small_uint_t utf8_blen;
 	duk_codepoint_t min_cp;
-	duk_small_int_t t;  /* must be signed */
+	duk_small_int_t t; /* must be signed */
 	duk_small_uint_t i;
 
 	/* Maximum write size: XUTF8 path writes max DUK_UNICODE_MAX_XUTF8_LENGTH,
@@ -215,12 +217,12 @@ DUK_LOCAL void duk__transform_callback_decode_uri(duk__transform_context *tfm_ct
 	 */
 	DUK_BW_ENSURE(tfm_ctx->thr,
 	              &tfm_ctx->bw,
-	              (DUK_UNICODE_MAX_XUTF8_LENGTH >= 2 * DUK_UNICODE_MAX_CESU8_BMP_LENGTH ?
-	              DUK_UNICODE_MAX_XUTF8_LENGTH : DUK_UNICODE_MAX_CESU8_BMP_LENGTH));
+	              (DUK_UNICODE_MAX_XUTF8_LENGTH >= 2 * DUK_UNICODE_MAX_CESU8_BMP_LENGTH ? DUK_UNICODE_MAX_XUTF8_LENGTH :
+                                                                                              DUK_UNICODE_MAX_CESU8_BMP_LENGTH));
 
 	if (cp == (duk_codepoint_t) '%') {
 		const duk_uint8_t *p = tfm_ctx->p;
-		duk_size_t left = (duk_size_t) (tfm_ctx->p_end - p);  /* bytes left */
+		duk_size_t left = (duk_size_t) (tfm_ctx->p_end - p); /* bytes left */
 
 		DUK_DDD(DUK_DDDPRINT("percent encoding, left=%ld", (long) left));
 
@@ -238,11 +240,7 @@ DUK_LOCAL void duk__transform_callback_decode_uri(duk__transform_context *tfm_ct
 			if (DUK__CHECK_BITMASK(reserved_table, t)) {
 				/* decode '%xx' to '%xx' if decoded char in reserved set */
 				DUK_ASSERT(tfm_ctx->p - 1 >= tfm_ctx->p_start);
-				DUK_BW_WRITE_RAW_U8_3(tfm_ctx->thr,
-				                      &tfm_ctx->bw,
-				                      DUK_ASC_PERCENT,
-				                      p[0],
-				                      p[1]);
+				DUK_BW_WRITE_RAW_U8_3(tfm_ctx->thr, &tfm_ctx->bw, DUK_ASC_PERCENT, p[0], p[1]);
 			} else {
 				DUK_BW_WRITE_RAW_U8(tfm_ctx->thr, &tfm_ctx->bw, (duk_uint8_t) t);
 			}
@@ -293,7 +291,10 @@ DUK_LOCAL void duk__transform_callback_decode_uri(duk__transform_context *tfm_ct
 			/* p points to digit part ('%xy', p points to 'x') */
 			t = duk__decode_hex_escape(p, 2);
 			DUK_DDD(DUK_DDDPRINT("i=%ld utf8_blen=%ld cp=%ld t=0x%02lx",
-			                     (long) i, (long) utf8_blen, (long) cp, (unsigned long) t));
+			                     (long) i,
+			                     (long) utf8_blen,
+			                     (long) cp,
+			                     (unsigned long) t));
 			if (t < 0) {
 				goto uri_error;
 			}
@@ -303,7 +304,7 @@ DUK_LOCAL void duk__transform_callback_decode_uri(duk__transform_context *tfm_ct
 			cp = (cp << 6) + (t & 0x3f);
 			p += 3;
 		}
-		p--;  /* p overshoots */
+		p--; /* p overshoots */
 		tfm_ctx->p = p;
 
 		DUK_DDD(DUK_DDDPRINT("final cp=%ld, min_cp=%ld", (long) cp, (long) min_cp));
@@ -337,7 +338,7 @@ DUK_LOCAL void duk__transform_callback_decode_uri(duk__transform_context *tfm_ct
 	}
 	return;
 
- uri_error:
+uri_error:
 	DUK_ERROR_URI(tfm_ctx->thr, DUK_STR_INVALID_INPUT);
 	DUK_WO_NORETURN(return;);
 }
@@ -378,7 +379,7 @@ DUK_LOCAL void duk__transform_callback_escape(duk__transform_context *tfm_ctx, c
 
 	return;
 
- esc_error:
+esc_error:
 	DUK_ERROR_TYPE(tfm_ctx->thr, DUK_STR_INVALID_INPUT);
 	DUK_WO_NORETURN(return;);
 }
@@ -390,14 +391,12 @@ DUK_LOCAL void duk__transform_callback_unescape(duk__transform_context *tfm_ctx,
 
 	if (cp == (duk_codepoint_t) '%') {
 		const duk_uint8_t *p = tfm_ctx->p;
-		duk_size_t left = (duk_size_t) (tfm_ctx->p_end - p);  /* bytes left */
+		duk_size_t left = (duk_size_t) (tfm_ctx->p_end - p); /* bytes left */
 
-		if (left >= 5 && p[0] == 'u' &&
-		    ((t = duk__decode_hex_escape(p + 1, 4)) >= 0)) {
+		if (left >= 5 && p[0] == 'u' && ((t = duk__decode_hex_escape(p + 1, 4)) >= 0)) {
 			cp = (duk_codepoint_t) t;
 			tfm_ctx->p += 5;
-		} else if (left >= 2 &&
-		           ((t = duk__decode_hex_escape(p, 2)) >= 0)) {
+		} else if (left >= 2 && ((t = duk__decode_hex_escape(p, 2)) >= 0)) {
 			cp = (duk_codepoint_t) t;
 			tfm_ctx->p += 2;
 		}
@@ -405,7 +404,7 @@ DUK_LOCAL void duk__transform_callback_unescape(duk__transform_context *tfm_ctx,
 
 	DUK_BW_WRITE_ENSURE_XUTF8(tfm_ctx->thr, &tfm_ctx->bw, cp);
 }
-#endif  /* DUK_USE_SECTION_B */
+#endif /* DUK_USE_SECTION_B */
 
 /*
  *  Eval
@@ -430,11 +429,11 @@ DUK_INTERNAL duk_ret_t duk_bi_global_object_eval(duk_hthread *thr) {
 	duk_int_t level = -2;
 	duk_small_uint_t call_flags;
 
-	DUK_ASSERT(duk_get_top(thr) == 1 || duk_get_top(thr) == 2);  /* 2 when called by debugger */
-	DUK_ASSERT(thr->callstack_top >= 1);  /* at least this function exists */
+	DUK_ASSERT(duk_get_top(thr) == 1 || duk_get_top(thr) == 2); /* 2 when called by debugger */
+	DUK_ASSERT(thr->callstack_top >= 1); /* at least this function exists */
 	DUK_ASSERT(thr->callstack_curr != NULL);
 	DUK_ASSERT((thr->callstack_curr->flags & DUK_ACT_FLAG_DIRECT_EVAL) == 0 || /* indirect eval */
-	           (thr->callstack_top >= 2));  /* if direct eval, calling activation must exist */
+	           (thr->callstack_top >= 2)); /* if direct eval, calling activation must exist */
 
 	/*
 	 *  callstack_top - 1 --> this function
@@ -447,32 +446,31 @@ DUK_INTERNAL duk_ret_t duk_bi_global_object_eval(duk_hthread *thr) {
 	h = duk_get_hstring_notsymbol(thr, 0);
 	if (!h) {
 		/* Symbol must be returned as is, like any non-string values. */
-		return 1;  /* return arg as-is */
+		return 1; /* return arg as-is */
 	}
 
 #if defined(DUK_USE_DEBUGGER_SUPPORT)
 	/* NOTE: level is used only by the debugger and should never be present
 	 * for an ECMAScript eval().
 	 */
-	DUK_ASSERT(level == -2);  /* by default, use caller's environment */
+	DUK_ASSERT(level == -2); /* by default, use caller's environment */
 	if (duk_get_top(thr) >= 2 && duk_is_number(thr, 1)) {
 		level = duk_get_int(thr, 1);
 	}
-	DUK_ASSERT(level <= -2);  /* This is guaranteed by debugger code. */
+	DUK_ASSERT(level <= -2); /* This is guaranteed by debugger code. */
 #endif
 
 	/* [ source ] */
 
 	comp_flags = DUK_COMPILE_EVAL;
-	act_eval = thr->callstack_curr;  /* this function */
+	act_eval = thr->callstack_curr; /* this function */
 	DUK_ASSERT(act_eval != NULL);
 	act_caller = duk_hthread_get_activation_for_level(thr, level);
 	if (act_caller != NULL) {
 		/* Have a calling activation, check for direct eval (otherwise
 		 * assume indirect eval.
 		 */
-		if ((act_caller->flags & DUK_ACT_FLAG_STRICT) &&
-		    (act_eval->flags & DUK_ACT_FLAG_DIRECT_EVAL)) {
+		if ((act_caller->flags & DUK_ACT_FLAG_STRICT) && (act_eval->flags & DUK_ACT_FLAG_DIRECT_EVAL)) {
 			/* Only direct eval inherits strictness from calling code
 			 * (E5.1 Section 10.1.1).
 			 */
@@ -482,11 +480,8 @@ DUK_INTERNAL duk_ret_t duk_bi_global_object_eval(duk_hthread *thr) {
 		DUK_ASSERT((act_eval->flags & DUK_ACT_FLAG_DIRECT_EVAL) == 0);
 	}
 
-	duk_push_hstring_stridx(thr, DUK_STRIDX_INPUT);  /* XXX: copy from caller? */
-	duk_js_compile(thr,
-	               (const duk_uint8_t *) DUK_HSTRING_GET_DATA(h),
-	               (duk_size_t) DUK_HSTRING_GET_BYTELEN(h),
-	               comp_flags);
+	duk_push_hstring_stridx(thr, DUK_STRIDX_INPUT); /* XXX: copy from caller? */
+	duk_js_compile(thr, (const duk_uint8_t *) DUK_HSTRING_GET_DATA(h), (duk_size_t) DUK_HSTRING_GET_BYTELEN(h), comp_flags);
 	func = (duk_hcompfunc *) duk_known_hobject(thr, -1);
 	DUK_ASSERT(DUK_HOBJECT_IS_COMPFUNC((duk_hobject *) func));
 
@@ -519,9 +514,9 @@ DUK_INTERNAL duk_ret_t duk_bi_global_object_eval(duk_hthread *thr) {
 
 			act_lex_env = act_caller->lex_env;
 
-			new_env = duk_hdecenv_alloc(thr,
-			                            DUK_HOBJECT_FLAG_EXTENSIBLE |
-			                            DUK_HOBJECT_CLASS_AS_FLAGS(DUK_HOBJECT_CLASS_DECENV));
+			new_env =
+			    duk_hdecenv_alloc(thr,
+			                      DUK_HOBJECT_FLAG_EXTENSIBLE | DUK_HOBJECT_CLASS_AS_FLAGS(DUK_HOBJECT_CLASS_DECENV));
 			DUK_ASSERT(new_env != NULL);
 			duk_push_hobject(thr, (duk_hobject *) new_env);
 
@@ -533,7 +528,7 @@ DUK_INTERNAL duk_ret_t duk_bi_global_object_eval(duk_hthread *thr) {
 			outer_lex_env = (duk_hobject *) new_env;
 			outer_var_env = (duk_hobject *) new_env;
 
-			duk_insert(thr, 0);  /* stash to bottom of value stack to keep new_env reachable for duration of eval */
+			duk_insert(thr, 0); /* stash to bottom of value stack to keep new_env reachable for duration of eval */
 
 			/* compiler's responsibility */
 			DUK_ASSERT(DUK_HOBJECT_HAS_NEWENV((duk_hobject *) func));
@@ -569,7 +564,8 @@ DUK_INTERNAL duk_ret_t duk_bi_global_object_eval(duk_hthread *thr) {
 		duk_tval *tv;
 		DUK_ASSERT(thr->callstack_top >= 2);
 		DUK_ASSERT(act_caller != NULL);
-		tv = (duk_tval *) (void *) ((duk_uint8_t *) thr->valstack + act_caller->bottom_byteoff - sizeof(duk_tval));  /* this is just beneath bottom */
+		tv = (duk_tval *) (void *) ((duk_uint8_t *) thr->valstack + act_caller->bottom_byteoff -
+		                            sizeof(duk_tval)); /* this is just beneath bottom */
 		DUK_ASSERT(tv >= thr->valstack);
 		duk_push_tval(thr, tv);
 	}
@@ -608,19 +604,15 @@ DUK_INTERNAL duk_ret_t duk_bi_global_object_parse_int(duk_hthread *thr) {
 	duk_small_uint_t s2n_flags;
 
 	DUK_ASSERT_TOP(thr, 2);
-	duk_to_string(thr, 0);  /* Reject symbols. */
+	duk_to_string(thr, 0); /* Reject symbols. */
 
 	radix = duk_to_int32(thr, 1);
 
 	/* While parseInt() recognizes 0xdeadbeef, it doesn't recognize
 	 * ES2015 0o123 or 0b10001.
 	 */
-	s2n_flags = DUK_S2N_FLAG_TRIM_WHITE |
-	            DUK_S2N_FLAG_ALLOW_GARBAGE |
-	            DUK_S2N_FLAG_ALLOW_PLUS |
-	            DUK_S2N_FLAG_ALLOW_MINUS |
-	            DUK_S2N_FLAG_ALLOW_LEADING_ZERO |
-	            DUK_S2N_FLAG_ALLOW_AUTO_HEX_INT;
+	s2n_flags = DUK_S2N_FLAG_TRIM_WHITE | DUK_S2N_FLAG_ALLOW_GARBAGE | DUK_S2N_FLAG_ALLOW_PLUS | DUK_S2N_FLAG_ALLOW_MINUS |
+	            DUK_S2N_FLAG_ALLOW_LEADING_ZERO | DUK_S2N_FLAG_ALLOW_AUTO_HEX_INT;
 
 	/* Specification stripPrefix maps to DUK_S2N_FLAG_ALLOW_AUTO_HEX_INT.
 	 *
@@ -644,35 +636,28 @@ DUK_INTERNAL duk_ret_t duk_bi_global_object_parse_int(duk_hthread *thr) {
 	duk_numconv_parse(thr, (duk_small_int_t) radix, s2n_flags);
 	return 1;
 
- ret_nan:
+ret_nan:
 	duk_push_nan(thr);
 	return 1;
 }
-#endif  /* DUK_USE_GLOBAL_BUILTIN */
+#endif /* DUK_USE_GLOBAL_BUILTIN */
 
 #if defined(DUK_USE_GLOBAL_BUILTIN)
 DUK_INTERNAL duk_ret_t duk_bi_global_object_parse_float(duk_hthread *thr) {
 	duk_small_uint_t s2n_flags;
 
 	DUK_ASSERT_TOP(thr, 1);
-	duk_to_string(thr, 0);  /* Reject symbols. */
+	duk_to_string(thr, 0); /* Reject symbols. */
 
 	/* XXX: check flags */
-	s2n_flags = DUK_S2N_FLAG_TRIM_WHITE |
-	            DUK_S2N_FLAG_ALLOW_EXP |
-	            DUK_S2N_FLAG_ALLOW_GARBAGE |
-	            DUK_S2N_FLAG_ALLOW_PLUS |
-	            DUK_S2N_FLAG_ALLOW_MINUS |
-	            DUK_S2N_FLAG_ALLOW_INF |
-	            DUK_S2N_FLAG_ALLOW_FRAC |
-	            DUK_S2N_FLAG_ALLOW_NAKED_FRAC |
-	            DUK_S2N_FLAG_ALLOW_EMPTY_FRAC |
-	            DUK_S2N_FLAG_ALLOW_LEADING_ZERO;
+	s2n_flags = DUK_S2N_FLAG_TRIM_WHITE | DUK_S2N_FLAG_ALLOW_EXP | DUK_S2N_FLAG_ALLOW_GARBAGE | DUK_S2N_FLAG_ALLOW_PLUS |
+	            DUK_S2N_FLAG_ALLOW_MINUS | DUK_S2N_FLAG_ALLOW_INF | DUK_S2N_FLAG_ALLOW_FRAC | DUK_S2N_FLAG_ALLOW_NAKED_FRAC |
+	            DUK_S2N_FLAG_ALLOW_EMPTY_FRAC | DUK_S2N_FLAG_ALLOW_LEADING_ZERO;
 
 	duk_numconv_parse(thr, 10 /*radix*/, s2n_flags);
 	return 1;
 }
-#endif  /* DUK_USE_GLOBAL_BUILTIN */
+#endif /* DUK_USE_GLOBAL_BUILTIN */
 
 /*
  *  Number checkers
@@ -684,7 +669,7 @@ DUK_INTERNAL duk_ret_t duk_bi_global_object_is_nan(duk_hthread *thr) {
 	duk_push_boolean(thr, (duk_bool_t) DUK_ISNAN(d));
 	return 1;
 }
-#endif  /* DUK_USE_GLOBAL_BUILTIN */
+#endif /* DUK_USE_GLOBAL_BUILTIN */
 
 #if defined(DUK_USE_GLOBAL_BUILTIN)
 DUK_INTERNAL duk_ret_t duk_bi_global_object_is_finite(duk_hthread *thr) {
@@ -692,7 +677,7 @@ DUK_INTERNAL duk_ret_t duk_bi_global_object_is_finite(duk_hthread *thr) {
 	duk_push_boolean(thr, (duk_bool_t) DUK_ISFINITE(d));
 	return 1;
 }
-#endif  /* DUK_USE_GLOBAL_BUILTIN */
+#endif /* DUK_USE_GLOBAL_BUILTIN */
 
 /*
  *  URI handling
@@ -704,7 +689,9 @@ DUK_INTERNAL duk_ret_t duk_bi_global_object_decode_uri(duk_hthread *thr) {
 }
 
 DUK_INTERNAL duk_ret_t duk_bi_global_object_decode_uri_component(duk_hthread *thr) {
-	return duk__transform_helper(thr, duk__transform_callback_decode_uri, (const void *) duk__decode_uri_component_reserved_table);
+	return duk__transform_helper(thr,
+	                             duk__transform_callback_decode_uri,
+	                             (const void *) duk__decode_uri_component_reserved_table);
 }
 
 DUK_INTERNAL duk_ret_t duk_bi_global_object_encode_uri(duk_hthread *thr) {
@@ -712,7 +699,9 @@ DUK_INTERNAL duk_ret_t duk_bi_global_object_encode_uri(duk_hthread *thr) {
 }
 
 DUK_INTERNAL duk_ret_t duk_bi_global_object_encode_uri_component(duk_hthread *thr) {
-	return duk__transform_helper(thr, duk__transform_callback_encode_uri, (const void *) duk__encode_uricomponent_unescaped_table);
+	return duk__transform_helper(thr,
+	                             duk__transform_callback_encode_uri,
+	                             (const void *) duk__encode_uricomponent_unescaped_table);
 }
 
 #if defined(DUK_USE_SECTION_B)
@@ -723,5 +712,5 @@ DUK_INTERNAL duk_ret_t duk_bi_global_object_escape(duk_hthread *thr) {
 DUK_INTERNAL duk_ret_t duk_bi_global_object_unescape(duk_hthread *thr) {
 	return duk__transform_helper(thr, duk__transform_callback_unescape, (const void *) NULL);
 }
-#endif  /* DUK_USE_SECTION_B */
-#endif  /* DUK_USE_GLOBAL_BUILTIN */
+#endif /* DUK_USE_SECTION_B */
+#endif /* DUK_USE_GLOBAL_BUILTIN */
