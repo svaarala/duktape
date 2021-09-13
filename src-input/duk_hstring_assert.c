@@ -10,4 +10,4 @@ DUK_INTERNAL void duk_hstring_assert_valid(duk_hstring *h) {
 	DUK_ASSERT(h != NULL);
 }
 
-#endif  /* DUK_USE_ASSERTIONS */
+#endif /* DUK_USE_ASSERTIONS */
