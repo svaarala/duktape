@@ -64,7 +64,7 @@ DUK_INTERNAL void duk_heap_remove_from_heap_allocated(duk_heap *heap, duk_heaphd
 		;
 	}
 }
-#endif  /* DUK_USE_REFERENCE_COUNTING */
+#endif /* DUK_USE_REFERENCE_COUNTING */
 
 #if defined(DUK_USE_FINALIZER_SUPPORT)
 DUK_INTERNAL void duk_heap_insert_into_finalize_list(duk_heap *heap, duk_heaphdr *hdr) {
@@ -83,7 +83,7 @@ DUK_INTERNAL void duk_heap_insert_into_finalize_list(duk_heap *heap, duk_heaphdr
 	DUK_HEAPHDR_ASSERT_LINKS(heap, root);
 	heap->finalize_list = hdr;
 }
-#endif  /* DUK_USE_FINALIZER_SUPPORT */
+#endif /* DUK_USE_FINALIZER_SUPPORT */
 
 #if defined(DUK_USE_FINALIZER_SUPPORT)
 DUK_INTERNAL void duk_heap_remove_from_finalize_list(duk_heap *heap, duk_heaphdr *hdr) {
@@ -117,7 +117,7 @@ DUK_INTERNAL void duk_heap_remove_from_finalize_list(duk_heap *heap, duk_heaphdr
 	} else {
 		DUK_ASSERT(hdr != heap->finalize_list);
 		for (;;) {
-			DUK_ASSERT(curr != NULL);  /* Caller responsibility. */
+			DUK_ASSERT(curr != NULL); /* Caller responsibility. */
 
 			next = DUK_HEAPHDR_GET_NEXT(heap, curr);
 			if (next == hdr) {
@@ -129,7 +129,7 @@ DUK_INTERNAL void duk_heap_remove_from_finalize_list(duk_heap *heap, duk_heaphdr
 	}
 #endif
 }
-#endif  /* DUK_USE_FINALIZER_SUPPORT */
+#endif /* DUK_USE_FINALIZER_SUPPORT */
 
 #if defined(DUK_USE_ASSERTIONS)
 DUK_INTERNAL duk_bool_t duk_heap_in_heap_allocated(duk_heap *heap, duk_heaphdr *ptr) {
@@ -143,7 +143,7 @@ DUK_INTERNAL duk_bool_t duk_heap_in_heap_allocated(duk_heap *heap, duk_heaphdr *
 	}
 	return 0;
 }
-#endif  /* DUK_USE_ASSERTIONS */
+#endif /* DUK_USE_ASSERTIONS */
 
 #if defined(DUK_USE_INTERRUPT_COUNTER)
 DUK_INTERNAL void duk_heap_switch_thread(duk_heap *heap, duk_hthread *new_thr) {
@@ -176,9 +176,9 @@ DUK_INTERNAL void duk_heap_switch_thread(duk_heap *heap, duk_hthread *new_thr) {
 		DUK_DD(DUK_DDPRINT("switch thread, new thread is NULL, no interrupt counter changes"));
 	}
 
-	heap->curr_thread = new_thr;  /* may be NULL */
+	heap->curr_thread = new_thr; /* may be NULL */
 }
-#endif  /* DUK_USE_INTERRUPT_COUNTER */
+#endif /* DUK_USE_INTERRUPT_COUNTER */
 
 #if defined(DUK_USE_ASSERTIONS)
 DUK_INTERNAL void duk_heap_assert_valid(duk_heap *heap) {

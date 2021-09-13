@@ -20,17 +20,17 @@
  *  External buffer:  DUK_HBUFFER_FLAG_DYNAMIC | DUK_HBUFFER_FLAG_EXTERNAL
  */
 
-#define DUK_HBUFFER_FLAG_DYNAMIC                  DUK_HEAPHDR_USER_FLAG(0)    /* buffer is behind a pointer, dynamic or external */
-#define DUK_HBUFFER_FLAG_EXTERNAL                 DUK_HEAPHDR_USER_FLAG(1)    /* buffer pointer is to an externally allocated buffer */
+#define DUK_HBUFFER_FLAG_DYNAMIC  DUK_HEAPHDR_USER_FLAG(0) /* buffer is behind a pointer, dynamic or external */
+#define DUK_HBUFFER_FLAG_EXTERNAL DUK_HEAPHDR_USER_FLAG(1) /* buffer pointer is to an externally allocated buffer */
 
-#define DUK_HBUFFER_HAS_DYNAMIC(x)                DUK_HEAPHDR_CHECK_FLAG_BITS(&(x)->hdr, DUK_HBUFFER_FLAG_DYNAMIC)
-#define DUK_HBUFFER_HAS_EXTERNAL(x)               DUK_HEAPHDR_CHECK_FLAG_BITS(&(x)->hdr, DUK_HBUFFER_FLAG_EXTERNAL)
+#define DUK_HBUFFER_HAS_DYNAMIC(x)  DUK_HEAPHDR_CHECK_FLAG_BITS(&(x)->hdr, DUK_HBUFFER_FLAG_DYNAMIC)
+#define DUK_HBUFFER_HAS_EXTERNAL(x) DUK_HEAPHDR_CHECK_FLAG_BITS(&(x)->hdr, DUK_HBUFFER_FLAG_EXTERNAL)
 
-#define DUK_HBUFFER_SET_DYNAMIC(x)                DUK_HEAPHDR_SET_FLAG_BITS(&(x)->hdr, DUK_HBUFFER_FLAG_DYNAMIC)
-#define DUK_HBUFFER_SET_EXTERNAL(x)               DUK_HEAPHDR_SET_FLAG_BITS(&(x)->hdr, DUK_HBUFFER_FLAG_EXTERNAL)
+#define DUK_HBUFFER_SET_DYNAMIC(x)  DUK_HEAPHDR_SET_FLAG_BITS(&(x)->hdr, DUK_HBUFFER_FLAG_DYNAMIC)
+#define DUK_HBUFFER_SET_EXTERNAL(x) DUK_HEAPHDR_SET_FLAG_BITS(&(x)->hdr, DUK_HBUFFER_FLAG_EXTERNAL)
 
-#define DUK_HBUFFER_CLEAR_DYNAMIC(x)              DUK_HEAPHDR_CLEAR_FLAG_BITS(&(x)->hdr, DUK_HBUFFER_FLAG_DYNAMIC)
-#define DUK_HBUFFER_CLEAR_EXTERNAL(x)             DUK_HEAPHDR_CLEAR_FLAG_BITS(&(x)->hdr, DUK_HBUFFER_FLAG_EXTERNAL)
+#define DUK_HBUFFER_CLEAR_DYNAMIC(x)  DUK_HEAPHDR_CLEAR_FLAG_BITS(&(x)->hdr, DUK_HBUFFER_FLAG_DYNAMIC)
+#define DUK_HBUFFER_CLEAR_EXTERNAL(x) DUK_HEAPHDR_CLEAR_FLAG_BITS(&(x)->hdr, DUK_HBUFFER_FLAG_EXTERNAL)
 
 /*
  *  Misc defines
@@ -43,12 +43,12 @@
  */
 
 #if defined(DUK_USE_BUFLEN16)
-#define DUK_HBUFFER_MAX_BYTELEN                   (0x0000ffffUL)
+#define DUK_HBUFFER_MAX_BYTELEN (0x0000ffffUL)
 #else
 /* Intentionally not 0x7fffffffUL; at least JSON code expects that
  * 2*len + 2 fits in 32 bits.
  */
-#define DUK_HBUFFER_MAX_BYTELEN                   (0x7ffffffeUL)
+#define DUK_HBUFFER_MAX_BYTELEN (0x7ffffffeUL)
 #endif
 
 /*
@@ -57,60 +57,70 @@
 
 #if defined(DUK_USE_BUFLEN16)
 /* size stored in duk_heaphdr unused flag bits */
-#define DUK_HBUFFER_GET_SIZE(x)     ((x)->hdr.h_flags >> 16)
-#define DUK_HBUFFER_SET_SIZE(x,v)   do { \
+#define DUK_HBUFFER_GET_SIZE(x) ((x)->hdr.h_flags >> 16)
+#define DUK_HBUFFER_SET_SIZE(x, v) \
+	do { \
 		duk_size_t duk__v; \
 		duk__v = (v); \
 		DUK_ASSERT(duk__v <= 0xffffUL); \
 		(x)->hdr.h_flags = ((x)->hdr.h_flags & 0x0000ffffUL) | (((duk_uint32_t) duk__v) << 16); \
 	} while (0)
-#define DUK_HBUFFER_ADD_SIZE(x,dv)  do { \
+#define DUK_HBUFFER_ADD_SIZE(x, dv) \
+	do { \
 		(x)->hdr.h_flags += ((dv) << 16); \
 	} while (0)
-#define DUK_HBUFFER_SUB_SIZE(x,dv)  do { \
+#define DUK_HBUFFER_SUB_SIZE(x, dv) \
+	do { \
 		(x)->hdr.h_flags -= ((dv) << 16); \
 	} while (0)
 #else
-#define DUK_HBUFFER_GET_SIZE(x)     (((duk_hbuffer *) (x))->size)
-#define DUK_HBUFFER_SET_SIZE(x,v)   do { \
+#define DUK_HBUFFER_GET_SIZE(x) (((duk_hbuffer *) (x))->size)
+#define DUK_HBUFFER_SET_SIZE(x, v) \
+	do { \
 		((duk_hbuffer *) (x))->size = (v); \
 	} while (0)
-#define DUK_HBUFFER_ADD_SIZE(x,dv)  do { \
+#define DUK_HBUFFER_ADD_SIZE(x, dv) \
+	do { \
 		(x)->size += (dv); \
 	} while (0)
-#define DUK_HBUFFER_SUB_SIZE(x,dv)  do { \
+#define DUK_HBUFFER_SUB_SIZE(x, dv) \
+	do { \
 		(x)->size -= (dv); \
 	} while (0)
 #endif
 
-#define DUK_HBUFFER_FIXED_GET_SIZE(x)       DUK_HBUFFER_GET_SIZE((duk_hbuffer *) (x))
-#define DUK_HBUFFER_FIXED_SET_SIZE(x,v)     DUK_HBUFFER_SET_SIZE((duk_hbuffer *) (x))
+#define DUK_HBUFFER_FIXED_GET_SIZE(x)    DUK_HBUFFER_GET_SIZE((duk_hbuffer *) (x))
+#define DUK_HBUFFER_FIXED_SET_SIZE(x, v) DUK_HBUFFER_SET_SIZE((duk_hbuffer *) (x))
 
 #define DUK_HBUFFER_DYNAMIC_GET_SIZE(x)     DUK_HBUFFER_GET_SIZE((duk_hbuffer *) (x))
-#define DUK_HBUFFER_DYNAMIC_SET_SIZE(x,v)   DUK_HBUFFER_SET_SIZE((duk_hbuffer *) (x), (v))
-#define DUK_HBUFFER_DYNAMIC_ADD_SIZE(x,dv)  DUK_HBUFFER_ADD_SIZE((duk_hbuffer *) (x), (dv))
-#define DUK_HBUFFER_DYNAMIC_SUB_SIZE(x,dv)  DUK_HBUFFER_SUB_SIZE((duk_hbuffer *) (x), (dv))
+#define DUK_HBUFFER_DYNAMIC_SET_SIZE(x, v)  DUK_HBUFFER_SET_SIZE((duk_hbuffer *) (x), (v))
+#define DUK_HBUFFER_DYNAMIC_ADD_SIZE(x, dv) DUK_HBUFFER_ADD_SIZE((duk_hbuffer *) (x), (dv))
+#define DUK_HBUFFER_DYNAMIC_SUB_SIZE(x, dv) DUK_HBUFFER_SUB_SIZE((duk_hbuffer *) (x), (dv))
 
 #define DUK_HBUFFER_EXTERNAL_GET_SIZE(x)    DUK_HBUFFER_GET_SIZE((duk_hbuffer *) (x))
-#define DUK_HBUFFER_EXTERNAL_SET_SIZE(x,v)  DUK_HBUFFER_SET_SIZE((duk_hbuffer *) (x), (v))
+#define DUK_HBUFFER_EXTERNAL_SET_SIZE(x, v) DUK_HBUFFER_SET_SIZE((duk_hbuffer *) (x), (v))
 
-#define DUK_HBUFFER_FIXED_GET_DATA_PTR(heap,x)    ((duk_uint8_t *) (((duk_hbuffer_fixed *) (void *) (x)) + 1))
+#define DUK_HBUFFER_FIXED_GET_DATA_PTR(heap, x) ((duk_uint8_t *) (((duk_hbuffer_fixed *) (void *) (x)) + 1))
 
 #if defined(DUK_USE_HEAPPTR16)
-#define DUK_HBUFFER_DYNAMIC_GET_DATA_PTR(heap,x) \
+#define DUK_HBUFFER_DYNAMIC_GET_DATA_PTR(heap, x) \
 	((void *) DUK_USE_HEAPPTR_DEC16((heap)->heap_udata, ((duk_heaphdr *) (x))->h_extra16))
-#define DUK_HBUFFER_DYNAMIC_SET_DATA_PTR(heap,x,v)     do { \
+#define DUK_HBUFFER_DYNAMIC_SET_DATA_PTR(heap, x, v) \
+	do { \
 		((duk_heaphdr *) (x))->h_extra16 = DUK_USE_HEAPPTR_ENC16((heap)->heap_udata, (void *) (v)); \
 	} while (0)
-#define DUK_HBUFFER_DYNAMIC_SET_DATA_PTR_NULL(heap,x)  do { \
-		((duk_heaphdr *) (x))->h_extra16 = 0;  /* assume 0 <=> NULL */ \
+#define DUK_HBUFFER_DYNAMIC_SET_DATA_PTR_NULL(heap, x) \
+	do { \
+		((duk_heaphdr *) (x))->h_extra16 = 0; /* assume 0 <=> NULL */ \
 	} while (0)
 #else
-#define DUK_HBUFFER_DYNAMIC_GET_DATA_PTR(heap,x)       ((x)->curr_alloc)
-#define DUK_HBUFFER_DYNAMIC_SET_DATA_PTR(heap,x,v)     do { \
+#define DUK_HBUFFER_DYNAMIC_GET_DATA_PTR(heap, x) ((x)->curr_alloc)
+#define DUK_HBUFFER_DYNAMIC_SET_DATA_PTR(heap, x, v) \
+	do { \
 		(x)->curr_alloc = (void *) (v); \
 	} while (0)
-#define DUK_HBUFFER_DYNAMIC_SET_DATA_PTR_NULL(heap,x)  do { \
+#define DUK_HBUFFER_DYNAMIC_SET_DATA_PTR_NULL(heap, x) \
+	do { \
 		(x)->curr_alloc = (void *) NULL; \
 	} while (0)
 #endif
@@ -119,21 +129,23 @@
  * Duktape heap.
  */
 #if defined(DUK_USE_HEAPPTR16)
-#define DUK_HBUFFER_EXTERNAL_GET_DATA_PTR(heap,x) \
-	((void *) (x)->curr_alloc)
-#define DUK_HBUFFER_EXTERNAL_SET_DATA_PTR(heap,x,v)     do { \
+#define DUK_HBUFFER_EXTERNAL_GET_DATA_PTR(heap, x) ((void *) (x)->curr_alloc)
+#define DUK_HBUFFER_EXTERNAL_SET_DATA_PTR(heap, x, v) \
+	do { \
 		(x)->curr_alloc = (void *) (v); \
 	} while (0)
-#define DUK_HBUFFER_EXTERNAL_SET_DATA_PTR_NULL(heap,x)  do { \
+#define DUK_HBUFFER_EXTERNAL_SET_DATA_PTR_NULL(heap, x) \
+	do { \
 		(x)->curr_alloc = (void *) NULL; \
 	} while (0)
 #else
-#define DUK_HBUFFER_EXTERNAL_GET_DATA_PTR(heap,x) \
-	((void *) (x)->curr_alloc)
-#define DUK_HBUFFER_EXTERNAL_SET_DATA_PTR(heap,x,v)     do { \
+#define DUK_HBUFFER_EXTERNAL_GET_DATA_PTR(heap, x) ((void *) (x)->curr_alloc)
+#define DUK_HBUFFER_EXTERNAL_SET_DATA_PTR(heap, x, v) \
+	do { \
 		(x)->curr_alloc = (void *) (v); \
 	} while (0)
-#define DUK_HBUFFER_EXTERNAL_SET_DATA_PTR_NULL(heap,x)  do { \
+#define DUK_HBUFFER_EXTERNAL_SET_DATA_PTR_NULL(heap, x) \
+	do { \
 		(x)->curr_alloc = (void *) NULL; \
 	} while (0)
 #endif
@@ -142,32 +154,31 @@
  * size).  May be NULL for zero size dynamic/external buffer.
  */
 #if defined(DUK_USE_HEAPPTR16)
-#define DUK_HBUFFER_GET_DATA_PTR(heap,x)  ( \
-	DUK_HBUFFER_HAS_DYNAMIC((x)) ? \
-		( \
-			DUK_HBUFFER_HAS_EXTERNAL((x)) ? \
-				DUK_HBUFFER_EXTERNAL_GET_DATA_PTR((heap), (duk_hbuffer_external *) (x)) : \
-				DUK_HBUFFER_DYNAMIC_GET_DATA_PTR((heap), (duk_hbuffer_dynamic *) (x)) \
-		) : \
-		DUK_HBUFFER_FIXED_GET_DATA_PTR((heap), (duk_hbuffer_fixed *) (void *) (x)) \
-	)
+#define DUK_HBUFFER_GET_DATA_PTR(heap, x) \
+	(DUK_HBUFFER_HAS_DYNAMIC((x)) ? \
+             (DUK_HBUFFER_HAS_EXTERNAL((x)) ? DUK_HBUFFER_EXTERNAL_GET_DATA_PTR((heap), (duk_hbuffer_external *) (x)) : \
+                                              DUK_HBUFFER_DYNAMIC_GET_DATA_PTR((heap), (duk_hbuffer_dynamic *) (x))) : \
+             DUK_HBUFFER_FIXED_GET_DATA_PTR((heap), (duk_hbuffer_fixed *) (void *) (x)))
 #else
 /* Without heap pointer compression duk_hbuffer_dynamic and duk_hbuffer_external
  * have the same layout so checking for fixed vs. dynamic (or external) is enough.
  */
-#define DUK_HBUFFER_GET_DATA_PTR(heap,x)  ( \
-	DUK_HBUFFER_HAS_DYNAMIC((x)) ? \
-		DUK_HBUFFER_DYNAMIC_GET_DATA_PTR((heap), (duk_hbuffer_dynamic *) (x)) : \
-		DUK_HBUFFER_FIXED_GET_DATA_PTR((heap), (duk_hbuffer_fixed *) (void *) (x)) \
-	)
+#define DUK_HBUFFER_GET_DATA_PTR(heap, x) \
+	(DUK_HBUFFER_HAS_DYNAMIC((x)) ? DUK_HBUFFER_DYNAMIC_GET_DATA_PTR((heap), (duk_hbuffer_dynamic *) (x)) : \
+                                        DUK_HBUFFER_FIXED_GET_DATA_PTR((heap), (duk_hbuffer_fixed *) (void *) (x)))
 #endif
 
 /* Validity assert. */
 #if defined(DUK_USE_ASSERTIONS)
 DUK_INTERNAL_DECL void duk_hbuffer_assert_valid(duk_hbuffer *h);
-#define DUK_HBUFFER_ASSERT_VALID(h)  do { duk_hbuffer_assert_valid((h)); } while (0)
+#define DUK_HBUFFER_ASSERT_VALID(h) \
+	do { \
+		duk_hbuffer_assert_valid((h)); \
+	} while (0)
 #else
-#define DUK_HBUFFER_ASSERT_VALID(h)  do {} while (0)
+#define DUK_HBUFFER_ASSERT_VALID(h) \
+	do { \
+	} while (0)
 #endif
 
 /*
@@ -265,9 +276,9 @@ struct duk_hbuffer_fixed {
 	 */
 }
 #if (DUK_USE_ALIGN_BY == 8) && defined(DUK_USE_PACK_GCC_ATTR)
-__attribute__ ((aligned (8)))
+__attribute__((aligned(8)))
 #elif (DUK_USE_ALIGN_BY == 8) && defined(DUK_USE_PACK_CLANG_ATTR)
-__attribute__ ((aligned (8)))
+__attribute__((aligned(8)))
 #endif
 ;
 #if (DUK_USE_ALIGN_BY == 8) && defined(DUK_USE_PACK_MSVC_PRAGMA)
@@ -290,7 +301,7 @@ struct duk_hbuffer_dynamic {
 #if defined(DUK_USE_HEAPPTR16)
 	/* Stored in duk_heaphdr h_extra16. */
 #else
-	void *curr_alloc;  /* may be NULL if alloc_size == 0 */
+	void *curr_alloc; /* may be NULL if alloc_size == 0 */
 #endif
 
 	/*
@@ -319,7 +330,7 @@ struct duk_hbuffer_external {
 	/* Cannot be compressed as a heap pointer because may point to
 	 * an arbitrary address.
 	 */
-	void *curr_alloc;  /* may be NULL if alloc_size == 0 */
+	void *curr_alloc; /* may be NULL if alloc_size == 0 */
 };
 
 /*
@@ -327,10 +338,10 @@ struct duk_hbuffer_external {
  */
 
 DUK_INTERNAL_DECL duk_hbuffer *duk_hbuffer_alloc(duk_heap *heap, duk_size_t size, duk_small_uint_t flags, void **out_bufdata);
-DUK_INTERNAL_DECL void *duk_hbuffer_get_dynalloc_ptr(duk_heap *heap, void *ud);  /* indirect allocs */
+DUK_INTERNAL_DECL void *duk_hbuffer_get_dynalloc_ptr(duk_heap *heap, void *ud); /* indirect allocs */
 
 /* dynamic buffer ops */
 DUK_INTERNAL_DECL void duk_hbuffer_resize(duk_hthread *thr, duk_hbuffer_dynamic *buf, duk_size_t new_size);
 DUK_INTERNAL_DECL void duk_hbuffer_reset(duk_hthread *thr, duk_hbuffer_dynamic *buf);
 
-#endif  /* DUK_HBUFFER_H_INCLUDED */
+#endif /* DUK_HBUFFER_H_INCLUDED */

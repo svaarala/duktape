@@ -22,9 +22,10 @@ class duk_internal_exception {
  * aware of the "unsafe to continue" semantics.
  */
 class duk_fatal_exception : public virtual std::runtime_error {
- public:
-	duk_fatal_exception(const char *message) : std::runtime_error(message) {}
+      public:
+	duk_fatal_exception(const char *message) : std::runtime_error(message) {
+	}
 };
 #endif
 
-#endif  /* DUK_EXCEPTION_H_INCLUDED */
+#endif /* DUK_EXCEPTION_H_INCLUDED */

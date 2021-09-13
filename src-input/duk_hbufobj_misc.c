@@ -17,4 +17,4 @@ DUK_INTERNAL duk_uint_t duk_hbufobj_clamp_bytelength(duk_hbufobj *h_bufobj, duk_
 
 	return buf_avail >= len ? len : buf_avail;
 }
-#endif  /* DUK_USE_BUFFEROBJECT_SUPPORT */
+#endif /* DUK_USE_BUFFEROBJECT_SUPPORT */

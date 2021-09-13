@@ -8,20 +8,18 @@
 
 DUK_INTERNAL void duk_hobject_assert_valid(duk_hobject *h) {
 	DUK_ASSERT(h != NULL);
-	DUK_ASSERT(!DUK_HOBJECT_IS_CALLABLE(h) ||
-	           DUK_HOBJECT_GET_CLASS_NUMBER(h) == DUK_HOBJECT_CLASS_FUNCTION);
-	DUK_ASSERT(!DUK_HOBJECT_IS_BUFOBJ(h) ||
-	           (DUK_HOBJECT_GET_CLASS_NUMBER(h) == DUK_HOBJECT_CLASS_ARRAYBUFFER ||
-	            DUK_HOBJECT_GET_CLASS_NUMBER(h) == DUK_HOBJECT_CLASS_DATAVIEW ||
-	            DUK_HOBJECT_GET_CLASS_NUMBER(h) == DUK_HOBJECT_CLASS_INT8ARRAY ||
-	            DUK_HOBJECT_GET_CLASS_NUMBER(h) == DUK_HOBJECT_CLASS_UINT8ARRAY ||
-	            DUK_HOBJECT_GET_CLASS_NUMBER(h) == DUK_HOBJECT_CLASS_UINT8CLAMPEDARRAY ||
-	            DUK_HOBJECT_GET_CLASS_NUMBER(h) == DUK_HOBJECT_CLASS_INT16ARRAY ||
-	            DUK_HOBJECT_GET_CLASS_NUMBER(h) == DUK_HOBJECT_CLASS_UINT16ARRAY ||
-	            DUK_HOBJECT_GET_CLASS_NUMBER(h) == DUK_HOBJECT_CLASS_INT32ARRAY ||
-	            DUK_HOBJECT_GET_CLASS_NUMBER(h) == DUK_HOBJECT_CLASS_UINT32ARRAY ||
-	            DUK_HOBJECT_GET_CLASS_NUMBER(h) == DUK_HOBJECT_CLASS_FLOAT32ARRAY ||
-	            DUK_HOBJECT_GET_CLASS_NUMBER(h) == DUK_HOBJECT_CLASS_FLOAT64ARRAY));
+	DUK_ASSERT(!DUK_HOBJECT_IS_CALLABLE(h) || DUK_HOBJECT_GET_CLASS_NUMBER(h) == DUK_HOBJECT_CLASS_FUNCTION);
+	DUK_ASSERT(!DUK_HOBJECT_IS_BUFOBJ(h) || (DUK_HOBJECT_GET_CLASS_NUMBER(h) == DUK_HOBJECT_CLASS_ARRAYBUFFER ||
+	                                         DUK_HOBJECT_GET_CLASS_NUMBER(h) == DUK_HOBJECT_CLASS_DATAVIEW ||
+	                                         DUK_HOBJECT_GET_CLASS_NUMBER(h) == DUK_HOBJECT_CLASS_INT8ARRAY ||
+	                                         DUK_HOBJECT_GET_CLASS_NUMBER(h) == DUK_HOBJECT_CLASS_UINT8ARRAY ||
+	                                         DUK_HOBJECT_GET_CLASS_NUMBER(h) == DUK_HOBJECT_CLASS_UINT8CLAMPEDARRAY ||
+	                                         DUK_HOBJECT_GET_CLASS_NUMBER(h) == DUK_HOBJECT_CLASS_INT16ARRAY ||
+	                                         DUK_HOBJECT_GET_CLASS_NUMBER(h) == DUK_HOBJECT_CLASS_UINT16ARRAY ||
+	                                         DUK_HOBJECT_GET_CLASS_NUMBER(h) == DUK_HOBJECT_CLASS_INT32ARRAY ||
+	                                         DUK_HOBJECT_GET_CLASS_NUMBER(h) == DUK_HOBJECT_CLASS_UINT32ARRAY ||
+	                                         DUK_HOBJECT_GET_CLASS_NUMBER(h) == DUK_HOBJECT_CLASS_FLOAT32ARRAY ||
+	                                         DUK_HOBJECT_GET_CLASS_NUMBER(h) == DUK_HOBJECT_CLASS_FLOAT64ARRAY));
 	/* Object is an Array <=> object has exotic array behavior */
 	DUK_ASSERT((DUK_HOBJECT_GET_CLASS_NUMBER(h) == DUK_HOBJECT_CLASS_ARRAY && DUK_HOBJECT_HAS_EXOTIC_ARRAY(h)) ||
 	           (DUK_HOBJECT_GET_CLASS_NUMBER(h) != DUK_HOBJECT_CLASS_ARRAY && !DUK_HOBJECT_HAS_EXOTIC_ARRAY(h)));
@@ -37,8 +35,7 @@ DUK_INTERNAL void duk_hboundfunc_assert_valid(duk_hboundfunc *h) {
 	DUK_ASSERT(h != NULL);
 	DUK_ASSERT(DUK_HOBJECT_IS_BOUNDFUNC((duk_hobject *) h));
 	DUK_ASSERT(DUK_TVAL_IS_LIGHTFUNC(&h->target) ||
-	           (DUK_TVAL_IS_OBJECT(&h->target) &&
-	            DUK_HOBJECT_IS_CALLABLE(DUK_TVAL_GET_OBJECT(&h->target))));
+	           (DUK_TVAL_IS_OBJECT(&h->target) && DUK_HOBJECT_IS_CALLABLE(DUK_TVAL_GET_OBJECT(&h->target))));
 	DUK_ASSERT(!DUK_TVAL_IS_UNUSED(&h->this_binding));
 	DUK_ASSERT(h->nargs == 0 || h->args != NULL);
 }
@@ -70,7 +67,7 @@ DUK_INTERNAL void duk_hbufobj_assert_valid(duk_hbufobj *h) {
 		DUK_ASSERT(h->offset + h->length >= h->offset);
 	}
 }
-#endif  /* DUK_USE_BUFFEROBJECT_SUPPORT */
+#endif /* DUK_USE_BUFFEROBJECT_SUPPORT */
 
 DUK_INTERNAL void duk_hcompfunc_assert_valid(duk_hcompfunc *h) {
 	DUK_ASSERT(h != NULL);
@@ -124,4 +121,4 @@ DUK_INTERNAL void duk_ctx_assert_valid(duk_hthread *thr) {
 	DUK_ASSERT(thr->valstack_alloc_end >= thr->valstack_end);
 }
 
-#endif  /* DUK_USE_ASSERTIONS */
+#endif /* DUK_USE_ASSERTIONS */

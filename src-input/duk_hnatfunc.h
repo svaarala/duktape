@@ -7,13 +7,18 @@
 
 #if defined(DUK_USE_ASSERTIONS)
 DUK_INTERNAL_DECL void duk_hnatfunc_assert_valid(duk_hnatfunc *h);
-#define DUK_HNATFUNC_ASSERT_VALID(h)  do { duk_hnatfunc_assert_valid((h)); } while (0)
+#define DUK_HNATFUNC_ASSERT_VALID(h) \
+	do { \
+		duk_hnatfunc_assert_valid((h)); \
+	} while (0)
 #else
-#define DUK_HNATFUNC_ASSERT_VALID(h)  do {} while (0)
+#define DUK_HNATFUNC_ASSERT_VALID(h) \
+	do { \
+	} while (0)
 #endif
 
-#define DUK_HNATFUNC_NARGS_VARARGS  ((duk_int16_t) -1)
-#define DUK_HNATFUNC_NARGS_MAX      ((duk_int16_t) 0x7fff)
+#define DUK_HNATFUNC_NARGS_VARARGS ((duk_int16_t) -1)
+#define DUK_HNATFUNC_NARGS_MAX     ((duk_int16_t) 0x7fff)
 
 struct duk_hnatfunc {
 	/* shared object part */
@@ -36,4 +41,4 @@ struct duk_hnatfunc {
 	 */
 };
 
-#endif  /* DUK_HNATFUNC_H_INCLUDED */
+#endif /* DUK_HNATFUNC_H_INCLUDED */
