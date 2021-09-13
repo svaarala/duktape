@@ -63,58 +63,58 @@
 /* list of conversion specifiers that terminate a format tag;
  * this is unfortunately guesswork.
  */
-#define DUK__ALLOWED_STANDARD_SPECIFIERS  "diouxXeEfFgGaAcsCSpnm"
+#define DUK__ALLOWED_STANDARD_SPECIFIERS "diouxXeEfFgGaAcsCSpnm"
 
 /* maximum length of standard format tag that we support */
-#define DUK__MAX_FORMAT_TAG_LENGTH  32
+#define DUK__MAX_FORMAT_TAG_LENGTH 32
 
 /* heapobj recursion depth when deep printing is selected */
-#define DUK__DEEP_DEPTH_LIMIT  8
+#define DUK__DEEP_DEPTH_LIMIT 8
 
 /* maximum recursion depth for loop detection stacks */
-#define DUK__LOOP_STACK_DEPTH  256
+#define DUK__LOOP_STACK_DEPTH 256
 
 /* must match bytecode defines now; build autogenerate? */
 DUK_LOCAL const char * const duk__bc_optab[256] = {
-	"LDREG", "STREG", "JUMP", "LDCONST", "LDINT", "LDINTX", "LDTHIS", "LDUNDEF",
-	"LDNULL", "LDTRUE", "LDFALSE", "GETVAR", "BNOT", "LNOT", "UNM", "UNP",
-	"EQ_RR", "EQ_CR", "EQ_RC", "EQ_CC", "NEQ_RR", "NEQ_CR", "NEQ_RC", "NEQ_CC",
-	"SEQ_RR", "SEQ_CR", "SEQ_RC", "SEQ_CC", "SNEQ_RR", "SNEQ_CR", "SNEQ_RC", "SNEQ_CC",
+	"LDREG",       "STREG",       "JUMP",        "LDCONST",     "LDINT",       "LDINTX",      "LDTHIS",      "LDUNDEF",
+	"LDNULL",      "LDTRUE",      "LDFALSE",     "GETVAR",      "BNOT",        "LNOT",        "UNM",         "UNP",
+	"EQ_RR",       "EQ_CR",       "EQ_RC",       "EQ_CC",       "NEQ_RR",      "NEQ_CR",      "NEQ_RC",      "NEQ_CC",
+	"SEQ_RR",      "SEQ_CR",      "SEQ_RC",      "SEQ_CC",      "SNEQ_RR",     "SNEQ_CR",     "SNEQ_RC",     "SNEQ_CC",
 
-	"GT_RR", "GT_CR", "GT_RC", "GT_CC", "GE_RR", "GE_CR", "GE_RC", "GE_CC",
-	"LT_RR", "LT_CR", "LT_RC", "LT_CC", "LE_RR", "LE_CR", "LE_RC", "LE_CC",
-	"IFTRUE_R", "IFTRUE_C", "IFFALSE_R", "IFFALSE_C", "ADD_RR", "ADD_CR", "ADD_RC", "ADD_CC",
-	"SUB_RR", "SUB_CR", "SUB_RC", "SUB_CC", "MUL_RR", "MUL_CR", "MUL_RC", "MUL_CC",
+	"GT_RR",       "GT_CR",       "GT_RC",       "GT_CC",       "GE_RR",       "GE_CR",       "GE_RC",       "GE_CC",
+	"LT_RR",       "LT_CR",       "LT_RC",       "LT_CC",       "LE_RR",       "LE_CR",       "LE_RC",       "LE_CC",
+	"IFTRUE_R",    "IFTRUE_C",    "IFFALSE_R",   "IFFALSE_C",   "ADD_RR",      "ADD_CR",      "ADD_RC",      "ADD_CC",
+	"SUB_RR",      "SUB_CR",      "SUB_RC",      "SUB_CC",      "MUL_RR",      "MUL_CR",      "MUL_RC",      "MUL_CC",
 
-	"DIV_RR", "DIV_CR", "DIV_RC", "DIV_CC", "MOD_RR", "MOD_CR", "MOD_RC", "MOD_CC",
-	"EXP_RR", "EXP_CR", "EXP_RC", "EXP_CC", "BAND_RR", "BAND_CR", "BAND_RC", "BAND_CC",
-	"BOR_RR", "BOR_CR", "BOR_RC", "BOR_CC", "BXOR_RR", "BXOR_CR", "BXOR_RC", "BXOR_CC",
-	"BASL_RR", "BASL_CR", "BASL_RC", "BASL_CC", "BLSR_RR", "BLSR_CR", "BLSR_RC", "BLSR_CC",
+	"DIV_RR",      "DIV_CR",      "DIV_RC",      "DIV_CC",      "MOD_RR",      "MOD_CR",      "MOD_RC",      "MOD_CC",
+	"EXP_RR",      "EXP_CR",      "EXP_RC",      "EXP_CC",      "BAND_RR",     "BAND_CR",     "BAND_RC",     "BAND_CC",
+	"BOR_RR",      "BOR_CR",      "BOR_RC",      "BOR_CC",      "BXOR_RR",     "BXOR_CR",     "BXOR_RC",     "BXOR_CC",
+	"BASL_RR",     "BASL_CR",     "BASL_RC",     "BASL_CC",     "BLSR_RR",     "BLSR_CR",     "BLSR_RC",     "BLSR_CC",
 
-	"BASR_RR", "BASR_CR", "BASR_RC", "BASR_CC", "INSTOF_RR", "INSTOF_CR", "INSTOF_RC", "INSTOF_CC",
-	"IN_RR", "IN_CR", "IN_RC", "IN_CC", "GETPROP_RR", "GETPROP_CR", "GETPROP_RC", "GETPROP_CC",
-	"PUTPROP_RR", "PUTPROP_CR", "PUTPROP_RC", "PUTPROP_CC", "DELPROP_RR", "DELPROP_CR", "DELPROP_RC", "DELPROP_CC",
-	"PREINCR", "PREDECR", "POSTINCR", "POSTDECR", "PREINCV", "PREDECV", "POSTINCV", "POSTDECV",
+	"BASR_RR",     "BASR_CR",     "BASR_RC",     "BASR_CC",     "INSTOF_RR",   "INSTOF_CR",   "INSTOF_RC",   "INSTOF_CC",
+	"IN_RR",       "IN_CR",       "IN_RC",       "IN_CC",       "GETPROP_RR",  "GETPROP_CR",  "GETPROP_RC",  "GETPROP_CC",
+	"PUTPROP_RR",  "PUTPROP_CR",  "PUTPROP_RC",  "PUTPROP_CC",  "DELPROP_RR",  "DELPROP_CR",  "DELPROP_RC",  "DELPROP_CC",
+	"PREINCR",     "PREDECR",     "POSTINCR",    "POSTDECR",    "PREINCV",     "PREDECV",     "POSTINCV",    "POSTDECV",
 
-	"PREINCP_RR", "PREINCP_CR", "PREINCP_RC", "PREINCP_CC", "PREDECP_RR", "PREDECP_CR", "PREDECP_RC", "PREDECP_CC",
+	"PREINCP_RR",  "PREINCP_CR",  "PREINCP_RC",  "PREINCP_CC",  "PREDECP_RR",  "PREDECP_CR",  "PREDECP_RC",  "PREDECP_CC",
 	"POSTINCP_RR", "POSTINCP_CR", "POSTINCP_RC", "POSTINCP_CC", "POSTDECP_RR", "POSTDECP_CR", "POSTDECP_RC", "POSTDECP_CC",
-	"DECLVAR_RR", "DECLVAR_CR", "DECLVAR_RC", "DECLVAR_CC", "REGEXP_RR", "REGEXP_RC", "REGEXP_CR", "REGEXP_CC",
-	"CLOSURE", "TYPEOF", "TYPEOFID", "PUTVAR", "DELVAR", "RETREG", "RETUNDEF", "RETCONST",
+	"DECLVAR_RR",  "DECLVAR_CR",  "DECLVAR_RC",  "DECLVAR_CC",  "REGEXP_RR",   "REGEXP_RC",   "REGEXP_CR",   "REGEXP_CC",
+	"CLOSURE",     "TYPEOF",      "TYPEOFID",    "PUTVAR",      "DELVAR",      "RETREG",      "RETUNDEF",    "RETCONST",
 
-	"RETCONSTN", "LABEL", "ENDLABEL", "BREAK", "CONTINUE", "TRYCATCH", "ENDTRY", "ENDCATCH",
-	"ENDFIN", "THROW", "INVLHS", "CSREG", "CSVAR_RR", "CSVAR_CR", "CSVAR_RC", "CSVAR_CC",
-	"CALL0", "CALL1", "CALL2", "CALL3", "CALL4", "CALL5", "CALL6", "CALL7",
-	"CALL8", "CALL9", "CALL10", "CALL11", "CALL12", "CALL13", "CALL14", "CALL15",
+	"RETCONSTN",   "LABEL",       "ENDLABEL",    "BREAK",       "CONTINUE",    "TRYCATCH",    "ENDTRY",      "ENDCATCH",
+	"ENDFIN",      "THROW",       "INVLHS",      "CSREG",       "CSVAR_RR",    "CSVAR_CR",    "CSVAR_RC",    "CSVAR_CC",
+	"CALL0",       "CALL1",       "CALL2",       "CALL3",       "CALL4",       "CALL5",       "CALL6",       "CALL7",
+	"CALL8",       "CALL9",       "CALL10",      "CALL11",      "CALL12",      "CALL13",      "CALL14",      "CALL15",
 
-	"NEWOBJ", "NEWARR", "MPUTOBJ", "MPUTOBJI", "INITSET", "INITGET", "MPUTARR", "MPUTARRI",
-	"SETALEN", "INITENUM", "NEXTENUM", "NEWTARGET", "DEBUGGER", "NOP", "INVALID", "UNUSED207",
-	"GETPROPC_RR", "GETPROPC_CR", "GETPROPC_RC", "GETPROPC_CC", "UNUSED212", "UNUSED213", "UNUSED214", "UNUSED215",
-	"UNUSED216", "UNUSED217", "UNUSED218", "UNUSED219", "UNUSED220", "UNUSED221", "UNUSED222", "UNUSED223",
+	"NEWOBJ",      "NEWARR",      "MPUTOBJ",     "MPUTOBJI",    "INITSET",     "INITGET",     "MPUTARR",     "MPUTARRI",
+	"SETALEN",     "INITENUM",    "NEXTENUM",    "NEWTARGET",   "DEBUGGER",    "NOP",         "INVALID",     "UNUSED207",
+	"GETPROPC_RR", "GETPROPC_CR", "GETPROPC_RC", "GETPROPC_CC", "UNUSED212",   "UNUSED213",   "UNUSED214",   "UNUSED215",
+	"UNUSED216",   "UNUSED217",   "UNUSED218",   "UNUSED219",   "UNUSED220",   "UNUSED221",   "UNUSED222",   "UNUSED223",
 
-	"UNUSED224", "UNUSED225", "UNUSED226", "UNUSED227", "UNUSED228", "UNUSED229", "UNUSED230", "UNUSED231",
-	"UNUSED232", "UNUSED233", "UNUSED234", "UNUSED235", "UNUSED236", "UNUSED237", "UNUSED238", "UNUSED239",
-	"UNUSED240", "UNUSED241", "UNUSED242", "UNUSED243", "UNUSED244", "UNUSED245", "UNUSED246", "UNUSED247",
-	"UNUSED248", "UNUSED249", "UNUSED250", "UNUSED251", "UNUSED252", "UNUSED253", "UNUSED254", "UNUSED255"
+	"UNUSED224",   "UNUSED225",   "UNUSED226",   "UNUSED227",   "UNUSED228",   "UNUSED229",   "UNUSED230",   "UNUSED231",
+	"UNUSED232",   "UNUSED233",   "UNUSED234",   "UNUSED235",   "UNUSED236",   "UNUSED237",   "UNUSED238",   "UNUSED239",
+	"UNUSED240",   "UNUSED241",   "UNUSED242",   "UNUSED243",   "UNUSED244",   "UNUSED245",   "UNUSED246",   "UNUSED247",
+	"UNUSED248",   "UNUSED249",   "UNUSED250",   "UNUSED251",   "UNUSED252",   "UNUSED253",   "UNUSED254",   "UNUSED255"
 };
 
 typedef struct duk__dprint_state duk__dprint_state;
@@ -164,14 +164,15 @@ DUK_LOCAL void duk__print_shared_heaphdr(duk__dprint_state *st, duk_heaphdr *h) 
 		duk_size_t i;
 		duk_fb_put_byte(fb, (duk_uint8_t) DUK_ASC_LBRACKET);
 		for (i = 0; i < (duk_size_t) sizeof(*h); i++) {
-			duk_fb_sprintf(fb, "%02lx", (unsigned long) ((duk_uint8_t *)h)[i]);
+			duk_fb_sprintf(fb, "%02lx", (unsigned long) ((duk_uint8_t *) h)[i]);
 		}
 		duk_fb_put_byte(fb, (duk_uint8_t) DUK_ASC_RBRACKET);
 	}
 
-#if defined(DUK_USE_REFERENCE_COUNTING)  /* currently implicitly also DUK_USE_DOUBLE_LINKED_HEAP */
+#if defined(DUK_USE_REFERENCE_COUNTING) /* currently implicitly also DUK_USE_DOUBLE_LINKED_HEAP */
 	if (st->heavy) {
-		duk_fb_sprintf(fb, "[h_next=%p,h_prev=%p,h_refcount=%lu,h_flags=%08lx,type=%ld,"
+		duk_fb_sprintf(fb,
+		               "[h_next=%p,h_prev=%p,h_refcount=%lu,h_flags=%08lx,type=%ld,"
 		               "reachable=%ld,temproot=%ld,finalizable=%ld,finalized=%ld]",
 		               (void *) DUK_HEAPHDR_GET_NEXT(NULL, h),
 		               (void *) DUK_HEAPHDR_GET_PREV(NULL, h),
@@ -185,7 +186,8 @@ DUK_LOCAL void duk__print_shared_heaphdr(duk__dprint_state *st, duk_heaphdr *h) 
 	}
 #else
 	if (st->heavy) {
-		duk_fb_sprintf(fb, "[h_next=%p,h_flags=%08lx,type=%ld,reachable=%ld,temproot=%ld,finalizable=%ld,finalized=%ld]",
+		duk_fb_sprintf(fb,
+		               "[h_next=%p,h_flags=%08lx,type=%ld,reachable=%ld,temproot=%ld,finalizable=%ld,finalized=%ld]",
 		               (void *) DUK_HEAPHDR_GET_NEXT(NULL, h),
 		               (unsigned long) DUK_HEAPHDR_GET_FLAGS(h),
 		               (long) DUK_HEAPHDR_GET_TYPE(h),
@@ -212,14 +214,15 @@ DUK_LOCAL void duk__print_shared_heaphdr_string(duk__dprint_state *st, duk_heaph
 		duk_size_t i;
 		duk_fb_put_byte(fb, (duk_uint8_t) DUK_ASC_LBRACKET);
 		for (i = 0; i < (duk_size_t) sizeof(*h); i++) {
-			duk_fb_sprintf(fb, "%02lx", (unsigned long) ((duk_uint8_t *)h)[i]);
+			duk_fb_sprintf(fb, "%02lx", (unsigned long) ((duk_uint8_t *) h)[i]);
 		}
 		duk_fb_put_byte(fb, (duk_uint8_t) DUK_ASC_RBRACKET);
 	}
 
 #if defined(DUK_USE_REFERENCE_COUNTING)
 	if (st->heavy) {
-		duk_fb_sprintf(fb, "[h_refcount=%lu,h_flags=%08lx,type=%ld,reachable=%ld,temproot=%ld,finalizable=%ld,finalized=%ld]",
+		duk_fb_sprintf(fb,
+		               "[h_refcount=%lu,h_flags=%08lx,type=%ld,reachable=%ld,temproot=%ld,finalizable=%ld,finalized=%ld]",
 		               (unsigned long) DUK_HEAPHDR_GET_REFCOUNT((duk_heaphdr *) h),
 		               (unsigned long) DUK_HEAPHDR_GET_FLAGS((duk_heaphdr *) h),
 		               (long) DUK_HEAPHDR_GET_TYPE((duk_heaphdr *) h),
@@ -230,7 +233,8 @@ DUK_LOCAL void duk__print_shared_heaphdr_string(duk__dprint_state *st, duk_heaph
 	}
 #else
 	if (st->heavy) {
-		duk_fb_sprintf(fb, "[h_flags=%08lx,type=%ld,reachable=%ld,temproot=%ld,finalizable=%ld,finalized=%ld]",
+		duk_fb_sprintf(fb,
+		               "[h_flags=%08lx,type=%ld,reachable=%ld,temproot=%ld,finalizable=%ld,finalized=%ld]",
 		               (unsigned long) DUK_HEAPHDR_GET_FLAGS((duk_heaphdr *) h),
 		               (long) DUK_HEAPHDR_GET_TYPE((duk_heaphdr *) h),
 		               (long) (DUK_HEAPHDR_HAS_REACHABLE((duk_heaphdr *) h) ? 1 : 0),
@@ -301,7 +305,8 @@ DUK_LOCAL void duk__print_hstring(duk__dprint_state *st, duk_hstring *h, duk_boo
 #endif
 }
 
-#define DUK__COMMA()  do { \
+#define DUK__COMMA() \
+	do { \
 		if (first) { \
 			first = 0; \
 		} else { \
@@ -414,7 +419,8 @@ DUK_LOCAL void duk__print_hobject(duk__dprint_state *st, duk_hobject *h) {
 			duk__print_hstring(st, key, 0);
 			duk_fb_put_byte(fb, (duk_uint8_t) DUK_ASC_COLON);
 			if (DUK_HOBJECT_E_SLOT_IS_ACCESSOR(NULL, h, i)) {
-				duk_fb_sprintf(fb, "[get:%p,set:%p]",
+				duk_fb_sprintf(fb,
+				               "[get:%p,set:%p]",
 				               (void *) DUK_HOBJECT_E_GET_VALUE(NULL, h, i).a.get,
 				               (void *) DUK_HOBJECT_E_GET_VALUE(NULL, h, i).a.set);
 			} else {
@@ -428,158 +434,238 @@ DUK_LOCAL void duk__print_hobject(duk__dprint_state *st, duk_hobject *h) {
 	}
 	if (st->internal) {
 		if (DUK_HOBJECT_IS_ARRAY(h)) {
-			DUK__COMMA(); duk_fb_sprintf(fb, "__array:true");
+			DUK__COMMA();
+			duk_fb_sprintf(fb, "__array:true");
 		}
 		if (DUK_HOBJECT_HAS_EXTENSIBLE(h)) {
-			DUK__COMMA(); duk_fb_sprintf(fb, "__extensible:true");
+			DUK__COMMA();
+			duk_fb_sprintf(fb, "__extensible:true");
 		}
 		if (DUK_HOBJECT_HAS_CONSTRUCTABLE(h)) {
-			DUK__COMMA(); duk_fb_sprintf(fb, "__constructable:true");
+			DUK__COMMA();
+			duk_fb_sprintf(fb, "__constructable:true");
 		}
 		if (DUK_HOBJECT_HAS_BOUNDFUNC(h)) {
-			DUK__COMMA(); duk_fb_sprintf(fb, "__boundfunc:true");
+			DUK__COMMA();
+			duk_fb_sprintf(fb, "__boundfunc:true");
 		}
 		if (DUK_HOBJECT_HAS_COMPFUNC(h)) {
-			DUK__COMMA(); duk_fb_sprintf(fb, "__compfunc:true");
+			DUK__COMMA();
+			duk_fb_sprintf(fb, "__compfunc:true");
 		}
 		if (DUK_HOBJECT_HAS_NATFUNC(h)) {
-			DUK__COMMA(); duk_fb_sprintf(fb, "__natfunc:true");
+			DUK__COMMA();
+			duk_fb_sprintf(fb, "__natfunc:true");
 		}
 		if (DUK_HOBJECT_HAS_BUFOBJ(h)) {
-			DUK__COMMA(); duk_fb_sprintf(fb, "__bufobj:true");
+			DUK__COMMA();
+			duk_fb_sprintf(fb, "__bufobj:true");
 		}
 		if (DUK_HOBJECT_IS_THREAD(h)) {
-			DUK__COMMA(); duk_fb_sprintf(fb, "__thread:true");
+			DUK__COMMA();
+			duk_fb_sprintf(fb, "__thread:true");
 		}
 		if (DUK_HOBJECT_HAS_ARRAY_PART(h)) {
-			DUK__COMMA(); duk_fb_sprintf(fb, "__array_part:true");
+			DUK__COMMA();
+			duk_fb_sprintf(fb, "__array_part:true");
 		}
 		if (DUK_HOBJECT_HAS_STRICT(h)) {
-			DUK__COMMA(); duk_fb_sprintf(fb, "__strict:true");
+			DUK__COMMA();
+			duk_fb_sprintf(fb, "__strict:true");
 		}
 		if (DUK_HOBJECT_HAS_NOTAIL(h)) {
-			DUK__COMMA(); duk_fb_sprintf(fb, "__notail:true");
+			DUK__COMMA();
+			duk_fb_sprintf(fb, "__notail:true");
 		}
 		if (DUK_HOBJECT_HAS_NEWENV(h)) {
-			DUK__COMMA(); duk_fb_sprintf(fb, "__newenv:true");
+			DUK__COMMA();
+			duk_fb_sprintf(fb, "__newenv:true");
 		}
 		if (DUK_HOBJECT_HAS_NAMEBINDING(h)) {
-			DUK__COMMA(); duk_fb_sprintf(fb, "__namebinding:true");
+			DUK__COMMA();
+			duk_fb_sprintf(fb, "__namebinding:true");
 		}
 		if (DUK_HOBJECT_HAS_CREATEARGS(h)) {
-			DUK__COMMA(); duk_fb_sprintf(fb, "__createargs:true");
+			DUK__COMMA();
+			duk_fb_sprintf(fb, "__createargs:true");
 		}
 		if (DUK_HOBJECT_HAS_EXOTIC_ARRAY(h)) {
-			DUK__COMMA(); duk_fb_sprintf(fb, "__exotic_array:true");
+			DUK__COMMA();
+			duk_fb_sprintf(fb, "__exotic_array:true");
 		}
 		if (DUK_HOBJECT_HAS_EXOTIC_STRINGOBJ(h)) {
-			DUK__COMMA(); duk_fb_sprintf(fb, "__exotic_stringobj:true");
+			DUK__COMMA();
+			duk_fb_sprintf(fb, "__exotic_stringobj:true");
 		}
 		if (DUK_HOBJECT_HAS_EXOTIC_ARGUMENTS(h)) {
-			DUK__COMMA(); duk_fb_sprintf(fb, "__exotic_arguments:true");
+			DUK__COMMA();
+			duk_fb_sprintf(fb, "__exotic_arguments:true");
 		}
 		if (DUK_HOBJECT_IS_BUFOBJ(h)) {
-			DUK__COMMA(); duk_fb_sprintf(fb, "__exotic_bufobj:true");
+			DUK__COMMA();
+			duk_fb_sprintf(fb, "__exotic_bufobj:true");
 		}
 		if (DUK_HOBJECT_HAS_EXOTIC_PROXYOBJ(h)) {
-			DUK__COMMA(); duk_fb_sprintf(fb, "__exotic_proxyobj:true");
+			DUK__COMMA();
+			duk_fb_sprintf(fb, "__exotic_proxyobj:true");
 		}
 	}
 
 	if (st->internal && DUK_HOBJECT_IS_ARRAY(h)) {
 		duk_harray *a = (duk_harray *) h;
-		DUK__COMMA(); duk_fb_sprintf(fb, "__length:%ld", (long) a->length);
-		DUK__COMMA(); duk_fb_sprintf(fb, "__length_nonwritable:%ld", (long) a->length_nonwritable);
+		DUK__COMMA();
+		duk_fb_sprintf(fb, "__length:%ld", (long) a->length);
+		DUK__COMMA();
+		duk_fb_sprintf(fb, "__length_nonwritable:%ld", (long) a->length_nonwritable);
 	} else if (st->internal && DUK_HOBJECT_IS_COMPFUNC(h)) {
 		duk_hcompfunc *f = (duk_hcompfunc *) h;
-		DUK__COMMA(); duk_fb_put_cstring(fb, "__data:");
+		DUK__COMMA();
+		duk_fb_put_cstring(fb, "__data:");
 		duk__print_hbuffer(st, (duk_hbuffer *) DUK_HCOMPFUNC_GET_DATA(NULL, f));
-		DUK__COMMA(); duk_fb_put_cstring(fb, "__lexenv:"); duk__print_hobject(st, DUK_HCOMPFUNC_GET_LEXENV(NULL, f));
-		DUK__COMMA(); duk_fb_put_cstring(fb, "__varenv:"); duk__print_hobject(st, DUK_HCOMPFUNC_GET_VARENV(NULL, f));
-		DUK__COMMA(); duk_fb_sprintf(fb, "__nregs:%ld", (long) f->nregs);
-		DUK__COMMA(); duk_fb_sprintf(fb, "__nargs:%ld", (long) f->nargs);
+		DUK__COMMA();
+		duk_fb_put_cstring(fb, "__lexenv:");
+		duk__print_hobject(st, DUK_HCOMPFUNC_GET_LEXENV(NULL, f));
+		DUK__COMMA();
+		duk_fb_put_cstring(fb, "__varenv:");
+		duk__print_hobject(st, DUK_HCOMPFUNC_GET_VARENV(NULL, f));
+		DUK__COMMA();
+		duk_fb_sprintf(fb, "__nregs:%ld", (long) f->nregs);
+		DUK__COMMA();
+		duk_fb_sprintf(fb, "__nargs:%ld", (long) f->nargs);
 #if defined(DUK_USE_DEBUGGER_SUPPORT)
-		DUK__COMMA(); duk_fb_sprintf(fb, "__start_line:%ld", (long) f->start_line);
-		DUK__COMMA(); duk_fb_sprintf(fb, "__end_line:%ld", (long) f->end_line);
+		DUK__COMMA();
+		duk_fb_sprintf(fb, "__start_line:%ld", (long) f->start_line);
+		DUK__COMMA();
+		duk_fb_sprintf(fb, "__end_line:%ld", (long) f->end_line);
 #endif
-		DUK__COMMA(); duk_fb_put_cstring(fb, "__data:");
+		DUK__COMMA();
+		duk_fb_put_cstring(fb, "__data:");
 		duk__print_hbuffer(st, (duk_hbuffer *) DUK_HCOMPFUNC_GET_DATA(NULL, f));
 	} else if (st->internal && DUK_HOBJECT_IS_NATFUNC(h)) {
 		duk_hnatfunc *f = (duk_hnatfunc *) h;
-		DUK__COMMA(); duk_fb_sprintf(fb, "__func:");
+		DUK__COMMA();
+		duk_fb_sprintf(fb, "__func:");
 		duk_fb_put_funcptr(fb, (duk_uint8_t *) &f->func, sizeof(f->func));
-		DUK__COMMA(); duk_fb_sprintf(fb, "__nargs:%ld", (long) f->nargs);
-		DUK__COMMA(); duk_fb_sprintf(fb, "__magic:%ld", (long) f->magic);
+		DUK__COMMA();
+		duk_fb_sprintf(fb, "__nargs:%ld", (long) f->nargs);
+		DUK__COMMA();
+		duk_fb_sprintf(fb, "__magic:%ld", (long) f->magic);
 	} else if (st->internal && DUK_HOBJECT_IS_DECENV(h)) {
 		duk_hdecenv *e = (duk_hdecenv *) h;
-		DUK__COMMA(); duk_fb_sprintf(fb, "__thread:"); duk__print_hobject(st, (duk_hobject *) e->thread);
-		DUK__COMMA(); duk_fb_sprintf(fb, "__varmap:"); duk__print_hobject(st, (duk_hobject *) e->varmap);
-		DUK__COMMA(); duk_fb_sprintf(fb, "__regbase_byteoff:%ld", (long) e->regbase_byteoff);
+		DUK__COMMA();
+		duk_fb_sprintf(fb, "__thread:");
+		duk__print_hobject(st, (duk_hobject *) e->thread);
+		DUK__COMMA();
+		duk_fb_sprintf(fb, "__varmap:");
+		duk__print_hobject(st, (duk_hobject *) e->varmap);
+		DUK__COMMA();
+		duk_fb_sprintf(fb, "__regbase_byteoff:%ld", (long) e->regbase_byteoff);
 	} else if (st->internal && DUK_HOBJECT_IS_OBJENV(h)) {
 		duk_hobjenv *e = (duk_hobjenv *) h;
-		DUK__COMMA(); duk_fb_sprintf(fb, "__target:"); duk__print_hobject(st, (duk_hobject *) e->target);
-		DUK__COMMA(); duk_fb_sprintf(fb, "__has_this:%ld", (long) e->has_this);
+		DUK__COMMA();
+		duk_fb_sprintf(fb, "__target:");
+		duk__print_hobject(st, (duk_hobject *) e->target);
+		DUK__COMMA();
+		duk_fb_sprintf(fb, "__has_this:%ld", (long) e->has_this);
 #if defined(DUK_USE_BUFFEROBJECT_SUPPORT)
 	} else if (st->internal && DUK_HOBJECT_IS_BUFOBJ(h)) {
 		duk_hbufobj *b = (duk_hbufobj *) h;
-		DUK__COMMA(); duk_fb_sprintf(fb, "__buf:");
+		DUK__COMMA();
+		duk_fb_sprintf(fb, "__buf:");
 		duk__print_hbuffer(st, (duk_hbuffer *) b->buf);
-		DUK__COMMA(); duk_fb_sprintf(fb, "__buf_prop:");
+		DUK__COMMA();
+		duk_fb_sprintf(fb, "__buf_prop:");
 		duk__print_hobject(st, (duk_hobject *) b->buf_prop);
-		DUK__COMMA(); duk_fb_sprintf(fb, "__offset:%ld", (long) b->offset);
-		DUK__COMMA(); duk_fb_sprintf(fb, "__length:%ld", (long) b->length);
-		DUK__COMMA(); duk_fb_sprintf(fb, "__shift:%ld", (long) b->shift);
-		DUK__COMMA(); duk_fb_sprintf(fb, "__elemtype:%ld", (long) b->elem_type);
+		DUK__COMMA();
+		duk_fb_sprintf(fb, "__offset:%ld", (long) b->offset);
+		DUK__COMMA();
+		duk_fb_sprintf(fb, "__length:%ld", (long) b->length);
+		DUK__COMMA();
+		duk_fb_sprintf(fb, "__shift:%ld", (long) b->shift);
+		DUK__COMMA();
+		duk_fb_sprintf(fb, "__elemtype:%ld", (long) b->elem_type);
 #endif
 	} else if (st->internal && DUK_HOBJECT_IS_PROXY(h)) {
 		duk_hproxy *p = (duk_hproxy *) h;
-		DUK__COMMA(); duk_fb_sprintf(fb, "__target:");
+		DUK__COMMA();
+		duk_fb_sprintf(fb, "__target:");
 		duk__print_hobject(st, p->target);
-		DUK__COMMA(); duk_fb_sprintf(fb, "__handler:");
+		DUK__COMMA();
+		duk_fb_sprintf(fb, "__handler:");
 		duk__print_hobject(st, p->handler);
 	} else if (st->internal && DUK_HOBJECT_IS_THREAD(h)) {
 		duk_hthread *t = (duk_hthread *) h;
-		DUK__COMMA(); duk_fb_sprintf(fb, "__ptr_curr_pc:%p", (void *) t->ptr_curr_pc);
-		DUK__COMMA(); duk_fb_sprintf(fb, "__heap:%p", (void *) t->heap);
-		DUK__COMMA(); duk_fb_sprintf(fb, "__strict:%ld", (long) t->strict);
-		DUK__COMMA(); duk_fb_sprintf(fb, "__state:%ld", (long) t->state);
-		DUK__COMMA(); duk_fb_sprintf(fb, "__unused1:%ld", (long) t->unused1);
-		DUK__COMMA(); duk_fb_sprintf(fb, "__unused2:%ld", (long) t->unused2);
-		DUK__COMMA(); duk_fb_sprintf(fb, "__valstack:%p", (void *) t->valstack);
-		DUK__COMMA(); duk_fb_sprintf(fb, "__valstack_end:%p/%ld", (void *) t->valstack_end, (long) (t->valstack_end - t->valstack));
-		DUK__COMMA(); duk_fb_sprintf(fb, "__valstack_alloc_end:%p/%ld", (void *) t->valstack_alloc_end, (long) (t->valstack_alloc_end - t->valstack));
-		DUK__COMMA(); duk_fb_sprintf(fb, "__valstack_bottom:%p/%ld", (void *) t->valstack_bottom, (long) (t->valstack_bottom - t->valstack));
-		DUK__COMMA(); duk_fb_sprintf(fb, "__valstack_top:%p/%ld", (void *) t->valstack_top, (long) (t->valstack_top - t->valstack));
-		DUK__COMMA(); duk_fb_sprintf(fb, "__callstack_curr:%p", (void *) t->callstack_curr);
-		DUK__COMMA(); duk_fb_sprintf(fb, "__callstack_top:%ld", (long) t->callstack_top);
-		DUK__COMMA(); duk_fb_sprintf(fb, "__callstack_preventcount:%ld", (long) t->callstack_preventcount);
-		DUK__COMMA(); duk_fb_sprintf(fb, "__resumer:"); duk__print_hobject(st, (duk_hobject *) t->resumer);
-		DUK__COMMA(); duk_fb_sprintf(fb, "__compile_ctx:%p", (void *) t->compile_ctx);
+		DUK__COMMA();
+		duk_fb_sprintf(fb, "__ptr_curr_pc:%p", (void *) t->ptr_curr_pc);
+		DUK__COMMA();
+		duk_fb_sprintf(fb, "__heap:%p", (void *) t->heap);
+		DUK__COMMA();
+		duk_fb_sprintf(fb, "__strict:%ld", (long) t->strict);
+		DUK__COMMA();
+		duk_fb_sprintf(fb, "__state:%ld", (long) t->state);
+		DUK__COMMA();
+		duk_fb_sprintf(fb, "__unused1:%ld", (long) t->unused1);
+		DUK__COMMA();
+		duk_fb_sprintf(fb, "__unused2:%ld", (long) t->unused2);
+		DUK__COMMA();
+		duk_fb_sprintf(fb, "__valstack:%p", (void *) t->valstack);
+		DUK__COMMA();
+		duk_fb_sprintf(fb, "__valstack_end:%p/%ld", (void *) t->valstack_end, (long) (t->valstack_end - t->valstack));
+		DUK__COMMA();
+		duk_fb_sprintf(fb,
+		               "__valstack_alloc_end:%p/%ld",
+		               (void *) t->valstack_alloc_end,
+		               (long) (t->valstack_alloc_end - t->valstack));
+		DUK__COMMA();
+		duk_fb_sprintf(fb,
+		               "__valstack_bottom:%p/%ld",
+		               (void *) t->valstack_bottom,
+		               (long) (t->valstack_bottom - t->valstack));
+		DUK__COMMA();
+		duk_fb_sprintf(fb, "__valstack_top:%p/%ld", (void *) t->valstack_top, (long) (t->valstack_top - t->valstack));
+		DUK__COMMA();
+		duk_fb_sprintf(fb, "__callstack_curr:%p", (void *) t->callstack_curr);
+		DUK__COMMA();
+		duk_fb_sprintf(fb, "__callstack_top:%ld", (long) t->callstack_top);
+		DUK__COMMA();
+		duk_fb_sprintf(fb, "__callstack_preventcount:%ld", (long) t->callstack_preventcount);
+		DUK__COMMA();
+		duk_fb_sprintf(fb, "__resumer:");
+		duk__print_hobject(st, (duk_hobject *) t->resumer);
+		DUK__COMMA();
+		duk_fb_sprintf(fb, "__compile_ctx:%p", (void *) t->compile_ctx);
 #if defined(DUK_USE_INTERRUPT_COUNTER)
-		DUK__COMMA(); duk_fb_sprintf(fb, "__interrupt_counter:%ld", (long) t->interrupt_counter);
-		DUK__COMMA(); duk_fb_sprintf(fb, "__interrupt_init:%ld", (long) t->interrupt_init);
+		DUK__COMMA();
+		duk_fb_sprintf(fb, "__interrupt_counter:%ld", (long) t->interrupt_counter);
+		DUK__COMMA();
+		duk_fb_sprintf(fb, "__interrupt_init:%ld", (long) t->interrupt_init);
 #endif
 
 		/* XXX: print built-ins array? */
-
 	}
 #if defined(DUK_USE_REFERENCE_COUNTING)
 	if (st->internal) {
-		DUK__COMMA(); duk_fb_sprintf(fb, "__refcount:%lu", (unsigned long) DUK_HEAPHDR_GET_REFCOUNT((duk_heaphdr *) h));
+		DUK__COMMA();
+		duk_fb_sprintf(fb, "__refcount:%lu", (unsigned long) DUK_HEAPHDR_GET_REFCOUNT((duk_heaphdr *) h));
 	}
 #endif
 	if (st->internal) {
-		DUK__COMMA(); duk_fb_sprintf(fb, "__class:%ld", (long) DUK_HOBJECT_GET_CLASS_NUMBER(h));
+		DUK__COMMA();
+		duk_fb_sprintf(fb, "__class:%ld", (long) DUK_HOBJECT_GET_CLASS_NUMBER(h));
 	}
 
-	DUK__COMMA(); duk_fb_sprintf(fb, "__heapptr:%p", (void *) h);  /* own pointer */
+	DUK__COMMA();
+	duk_fb_sprintf(fb, "__heapptr:%p", (void *) h); /* own pointer */
 
 	/* prototype should be last, for readability */
 	if (DUK_HOBJECT_GET_PROTOTYPE(NULL, h)) {
 		if (st->follow_proto) {
-			DUK__COMMA(); duk_fb_put_cstring(fb, "__prototype:"); duk__print_hobject(st, DUK_HOBJECT_GET_PROTOTYPE(NULL, h));
+			DUK__COMMA();
+			duk_fb_put_cstring(fb, "__prototype:");
+			duk__print_hobject(st, DUK_HOBJECT_GET_PROTOTYPE(NULL, h));
 		} else {
-			DUK__COMMA(); duk_fb_sprintf(fb, "__prototype:%p", (void *) DUK_HOBJECT_GET_PROTOTYPE(NULL, h));
+			DUK__COMMA();
+			duk_fb_sprintf(fb, "__prototype:%p", (void *) DUK_HOBJECT_GET_PROTOTYPE(NULL, h));
 		}
 	}
 
@@ -605,7 +691,7 @@ DUK_LOCAL void duk__print_hobject(duk__dprint_state *st, duk_hobject *h) {
 	}
 #endif
 
- finished:
+finished:
 	st->depth--;
 	if (pushed_loopstack) {
 		st->loop_stack_index--;
@@ -632,12 +718,14 @@ DUK_LOCAL void duk__print_hbuffer(duk__dprint_state *st, duk_hbuffer *h) {
 	if (DUK_HBUFFER_HAS_DYNAMIC(h)) {
 		if (DUK_HBUFFER_HAS_EXTERNAL(h)) {
 			duk_hbuffer_external *g = (duk_hbuffer_external *) h;
-			duk_fb_sprintf(fb, "buffer:external:%p:%ld",
+			duk_fb_sprintf(fb,
+			               "buffer:external:%p:%ld",
 			               (void *) DUK_HBUFFER_EXTERNAL_GET_DATA_PTR(NULL, g),
 			               (long) DUK_HBUFFER_EXTERNAL_GET_SIZE(g));
 		} else {
 			duk_hbuffer_dynamic *g = (duk_hbuffer_dynamic *) h;
-			duk_fb_sprintf(fb, "buffer:dynamic:%p:%ld",
+			duk_fb_sprintf(fb,
+			               "buffer:dynamic:%p:%ld",
 			               (void *) DUK_HBUFFER_DYNAMIC_GET_DATA_PTR(NULL, g),
 			               (long) DUK_HBUFFER_DYNAMIC_GET_SIZE(g));
 		}
@@ -710,7 +798,7 @@ DUK_LOCAL void duk__print_tval(duk__dprint_state *st, duk_tval *tv) {
 		duk_size_t i;
 		duk_fb_put_byte(fb, (duk_uint8_t) DUK_ASC_LBRACKET);
 		for (i = 0; i < (duk_size_t) sizeof(*tv); i++) {
-			duk_fb_sprintf(fb, "%02lx", (unsigned long) ((duk_uint8_t *)tv)[i]);
+			duk_fb_sprintf(fb, "%02lx", (unsigned long) ((duk_uint8_t *) tv)[i]);
 		}
 		duk_fb_put_byte(fb, (duk_uint8_t) DUK_ASC_RBRACKET);
 	}
@@ -793,17 +881,22 @@ DUK_LOCAL void duk__print_instr(duk__dprint_state *st, duk_instr_t ins) {
 	/* XXX: option to fix opcode length so it lines up nicely */
 
 	if (op == DUK_OP_JUMP) {
-		duk_int_t diff1 = (duk_int_t) (DUK_DEC_ABC(ins) - DUK_BC_JUMP_BIAS);  /* from next pc */
-		duk_int_t diff2 = diff1 + 1;                                          /* from curr pc */
+		duk_int_t diff1 = (duk_int_t) (DUK_DEC_ABC(ins) - DUK_BC_JUMP_BIAS); /* from next pc */
+		duk_int_t diff2 = diff1 + 1; /* from curr pc */
 
-		duk_fb_sprintf(fb, "%s %ld (to pc%c%ld)",
-		               (const char *) op_name, (long) diff1,
-		               (int) (diff2 >= 0 ? '+' : '-'),  /* char format: use int */
+		duk_fb_sprintf(fb,
+		               "%s %ld (to pc%c%ld)",
+		               (const char *) op_name,
+		               (long) diff1,
+		               (int) (diff2 >= 0 ? '+' : '-'), /* char format: use int */
 		               (long) (diff2 >= 0 ? diff2 : -diff2));
 	} else {
-		duk_fb_sprintf(fb, "%s %ld, %ld, %ld",
-		               (const char *) op_name, (long) DUK_DEC_A(ins),
-		               (long) DUK_DEC_B(ins), (long) DUK_DEC_C(ins));
+		duk_fb_sprintf(fb,
+		               "%s %ld, %ld, %ld",
+		               (const char *) op_name,
+		               (long) DUK_DEC_A(ins),
+		               (long) DUK_DEC_B(ins),
+		               (long) DUK_DEC_C(ins));
 	}
 }
 
@@ -829,12 +922,15 @@ DUK_LOCAL void duk__print_catcher(duk__dprint_state *st, duk_catcher *cat) {
 		return;
 	}
 
-	duk_fb_sprintf(fb, "[catcher ptr=%p parent=%p varname=%p pc_base=%p, idx_base=%ld, flags=0x%08lx]",
+	duk_fb_sprintf(fb,
+	               "[catcher ptr=%p parent=%p varname=%p pc_base=%p, idx_base=%ld, flags=0x%08lx]",
 	               (void *) cat,
-	               (void *) cat->parent, (void *) cat->h_varname, (void *) cat->pc_base,
-		       (long) cat->idx_base, (unsigned long) cat->flags);
+	               (void *) cat->parent,
+	               (void *) cat->h_varname,
+	               (void *) cat->pc_base,
+	               (long) cat->idx_base,
+	               (unsigned long) cat->flags);
 }
-
 
 DUK_LOCAL void duk__print_activation(duk__dprint_state *st, duk_activation *act) {
 	duk_fixedbuffer *fb = st->fb;
@@ -850,12 +946,20 @@ DUK_LOCAL void duk__print_activation(duk__dprint_state *st, duk_activation *act)
 
 	/* prev_caller: conditional, omitted on purpose, it's rarely used. */
 	/* prev_line: conditional, omitted on purpose (but would be nice). */
-	duk_fb_sprintf(fb, "[activation ptr=%p tv_func=<omit> func=%p parent=%p var_env=%p lex_env=%p cat=%p curr_pc=%p bottom_byteoff=%ld retval_byteoff=%ld reserve_byteoff=%ld flags=%ld]",
+	duk_fb_sprintf(fb,
+	               "[activation ptr=%p tv_func=<omit> func=%p parent=%p var_env=%p lex_env=%p cat=%p curr_pc=%p "
+	               "bottom_byteoff=%ld retval_byteoff=%ld reserve_byteoff=%ld flags=%ld]",
 	               (void *) act,
-	               (void *) act->func, (void *) act->parent, (void *) act->var_env,
-		       (void *) act->lex_env, (void *) act->cat, (void *) act->curr_pc,
-		       (long) act->bottom_byteoff, (long) act->retval_byteoff, (long) act->reserve_byteoff,
-		       (long) act->flags);
+	               (void *) act->func,
+	               (void *) act->parent,
+	               (void *) act->var_env,
+	               (void *) act->lex_env,
+	               (void *) act->cat,
+	               (void *) act->curr_pc,
+	               (long) act->bottom_byteoff,
+	               (long) act->retval_byteoff,
+	               (long) act->reserve_byteoff,
+	               (long) act->flags);
 }
 
 DUK_INTERNAL duk_int_t duk_debug_vsnprintf(char *str, duk_size_t size, const char *format, va_list ap) {
@@ -874,7 +978,7 @@ DUK_INTERNAL duk_int_t duk_debug_vsnprintf(char *str, duk_size_t size, const cha
 		char ch = *p++;
 		const char *p_begfmt = NULL;
 		duk_bool_t got_exclamation = 0;
-		duk_bool_t got_long = 0;  /* %lf, %ld etc */
+		duk_bool_t got_long = 0; /* %lf, %ld etc */
 		duk__dprint_state st;
 
 		if (ch != DUK_ASC_PERCENT) {
@@ -1037,11 +1141,11 @@ DUK_INTERNAL duk_int_t duk_debug_vsnprintf(char *str, duk_size_t size, const cha
 	}
 	goto done;
 
- format_error:
+format_error:
 	duk_fb_put_cstring(&fb, "FMTERR");
 	/* fall through */
 
- done:
+done:
 	retval = (duk_int_t) fb.offset;
 	duk_fb_put_byte(&fb, (duk_uint8_t) 0);
 
@@ -1049,7 +1153,7 @@ DUK_INTERNAL duk_int_t duk_debug_vsnprintf(char *str, duk_size_t size, const cha
 	return retval;
 }
 
-#if 0  /*unused*/
+#if 0 /*unused*/
 DUK_INTERNAL duk_int_t duk_debug_snprintf(char *str, duk_size_t size, const char *format, ...) {
 	duk_int_t retval;
 	va_list ap;
@@ -1090,4 +1194,4 @@ DUK_INTERNAL void duk_debug_format_funcptr(char *buf, duk_size_t buf_size, duk_u
 	}
 }
 
-#endif  /* DUK_USE_DEBUG */
+#endif /* DUK_USE_DEBUG */

@@ -39,7 +39,7 @@ DUK_INTERNAL duk_ret_t duk_bi_symbol_constructor_shared(duk_hthread *thr) {
 	buf = (duk_uint8_t *) duk_push_fixed_buffer(thr, 1 + len + 1 + 17 + 1);
 	DUK_ASSERT(buf != NULL);
 	p = buf + 1;
-	DUK_ASSERT(desc != NULL || len == 0);  /* may be NULL if len is 0 */
+	DUK_ASSERT(desc != NULL || len == 0); /* may be NULL if len is 0 */
 	duk_memcpy_unsafe((void *) p, (const void *) desc, len);
 	p += len;
 	if (magic == 0) {
@@ -50,7 +50,9 @@ DUK_INTERNAL duk_ret_t duk_bi_symbol_constructor_shared(duk_hthread *thr) {
 		if (++thr->heap->sym_counter[0] == 0) {
 			thr->heap->sym_counter[1]++;
 		}
-		p += DUK_SPRINTF((char *) p, "\xFF" "%lx-%lx",
+		p += DUK_SPRINTF((char *) p,
+		                 "\xFF"
+		                 "%lx-%lx",
 		                 (unsigned long) thr->heap->sym_counter[1],
 		                 (unsigned long) thr->heap->sym_counter[0]);
 		if (desc == NULL) {
@@ -167,4 +169,4 @@ DUK_INTERNAL duk_ret_t duk_bi_symbol_toprimitive(duk_hthread *thr) {
 	return 1;
 }
 
-#endif  /* DUK_USE_SYMBOL_BUILTIN */
+#endif /* DUK_USE_SYMBOL_BUILTIN */

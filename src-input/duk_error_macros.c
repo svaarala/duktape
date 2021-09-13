@@ -4,31 +4,43 @@
 
 #include "duk_internal.h"
 
-#define DUK__ERRFMT_BUFSIZE  256  /* size for formatting buffers */
+#define DUK__ERRFMT_BUFSIZE 256 /* size for formatting buffers */
 
 #if defined(DUK_USE_VERBOSE_ERRORS)
 
-DUK_INTERNAL DUK_COLD void duk_err_handle_error_fmt(duk_hthread *thr, const char *filename, duk_uint_t line_and_code, const char *fmt, ...) {
+DUK_INTERNAL DUK_COLD void duk_err_handle_error_fmt(duk_hthread *thr,
+                                                    const char *filename,
+                                                    duk_uint_t line_and_code,
+                                                    const char *fmt,
+                                                    ...) {
 	va_list ap;
 	char msg[DUK__ERRFMT_BUFSIZE];
 	va_start(ap, fmt);
 	(void) DUK_VSNPRINTF(msg, sizeof(msg), fmt, ap);
 	msg[sizeof(msg) - 1] = (char) 0;
-	duk_err_create_and_throw(thr, (duk_errcode_t) (line_and_code >> 24), msg, filename, (duk_int_t) (line_and_code & 0x00ffffffL));
-	va_end(ap);  /* dead code, but ensures portability (see Linux man page notes) */
+	duk_err_create_and_throw(thr,
+	                         (duk_errcode_t) (line_and_code >> 24),
+	                         msg,
+	                         filename,
+	                         (duk_int_t) (line_and_code & 0x00ffffffL));
+	va_end(ap); /* dead code, but ensures portability (see Linux man page notes) */
 }
 
 DUK_INTERNAL DUK_COLD void duk_err_handle_error(duk_hthread *thr, const char *filename, duk_uint_t line_and_code, const char *msg) {
-	duk_err_create_and_throw(thr, (duk_errcode_t) (line_and_code >> 24), msg, filename, (duk_int_t) (line_and_code & 0x00ffffffL));
+	duk_err_create_and_throw(thr,
+	                         (duk_errcode_t) (line_and_code >> 24),
+	                         msg,
+	                         filename,
+	                         (duk_int_t) (line_and_code & 0x00ffffffL));
 }
 
-#else  /* DUK_USE_VERBOSE_ERRORS */
+#else /* DUK_USE_VERBOSE_ERRORS */
 
 DUK_INTERNAL DUK_COLD void duk_err_handle_error(duk_hthread *thr, duk_errcode_t code) {
 	duk_err_create_and_throw(thr, code);
 }
 
-#endif  /* DUK_USE_VERBOSE_ERRORS */
+#endif /* DUK_USE_VERBOSE_ERRORS */
 
 /*
  *  Error throwing helpers
@@ -36,14 +48,34 @@ DUK_INTERNAL DUK_COLD void duk_err_handle_error(duk_hthread *thr, duk_errcode_t 
 
 #if defined(DUK_USE_VERBOSE_ERRORS)
 #if defined(DUK_USE_PARANOID_ERRORS)
-DUK_INTERNAL DUK_COLD void duk_err_require_type_index(duk_hthread *thr, const char *filename, duk_int_t linenumber, duk_idx_t idx, const char *expect_name) {
-	DUK_ERROR_RAW_FMT3(thr, filename, linenumber, DUK_ERR_TYPE_ERROR, "%s required, found %s (stack index %ld)",
-	                   expect_name, duk_get_type_name(thr, idx), (long) idx);
+DUK_INTERNAL DUK_COLD void duk_err_require_type_index(duk_hthread *thr,
+                                                      const char *filename,
+                                                      duk_int_t linenumber,
+                                                      duk_idx_t idx,
+                                                      const char *expect_name) {
+	DUK_ERROR_RAW_FMT3(thr,
+	                   filename,
+	                   linenumber,
+	                   DUK_ERR_TYPE_ERROR,
+	                   "%s required, found %s (stack index %ld)",
+	                   expect_name,
+	                   duk_get_type_name(thr, idx),
+	                   (long) idx);
 }
 #else
-DUK_INTERNAL DUK_COLD void duk_err_require_type_index(duk_hthread *thr, const char *filename, duk_int_t linenumber, duk_idx_t idx, const char *expect_name) {
-	DUK_ERROR_RAW_FMT3(thr, filename, linenumber, DUK_ERR_TYPE_ERROR, "%s required, found %s (stack index %ld)",
-	                   expect_name, duk_push_string_readable(thr, idx), (long) idx);
+DUK_INTERNAL DUK_COLD void duk_err_require_type_index(duk_hthread *thr,
+                                                      const char *filename,
+                                                      duk_int_t linenumber,
+                                                      duk_idx_t idx,
+                                                      const char *expect_name) {
+	DUK_ERROR_RAW_FMT3(thr,
+	                   filename,
+	                   linenumber,
+	                   DUK_ERR_TYPE_ERROR,
+	                   "%s required, found %s (stack index %ld)",
+	                   expect_name,
+	                   duk_push_string_readable(thr, idx),
+	                   (long) idx);
 }
 #endif
 DUK_INTERNAL DUK_COLD void duk_err_error_internal(duk_hthread *thr, const char *filename, duk_int_t linenumber) {

@@ -26,14 +26,14 @@ DUK_LOCAL duk_bool_t duk__have_active_catcher(duk_hthread *thr) {
 		for (act = thr->callstack_curr; act != NULL; act = act->parent) {
 			for (cat = act->cat; cat != NULL; cat = cat->parent) {
 				if (DUK_CAT_HAS_CATCH_ENABLED(cat)) {
-					return 1;  /* all we need to know */
+					return 1; /* all we need to know */
 				}
 			}
 		}
 	}
 	return 0;
 }
-#endif  /* DUK_USE_DEBUGGER_SUPPORT */
+#endif /* DUK_USE_DEBUGGER_SUPPORT */
 
 /*
  *  Get prototype object for an integer error code.
@@ -83,11 +83,10 @@ DUK_INTERNAL void duk_err_check_debugger_integration(duk_hthread *thr) {
 	 * config options.
 	 */
 
-	if (!duk_debug_is_attached(thr->heap) ||
-	    thr->heap->dbg_processing ||
-	    thr->heap->lj.type != DUK_LJ_TYPE_THROW ||
+	if (!duk_debug_is_attached(thr->heap) || thr->heap->dbg_processing || thr->heap->lj.type != DUK_LJ_TYPE_THROW ||
 	    thr->heap->creating_error) {
-		DUK_D(DUK_DPRINT("skip debugger error integration; not attached, debugger processing, not THROW, or error thrown while creating error"));
+		DUK_D(DUK_DPRINT("skip debugger error integration; not attached, debugger processing, not THROW, or error thrown "
+		                 "while creating error"));
 		return;
 	}
 
@@ -115,7 +114,7 @@ DUK_INTERNAL void duk_err_check_debugger_integration(duk_hthread *thr) {
 	/* Store and reset longjmp state. */
 	DUK_ASSERT_LJSTATE_SET(thr->heap);
 	DUK_TVAL_DECREF_NORZ(thr, tv_obj);
-	DUK_ASSERT(DUK_TVAL_IS_UNDEFINED(&thr->heap->lj.value2));  /* Always for THROW type. */
+	DUK_ASSERT(DUK_TVAL_IS_UNDEFINED(&thr->heap->lj.value2)); /* Always for THROW type. */
 	DUK_TVAL_SET_UNDEFINED(tv_obj);
 	thr->heap->lj.type = DUK_LJ_TYPE_UNKNOWN;
 	DUK_ASSERT_LJSTATE_UNSET(thr->heap);
@@ -150,7 +149,7 @@ DUK_INTERNAL void duk_err_check_debugger_integration(duk_hthread *thr) {
 
 	duk_pop(thr);
 }
-#endif  /* DUK_USE_DEBUGGER_SUPPORT */
+#endif /* DUK_USE_DEBUGGER_SUPPORT */
 
 /*
  *  Helpers for setting up heap longjmp state.

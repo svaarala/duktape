@@ -47,7 +47,7 @@ DUK_INTERNAL duk_ret_t duk_bi_reflect_object_get(duk_hthread *thr) {
 
 	tv_obj = DUK_GET_TVAL_POSIDX(thr, 0);
 	tv_key = DUK_GET_TVAL_POSIDX(thr, 1);
-	(void) duk_hobject_getprop(thr, tv_obj, tv_key);  /* This could also be a duk_get_prop(). */
+	(void) duk_hobject_getprop(thr, tv_obj, tv_key); /* This could also be a duk_get_prop(). */
 	return 1;
 }
 
@@ -96,4 +96,4 @@ DUK_INTERNAL duk_ret_t duk_bi_reflect_object_set(duk_hthread *thr) {
 	duk_push_boolean(thr, ret);
 	return 1;
 }
-#endif  /* DUK_USE_REFLECT_BUILTIN */
+#endif /* DUK_USE_REFLECT_BUILTIN */
