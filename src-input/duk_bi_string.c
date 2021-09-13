@@ -36,7 +36,8 @@ DUK_LOCAL duk_hstring *duk__str_tostring_notregexp(duk_hthread *thr, duk_idx_t i
 	return h;
 }
 
-DUK_LOCAL duk_int_t duk__str_search_shared(duk_hthread *thr, duk_hstring *h_this, duk_hstring *h_search, duk_int_t start_cpos, duk_bool_t backwards) {
+DUK_LOCAL duk_int_t
+duk__str_search_shared(duk_hthread *thr, duk_hstring *h_this, duk_hstring *h_search, duk_int_t start_cpos, duk_bool_t backwards) {
 	duk_int_t cpos;
 	duk_int_t bpos;
 	const duk_uint8_t *p_start, *p_end, *p;
@@ -71,7 +72,7 @@ DUK_LOCAL duk_int_t duk__str_search_shared(duk_hthread *thr, duk_hstring *h_this
 	 * must be updated if 'p' is wound back (backward scanning).
 	 */
 
-	firstbyte = q_start[0];  /* leading byte of match string */
+	firstbyte = q_start[0]; /* leading byte of match string */
 	while (p <= p_end && p >= p_start) {
 		t = *p;
 
@@ -137,15 +138,13 @@ DUK_INTERNAL duk_ret_t duk_bi_string_constructor(duk_hthread *thr) {
 			duk_replace(thr, 0);
 		}
 	}
-	duk_to_string(thr, 0);  /* catches symbol argument for constructor call */
+	duk_to_string(thr, 0); /* catches symbol argument for constructor call */
 	DUK_ASSERT(duk_is_string(thr, 0));
-	duk_set_top(thr, 1);  /* Top may be 1 or larger. */
+	duk_set_top(thr, 1); /* Top may be 1 or larger. */
 
 	if (duk_is_constructor_call(thr)) {
 		/* String object internal value is immutable */
-		flags = DUK_HOBJECT_FLAG_EXTENSIBLE |
-		        DUK_HOBJECT_FLAG_FASTREFS |
-		        DUK_HOBJECT_FLAG_EXOTIC_STRINGOBJ |
+		flags = DUK_HOBJECT_FLAG_EXTENSIBLE | DUK_HOBJECT_FLAG_FASTREFS | DUK_HOBJECT_FLAG_EXOTIC_STRINGOBJ |
 		        DUK_HOBJECT_CLASS_AS_FLAGS(DUK_HOBJECT_CLASS_STRING);
 		duk_push_object_helper(thr, flags, DUK_BIDX_STRING_PROTOTYPE);
 		duk_dup_0(thr);
@@ -171,7 +170,7 @@ DUK_LOCAL duk_ret_t duk__construct_from_codepoints(duk_hthread *thr, duk_bool_t 
 	n = duk_get_top(thr);
 
 	bw = &bw_alloc;
-	DUK_BW_INIT_PUSHBUF(thr, bw, (duk_size_t) n);  /* initial estimate for ASCII only codepoints */
+	DUK_BW_INIT_PUSHBUF(thr, bw, (duk_size_t) n); /* initial estimate for ASCII only codepoints */
 
 	for (i = 0; i < n; i++) {
 		/* XXX: could improve bufwriter handling to write multiple codepoints
@@ -185,8 +184,7 @@ DUK_LOCAL duk_ret_t duk__construct_from_codepoints(duk_hthread *thr, duk_bool_t 
 			 * the same.
 			 */
 			duk_int32_t i32 = 0;
-			if (!duk_is_whole_get_int32(duk_to_number(thr, i), &i32) ||
-			    i32 < 0 || i32 > 0x10ffffL) {
+			if (!duk_is_whole_get_int32(duk_to_number(thr, i), &i32) || i32 < 0 || i32 > 0x10ffffL) {
 				DUK_DCERROR_RANGE_INVALID_ARGS(thr);
 			}
 			DUK_ASSERT(i32 >= 0 && i32 <= 0x10ffffL);
@@ -210,7 +208,7 @@ DUK_LOCAL duk_ret_t duk__construct_from_codepoints(duk_hthread *thr, duk_bool_t 
 	}
 
 	DUK_BW_COMPACT(thr, bw);
-	(void) duk_buffer_to_string(thr, -1);  /* Safe, extended UTF-8 or CESU-8 encoded. */
+	(void) duk_buffer_to_string(thr, -1); /* Safe, extended UTF-8 or CESU-8 encoded. */
 	return 1;
 }
 
@@ -252,10 +250,10 @@ DUK_INTERNAL duk_ret_t duk_bi_string_prototype_to_string(duk_hthread *thr) {
 		goto type_error;
 	}
 
-	(void) duk_require_hstring_notsymbol(thr, -1);  /* Reject symbols (and wrapped symbols). */
+	(void) duk_require_hstring_notsymbol(thr, -1); /* Reject symbols (and wrapped symbols). */
 	return 1;
 
- type_error:
+type_error:
 	DUK_DCERROR_TYPE_INVALID_ARGS(thr);
 }
 
@@ -391,7 +389,7 @@ DUK_INTERNAL duk_ret_t duk_bi_string_prototype_substr(duk_hthread *thr) {
 	 * ("undefined" and "null").
 	 */
 	duk_push_this(thr);
-	h = duk_to_hstring_m1(thr);  /* Reject Symbols. */
+	h = duk_to_hstring_m1(thr); /* Reject Symbols. */
 	DUK_ASSERT(h != NULL);
 	len = (duk_int_t) DUK_HSTRING_GET_CHARLEN(h);
 
@@ -423,7 +421,7 @@ DUK_INTERNAL duk_ret_t duk_bi_string_prototype_substr(duk_hthread *thr) {
 	duk_substring(thr, -1, (duk_size_t) start_pos, (duk_size_t) end_pos);
 	return 1;
 }
-#endif  /* DUK_USE_SECTION_B */
+#endif /* DUK_USE_SECTION_B */
 
 DUK_INTERNAL duk_ret_t duk_bi_string_prototype_slice(duk_hthread *thr) {
 	duk_hstring *h;
@@ -482,7 +480,7 @@ DUK_INTERNAL duk_ret_t duk_bi_string_prototype_indexof_shared(duk_hthread *thr) 
 	duk_hstring *h_search;
 	duk_int_t clen_this;
 	duk_int_t cpos;
-	duk_small_uint_t is_lastindexof = (duk_small_uint_t) duk_get_current_magic(thr);  /* 0=indexOf, 1=lastIndexOf */
+	duk_small_uint_t is_lastindexof = (duk_small_uint_t) duk_get_current_magic(thr); /* 0=indexOf, 1=lastIndexOf */
 
 	h_this = duk_push_this_coercible_to_string(thr);
 	DUK_ASSERT(h_this != NULL);
@@ -539,7 +537,7 @@ DUK_INTERNAL duk_ret_t duk_bi_string_prototype_replace(duk_hthread *thr) {
 	duk_int_t match_caps;
 #endif
 	duk_uint32_t prev_match_end_boff;
-	const duk_uint8_t *r_start, *r_end, *r;   /* repl string scan */
+	const duk_uint8_t *r_start, *r_end, *r; /* repl string scan */
 	duk_size_t tmp_sz;
 
 	DUK_ASSERT_TOP(thr, 2);
@@ -547,7 +545,7 @@ DUK_INTERNAL duk_ret_t duk_bi_string_prototype_replace(duk_hthread *thr) {
 	DUK_ASSERT(h_input != NULL);
 
 	bw = &bw_alloc;
-	DUK_BW_INIT_PUSHBUF(thr, bw, DUK_HSTRING_GET_BYTELEN(h_input));  /* input size is good output starting point */
+	DUK_BW_INIT_PUSHBUF(thr, bw, DUK_HSTRING_GET_BYTELEN(h_input)); /* input size is good output starting point */
 
 	DUK_ASSERT_TOP(thr, 4);
 
@@ -568,11 +566,11 @@ DUK_INTERNAL duk_ret_t duk_bi_string_prototype_replace(duk_hthread *thr) {
 			duk_push_int(thr, 0);
 			duk_put_prop_stridx_short(thr, 0, DUK_STRIDX_LAST_INDEX);
 		}
-#else  /* DUK_USE_REGEXP_SUPPORT */
+#else /* DUK_USE_REGEXP_SUPPORT */
 		DUK_DCERROR_UNSUPPORTED(thr);
-#endif  /* DUK_USE_REGEXP_SUPPORT */
+#endif /* DUK_USE_REGEXP_SUPPORT */
 	} else {
-		duk_to_string(thr, 0);  /* rejects symbols */
+		duk_to_string(thr, 0); /* rejects symbols */
 #if defined(DUK_USE_REGEXP_SUPPORT)
 		is_regexp = 0;
 		is_global = 0;
@@ -587,7 +585,7 @@ DUK_INTERNAL duk_ret_t duk_bi_string_prototype_replace(duk_hthread *thr) {
 		duk_hstring *h_repl;
 
 		is_repl_func = 0;
-		h_repl = duk_to_hstring(thr, 1);  /* reject symbols */
+		h_repl = duk_to_hstring(thr, 1); /* reject symbols */
 		DUK_ASSERT(h_repl != NULL);
 		r_start = DUK_HSTRING_GET_DATA(h_repl);
 		r_end = r_start + DUK_HSTRING_GET_BYTELEN(h_repl);
@@ -625,7 +623,7 @@ DUK_INTERNAL duk_ret_t duk_bi_string_prototype_replace(duk_hthread *thr) {
 		if (is_regexp) {
 			duk_dup_0(thr);
 			duk_dup_2(thr);
-			duk_regexp_match(thr);  /* [ ... regexp input ] -> [ res_obj ] */
+			duk_regexp_match(thr); /* [ ... regexp input ] -> [ res_obj ] */
 			if (!duk_is_object(thr, -1)) {
 				duk_pop(thr);
 				break;
@@ -639,7 +637,7 @@ DUK_INTERNAL duk_ret_t duk_bi_string_prototype_replace(duk_hthread *thr) {
 			duk_get_prop_index(thr, -1, 0);
 			DUK_ASSERT(duk_is_string(thr, -1));
 			h_match = duk_known_hstring(thr, -1);
-			duk_pop(thr);  /* h_match is borrowed, remains reachable through match_obj */
+			duk_pop(thr); /* h_match is borrowed, remains reachable through match_obj */
 
 			if (DUK_HSTRING_GET_BYTELEN(h_match) == 0) {
 				/* This should be equivalent to match() algorithm step 8.f.iii.2:
@@ -650,25 +648,26 @@ DUK_INTERNAL duk_ret_t duk_bi_string_prototype_replace(duk_hthread *thr) {
 				duk_get_prop_stridx_short(thr, 0, DUK_STRIDX_LAST_INDEX);
 				last_index = (duk_uint32_t) duk_get_uint(thr, -1);
 				DUK_DDD(DUK_DDDPRINT("empty match, bump lastIndex: %ld -> %ld",
-				                     (long) last_index, (long) (last_index + 1)));
+				                     (long) last_index,
+				                     (long) (last_index + 1)));
 				duk_pop(thr);
 				duk_push_uint(thr, (duk_uint_t) (last_index + 1));
 				duk_put_prop_stridx_short(thr, 0, DUK_STRIDX_LAST_INDEX);
 			}
 
-			DUK_ASSERT(duk_get_length(thr, -1) <= DUK_INT_MAX);  /* string limits */
+			DUK_ASSERT(duk_get_length(thr, -1) <= DUK_INT_MAX); /* string limits */
 			match_caps = (duk_int_t) duk_get_length(thr, -1);
 		} else {
-#else  /* DUK_USE_REGEXP_SUPPORT */
-		{  /* unconditionally */
-#endif  /* DUK_USE_REGEXP_SUPPORT */
-			const duk_uint8_t *p_start, *p_end, *p;   /* input string scan */
-			const duk_uint8_t *q_start;               /* match string */
+#else /* DUK_USE_REGEXP_SUPPORT */
+		{ /* unconditionally */
+#endif /* DUK_USE_REGEXP_SUPPORT */
+			const duk_uint8_t *p_start, *p_end, *p; /* input string scan */
+			const duk_uint8_t *q_start; /* match string */
 			duk_size_t p_blen;
 			duk_size_t q_blen;
 
 #if defined(DUK_USE_REGEXP_SUPPORT)
-			DUK_ASSERT(!is_global);  /* single match always */
+			DUK_ASSERT(!is_global); /* single match always */
 #endif
 
 			p_start = DUK_HSTRING_GET_DATA(h_input);
@@ -681,10 +680,10 @@ DUK_INTERNAL duk_ret_t duk_bi_string_prototype_replace(duk_hthread *thr) {
 			q_blen = (duk_size_t) DUK_HSTRING_GET_BYTELEN(h_search);
 
 			if (q_blen > p_blen) {
-				break;  /* no match */
+				break; /* no match */
 			}
 
-			p_end -= q_blen;  /* ensure full memcmp() fits in while */
+			p_end -= q_blen; /* ensure full memcmp() fits in while */
 			DUK_ASSERT(p_end >= p);
 
 			match_start_coff = 0;
@@ -710,7 +709,7 @@ DUK_INTERNAL duk_ret_t duk_bi_string_prototype_replace(duk_hthread *thr) {
 			/* not found */
 			break;
 		}
-	 found:
+	found:
 
 		/* stack[0] = search value
 		 * stack[1] = replace value
@@ -744,9 +743,9 @@ DUK_INTERNAL duk_ret_t duk_bi_string_prototype_replace(duk_hthread *thr) {
 					duk_get_prop_index(thr, 4, (duk_uarridx_t) idx);
 				}
 			} else {
-#else  /* DUK_USE_REGEXP_SUPPORT */
-			{  /* unconditionally */
-#endif  /* DUK_USE_REGEXP_SUPPORT */
+#else /* DUK_USE_REGEXP_SUPPORT */
+			{ /* unconditionally */
+#endif /* DUK_USE_REGEXP_SUPPORT */
 				/* match == search string, by definition */
 				duk_dup_0(thr);
 			}
@@ -756,12 +755,12 @@ DUK_INTERNAL duk_ret_t duk_bi_string_prototype_replace(duk_hthread *thr) {
 			/* [ ... replacer match [captures] match_char_offset input ] */
 
 			duk_call(thr, duk_get_top(thr) - idx_args);
-			h_repl = duk_to_hstring_m1(thr);  /* -> [ ... repl_value ] */
+			h_repl = duk_to_hstring_m1(thr); /* -> [ ... repl_value ] */
 			DUK_ASSERT(h_repl != NULL);
 
 			DUK_BW_WRITE_ENSURE_HSTRING(thr, bw, h_repl);
 
-			duk_pop(thr);  /* repl_value */
+			duk_pop(thr); /* repl_value */
 		} else {
 			r = r_start;
 
@@ -808,9 +807,10 @@ DUK_INTERNAL duk_ret_t duk_bi_string_prototype_replace(duk_hthread *thr) {
 					 * match codepoint encodings would have different lengths.
 					 */
 					/* XXX: charlen computed here, and also in char2byte helper. */
-					match_end_boff = (duk_uint32_t) duk_heap_strcache_offset_char2byte(thr,
-					                                                                   h_input,
-					                                                                   match_start_coff + (duk_uint_fast32_t) DUK_HSTRING_GET_CHARLEN(h_match));
+					match_end_boff = (duk_uint32_t) duk_heap_strcache_offset_char2byte(
+					    thr,
+					    h_input,
+					    match_start_coff + (duk_uint_fast32_t) DUK_HSTRING_GET_CHARLEN(h_match));
 
 					tmp_sz = (duk_size_t) (DUK_HSTRING_GET_BYTELEN(h_input) - match_end_boff);
 					DUK_BW_WRITE_ENSURE_BYTES(thr, bw, DUK_HSTRING_GET_DATA(h_input) + match_end_boff, tmp_sz);
@@ -846,7 +846,7 @@ DUK_INTERNAL duk_ret_t duk_bi_string_prototype_replace(duk_hthread *thr) {
 					}
 
 					if (capnum > 0 && capnum < match_caps) {
-						DUK_ASSERT(is_regexp != 0);  /* match_caps == 0 without regexps */
+						DUK_ASSERT(is_regexp != 0); /* match_caps == 0 without regexps */
 
 						/* regexp res_obj is at offset 4 */
 						duk_get_prop_index(thr, 4, (duk_uarridx_t) capnum);
@@ -865,26 +865,26 @@ DUK_INTERNAL duk_ret_t duk_bi_string_prototype_replace(duk_hthread *thr) {
 					} else {
 						goto repl_write;
 					}
-#else  /* DUK_USE_REGEXP_SUPPORT */
-					goto repl_write;  /* unconditionally */
-#endif  /* DUK_USE_REGEXP_SUPPORT */
-				}  /* default case */
-				}  /* switch (ch2) */
+#else /* DUK_USE_REGEXP_SUPPORT */
+					goto repl_write; /* unconditionally */
+#endif /* DUK_USE_REGEXP_SUPPORT */
+				} /* default case */
+				} /* switch (ch2) */
 
-			 repl_write:
+			repl_write:
 				/* ch1 = (r_increment << 8) + byte */
 
 				DUK_BW_WRITE_ENSURE_U8(thr, bw, (duk_uint8_t) (ch1 & 0xff));
 				r += ch1 >> 8;
-			}  /* while repl */
-		}  /* if (is_repl_func) */
+			} /* while repl */
+		} /* if (is_repl_func) */
 
-		duk_pop(thr);  /* pop regexp res_obj or match string */
+		duk_pop(thr); /* pop regexp res_obj or match string */
 
 #if defined(DUK_USE_REGEXP_SUPPORT)
 		if (!is_global) {
 #else
-		{  /* unconditionally; is_global==0 */
+		{ /* unconditionally; is_global==0 */
 #endif
 			break;
 		}
@@ -896,7 +896,7 @@ DUK_INTERNAL duk_ret_t duk_bi_string_prototype_replace(duk_hthread *thr) {
 
 	DUK_ASSERT_TOP(thr, 4);
 	DUK_BW_COMPACT(thr, bw);
-	(void) duk_buffer_to_string(thr, -1);  /* Safe if inputs are safe. */
+	(void) duk_buffer_to_string(thr, -1); /* Safe if inputs are safe. */
 	return 1;
 }
 
@@ -916,7 +916,7 @@ DUK_INTERNAL duk_ret_t duk_bi_string_prototype_split(duk_hthread *thr) {
 #if defined(DUK_USE_REGEXP_SUPPORT)
 	duk_bool_t is_regexp;
 #endif
-	duk_bool_t matched;  /* set to 1 if any match exists (needed for empty input special case) */
+	duk_bool_t matched; /* set to 1 if any match exists (needed for empty input special case) */
 	duk_uint32_t prev_match_end_coff, prev_match_end_boff;
 	duk_uint32_t match_start_boff, match_start_coff;
 	duk_uint32_t match_end_boff, match_end_coff;
@@ -954,7 +954,7 @@ DUK_INTERNAL duk_ret_t duk_bi_string_prototype_split(duk_hthread *thr) {
 #if defined(DUK_USE_REGEXP_SUPPORT)
 		duk_push_hobject_bidx(thr, DUK_BIDX_REGEXP_CONSTRUCTOR);
 		duk_dup_0(thr);
-		duk_new(thr, 1);  /* [ ... RegExp val ] -> [ ... res ] */
+		duk_new(thr, 1); /* [ ... RegExp val ] -> [ ... res ] */
 		duk_replace(thr, 0);
 		/* lastIndex is initialized to zero by new RegExp() */
 		is_regexp = 1;
@@ -993,7 +993,7 @@ DUK_INTERNAL duk_ret_t duk_bi_string_prototype_split(duk_hthread *thr) {
 		if (is_regexp) {
 			duk_dup_0(thr);
 			duk_dup_2(thr);
-			duk_regexp_match_force_global(thr);  /* [ ... regexp input ] -> [ res_obj ] */
+			duk_regexp_match_force_global(thr); /* [ ... regexp input ] -> [ res_obj ] */
 			if (!duk_is_object(thr, -1)) {
 				duk_pop(thr);
 				break;
@@ -1026,23 +1026,23 @@ DUK_INTERNAL duk_ret_t duk_bi_string_prototype_split(duk_hthread *thr) {
 				continue;
 			}
 		} else {
-#else  /* DUK_USE_REGEXP_SUPPORT */
-		{  /* unconditionally */
-#endif  /* DUK_USE_REGEXP_SUPPORT */
-			const duk_uint8_t *p_start, *p_end, *p;   /* input string scan */
-			const duk_uint8_t *q_start;               /* match string */
+#else /* DUK_USE_REGEXP_SUPPORT */
+		{ /* unconditionally */
+#endif /* DUK_USE_REGEXP_SUPPORT */
+			const duk_uint8_t *p_start, *p_end, *p; /* input string scan */
+			const duk_uint8_t *q_start; /* match string */
 			duk_size_t q_blen, q_clen;
 
 			p_start = DUK_HSTRING_GET_DATA(h_input);
 			p_end = p_start + DUK_HSTRING_GET_BYTELEN(h_input);
 			p = p_start + prev_match_end_boff;
 
-			h_sep = duk_known_hstring(thr, 0);  /* symbol already rejected above */
+			h_sep = duk_known_hstring(thr, 0); /* symbol already rejected above */
 			q_start = DUK_HSTRING_GET_DATA(h_sep);
 			q_blen = (duk_size_t) DUK_HSTRING_GET_BYTELEN(h_sep);
 			q_clen = (duk_size_t) DUK_HSTRING_GET_CHARLEN(h_sep);
 
-			p_end -= q_blen;  /* ensure full memcmp() fits in while */
+			p_end -= q_blen; /* ensure full memcmp() fits in while */
 
 			match_start_coff = prev_match_end_coff;
 
@@ -1055,7 +1055,7 @@ DUK_INTERNAL duk_ret_t duk_bi_string_prototype_split(duk_hthread *thr) {
 				 * Don't allow an empty string to match at the end of the input.
 				 */
 
-				matched = 1;  /* empty separator can always match */
+				matched = 1; /* empty separator can always match */
 
 				match_start_coff++;
 				p++;
@@ -1071,7 +1071,7 @@ DUK_INTERNAL duk_ret_t duk_bi_string_prototype_split(duk_hthread *thr) {
 			DUK_ASSERT(q_blen > 0 && q_clen > 0);
 			while (p <= p_end) {
 				DUK_ASSERT(p + q_blen <= DUK_HSTRING_GET_DATA(h_input) + DUK_HSTRING_GET_BYTELEN(h_input));
-				DUK_ASSERT(q_blen > 0);  /* no issues with empty memcmp() */
+				DUK_ASSERT(q_blen > 0); /* no issues with empty memcmp() */
 				if (duk_memcmp((const void *) p, (const void *) q_start, (size_t) q_blen) == 0) {
 					/* never an empty match, so step 13.c.iii can't be triggered */
 					goto found;
@@ -1084,15 +1084,15 @@ DUK_INTERNAL duk_ret_t duk_bi_string_prototype_split(duk_hthread *thr) {
 				p++;
 			}
 
-		 not_found:
+		not_found:
 			/* not found */
 			break;
 
-		 found:
+		found:
 			matched = 1;
 			match_start_boff = (duk_uint32_t) (p - p_start);
-			match_end_coff = (duk_uint32_t) (match_start_coff + q_clen);  /* constrained by string length */
-			match_end_boff = (duk_uint32_t) (match_start_boff + q_blen);  /* ditto */
+			match_end_coff = (duk_uint32_t) (match_start_coff + q_clen); /* constrained by string length */
+			match_end_boff = (duk_uint32_t) (match_start_boff + q_blen); /* ditto */
 
 			/* empty match (may happen with empty separator) -> bump and continue */
 			if (prev_match_end_boff == match_end_boff) {
@@ -1100,7 +1100,7 @@ DUK_INTERNAL duk_ret_t duk_bi_string_prototype_split(duk_hthread *thr) {
 				prev_match_end_coff++;
 				continue;
 			}
-		}  /* if (is_regexp) */
+		} /* if (is_regexp) */
 
 		/* stack[0] = separator (string or regexp)
 		 * stack[1] = limit
@@ -1110,9 +1110,12 @@ DUK_INTERNAL duk_ret_t duk_bi_string_prototype_split(duk_hthread *thr) {
 		 */
 
 		DUK_DDD(DUK_DDDPRINT("split; match_start b=%ld,c=%ld, match_end b=%ld,c=%ld, prev_end b=%ld,c=%ld",
-		                     (long) match_start_boff, (long) match_start_coff,
-		                     (long) match_end_boff, (long) match_end_coff,
-		                     (long) prev_match_end_boff, (long) prev_match_end_coff));
+		                     (long) match_start_boff,
+		                     (long) match_start_coff,
+		                     (long) match_end_boff,
+		                     (long) match_end_coff,
+		                     (long) prev_match_end_boff,
+		                     (long) prev_match_end_coff));
 
 		duk_push_lstring(thr,
 		                 (const char *) (DUK_HSTRING_GET_DATA(h_input) + prev_match_end_boff),
@@ -1129,7 +1132,7 @@ DUK_INTERNAL duk_ret_t duk_bi_string_prototype_split(duk_hthread *thr) {
 
 			len = duk_get_length(thr, 4);
 			for (i = 1; i < len; i++) {
-				DUK_ASSERT(i <= DUK_UARRIDX_MAX);  /* cannot have >4G captures */
+				DUK_ASSERT(i <= DUK_UARRIDX_MAX); /* cannot have >4G captures */
 				duk_get_prop_index(thr, 4, (duk_uarridx_t) i);
 				duk_put_prop_index(thr, 3, arr_idx);
 				arr_idx++;
@@ -1141,21 +1144,21 @@ DUK_INTERNAL duk_ret_t duk_bi_string_prototype_split(duk_hthread *thr) {
 			duk_pop(thr);
 			/* lastIndex already set up for next match */
 		} else {
-#else  /* DUK_USE_REGEXP_SUPPORT */
-		{  /* unconditionally */
-#endif  /* DUK_USE_REGEXP_SUPPORT */
+#else /* DUK_USE_REGEXP_SUPPORT */
+		{
+		/* unconditionally */
+#endif /* DUK_USE_REGEXP_SUPPORT */
 			/* no action */
 		}
 
 		prev_match_end_boff = match_end_boff;
 		prev_match_end_coff = match_end_coff;
 		continue;
-	}  /* for */
+	} /* for */
 
 	/* Combined step 11 (empty string special case) and 14-15. */
 
-	DUK_DDD(DUK_DDDPRINT("split trailer; prev_end b=%ld,c=%ld",
-	                     (long) prev_match_end_boff, (long) prev_match_end_coff));
+	DUK_DDD(DUK_DDDPRINT("split trailer; prev_end b=%ld,c=%ld", (long) prev_match_end_boff, (long) prev_match_end_coff));
 
 	if (DUK_HSTRING_GET_BYTELEN(h_input) > 0 || !matched) {
 		/* Add trailer if:
@@ -1172,7 +1175,7 @@ DUK_INTERNAL duk_ret_t duk_bi_string_prototype_split(duk_hthread *thr) {
 
 	return 1;
 
- hit_limit:
+hit_limit:
 #if defined(DUK_USE_REGEXP_SUPPORT)
 	if (is_regexp) {
 		duk_pop(thr);
@@ -1204,13 +1207,13 @@ DUK_LOCAL void duk__to_regexp_helper(duk_hthread *thr, duk_idx_t idx, duk_bool_t
 	}
 	return;
 
- do_new:
+do_new:
 	duk_push_hobject_bidx(thr, DUK_BIDX_REGEXP_CONSTRUCTOR);
 	duk_dup(thr, idx);
-	duk_new(thr, 1);  /* [ ... RegExp val ] -> [ ... res ] */
+	duk_new(thr, 1); /* [ ... RegExp val ] -> [ ... res ] */
 	duk_replace(thr, idx);
 }
-#endif  /* DUK_USE_REGEXP_SUPPORT */
+#endif /* DUK_USE_REGEXP_SUPPORT */
 
 #if defined(DUK_USE_REGEXP_SUPPORT)
 DUK_INTERNAL duk_ret_t duk_bi_string_prototype_search(duk_hthread *thr) {
@@ -1225,7 +1228,7 @@ DUK_INTERNAL duk_ret_t duk_bi_string_prototype_search(duk_hthread *thr) {
 	 */
 
 	DUK_ASSERT_TOP(thr, 1);
-	(void) duk_push_this_coercible_to_string(thr);  /* at index 1 */
+	(void) duk_push_this_coercible_to_string(thr); /* at index 1 */
 	duk__to_regexp_helper(thr, 0 /*index*/, 1 /*force_new*/);
 
 	/* stack[0] = regexp
@@ -1237,8 +1240,8 @@ DUK_INTERNAL duk_ret_t duk_bi_string_prototype_search(duk_hthread *thr) {
 	 */
 
 	duk_dup_0(thr);
-	duk_dup_1(thr);  /* [ ... re_obj input ] */
-	duk_regexp_match(thr);  /* -> [ ... res_obj ] */
+	duk_dup_1(thr); /* [ ... re_obj input ] */
+	duk_regexp_match(thr); /* -> [ ... res_obj ] */
 
 	if (!duk_is_object(thr, -1)) {
 		duk_push_int(thr, -1);
@@ -1249,7 +1252,7 @@ DUK_INTERNAL duk_ret_t duk_bi_string_prototype_search(duk_hthread *thr) {
 	DUK_ASSERT(duk_is_number(thr, -1));
 	return 1;
 }
-#endif  /* DUK_USE_REGEXP_SUPPORT */
+#endif /* DUK_USE_REGEXP_SUPPORT */
 
 #if defined(DUK_USE_REGEXP_SUPPORT)
 DUK_INTERNAL duk_ret_t duk_bi_string_prototype_match(duk_hthread *thr) {
@@ -1269,8 +1272,8 @@ DUK_INTERNAL duk_ret_t duk_bi_string_prototype_match(duk_hthread *thr) {
 	 */
 
 	if (!global) {
-		duk_regexp_match(thr);  /* -> [ res_obj ] */
-		return 1;  /* return 'res_obj' */
+		duk_regexp_match(thr); /* -> [ res_obj ] */
+		return 1; /* return 'res_obj' */
 	}
 
 	/* Global case is more complex. */
@@ -1291,7 +1294,7 @@ DUK_INTERNAL duk_ret_t duk_bi_string_prototype_match(duk_hthread *thr) {
 
 		duk_dup_0(thr);
 		duk_dup_1(thr);
-		duk_regexp_match(thr);  /* -> [ ... regexp string ] -> [ ... res_obj ] */
+		duk_regexp_match(thr); /* -> [ ... regexp string ] -> [ ... res_obj ] */
 
 		if (!duk_is_object(thr, -1)) {
 			duk_pop(thr);
@@ -1310,24 +1313,24 @@ DUK_INTERNAL duk_ret_t duk_bi_string_prototype_match(duk_hthread *thr) {
 		}
 		prev_last_index = this_index;
 
-		duk_get_prop_index(thr, -1, 0);  /* match string */
+		duk_get_prop_index(thr, -1, 0); /* match string */
 		duk_put_prop_index(thr, 2, (duk_uarridx_t) arr_idx);
 		arr_idx++;
-		duk_pop(thr);  /* res_obj */
+		duk_pop(thr); /* res_obj */
 	}
 
 	if (arr_idx == 0) {
 		duk_push_null(thr);
 	}
 
-	return 1;  /* return 'res_arr' or 'null' */
+	return 1; /* return 'res_arr' or 'null' */
 }
-#endif  /* DUK_USE_REGEXP_SUPPORT */
+#endif /* DUK_USE_REGEXP_SUPPORT */
 
 DUK_INTERNAL duk_ret_t duk_bi_string_prototype_concat(duk_hthread *thr) {
 	/* duk_concat() coerces arguments with ToString() in correct order */
 	(void) duk_push_this_coercible_to_string(thr);
-	duk_insert(thr, 0);  /* this is relatively expensive */
+	duk_insert(thr, 0); /* this is relatively expensive */
 	duk_concat(thr, duk_get_top(thr));
 	return 1;
 }
@@ -1392,10 +1395,10 @@ DUK_INTERNAL duk_ret_t duk_bi_string_prototype_repeat(duk_hthread *thr) {
 #if defined(DUK_USE_PREFER_SIZE)
 	p = buf;
 	while (count-- > 0) {
-		duk_memcpy((void *) p, (const void *) src, input_blen);  /* copy size may be zero, but pointers are valid */
+		duk_memcpy((void *) p, (const void *) src, input_blen); /* copy size may be zero, but pointers are valid */
 		p += input_blen;
 	}
-#else  /* DUK_USE_PREFER_SIZE */
+#else /* DUK_USE_PREFER_SIZE */
 	/* Take advantage of already copied pieces to speed up the process
 	 * especially for small repeated strings.
 	 */
@@ -1405,7 +1408,9 @@ DUK_INTERNAL duk_ret_t duk_bi_string_prototype_repeat(duk_hthread *thr) {
 	for (;;) {
 		duk_size_t remain = (duk_size_t) (p_end - p);
 		DUK_DDD(DUK_DDDPRINT("remain=%ld, copy_size=%ld, input_blen=%ld, result_len=%ld",
-		                     (long) remain, (long) copy_size, (long) input_blen,
+		                     (long) remain,
+		                     (long) copy_size,
+		                     (long) input_blen,
 		                     (long) result_len));
 		if (remain <= copy_size) {
 			/* If result_len is zero, this case is taken and does
@@ -1418,10 +1423,10 @@ DUK_INTERNAL duk_ret_t duk_bi_string_prototype_repeat(duk_hthread *thr) {
 			p += copy_size;
 		}
 
-		src = (const duk_uint8_t *) buf;  /* Use buf as source for larger copies. */
+		src = (const duk_uint8_t *) buf; /* Use buf as source for larger copies. */
 		copy_size = (duk_size_t) (p - buf);
 	}
-#endif  /* DUK_USE_PREFER_SIZE */
+#endif /* DUK_USE_PREFER_SIZE */
 
 	/* XXX: It would be useful to be able to create a duk_hstring with
 	 * a certain byte size whose data area wasn't initialized and which
@@ -1432,13 +1437,13 @@ DUK_INTERNAL duk_ret_t duk_bi_string_prototype_repeat(duk_hthread *thr) {
 	 * intern table (they are not in heap_allocated).
 	 */
 
-	duk_buffer_to_string(thr, -1);  /* Safe if input is safe. */
+	duk_buffer_to_string(thr, -1); /* Safe if input is safe. */
 	return 1;
 
- fail_range:
+fail_range:
 	DUK_DCERROR_RANGE_INVALID_ARGS(thr);
 }
-#endif  /* DUK_USE_ES6 */
+#endif /* DUK_USE_ES6 */
 
 DUK_INTERNAL duk_ret_t duk_bi_string_prototype_locale_compare(duk_hthread *thr) {
 	duk_hstring *h1;
@@ -1492,7 +1497,7 @@ DUK_INTERNAL duk_ret_t duk_bi_string_prototype_locale_compare(duk_hthread *thr) 
 	ret = -1;
 	goto done;
 
- done:
+done:
 	duk_push_int(thr, (duk_int_t) ret);
 	return 1;
 }
@@ -1579,11 +1584,11 @@ DUK_INTERNAL duk_ret_t duk_bi_string_prototype_startswith_endswith(duk_hthread *
 		}
 	}
 
- finish:
+finish:
 	duk_push_boolean(thr, result);
 	return 1;
 }
-#endif  /* DUK_USE_ES6 */
+#endif /* DUK_USE_ES6 */
 
 #if defined(DUK_USE_ES6)
 DUK_INTERNAL duk_ret_t duk_bi_string_prototype_includes(duk_hthread *thr) {
@@ -1606,5 +1611,5 @@ DUK_INTERNAL duk_ret_t duk_bi_string_prototype_includes(duk_hthread *thr) {
 	duk_push_boolean(thr, pos >= 0);
 	return 1;
 }
-#endif  /* DUK_USE_ES6 */
-#endif  /* DUK_USE_STRING_BUILTIN */
+#endif /* DUK_USE_ES6 */
+#endif /* DUK_USE_STRING_BUILTIN */

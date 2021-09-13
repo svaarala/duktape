@@ -21,14 +21,20 @@
  */
 
 #if defined(DUK_USE_VERBOSE_ERRORS)
-DUK_INTERNAL void duk_err_create_and_throw(duk_hthread *thr, duk_errcode_t code, const char *msg, const char *filename, duk_int_t line) {
+DUK_INTERNAL void duk_err_create_and_throw(duk_hthread *thr,
+                                           duk_errcode_t code,
+                                           const char *msg,
+                                           const char *filename,
+                                           duk_int_t line) {
 #else
 DUK_INTERNAL void duk_err_create_and_throw(duk_hthread *thr, duk_errcode_t code) {
 #endif
 #if defined(DUK_USE_VERBOSE_ERRORS)
 	DUK_DD(DUK_DDPRINT("duk_err_create_and_throw(): code=%ld, msg=%s, filename=%s, line=%ld",
-	                   (long) code, (const char *) msg,
-	                   (const char *) filename, (long) line));
+	                   (long) code,
+	                   (const char *) msg,
+	                   (const char *) filename,
+	                   (long) line));
 #else
 	DUK_DD(DUK_DDPRINT("duk_err_create_and_throw(): code=%ld", (long) code));
 #endif
@@ -88,18 +94,9 @@ DUK_INTERNAL void duk_err_create_and_throw(duk_hthread *thr, duk_errcode_t code)
 		 * use 'msg' as a format string directly.
 		 */
 #if defined(DUK_USE_VERBOSE_ERRORS)
-		duk_push_error_object_raw(thr,
-		                          code | DUK_ERRCODE_FLAG_NOBLAME_FILELINE,
-		                          filename,
-		                          line,
-		                          "%s",
-		                          (const char *) msg);
+		duk_push_error_object_raw(thr, code | DUK_ERRCODE_FLAG_NOBLAME_FILELINE, filename, line, "%s", (const char *) msg);
 #else
-		duk_push_error_object_raw(thr,
-		                          code | DUK_ERRCODE_FLAG_NOBLAME_FILELINE,
-		                          NULL,
-		                          0,
-		                          NULL);
+		duk_push_error_object_raw(thr, code | DUK_ERRCODE_FLAG_NOBLAME_FILELINE, NULL, 0, NULL);
 #endif
 
 		/* Note that an alloc error may happen during error augmentation.
@@ -109,8 +106,7 @@ DUK_INTERNAL void duk_err_create_and_throw(duk_hthread *thr, duk_errcode_t code)
 		 * avoiding it for alloc errors (this differs from Duktape 1.x).
 		 */
 #if defined(DUK_USE_AUGMENT_ERROR_THROW)
-		DUK_DDD(DUK_DDDPRINT("THROW ERROR (INTERNAL): %!iT (before throw augment)",
-		                     (duk_tval *) duk_get_tval(thr, -1)));
+		DUK_DDD(DUK_DDDPRINT("THROW ERROR (INTERNAL): %!iT (before throw augment)", (duk_tval *) duk_get_tval(thr, -1)));
 		duk_err_augment_error_throw(thr);
 #endif
 
@@ -133,7 +129,8 @@ DUK_INTERNAL void duk_err_create_and_throw(duk_hthread *thr, duk_errcode_t code)
 	 */
 
 	DUK_DDD(DUK_DDDPRINT("THROW ERROR (INTERNAL): %!iT, %!iT (after throw augment)",
-	                     (duk_tval *) &thr->heap->lj.value1, (duk_tval *) &thr->heap->lj.value2));
+	                     (duk_tval *) &thr->heap->lj.value1,
+	                     (duk_tval *) &thr->heap->lj.value2));
 
 	duk_err_longjmp(thr);
 	DUK_UNREACHABLE();

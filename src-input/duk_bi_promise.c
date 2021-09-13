@@ -41,4 +41,4 @@ DUK_INTERNAL duk_ret_t duk_bi_promise_then(duk_hthread *thr) {
 	DUK_WO_NORETURN(return 0;);
 }
 
-#endif  /* DUK_USE_PROMISE_BUILTIN */
+#endif /* DUK_USE_PROMISE_BUILTIN */
