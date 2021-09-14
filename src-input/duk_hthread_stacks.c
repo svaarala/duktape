@@ -15,7 +15,7 @@ DUK_INTERNAL void duk_hthread_catcher_unwind_norz(duk_hthread *thr, duk_activati
 
 	DUK_ASSERT(thr != NULL);
 	DUK_ASSERT(act != NULL);
-	DUK_ASSERT(act->cat != NULL);  /* caller must check */
+	DUK_ASSERT(act->cat != NULL); /* caller must check */
 	cat = act->cat;
 	DUK_ASSERT(cat != NULL);
 
@@ -24,9 +24,9 @@ DUK_INTERNAL void duk_hthread_catcher_unwind_norz(duk_hthread *thr, duk_activati
 	if (DUK_CAT_HAS_LEXENV_ACTIVE(cat)) {
 		duk_hobject *env;
 
-		env = act->lex_env;             /* current lex_env of the activation (created for catcher) */
-		DUK_ASSERT(env != NULL);        /* must be, since env was created when catcher was created */
-		act->lex_env = DUK_HOBJECT_GET_PROTOTYPE(thr->heap, env);  /* prototype is lex_env before catcher created */
+		env = act->lex_env; /* current lex_env of the activation (created for catcher) */
+		DUK_ASSERT(env != NULL); /* must be, since env was created when catcher was created */
+		act->lex_env = DUK_HOBJECT_GET_PROTOTYPE(thr->heap, env); /* prototype is lex_env before catcher created */
 		DUK_HOBJECT_INCREF(thr, act->lex_env);
 		DUK_HOBJECT_DECREF_NORZ(thr, env);
 
@@ -45,7 +45,7 @@ DUK_INTERNAL void duk_hthread_catcher_unwind_nolexenv_norz(duk_hthread *thr, duk
 
 	DUK_ASSERT(thr != NULL);
 	DUK_ASSERT(act != NULL);
-	DUK_ASSERT(act->cat != NULL);  /* caller must check */
+	DUK_ASSERT(act->cat != NULL); /* caller must check */
 	cat = act->cat;
 	DUK_ASSERT(cat != NULL);
 
@@ -83,11 +83,11 @@ DUK_INTERNAL DUK_INLINE duk_catcher *duk_hthread_catcher_alloc(duk_hthread *thr)
 
 	return duk__hthread_catcher_alloc_slow(thr);
 }
-#else  /* DUK_USE_CACHE_CATCHER */
+#else /* DUK_USE_CACHE_CATCHER */
 DUK_INTERNAL duk_catcher *duk_hthread_catcher_alloc(duk_hthread *thr) {
 	return duk__hthread_catcher_alloc_slow(thr);
 }
-#endif  /* DUK_USE_CACHE_CATCHER */
+#endif /* DUK_USE_CACHE_CATCHER */
 
 DUK_INTERNAL void duk_hthread_catcher_free(duk_hthread *thr, duk_catcher *cat) {
 	DUK_ASSERT(thr != NULL);
@@ -128,12 +128,11 @@ DUK_INTERNAL DUK_INLINE duk_activation *duk_hthread_activation_alloc(duk_hthread
 
 	return duk__hthread_activation_alloc_slow(thr);
 }
-#else  /* DUK_USE_CACHE_ACTIVATION */
+#else /* DUK_USE_CACHE_ACTIVATION */
 DUK_INTERNAL duk_activation *duk_hthread_activation_alloc(duk_hthread *thr) {
 	return duk__hthread_activation_alloc_slow(thr);
 }
-#endif  /* DUK_USE_CACHE_ACTIVATION */
-
+#endif /* DUK_USE_CACHE_ACTIVATION */
 
 DUK_INTERNAL void duk_hthread_activation_free(duk_hthread *thr, duk_activation *act) {
 	DUK_ASSERT(thr != NULL);
@@ -160,7 +159,7 @@ DUK_LOCAL void duk__activation_unwind_nofree_norz(duk_hthread *thr) {
 	duk_hobject *tmp;
 
 	DUK_ASSERT(thr != NULL);
-	DUK_ASSERT(thr->callstack_curr != NULL);  /* caller must check */
+	DUK_ASSERT(thr->callstack_curr != NULL); /* caller must check */
 	DUK_ASSERT(thr->callstack_top > 0);
 	act = thr->callstack_curr;
 	DUK_ASSERT(act != NULL);
@@ -197,7 +196,7 @@ DUK_LOCAL void duk__activation_unwind_nofree_norz(duk_hthread *thr) {
 				DUK_TVAL_SET_OBJECT(tv_caller, act->prev_caller);
 				act->prev_caller = NULL;
 			} else {
-				DUK_TVAL_SET_NULL(tv_caller);   /* no incref needed */
+				DUK_TVAL_SET_NULL(tv_caller); /* no incref needed */
 				DUK_ASSERT(act->prev_caller == NULL);
 			}
 			DUK_TVAL_DECREF_NORZ(thr, &tv_tmp);
@@ -226,7 +225,7 @@ DUK_LOCAL void duk__activation_unwind_nofree_norz(duk_hthread *thr) {
 			duk_debug_set_paused(heap);
 		} else {
 			DUK_D(DUK_DPRINT("unwound past dbg_pause_act, set to NULL"));
-			heap->dbg_pause_act = NULL;  /* avoid stale pointers */
+			heap->dbg_pause_act = NULL; /* avoid stale pointers */
 		}
 		DUK_ASSERT(heap->dbg_pause_act == NULL);
 	}
@@ -275,12 +274,11 @@ DUK_LOCAL void duk__activation_unwind_nofree_norz(duk_hthread *thr) {
 	 * fixed e.g. by preallocating the scope property slots.
 	 */
 	if (act->var_env != NULL) {
-		DUK_DDD(DUK_DDDPRINT("closing var_env record %p -> %!O",
-		                     (void *) act->var_env, (duk_heaphdr *) act->var_env));
+		DUK_DDD(DUK_DDDPRINT("closing var_env record %p -> %!O", (void *) act->var_env, (duk_heaphdr *) act->var_env));
 		duk_js_close_environment_record(thr, act->var_env);
 	}
 
- skip_env_close:
+skip_env_close:
 
 	/*
 	 *  Update preventcount
@@ -404,4 +402,4 @@ DUK_INTERNAL void duk_hthread_valstack_torture_realloc(duk_hthread *thr) {
 		DUK_D(DUK_DPRINT("failed to realloc valstack for torture, ignore"));
 	}
 }
-#endif  /* DUK_USE_FINALIZER_TORTURE */
+#endif /* DUK_USE_FINALIZER_TORTURE */
