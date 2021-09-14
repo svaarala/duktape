@@ -43,7 +43,7 @@ DUK_INTERNAL duk_uint32_t duk_bd_decode(duk_bitdecoder_ctx *ctx, duk_small_int_t
 	shift = ctx->currbits - bits;
 	mask = (((duk_uint32_t) 1U) << bits) - 1U;
 	tmp = (ctx->currval >> shift) & mask;
-	ctx->currbits = shift;  /* remaining */
+	ctx->currbits = shift; /* remaining */
 
 #if 0
 	DUK_DDD(DUK_DDDPRINT("decode_bits: %ld bits -> 0x%08lx (%ld), currbits=%ld, currval=0x%08lx",
@@ -82,17 +82,17 @@ DUK_INTERNAL duk_uint32_t duk_bd_decode_varuint(duk_bitdecoder_ctx *ctx) {
 	 */
 	switch (duk_bd_decode(ctx, 2)) {
 	case 0:
-		return 0;  /* [0,0] */
+		return 0; /* [0,0] */
 	case 1:
-		return duk_bd_decode(ctx, 2) + 1;  /* [1,4] */
+		return duk_bd_decode(ctx, 2) + 1; /* [1,4] */
 	case 2:
-		return duk_bd_decode(ctx, 5) + 5;  /* [5,36] */
+		return duk_bd_decode(ctx, 5) + 5; /* [5,36] */
 	default:
 		t = duk_bd_decode(ctx, 7);
 		if (t == 0) {
 			return duk_bd_decode(ctx, 20);
 		}
-		return (t - 1) + 37;  /* [37,163] */
+		return (t - 1) + 37; /* [37,163] */
 	}
 }
 
@@ -101,20 +101,18 @@ DUK_INTERNAL duk_uint32_t duk_bd_decode_varuint(duk_bitdecoder_ctx *ctx) {
  * Caller must supply the output buffer whose size is NOT checked!
  */
 
-#define DUK__BITPACK_LETTER_LIMIT  26
-#define DUK__BITPACK_LOOKUP1       26
-#define DUK__BITPACK_LOOKUP2       27
-#define DUK__BITPACK_SWITCH1       28
-#define DUK__BITPACK_SWITCH        29
-#define DUK__BITPACK_UNUSED1       30
-#define DUK__BITPACK_EIGHTBIT      31
+#define DUK__BITPACK_LETTER_LIMIT 26
+#define DUK__BITPACK_LOOKUP1      26
+#define DUK__BITPACK_LOOKUP2      27
+#define DUK__BITPACK_SWITCH1      28
+#define DUK__BITPACK_SWITCH       29
+#define DUK__BITPACK_UNUSED1      30
+#define DUK__BITPACK_EIGHTBIT     31
 
-DUK_LOCAL const duk_uint8_t duk__bitpacked_lookup[16] = {
-	DUK_ASC_0, DUK_ASC_1, DUK_ASC_2, DUK_ASC_3,
-	DUK_ASC_4, DUK_ASC_5, DUK_ASC_6, DUK_ASC_7,
-	DUK_ASC_8, DUK_ASC_9, DUK_ASC_UNDERSCORE, DUK_ASC_SPACE,
-	0x82, 0x80, DUK_ASC_DOUBLEQUOTE, DUK_ASC_LCURLY
-};
+DUK_LOCAL const duk_uint8_t duk__bitpacked_lookup[16] = { DUK_ASC_0, DUK_ASC_1, DUK_ASC_2,           DUK_ASC_3,
+	                                                  DUK_ASC_4, DUK_ASC_5, DUK_ASC_6,           DUK_ASC_7,
+	                                                  DUK_ASC_8, DUK_ASC_9, DUK_ASC_UNDERSCORE,  DUK_ASC_SPACE,
+	                                                  0x82,      0x80,      DUK_ASC_DOUBLEQUOTE, DUK_ASC_LCURLY };
 
 DUK_INTERNAL duk_small_uint_t duk_bd_decode_bitpacked_string(duk_bitdecoder_ctx *bd, duk_uint8_t *out) {
 	duk_small_uint_t len;
@@ -124,10 +122,10 @@ DUK_INTERNAL duk_small_uint_t duk_bd_decode_bitpacked_string(duk_bitdecoder_ctx 
 
 	len = duk_bd_decode(bd, 5);
 	if (len == 31) {
-		len = duk_bd_decode(bd, 8);  /* Support up to 256 bytes; rare. */
+		len = duk_bd_decode(bd, 8); /* Support up to 256 bytes; rare. */
 	}
 
-	mode = 32;  /* 0 = uppercase, 32 = lowercase (= 'a' - 'A') */
+	mode = 32; /* 0 = uppercase, 32 = lowercase (= 'a' - 'A') */
 	for (i = 0; i < len; i++) {
 		t = duk_bd_decode(bd, 5);
 		if (t < DUK__BITPACK_LETTER_LIMIT) {
@@ -138,7 +136,7 @@ DUK_INTERNAL duk_small_uint_t duk_bd_decode_bitpacked_string(duk_bitdecoder_ctx 
 			t = duk__bitpacked_lookup[8 + duk_bd_decode(bd, 3)];
 		} else if (t == DUK__BITPACK_SWITCH1) {
 			t = duk_bd_decode(bd, 5);
-			DUK_ASSERT_DISABLE(t >= 0);  /* unsigned */
+			DUK_ASSERT_DISABLE(t >= 0); /* unsigned */
 			DUK_ASSERT(t <= 25);
 			t = t + DUK_ASC_UC_A + (mode ^ 32);
 		} else if (t == DUK__BITPACK_SWITCH) {

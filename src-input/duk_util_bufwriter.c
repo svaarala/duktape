@@ -71,7 +71,7 @@ DUK_INTERNAL duk_uint8_t *duk_bw_resize(duk_hthread *thr, duk_bufwriter_ctx *bw_
 		DUK_ERROR_RANGE(thr, DUK_STR_BUFFER_TOO_LONG);
 		DUK_WO_NORETURN(return NULL;);
 	}
-#if 0  /* for manual torture testing: tight allocation, useful with valgrind */
+#if 0 /* for manual torture testing: tight allocation, useful with valgrind */
 	new_sz = curr_off + sz;
 #endif
 
@@ -112,9 +112,7 @@ DUK_INTERNAL void duk_bw_write_raw_slice(duk_hthread *thr, duk_bufwriter_ctx *bw
 	DUK_UNREF(thr);
 
 	p_base = bw->p_base;
-	duk_memcpy_unsafe((void *) bw->p,
-	                  (const void *) (p_base + src_off),
-	                  (size_t) len);
+	duk_memcpy_unsafe((void *) bw->p, (const void *) (p_base + src_off), (size_t) len);
 	bw->p += len;
 }
 
@@ -129,7 +127,11 @@ DUK_INTERNAL void duk_bw_write_ensure_slice(duk_hthread *thr, duk_bufwriter_ctx 
 	duk_bw_write_raw_slice(thr, bw, src_off, len);
 }
 
-DUK_INTERNAL void duk_bw_insert_raw_bytes(duk_hthread *thr, duk_bufwriter_ctx *bw, duk_size_t dst_off, const duk_uint8_t *buf, duk_size_t len) {
+DUK_INTERNAL void duk_bw_insert_raw_bytes(duk_hthread *thr,
+                                          duk_bufwriter_ctx *bw,
+                                          duk_size_t dst_off,
+                                          const duk_uint8_t *buf,
+                                          duk_size_t len) {
 	duk_uint8_t *p_base;
 	duk_size_t buf_sz, move_sz;
 
@@ -140,20 +142,20 @@ DUK_INTERNAL void duk_bw_insert_raw_bytes(duk_hthread *thr, duk_bufwriter_ctx *b
 	DUK_UNREF(thr);
 
 	p_base = bw->p_base;
-	buf_sz = (duk_size_t) (bw->p - p_base);  /* constrained by maximum buffer size */
+	buf_sz = (duk_size_t) (bw->p - p_base); /* constrained by maximum buffer size */
 	move_sz = buf_sz - dst_off;
 
-	DUK_ASSERT(p_base != NULL);  /* buffer size is >= 1 */
-	duk_memmove_unsafe((void *) (p_base + dst_off + len),
-	                   (const void *) (p_base + dst_off),
-	                   (size_t) move_sz);
-	duk_memcpy_unsafe((void *) (p_base + dst_off),
-	                  (const void *) buf,
-	                  (size_t) len);
+	DUK_ASSERT(p_base != NULL); /* buffer size is >= 1 */
+	duk_memmove_unsafe((void *) (p_base + dst_off + len), (const void *) (p_base + dst_off), (size_t) move_sz);
+	duk_memcpy_unsafe((void *) (p_base + dst_off), (const void *) buf, (size_t) len);
 	bw->p += len;
 }
 
-DUK_INTERNAL void duk_bw_insert_ensure_bytes(duk_hthread *thr, duk_bufwriter_ctx *bw, duk_size_t dst_off, const duk_uint8_t *buf, duk_size_t len) {
+DUK_INTERNAL void duk_bw_insert_ensure_bytes(duk_hthread *thr,
+                                             duk_bufwriter_ctx *bw,
+                                             duk_size_t dst_off,
+                                             const duk_uint8_t *buf,
+                                             duk_size_t len) {
 	DUK_ASSERT(thr != NULL);
 	DUK_ASSERT(bw != NULL);
 	DUK_ASSERT(dst_off <= DUK_BW_GET_SIZE(thr, bw));
@@ -163,7 +165,11 @@ DUK_INTERNAL void duk_bw_insert_ensure_bytes(duk_hthread *thr, duk_bufwriter_ctx
 	duk_bw_insert_raw_bytes(thr, bw, dst_off, buf, len);
 }
 
-DUK_INTERNAL void duk_bw_insert_raw_slice(duk_hthread *thr, duk_bufwriter_ctx *bw, duk_size_t dst_off, duk_size_t src_off, duk_size_t len) {
+DUK_INTERNAL void duk_bw_insert_raw_slice(duk_hthread *thr,
+                                          duk_bufwriter_ctx *bw,
+                                          duk_size_t dst_off,
+                                          duk_size_t src_off,
+                                          duk_size_t len) {
 	duk_uint8_t *p_base;
 	duk_size_t buf_sz, move_sz;
 
@@ -190,17 +196,17 @@ DUK_INTERNAL void duk_bw_insert_raw_slice(duk_hthread *thr, duk_bufwriter_ctx *b
 	buf_sz = (duk_size_t) (bw->p - p_base);
 	move_sz = buf_sz - dst_off;
 
-	DUK_ASSERT(p_base != NULL);  /* buffer size is >= 1 */
-	duk_memmove_unsafe((void *) (p_base + dst_off + len),
-	                   (const void *) (p_base + dst_off),
-	                   (size_t) move_sz);
-	duk_memcpy_unsafe((void *) (p_base + dst_off),
-	                  (const void *) (p_base + src_off),
-	                  (size_t) len);
+	DUK_ASSERT(p_base != NULL); /* buffer size is >= 1 */
+	duk_memmove_unsafe((void *) (p_base + dst_off + len), (const void *) (p_base + dst_off), (size_t) move_sz);
+	duk_memcpy_unsafe((void *) (p_base + dst_off), (const void *) (p_base + src_off), (size_t) len);
 	bw->p += len;
 }
 
-DUK_INTERNAL void duk_bw_insert_ensure_slice(duk_hthread *thr, duk_bufwriter_ctx *bw, duk_size_t dst_off, duk_size_t src_off, duk_size_t len) {
+DUK_INTERNAL void duk_bw_insert_ensure_slice(duk_hthread *thr,
+                                             duk_bufwriter_ctx *bw,
+                                             duk_size_t dst_off,
+                                             duk_size_t src_off,
+                                             duk_size_t len) {
 	DUK_ASSERT(thr != NULL);
 	DUK_ASSERT(bw != NULL);
 	DUK_ASSERT(dst_off <= DUK_BW_GET_SIZE(thr, bw));
@@ -230,7 +236,7 @@ DUK_INTERNAL duk_uint8_t *duk_bw_insert_raw_area(duk_hthread *thr, duk_bufwriter
 	p_dst = p_base + off + len;
 	p_src = p_base + off;
 	duk_memmove_unsafe((void *) p_dst, (const void *) p_src, (size_t) move_sz);
-	return p_src;  /* point to start of 'reserved area' */
+	return p_src; /* point to start of 'reserved area' */
 }
 
 DUK_INTERNAL duk_uint8_t *duk_bw_insert_ensure_area(duk_hthread *thr, duk_bufwriter_ctx *bw, duk_size_t off, duk_size_t len) {
@@ -260,9 +266,7 @@ DUK_INTERNAL void duk_bw_remove_raw_slice(duk_hthread *thr, duk_bufwriter_ctx *b
 	p_dst = p_base + off;
 	p_src = p_dst + len;
 	move_sz = (duk_size_t) (bw->p - p_src);
-	duk_memmove_unsafe((void *) p_dst,
-	                   (const void *) p_src,
-	                   (size_t) move_sz);
+	duk_memmove_unsafe((void *) p_dst, (const void *) p_src, (size_t) move_sz);
 	bw->p -= len;
 }
 
@@ -276,11 +280,7 @@ DUK_INTERNAL void duk_bw_assert_valid(duk_hthread *thr, duk_bufwriter_ctx *bw_ct
 	DUK_ASSERT(bw_ctx != NULL);
 	DUK_ASSERT(bw_ctx->buf != NULL);
 	DUK_ASSERT((DUK_HBUFFER_DYNAMIC_GET_SIZE(bw_ctx->buf) == 0) ||
-	           (bw_ctx->p != NULL &&
-	            bw_ctx->p_base != NULL &&
-	            bw_ctx->p_limit != NULL &&
-	            bw_ctx->p_limit >= bw_ctx->p_base &&
-	            bw_ctx->p >= bw_ctx->p_base &&
-	            bw_ctx->p <= bw_ctx->p_limit));
+	           (bw_ctx->p != NULL && bw_ctx->p_base != NULL && bw_ctx->p_limit != NULL && bw_ctx->p_limit >= bw_ctx->p_base &&
+	            bw_ctx->p >= bw_ctx->p_base && bw_ctx->p <= bw_ctx->p_limit));
 }
 #endif

@@ -17,18 +17,21 @@ typedef union {
 } duk__test_double_union;
 
 /* Self test failed.  Expects a local variable 'error_count' to exist. */
-#define DUK__FAILED(msg)  do { \
+#define DUK__FAILED(msg) \
+	do { \
 		DUK_D(DUK_DPRINT("self test failed: " #msg " at " DUK_FILE_MACRO ":" DUK_MACRO_STRINGIFY(DUK_LINE_MACRO))); \
 		error_count++; \
 	} while (0)
 
-#define DUK__DBLUNION_CMP_TRUE(a,b)  do { \
+#define DUK__DBLUNION_CMP_TRUE(a, b) \
+	do { \
 		if (duk_memcmp((const void *) (a), (const void *) (b), sizeof(duk__test_double_union)) != 0) { \
 			DUK__FAILED("double union compares false (expected true)"); \
 		} \
 	} while (0)
 
-#define DUK__DBLUNION_CMP_FALSE(a,b)  do { \
+#define DUK__DBLUNION_CMP_FALSE(a, b) \
+	do { \
 		if (duk_memcmp((const void *) (a), (const void *) (b), sizeof(duk__test_double_union)) == 0) { \
 			DUK__FAILED("double union compares true (expected false)"); \
 		} \
@@ -40,43 +43,72 @@ typedef union {
 } duk__test_u32_union;
 
 #if defined(DUK_USE_INTEGER_LE)
-#define DUK__U32_INIT(u, a, b, c, d) do { \
-		(u)->x[0] = (d); (u)->x[1] = (c); (u)->x[2] = (b); (u)->x[3] = (a); \
+#define DUK__U32_INIT(u, a, b, c, d) \
+	do { \
+		(u)->x[0] = (d); \
+		(u)->x[1] = (c); \
+		(u)->x[2] = (b); \
+		(u)->x[3] = (a); \
 	} while (0)
 #elif defined(DUK_USE_INTEGER_ME)
 #error integer mixed endian not supported now
 #elif defined(DUK_USE_INTEGER_BE)
-#define DUK__U32_INIT(u, a, b, c, d) do { \
-		(u)->x[0] = (a); (u)->x[1] = (b); (u)->x[2] = (c); (u)->x[3] = (d); \
+#define DUK__U32_INIT(u, a, b, c, d) \
+	do { \
+		(u)->x[0] = (a); \
+		(u)->x[1] = (b); \
+		(u)->x[2] = (c); \
+		(u)->x[3] = (d); \
 	} while (0)
 #else
 #error unknown integer endianness
 #endif
 
 #if defined(DUK_USE_DOUBLE_LE)
-#define DUK__DOUBLE_INIT(u, a, b, c, d, e, f, g, h) do { \
-		(u)->x[0] = (h); (u)->x[1] = (g); (u)->x[2] = (f); (u)->x[3] = (e); \
-		(u)->x[4] = (d); (u)->x[5] = (c); (u)->x[6] = (b); (u)->x[7] = (a); \
+#define DUK__DOUBLE_INIT(u, a, b, c, d, e, f, g, h) \
+	do { \
+		(u)->x[0] = (h); \
+		(u)->x[1] = (g); \
+		(u)->x[2] = (f); \
+		(u)->x[3] = (e); \
+		(u)->x[4] = (d); \
+		(u)->x[5] = (c); \
+		(u)->x[6] = (b); \
+		(u)->x[7] = (a); \
 	} while (0)
 #define DUK__DOUBLE_COMPARE(u, a, b, c, d, e, f, g, h) \
-	((u)->x[0] == (h) && (u)->x[1] == (g) && (u)->x[2] == (f) && (u)->x[3] == (e) && \
-	 (u)->x[4] == (d) && (u)->x[5] == (c) && (u)->x[6] == (b) && (u)->x[7] == (a))
+	((u)->x[0] == (h) && (u)->x[1] == (g) && (u)->x[2] == (f) && (u)->x[3] == (e) && (u)->x[4] == (d) && (u)->x[5] == (c) && \
+	 (u)->x[6] == (b) && (u)->x[7] == (a))
 #elif defined(DUK_USE_DOUBLE_ME)
-#define DUK__DOUBLE_INIT(u, a, b, c, d, e, f, g, h) do { \
-		(u)->x[0] = (d); (u)->x[1] = (c); (u)->x[2] = (b); (u)->x[3] = (a); \
-		(u)->x[4] = (h); (u)->x[5] = (g); (u)->x[6] = (f); (u)->x[7] = (e); \
+#define DUK__DOUBLE_INIT(u, a, b, c, d, e, f, g, h) \
+	do { \
+		(u)->x[0] = (d); \
+		(u)->x[1] = (c); \
+		(u)->x[2] = (b); \
+		(u)->x[3] = (a); \
+		(u)->x[4] = (h); \
+		(u)->x[5] = (g); \
+		(u)->x[6] = (f); \
+		(u)->x[7] = (e); \
 	} while (0)
 #define DUK__DOUBLE_COMPARE(u, a, b, c, d, e, f, g, h) \
-	((u)->x[0] == (d) && (u)->x[1] == (c) && (u)->x[2] == (b) && (u)->x[3] == (a) && \
-	 (u)->x[4] == (h) && (u)->x[5] == (g) && (u)->x[6] == (f) && (u)->x[7] == (e))
+	((u)->x[0] == (d) && (u)->x[1] == (c) && (u)->x[2] == (b) && (u)->x[3] == (a) && (u)->x[4] == (h) && (u)->x[5] == (g) && \
+	 (u)->x[6] == (f) && (u)->x[7] == (e))
 #elif defined(DUK_USE_DOUBLE_BE)
-#define DUK__DOUBLE_INIT(u, a, b, c, d, e, f, g, h) do { \
-		(u)->x[0] = (a); (u)->x[1] = (b); (u)->x[2] = (c); (u)->x[3] = (d); \
-		(u)->x[4] = (e); (u)->x[5] = (f); (u)->x[6] = (g); (u)->x[7] = (h); \
+#define DUK__DOUBLE_INIT(u, a, b, c, d, e, f, g, h) \
+	do { \
+		(u)->x[0] = (a); \
+		(u)->x[1] = (b); \
+		(u)->x[2] = (c); \
+		(u)->x[3] = (d); \
+		(u)->x[4] = (e); \
+		(u)->x[5] = (f); \
+		(u)->x[6] = (g); \
+		(u)->x[7] = (h); \
 	} while (0)
 #define DUK__DOUBLE_COMPARE(u, a, b, c, d, e, f, g, h) \
-	((u)->x[0] == (a) && (u)->x[1] == (b) && (u)->x[2] == (c) && (u)->x[3] == (d) && \
-	 (u)->x[4] == (e) && (u)->x[5] == (f) && (u)->x[6] == (g) && (u)->x[7] == (h))
+	((u)->x[0] == (a) && (u)->x[1] == (b) && (u)->x[2] == (c) && (u)->x[3] == (d) && (u)->x[4] == (e) && (u)->x[5] == (f) && \
+	 (u)->x[6] == (g) && (u)->x[7] == (h))
 #else
 #error unknown double endianness
 #endif
@@ -88,17 +120,12 @@ typedef union {
 DUK_LOCAL duk_uint_t duk__selftest_types(void) {
 	duk_uint_t error_count = 0;
 
-	if (!(sizeof(duk_int8_t) == 1 &&
-	      sizeof(duk_uint8_t) == 1 &&
-	      sizeof(duk_int16_t) == 2 &&
-	      sizeof(duk_uint16_t) == 2 &&
-	      sizeof(duk_int32_t) == 4 &&
-	      sizeof(duk_uint32_t) == 4)) {
+	if (!(sizeof(duk_int8_t) == 1 && sizeof(duk_uint8_t) == 1 && sizeof(duk_int16_t) == 2 && sizeof(duk_uint16_t) == 2 &&
+	      sizeof(duk_int32_t) == 4 && sizeof(duk_uint32_t) == 4)) {
 		DUK__FAILED("duk_(u)int{8,16,32}_t size");
 	}
 #if defined(DUK_USE_64BIT_OPS)
-	if (!(sizeof(duk_int64_t) == 8 &&
-	      sizeof(duk_uint64_t) == 8)) {
+	if (!(sizeof(duk_int64_t) == 8 && sizeof(duk_uint64_t) == 8)) {
 		DUK__FAILED("duk_(u)int64_t size");
 	}
 #endif
@@ -250,8 +277,14 @@ DUK_LOCAL duk_uint_t duk__selftest_bswap_macros(void) {
 	 * (2.008366013071895,)
 	 */
 
-	du.uc[0] = 0x40; du.uc[1] = 0x00; du.uc[2] = 0x11; du.uc[3] = 0x22;
-	du.uc[4] = 0x33; du.uc[5] = 0x44; du.uc[6] = 0x55; du.uc[7] = 0x66;
+	du.uc[0] = 0x40;
+	du.uc[1] = 0x00;
+	du.uc[2] = 0x11;
+	du.uc[3] = 0x22;
+	du.uc[4] = 0x33;
+	du.uc[5] = 0x44;
+	du.uc[6] = 0x55;
+	du.uc[7] = 0x66;
 	DUK_DBLUNION_DOUBLE_NTOH(&du);
 	du_diff = du.d - 2.008366013071895;
 #if 0
@@ -306,20 +339,38 @@ DUK_LOCAL duk_uint_t duk__selftest_double_aliasing(void) {
 	 */
 
 	/* little endian */
-	a.x[0] = 0x11; a.x[1] = 0x22; a.x[2] = 0x33; a.x[3] = 0x44;
-	a.x[4] = 0x00; a.x[5] = 0x00; a.x[6] = 0xf1; a.x[7] = 0xff;
+	a.x[0] = 0x11;
+	a.x[1] = 0x22;
+	a.x[2] = 0x33;
+	a.x[3] = 0x44;
+	a.x[4] = 0x00;
+	a.x[5] = 0x00;
+	a.x[6] = 0xf1;
+	a.x[7] = 0xff;
 	b = a;
 	DUK__DBLUNION_CMP_TRUE(&a, &b);
 
 	/* big endian */
-	a.x[0] = 0xff; a.x[1] = 0xf1; a.x[2] = 0x00; a.x[3] = 0x00;
-	a.x[4] = 0x44; a.x[5] = 0x33; a.x[6] = 0x22; a.x[7] = 0x11;
+	a.x[0] = 0xff;
+	a.x[1] = 0xf1;
+	a.x[2] = 0x00;
+	a.x[3] = 0x00;
+	a.x[4] = 0x44;
+	a.x[5] = 0x33;
+	a.x[6] = 0x22;
+	a.x[7] = 0x11;
 	b = a;
 	DUK__DBLUNION_CMP_TRUE(&a, &b);
 
 	/* mixed endian */
-	a.x[0] = 0x00; a.x[1] = 0x00; a.x[2] = 0xf1; a.x[3] = 0xff;
-	a.x[4] = 0x11; a.x[5] = 0x22; a.x[6] = 0x33; a.x[7] = 0x44;
+	a.x[0] = 0x00;
+	a.x[1] = 0x00;
+	a.x[2] = 0xf1;
+	a.x[3] = 0xff;
+	a.x[4] = 0x11;
+	a.x[5] = 0x22;
+	a.x[6] = 0x33;
+	a.x[7] = 0x44;
 	b = a;
 	DUK__DBLUNION_CMP_TRUE(&a, &b);
 
@@ -384,10 +435,14 @@ DUK_LOCAL duk_uint_t duk__selftest_double_rounding(void) {
 	c.d = a.d + b.d;
 	if (!DUK__DOUBLE_COMPARE(&c, 0xf0, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00)) {
 		DUK_D(DUK_DPRINT("broken result (native endiannesss): %02x %02x %02x %02x %02x %02x %02x %02x",
-		                 (unsigned int) c.x[0], (unsigned int) c.x[1],
-		                 (unsigned int) c.x[2], (unsigned int) c.x[3],
-		                 (unsigned int) c.x[4], (unsigned int) c.x[5],
-		                 (unsigned int) c.x[6], (unsigned int) c.x[7]));
+		                 (unsigned int) c.x[0],
+		                 (unsigned int) c.x[1],
+		                 (unsigned int) c.x[2],
+		                 (unsigned int) c.x[3],
+		                 (unsigned int) c.x[4],
+		                 (unsigned int) c.x[5],
+		                 (unsigned int) c.x[6],
+		                 (unsigned int) c.x[7]));
 		DUK__FAILED("invalid result from 1.0 + 0.5ulp");
 	}
 
@@ -404,10 +459,14 @@ DUK_LOCAL duk_uint_t duk__selftest_double_rounding(void) {
 	c.d = a.d + b.d;
 	if (!DUK__DOUBLE_COMPARE(&c, 0x3f, 0xf0, 0x00, 0x00, 0x00, 0x00, 0x00, 0x02)) {
 		DUK_D(DUK_DPRINT("broken result (native endiannesss): %02x %02x %02x %02x %02x %02x %02x %02x",
-		                 (unsigned int) c.x[0], (unsigned int) c.x[1],
-		                 (unsigned int) c.x[2], (unsigned int) c.x[3],
-		                 (unsigned int) c.x[4], (unsigned int) c.x[5],
-		                 (unsigned int) c.x[6], (unsigned int) c.x[7]));
+		                 (unsigned int) c.x[0],
+		                 (unsigned int) c.x[1],
+		                 (unsigned int) c.x[2],
+		                 (unsigned int) c.x[3],
+		                 (unsigned int) c.x[4],
+		                 (unsigned int) c.x[5],
+		                 (unsigned int) c.x[6],
+		                 (unsigned int) c.x[7]));
 		DUK__FAILED("invalid result from (1.0 + ulp) + 0.5ulp");
 	}
 
@@ -578,7 +637,7 @@ DUK_LOCAL duk_uint_t duk__selftest_cast_double_to_uint32(void) {
 	duk_double_t dv;
 	duk_uint32_t uv;
 
-	dv = 3735928559.0;  /* 0xdeadbeef in decimal */
+	dv = 3735928559.0; /* 0xdeadbeef in decimal */
 	uv = (duk_uint32_t) dv;
 
 	if (uv != 0xdeadbeefUL) {
@@ -615,7 +674,7 @@ DUK_LOCAL duk_uint_t duk__selftest_alloc_funcs(duk_alloc_function alloc_func,
 		ptr = alloc_func(udata, (duk_size_t) i);
 		if (ptr == NULL) {
 			DUK_D(DUK_DPRINT("alloc failed, ignore"));
-			continue;  /* alloc failed, ignore */
+			continue; /* alloc failed, ignore */
 		}
 		for (j = 0; j < i; j++) {
 			((unsigned char *) ptr)[j] = (unsigned char) (0x80 + j);
@@ -624,14 +683,15 @@ DUK_LOCAL duk_uint_t duk__selftest_alloc_funcs(duk_alloc_function alloc_func,
 		if (new_ptr == NULL) {
 			DUK_D(DUK_DPRINT("realloc failed, ignore"));
 			free_func(udata, ptr);
-			continue;  /* realloc failed, ignore */
+			continue; /* realloc failed, ignore */
 		}
 		ptr = new_ptr;
 		for (j = 0; j < i; j++) {
 			x = ((unsigned char *) ptr)[j];
 			if (x != (unsigned char) (0x80 + j)) {
 				DUK_D(DUK_DPRINT("byte at index %ld doesn't match after realloc: %02lx",
-				                 (long) j, (unsigned long) x));
+				                 (long) j,
+				                 (unsigned long) x));
 				DUK__FAILED("byte compare after realloc");
 				break;
 			}
@@ -675,4 +735,4 @@ DUK_INTERNAL duk_uint_t duk_selftest_run_tests(duk_alloc_function alloc_func,
 	return error_count;
 }
 
-#endif  /* DUK_USE_SELF_TESTS */
+#endif /* DUK_USE_SELF_TESTS */
