@@ -12,6 +12,9 @@ such as:
 
 Some code conventions are checked by the ``make codepolicycheck`` target.
 
+Source code is now formatted using clang-format so some of the conventions
+below are out-of-date.
+
 Basic conventions
 =================
 
@@ -48,17 +51,17 @@ debugger tracebacks and such.
 
 Macros are uppercase, underscore separated::
 
-  #define DUK_MACRO(x)  /* ... */
+  #define DUK_MACRO(x) /* ... */
 
 Macro names must not begin with an underscore.  Macros which are of local
 interest only can have a local name or have a double underscore after "DUK"::
 
   /* 'foo' alternatives, not to be used directly */
-  #define DUK__FOO_ALT1  /* ... */
-  #define DUK__FOO_ALT2  /* ... */
+  #define DUK__FOO_ALT1 /* ... */
+  #define DUK__FOO_ALT2 /* ... */
 
   /* select DUK_FOO provider */
-  #define DUK_FOO  DUK_FOO_ALT2
+  #define DUK_FOO DUK_FOO_ALT2
 
 There is only one space after a ``#define``, ``#if``, etc., but there may be
 multiple spaces between the a macro name and its definition.  There is no
@@ -100,11 +103,11 @@ to a confusing closing brace, so a comment for that may be in order::
 
 Space after ``if``, ``switch``, etc::
 
-  if (x) { ... }   /* correct */
-  if(x) { ... }    /* incorrect */
+  if (x) { ... } /* correct */
+  if(x) { ... } /* incorrect */
 
-  switch (x) { ... }  /* correct */
-  switch(x) { ... }   /* incorrect */
+  switch (x) { ... } /* correct */
+  switch(x) { ... } /* incorrect */
 
 Use of goto for error cleanup and shared error handling is not only
 allowed but encouraged.  Some goto notes:
@@ -126,7 +129,8 @@ This is more macro compatible.  Example::
 
 Multi-statement macros should use a ``do-while(0)`` construct::
 
-  #define FROBNICATE(x,y)  do { \
+  #define FROBNICATE(x,y) \
+          do { \
                   x = x * x; \
                   y = y * y; \
           } while (0)
@@ -135,18 +139,21 @@ When the body of a macro is sometimes empty, use an empty do-while so that
 the macro still yields a statement::
 
   #if defined(DUK_USE_FROB)
-  #define FROBNICATE(x,y)  do { \
+  #define FROBNICATE(x,y) \
+          do { \
                   x = x * x; \
                   y = y * y; \
           } while (0)
   #else
-  #define FROBNICATE(x,y)  do { } while (0)
+  #define FROBNICATE(x,y) \
+          do { \
+          } while (0)
   #endif
 
 Use parentheses when referring to macro arguments and the final macro
 result to minimize error proneness::
 
-  #define MULTIPLY(a,b)  ((a) * (b))
+  #define MULTIPLY(a,b) ((a) * (b))
 
   /* Now MULTIPLY(1 + 2, 3) expands to ((1 + 2) * (3)) == 9, not
    * 1 + 2 * 3 == 7.  Parentheses are used around macro result for
@@ -174,18 +181,17 @@ A block or "banner" comment is used in file headers and to distinguish logical
 sections containing (typically) multiple functions, definitions, variables, etc.::
 
     /*
-     *  First line is empty and there are two spaces between the star
-     *  characters and text.
+     * First line is empty.
      *
-     *  There are two spaces after a period ending a sentence.  This is
-     *  used throughout the Duktape code base and documentation.
+     * There are two spaces after a period ending a sentence.  This is
+     * used throughout the Duktape code base and documentation.
      */
 
 A compact comment is typically used to describe a single function/variable,
 or a sequence of small defines grouped together::
 
-    /* Text starts on the first line with a capital letter.  There's only
-     * one space between a star and the text.  Text ends with a period.
+    /* Text starts on the first line with a capital letter.
+     * Text ends with a period.
      */
 
     /* Can also be a single line. */
@@ -219,15 +225,17 @@ ending period (i.e. the text is not a sentence)::
             }
     }
 
-A comment on the same line as a statement is separate by two spaces.  Don't
-use C++ style comments, as they're not portable::
+A comment on the same line as a statement is separated by one space
+(two spaces would be nicer, but clang-format doesn't seem to support
+it for C-style comments).  Don't use C++ style comments, as they're
+not portable::
 
     static void duk__helper(char *values, int count) {
-            int i;  /* loop counter */
+            int i; /* loop counter */
 
             /* ... */
 
-            return;  /* No return value. */
+            return; /* No return value. */
     }
 
 The text in the comment may be a sentence (``/* No return value. */``, ends
@@ -257,7 +265,7 @@ builds)::
 
           DUK_DDD(DUK_DDDPRINT("debug print"));
 
-          int y;  /* error here */
+          int y; /* error here */
 
           x = 123;
           ...
@@ -326,7 +334,7 @@ aligned with spaces::
            duk_uint_t foo,
            duk_uint_t bar,
            duk_uint_t quux,
-           duk_uint_t baz);,
+           duk_uint_t baz);
 
 Again opening brace on the same line::
 
@@ -369,7 +377,7 @@ convention is::
 
   ...
 
-  #endif  /* DUK_FOO_H_INCLUDED */
+  #endif /* DUK_FOO_H_INCLUDED */
 
 See:
 
@@ -396,8 +404,8 @@ comparison having an empty argument::
   #define FOO 123
   #define BAR
 
-  #if defined(FOO) && defined(BAR)  /* will match */
-  #if (FOO == BAR)  /* still fails */
+  #if defined(FOO) && defined(BAR) /* will match */
+  #if (FOO == BAR) /* still fails */
   /* ... */
   #endif
   #endif
@@ -820,7 +828,7 @@ The ``DUK_INTERNAL_DECL`` idiom is::
 
   #if !defined(DUK_SINGLE_FILE)
   DUK_INTERNAL_DECL const char *duk_str_not_object;
-  #endif  /* !DUK_SINGLE_FILE */
+  #endif /* !DUK_SINGLE_FILE */
 
 For this to work in the single file case, ``tools/combine_src.py`` must
 ensure that the symbol definition appears before its use.  This is currently
@@ -986,7 +994,7 @@ Without variadic macros it's defined as::
     #define duk_push_error_object  \
             (duk_api_global_filename = __FILE__, \
              duk_api_global_line = (duk_int_t) (__LINE__), \
-             duk_push_error_object_stash)  /* last value is func pointer, arguments follow in parens */
+             duk_push_error_object_stash) /* last value is func pointer, arguments follow in parens */
 
 When you call it as::
 
@@ -1089,7 +1097,7 @@ There is an interesting corner case when trying to define minimum signed
 integer value constants.  For instance, trying to define a constant for
 the minimum 32-bit signed integer as follows is non-portable::
 
-  #define MIN_VALUE  (-0x80000000L)
+  #define MIN_VALUE (-0x80000000L)
 
 Apparently the compiler will first evaluate "0x80000000L" and, despite being
 a signed constant, determine that it won't fit into a signed integer so it
@@ -1417,7 +1425,7 @@ printed output value than to cause a memory error.
 EBCDIC
 ------
 
-See separate section below.
+No longer considered.  Assume compiler and target are ASCII based.
 
 Setjmp, longjmp, and volatile
 =============================
@@ -1501,7 +1509,7 @@ variables, e.g.::
   x = foo();
   x += bar();
   x += quux();
-  save_x = x;  /* Save before any potential longjmp(). */
+  save_x = x; /* Save before any potential longjmp(). */
 
   /* ... */
 
@@ -1934,82 +1942,6 @@ arguments".  The fix is to remove the comment from inside the macro::
 
   DUK_ASSERT(FOO ||
              BAR);
-
-Character values in char literals and strings, EBCDIC
-=====================================================
-
-**FIXME: under work, while some other projects do support EBCDIC,
-EBCDIC may not be a useful portability target for Duktape.**
-
-Overview
---------
-
-Character constants in C code are integers whose value depends on the
-platform.  On the vast majority of platforms the constants are ASCII but
-there are also e.g. EBCDIC platforms:
-
-* http://en.wikipedia.org/wiki/EBCDIC#Codepage_layout
-
-If you read a character value from a platform specific text file, then
-code such as the following would be appropriate::
-
-  if (c == 'x') {
-          ...
-  }
-
-However, if you have a character value which must be interpreted as ASCII,
-then the above would not be portable because ``'x'`` would not necessarily
-have the value 120 ('x' in ASCII) but might have the value 167 ('x' in
-EBCDIC).  To correctly compare the value as ASCII::
-
-  if (c == 120) {
-          ...
-  }
-
-The same applies to string constants, this would be unportable::
-
-  const char *msg = "hello there";  /* content bytes depend on platform */
-
-In practice the string terminator (NUL) seems to be guaranteed to have
-a zero integer value.
-
-In Duktape code we always deal with (extended) UTF-8 data, so we never have
-the need to use platform specific character constants.  In other words, we
-want the ASCII constant values.
-
-Character literals
-------------------
-
-You should never use a character constant in Duktape code (e.g. ``'x'``).
-Its value is not portable.  Use either an integer, or more preferably,
-character constants (``DUK_ASC_xxx``) defined in Duktape internal headers.
-
-String literals
----------------
-
-C strings which end up visible to user code (either through ECMAScript
-or through the C API) must be converted to UTF-8 at some point.
-
-Ideally the strings would be written directly in UTF-8 (ASCII in practice)
-format, but this would be very awkward.  The next best thing would be to
-translate the strings with some sort of macro which would be a no-op on
-ASCII platforms, e.g. ``DUK_STR("hello there")``.  This approach doesn't
-work well: a buffer would need to be allocated (and freed) or some maximum
-size imposed silently.
-
-These rules are very inconvenient, but unfortunately the only portable choice.
-
-**FIXME: exact code rules to be defined.**
-
-Testing
--------
-
-The Hercules emulator together with IBM zLinux provides an EBCDIC
-platform where you can test this particular portability issue.
-
-GCC can also be used to play with EBCDIC portability to some extent,
-but because libc will be ASCII oriented, the tests will not match
-an actual EBCDIC platform.  See ``misc/ebcdic_test.c``.
 
 Calling platform functions
 ==========================
