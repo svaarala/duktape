@@ -1221,6 +1221,10 @@ clang-format-source: | tmp
 	$(DOCKER) run --rm -i duktape-clang-format < tmp/docker-clang-format-input.zip > tmp/docker-clang-format-output.zip
 	unzip -q -o tmp/docker-clang-format-output.zip ; true  # avoid failure due to leading garbage
 
+.PHONY: clang-format-source-check
+clang-format-source-check: clang-format-source
+	if `git diff | grep -q '^diff'`; then git diff; echo; echo "*** clang-format-source created diff, run 'make clang-format-source' and commit diff ***"; echo; false; fi
+
 # Simple heap graph and peak usage using valgrind --tool=massif, for quick
 # and dirty baseline comparison.  Say e.g. 'make massif-test-dev-hello-world'.
 # The target name is intentionally not 'massif-%.out' so that the rule is never

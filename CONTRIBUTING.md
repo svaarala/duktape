@@ -39,6 +39,13 @@ To make a code contribution to Duktape
   Not everything is spelled out explicitly, so try to follow the general
   style in the code base.
 
+* Reformat code with clang-format and ensure there's no diff:
+
+  ```
+  $ make docker-image-clang-format
+  $ make clang-format-source
+  ```
+
 * Clean up your commits so that they are logical and well scoped:
 
   - Rebase your pull request if necessary so that commits are logical and

@@ -65,3 +65,19 @@ jobs:
       - name: Tidy-site
         run: |
           make tidy-site
+  sourceformat:
+    name: Source format
+    runs-on: ubuntu-20.04
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v2
+      - name: Install packages
+        run: |
+          sudo apt -qqy update
+          sudo apt -qqy install make python zip unzip
+      - name: Build clang-format docker image
+        run: |
+          make docker-image-clang-format
+      - name: Reformat source, check for diff
+        run: |
+          make clang-format-source-check

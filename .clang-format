@@ -14,7 +14,8 @@ ContinuationIndentWidth: 4
 UseTab: AlignWithSpaces
 UseCRLF: false
 
-#AccessModifierOffset:
+#AccessModifierOffset: -8  # for C++ public, private, etc
+#AccessModifierOffset: -2
 AlignAfterOpenBracket: Align
 #AlignArrayOfStructures: None
 AlignConsecutiveAssignments: None

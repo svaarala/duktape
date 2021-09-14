@@ -1380,3 +1380,4 @@ duktape_releases:
     - "Fix JSON.stringify() handling of Array 'replacer' duplicates (e.g. JSON.stringify({foo: 123}, [\"foo\", \"foo\"])); previously incorrectly serialized multiple times, now only once (GH-2379)"
     - "Use yaml.safe_load() instead of yaml.load() in Py2 tooling (GH-2384)"
     - "Fix void pointer arithmetic in duk_alloc_pool.c, caused problems with MSVC (GH-2404, GH-2406)"
+    - "Reformat source with clang-format-12 (GH-2416, GH-2421, GH-2423, GH-2424, GH-2425, GH-2426, GH-2427, GH-2428)"
