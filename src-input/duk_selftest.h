@@ -12,4 +12,4 @@ DUK_INTERNAL_DECL duk_uint_t duk_selftest_run_tests(duk_alloc_function alloc_fun
                                                     void *udata);
 #endif
 
-#endif  /* DUK_SELFTEST_H_INCLUDED */
+#endif /* DUK_SELFTEST_H_INCLUDED */

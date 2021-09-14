@@ -21,15 +21,16 @@
 #endif
 
 #if defined(DUK__RANDOM_SHAMIR3OP)
-#define DUK__UPDATE_RND(rnd) do { \
+#define DUK__UPDATE_RND(rnd) \
+	do { \
 		(rnd) += ((rnd) * (rnd)) | 0x05UL; \
-		(rnd) = ((rnd) & 0xffffffffUL);       /* if duk_uint32_t is exactly 32 bits, this is a NOP */ \
+		(rnd) = ((rnd) &0xffffffffUL); /* if duk_uint32_t is exactly 32 bits, this is a NOP */ \
 	} while (0)
 
-#define DUK__RND_BIT(rnd)  ((rnd) >> 31)  /* only use the highest bit */
+#define DUK__RND_BIT(rnd) ((rnd) >> 31) /* only use the highest bit */
 
 DUK_INTERNAL void duk_util_tinyrandom_prepare_seed(duk_hthread *thr) {
-	DUK_UNREF(thr);  /* Nothing now. */
+	DUK_UNREF(thr); /* Nothing now. */
 }
 
 DUK_INTERNAL duk_double_t duk_util_tinyrandom_get_double(duk_hthread *thr) {
@@ -39,7 +40,7 @@ DUK_INTERNAL duk_double_t duk_util_tinyrandom_get_double(duk_hthread *thr) {
 
 	rnd = thr->heap->rnd_state;
 
-	n = 53;  /* enough to cover the whole mantissa */
+	n = 53; /* enough to cover the whole mantissa */
 	t = 0.0;
 
 	do {
@@ -55,7 +56,7 @@ DUK_INTERNAL duk_double_t duk_util_tinyrandom_get_double(duk_hthread *thr) {
 
 	return t;
 }
-#endif  /* DUK__RANDOM_SHAMIR3OP */
+#endif /* DUK__RANDOM_SHAMIR3OP */
 
 #if defined(DUK__RANDOM_XOROSHIRO128PLUS)
 DUK_LOCAL DUK_ALWAYS_INLINE duk_uint64_t duk__rnd_splitmix64(duk_uint64_t *x) {
@@ -94,9 +95,9 @@ DUK_INTERNAL void duk_util_tinyrandom_prepare_seed(duk_hthread *thr) {
 	 * because current seed is Date.now()) result in different xoroshiro128+
 	 * seeds.
 	 */
-	x = thr->heap->rnd_state[0];  /* Only [0] is used as input here. */
+	x = thr->heap->rnd_state[0]; /* Only [0] is used as input here. */
 	for (i = 0; i < 64; i++) {
-		thr->heap->rnd_state[i & 0x01] = duk__rnd_splitmix64(&x);  /* Keep last 2 values. */
+		thr->heap->rnd_state[i & 0x01] = duk__rnd_splitmix64(&x); /* Keep last 2 values. */
 	}
 }
 
@@ -120,6 +121,6 @@ DUK_INTERNAL duk_double_t duk_util_tinyrandom_get_double(duk_hthread *thr) {
 #endif
 	return du.d - 1.0;
 }
-#endif  /* DUK__RANDOM_XOROSHIRO128PLUS */
+#endif /* DUK__RANDOM_XOROSHIRO128PLUS */
 
-#endif  /* !DUK_USE_GET_RANDOM_DOUBLE */
+#endif /* !DUK_USE_GET_RANDOM_DOUBLE */

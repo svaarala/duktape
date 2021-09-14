@@ -27,9 +27,9 @@
  */
 
 #if defined(DUK_USE_STRLEN16)
-#define DUK_HSTRING_MAX_BYTELEN                     (0x0000ffffUL)
+#define DUK_HSTRING_MAX_BYTELEN (0x0000ffffUL)
 #else
-#define DUK_HSTRING_MAX_BYTELEN                     (0x7fffffffUL)
+#define DUK_HSTRING_MAX_BYTELEN (0x7fffffffUL)
 #endif
 
 /* XXX: could add flags for "is valid CESU-8" (ECMAScript compatible strings),
@@ -41,139 +41,148 @@
 /* With lowmem builds the high 16 bits of duk_heaphdr are used for other
  * purposes, so this leaves 7 duk_heaphdr flags and 9 duk_hstring flags.
  */
-#define DUK_HSTRING_FLAG_ASCII                      DUK_HEAPHDR_USER_FLAG(0)  /* string is ASCII, clen == blen */
-#define DUK_HSTRING_FLAG_ARRIDX                     DUK_HEAPHDR_USER_FLAG(1)  /* string is a valid array index */
-#define DUK_HSTRING_FLAG_SYMBOL                     DUK_HEAPHDR_USER_FLAG(2)  /* string is a symbol (invalid utf-8) */
-#define DUK_HSTRING_FLAG_HIDDEN                     DUK_HEAPHDR_USER_FLAG(3)  /* string is a hidden symbol (implies symbol, Duktape 1.x internal string) */
-#define DUK_HSTRING_FLAG_RESERVED_WORD              DUK_HEAPHDR_USER_FLAG(4)  /* string is a reserved word (non-strict) */
-#define DUK_HSTRING_FLAG_STRICT_RESERVED_WORD       DUK_HEAPHDR_USER_FLAG(5)  /* string is a reserved word (strict) */
-#define DUK_HSTRING_FLAG_EVAL_OR_ARGUMENTS          DUK_HEAPHDR_USER_FLAG(6)  /* string is 'eval' or 'arguments' */
-#define DUK_HSTRING_FLAG_EXTDATA                    DUK_HEAPHDR_USER_FLAG(7)  /* string data is external (duk_hstring_external) */
-#define DUK_HSTRING_FLAG_PINNED_LITERAL             DUK_HEAPHDR_USER_FLAG(8)  /* string is a literal, and pinned */
+#define DUK_HSTRING_FLAG_ASCII  DUK_HEAPHDR_USER_FLAG(0) /* string is ASCII, clen == blen */
+#define DUK_HSTRING_FLAG_ARRIDX DUK_HEAPHDR_USER_FLAG(1) /* string is a valid array index */
+#define DUK_HSTRING_FLAG_SYMBOL DUK_HEAPHDR_USER_FLAG(2) /* string is a symbol (invalid utf-8) */
+#define DUK_HSTRING_FLAG_HIDDEN \
+	DUK_HEAPHDR_USER_FLAG(3) /* string is a hidden symbol (implies symbol, Duktape 1.x internal string) */
+#define DUK_HSTRING_FLAG_RESERVED_WORD        DUK_HEAPHDR_USER_FLAG(4) /* string is a reserved word (non-strict) */
+#define DUK_HSTRING_FLAG_STRICT_RESERVED_WORD DUK_HEAPHDR_USER_FLAG(5) /* string is a reserved word (strict) */
+#define DUK_HSTRING_FLAG_EVAL_OR_ARGUMENTS    DUK_HEAPHDR_USER_FLAG(6) /* string is 'eval' or 'arguments' */
+#define DUK_HSTRING_FLAG_EXTDATA              DUK_HEAPHDR_USER_FLAG(7) /* string data is external (duk_hstring_external) */
+#define DUK_HSTRING_FLAG_PINNED_LITERAL       DUK_HEAPHDR_USER_FLAG(8) /* string is a literal, and pinned */
 
-#define DUK_HSTRING_HAS_ASCII(x)                    DUK_HEAPHDR_CHECK_FLAG_BITS(&(x)->hdr, DUK_HSTRING_FLAG_ASCII)
-#define DUK_HSTRING_HAS_ARRIDX(x)                   DUK_HEAPHDR_CHECK_FLAG_BITS(&(x)->hdr, DUK_HSTRING_FLAG_ARRIDX)
-#define DUK_HSTRING_HAS_SYMBOL(x)                   DUK_HEAPHDR_CHECK_FLAG_BITS(&(x)->hdr, DUK_HSTRING_FLAG_SYMBOL)
-#define DUK_HSTRING_HAS_HIDDEN(x)                   DUK_HEAPHDR_CHECK_FLAG_BITS(&(x)->hdr, DUK_HSTRING_FLAG_HIDDEN)
-#define DUK_HSTRING_HAS_RESERVED_WORD(x)            DUK_HEAPHDR_CHECK_FLAG_BITS(&(x)->hdr, DUK_HSTRING_FLAG_RESERVED_WORD)
-#define DUK_HSTRING_HAS_STRICT_RESERVED_WORD(x)     DUK_HEAPHDR_CHECK_FLAG_BITS(&(x)->hdr, DUK_HSTRING_FLAG_STRICT_RESERVED_WORD)
-#define DUK_HSTRING_HAS_EVAL_OR_ARGUMENTS(x)        DUK_HEAPHDR_CHECK_FLAG_BITS(&(x)->hdr, DUK_HSTRING_FLAG_EVAL_OR_ARGUMENTS)
-#define DUK_HSTRING_HAS_EXTDATA(x)                  DUK_HEAPHDR_CHECK_FLAG_BITS(&(x)->hdr, DUK_HSTRING_FLAG_EXTDATA)
-#define DUK_HSTRING_HAS_PINNED_LITERAL(x)           DUK_HEAPHDR_CHECK_FLAG_BITS(&(x)->hdr, DUK_HSTRING_FLAG_PINNED_LITERAL)
+#define DUK_HSTRING_HAS_ASCII(x)                DUK_HEAPHDR_CHECK_FLAG_BITS(&(x)->hdr, DUK_HSTRING_FLAG_ASCII)
+#define DUK_HSTRING_HAS_ARRIDX(x)               DUK_HEAPHDR_CHECK_FLAG_BITS(&(x)->hdr, DUK_HSTRING_FLAG_ARRIDX)
+#define DUK_HSTRING_HAS_SYMBOL(x)               DUK_HEAPHDR_CHECK_FLAG_BITS(&(x)->hdr, DUK_HSTRING_FLAG_SYMBOL)
+#define DUK_HSTRING_HAS_HIDDEN(x)               DUK_HEAPHDR_CHECK_FLAG_BITS(&(x)->hdr, DUK_HSTRING_FLAG_HIDDEN)
+#define DUK_HSTRING_HAS_RESERVED_WORD(x)        DUK_HEAPHDR_CHECK_FLAG_BITS(&(x)->hdr, DUK_HSTRING_FLAG_RESERVED_WORD)
+#define DUK_HSTRING_HAS_STRICT_RESERVED_WORD(x) DUK_HEAPHDR_CHECK_FLAG_BITS(&(x)->hdr, DUK_HSTRING_FLAG_STRICT_RESERVED_WORD)
+#define DUK_HSTRING_HAS_EVAL_OR_ARGUMENTS(x)    DUK_HEAPHDR_CHECK_FLAG_BITS(&(x)->hdr, DUK_HSTRING_FLAG_EVAL_OR_ARGUMENTS)
+#define DUK_HSTRING_HAS_EXTDATA(x)              DUK_HEAPHDR_CHECK_FLAG_BITS(&(x)->hdr, DUK_HSTRING_FLAG_EXTDATA)
+#define DUK_HSTRING_HAS_PINNED_LITERAL(x)       DUK_HEAPHDR_CHECK_FLAG_BITS(&(x)->hdr, DUK_HSTRING_FLAG_PINNED_LITERAL)
 
-#define DUK_HSTRING_SET_ASCII(x)                    DUK_HEAPHDR_SET_FLAG_BITS(&(x)->hdr, DUK_HSTRING_FLAG_ASCII)
-#define DUK_HSTRING_SET_ARRIDX(x)                   DUK_HEAPHDR_SET_FLAG_BITS(&(x)->hdr, DUK_HSTRING_FLAG_ARRIDX)
-#define DUK_HSTRING_SET_SYMBOL(x)                   DUK_HEAPHDR_SET_FLAG_BITS(&(x)->hdr, DUK_HSTRING_FLAG_SYMBOL)
-#define DUK_HSTRING_SET_HIDDEN(x)                   DUK_HEAPHDR_SET_FLAG_BITS(&(x)->hdr, DUK_HSTRING_FLAG_HIDDEN)
-#define DUK_HSTRING_SET_RESERVED_WORD(x)            DUK_HEAPHDR_SET_FLAG_BITS(&(x)->hdr, DUK_HSTRING_FLAG_RESERVED_WORD)
-#define DUK_HSTRING_SET_STRICT_RESERVED_WORD(x)     DUK_HEAPHDR_SET_FLAG_BITS(&(x)->hdr, DUK_HSTRING_FLAG_STRICT_RESERVED_WORD)
-#define DUK_HSTRING_SET_EVAL_OR_ARGUMENTS(x)        DUK_HEAPHDR_SET_FLAG_BITS(&(x)->hdr, DUK_HSTRING_FLAG_EVAL_OR_ARGUMENTS)
-#define DUK_HSTRING_SET_EXTDATA(x)                  DUK_HEAPHDR_SET_FLAG_BITS(&(x)->hdr, DUK_HSTRING_FLAG_EXTDATA)
-#define DUK_HSTRING_SET_PINNED_LITERAL(x)           DUK_HEAPHDR_SET_FLAG_BITS(&(x)->hdr, DUK_HSTRING_FLAG_PINNED_LITERAL)
+#define DUK_HSTRING_SET_ASCII(x)                DUK_HEAPHDR_SET_FLAG_BITS(&(x)->hdr, DUK_HSTRING_FLAG_ASCII)
+#define DUK_HSTRING_SET_ARRIDX(x)               DUK_HEAPHDR_SET_FLAG_BITS(&(x)->hdr, DUK_HSTRING_FLAG_ARRIDX)
+#define DUK_HSTRING_SET_SYMBOL(x)               DUK_HEAPHDR_SET_FLAG_BITS(&(x)->hdr, DUK_HSTRING_FLAG_SYMBOL)
+#define DUK_HSTRING_SET_HIDDEN(x)               DUK_HEAPHDR_SET_FLAG_BITS(&(x)->hdr, DUK_HSTRING_FLAG_HIDDEN)
+#define DUK_HSTRING_SET_RESERVED_WORD(x)        DUK_HEAPHDR_SET_FLAG_BITS(&(x)->hdr, DUK_HSTRING_FLAG_RESERVED_WORD)
+#define DUK_HSTRING_SET_STRICT_RESERVED_WORD(x) DUK_HEAPHDR_SET_FLAG_BITS(&(x)->hdr, DUK_HSTRING_FLAG_STRICT_RESERVED_WORD)
+#define DUK_HSTRING_SET_EVAL_OR_ARGUMENTS(x)    DUK_HEAPHDR_SET_FLAG_BITS(&(x)->hdr, DUK_HSTRING_FLAG_EVAL_OR_ARGUMENTS)
+#define DUK_HSTRING_SET_EXTDATA(x)              DUK_HEAPHDR_SET_FLAG_BITS(&(x)->hdr, DUK_HSTRING_FLAG_EXTDATA)
+#define DUK_HSTRING_SET_PINNED_LITERAL(x)       DUK_HEAPHDR_SET_FLAG_BITS(&(x)->hdr, DUK_HSTRING_FLAG_PINNED_LITERAL)
 
-#define DUK_HSTRING_CLEAR_ASCII(x)                  DUK_HEAPHDR_CLEAR_FLAG_BITS(&(x)->hdr, DUK_HSTRING_FLAG_ASCII)
-#define DUK_HSTRING_CLEAR_ARRIDX(x)                 DUK_HEAPHDR_CLEAR_FLAG_BITS(&(x)->hdr, DUK_HSTRING_FLAG_ARRIDX)
-#define DUK_HSTRING_CLEAR_SYMBOL(x)                 DUK_HEAPHDR_CLEAR_FLAG_BITS(&(x)->hdr, DUK_HSTRING_FLAG_SYMBOL)
-#define DUK_HSTRING_CLEAR_HIDDEN(x)                 DUK_HEAPHDR_CLEAR_FLAG_BITS(&(x)->hdr, DUK_HSTRING_FLAG_HIDDEN)
-#define DUK_HSTRING_CLEAR_RESERVED_WORD(x)          DUK_HEAPHDR_CLEAR_FLAG_BITS(&(x)->hdr, DUK_HSTRING_FLAG_RESERVED_WORD)
-#define DUK_HSTRING_CLEAR_STRICT_RESERVED_WORD(x)   DUK_HEAPHDR_CLEAR_FLAG_BITS(&(x)->hdr, DUK_HSTRING_FLAG_STRICT_RESERVED_WORD)
-#define DUK_HSTRING_CLEAR_EVAL_OR_ARGUMENTS(x)      DUK_HEAPHDR_CLEAR_FLAG_BITS(&(x)->hdr, DUK_HSTRING_FLAG_EVAL_OR_ARGUMENTS)
-#define DUK_HSTRING_CLEAR_EXTDATA(x)                DUK_HEAPHDR_CLEAR_FLAG_BITS(&(x)->hdr, DUK_HSTRING_FLAG_EXTDATA)
-#define DUK_HSTRING_CLEAR_PINNED_LITERAL(x)         DUK_HEAPHDR_CLEAR_FLAG_BITS(&(x)->hdr, DUK_HSTRING_FLAG_PINNED_LITERAL)
+#define DUK_HSTRING_CLEAR_ASCII(x)                DUK_HEAPHDR_CLEAR_FLAG_BITS(&(x)->hdr, DUK_HSTRING_FLAG_ASCII)
+#define DUK_HSTRING_CLEAR_ARRIDX(x)               DUK_HEAPHDR_CLEAR_FLAG_BITS(&(x)->hdr, DUK_HSTRING_FLAG_ARRIDX)
+#define DUK_HSTRING_CLEAR_SYMBOL(x)               DUK_HEAPHDR_CLEAR_FLAG_BITS(&(x)->hdr, DUK_HSTRING_FLAG_SYMBOL)
+#define DUK_HSTRING_CLEAR_HIDDEN(x)               DUK_HEAPHDR_CLEAR_FLAG_BITS(&(x)->hdr, DUK_HSTRING_FLAG_HIDDEN)
+#define DUK_HSTRING_CLEAR_RESERVED_WORD(x)        DUK_HEAPHDR_CLEAR_FLAG_BITS(&(x)->hdr, DUK_HSTRING_FLAG_RESERVED_WORD)
+#define DUK_HSTRING_CLEAR_STRICT_RESERVED_WORD(x) DUK_HEAPHDR_CLEAR_FLAG_BITS(&(x)->hdr, DUK_HSTRING_FLAG_STRICT_RESERVED_WORD)
+#define DUK_HSTRING_CLEAR_EVAL_OR_ARGUMENTS(x)    DUK_HEAPHDR_CLEAR_FLAG_BITS(&(x)->hdr, DUK_HSTRING_FLAG_EVAL_OR_ARGUMENTS)
+#define DUK_HSTRING_CLEAR_EXTDATA(x)              DUK_HEAPHDR_CLEAR_FLAG_BITS(&(x)->hdr, DUK_HSTRING_FLAG_EXTDATA)
+#define DUK_HSTRING_CLEAR_PINNED_LITERAL(x)       DUK_HEAPHDR_CLEAR_FLAG_BITS(&(x)->hdr, DUK_HSTRING_FLAG_PINNED_LITERAL)
 
-#if 0  /* Slightly smaller code without explicit flag, but explicit flag
-        * is very useful when 'clen' is dropped.
-        */
-#define DUK_HSTRING_IS_ASCII(x)                     (DUK_HSTRING_GET_BYTELEN((x)) == DUK_HSTRING_GET_CHARLEN((x)))
+#if 0 /* Slightly smaller code without explicit flag, but explicit flag \
+       * is very useful when 'clen' is dropped. \
+       */
+#define DUK_HSTRING_IS_ASCII(x) (DUK_HSTRING_GET_BYTELEN((x)) == DUK_HSTRING_GET_CHARLEN((x)))
 #endif
-#define DUK_HSTRING_IS_ASCII(x)                     DUK_HSTRING_HAS_ASCII((x))  /* lazily set! */
-#define DUK_HSTRING_IS_EMPTY(x)                     (DUK_HSTRING_GET_BYTELEN((x)) == 0)
+#define DUK_HSTRING_IS_ASCII(x) DUK_HSTRING_HAS_ASCII((x)) /* lazily set! */
+#define DUK_HSTRING_IS_EMPTY(x) (DUK_HSTRING_GET_BYTELEN((x)) == 0)
 
 #if defined(DUK_USE_STRHASH16)
-#define DUK_HSTRING_GET_HASH(x)                     ((x)->hdr.h_flags >> 16)
-#define DUK_HSTRING_SET_HASH(x,v) do { \
+#define DUK_HSTRING_GET_HASH(x) ((x)->hdr.h_flags >> 16)
+#define DUK_HSTRING_SET_HASH(x, v) \
+	do { \
 		(x)->hdr.h_flags = ((x)->hdr.h_flags & 0x0000ffffUL) | ((v) << 16); \
 	} while (0)
 #else
-#define DUK_HSTRING_GET_HASH(x)                     ((x)->hash)
-#define DUK_HSTRING_SET_HASH(x,v) do { \
+#define DUK_HSTRING_GET_HASH(x) ((x)->hash)
+#define DUK_HSTRING_SET_HASH(x, v) \
+	do { \
 		(x)->hash = (v); \
 	} while (0)
 #endif
 
 #if defined(DUK_USE_STRLEN16)
-#define DUK_HSTRING_GET_BYTELEN(x)                  ((x)->hdr.h_strextra16)
-#define DUK_HSTRING_SET_BYTELEN(x,v) do { \
+#define DUK_HSTRING_GET_BYTELEN(x) ((x)->hdr.h_strextra16)
+#define DUK_HSTRING_SET_BYTELEN(x, v) \
+	do { \
 		(x)->hdr.h_strextra16 = (v); \
 	} while (0)
 #if defined(DUK_USE_HSTRING_CLEN)
-#define DUK_HSTRING_GET_CHARLEN(x)                  duk_hstring_get_charlen((x))
-#define DUK_HSTRING_SET_CHARLEN(x,v) do { \
+#define DUK_HSTRING_GET_CHARLEN(x) duk_hstring_get_charlen((x))
+#define DUK_HSTRING_SET_CHARLEN(x, v) \
+	do { \
 		(x)->clen16 = (v); \
 	} while (0)
 #else
-#define DUK_HSTRING_GET_CHARLEN(x)                  duk_hstring_get_charlen((x))
-#define DUK_HSTRING_SET_CHARLEN(x,v) do { \
-		DUK_ASSERT(0);  /* should never be called */ \
+#define DUK_HSTRING_GET_CHARLEN(x) duk_hstring_get_charlen((x))
+#define DUK_HSTRING_SET_CHARLEN(x, v) \
+	do { \
+		DUK_ASSERT(0); /* should never be called */ \
 	} while (0)
 #endif
 #else
-#define DUK_HSTRING_GET_BYTELEN(x)                  ((x)->blen)
-#define DUK_HSTRING_SET_BYTELEN(x,v) do { \
+#define DUK_HSTRING_GET_BYTELEN(x) ((x)->blen)
+#define DUK_HSTRING_SET_BYTELEN(x, v) \
+	do { \
 		(x)->blen = (v); \
 	} while (0)
-#define DUK_HSTRING_GET_CHARLEN(x)                  duk_hstring_get_charlen((x))
-#define DUK_HSTRING_SET_CHARLEN(x,v) do { \
+#define DUK_HSTRING_GET_CHARLEN(x) duk_hstring_get_charlen((x))
+#define DUK_HSTRING_SET_CHARLEN(x, v) \
+	do { \
 		(x)->clen = (v); \
 	} while (0)
 #endif
 
 #if defined(DUK_USE_HSTRING_EXTDATA)
-#define DUK_HSTRING_GET_EXTDATA(x) \
-	((x)->extdata)
+#define DUK_HSTRING_GET_EXTDATA(x) ((x)->extdata)
 #define DUK_HSTRING_GET_DATA(x) \
-	(DUK_HSTRING_HAS_EXTDATA((x)) ? \
-		DUK_HSTRING_GET_EXTDATA((const duk_hstring_external *) (x)) : ((const duk_uint8_t *) ((x) + 1)))
+	(DUK_HSTRING_HAS_EXTDATA((x)) ? DUK_HSTRING_GET_EXTDATA((const duk_hstring_external *) (x)) : \
+                                        ((const duk_uint8_t *) ((x) + 1)))
 #else
-#define DUK_HSTRING_GET_DATA(x) \
-	((const duk_uint8_t *) ((x) + 1))
+#define DUK_HSTRING_GET_DATA(x) ((const duk_uint8_t *) ((x) + 1))
 #endif
 
-#define DUK_HSTRING_GET_DATA_END(x) \
-	(DUK_HSTRING_GET_DATA((x)) + (x)->blen)
+#define DUK_HSTRING_GET_DATA_END(x) (DUK_HSTRING_GET_DATA((x)) + (x)->blen)
 
 /* Marker value; in E5 2^32-1 is not a valid array index (2^32-2 is highest
  * valid).
  */
-#define DUK_HSTRING_NO_ARRAY_INDEX  (0xffffffffUL)
+#define DUK_HSTRING_NO_ARRAY_INDEX (0xffffffffUL)
 
 #if defined(DUK_USE_HSTRING_ARRIDX)
-#define DUK_HSTRING_GET_ARRIDX_FAST(h)  ((h)->arridx)
-#define DUK_HSTRING_GET_ARRIDX_SLOW(h)  ((h)->arridx)
+#define DUK_HSTRING_GET_ARRIDX_FAST(h) ((h)->arridx)
+#define DUK_HSTRING_GET_ARRIDX_SLOW(h) ((h)->arridx)
 #else
 /* Get array index related to string (or return DUK_HSTRING_NO_ARRAY_INDEX);
  * avoids helper call if string has no array index value.
  */
-#define DUK_HSTRING_GET_ARRIDX_FAST(h)  \
+#define DUK_HSTRING_GET_ARRIDX_FAST(h) \
 	(DUK_HSTRING_HAS_ARRIDX((h)) ? duk_js_to_arrayindex_hstring_fast_known((h)) : DUK_HSTRING_NO_ARRAY_INDEX)
 
 /* Slower but more compact variant. */
-#define DUK_HSTRING_GET_ARRIDX_SLOW(h)  \
-	(duk_js_to_arrayindex_hstring_fast((h)))
+#define DUK_HSTRING_GET_ARRIDX_SLOW(h) (duk_js_to_arrayindex_hstring_fast((h)))
 #endif
 
 /* XXX: these actually fit into duk_hstring */
-#define DUK_SYMBOL_TYPE_HIDDEN 0
-#define DUK_SYMBOL_TYPE_GLOBAL 1
-#define DUK_SYMBOL_TYPE_LOCAL 2
+#define DUK_SYMBOL_TYPE_HIDDEN    0
+#define DUK_SYMBOL_TYPE_GLOBAL    1
+#define DUK_SYMBOL_TYPE_LOCAL     2
 #define DUK_SYMBOL_TYPE_WELLKNOWN 3
 
 /* Assertion for duk_hstring validity. */
 #if defined(DUK_USE_ASSERTIONS)
 DUK_INTERNAL_DECL void duk_hstring_assert_valid(duk_hstring *h);
-#define DUK_HSTRING_ASSERT_VALID(h)  do { duk_hstring_assert_valid((h)); } while (0)
+#define DUK_HSTRING_ASSERT_VALID(h) \
+	do { \
+		duk_hstring_assert_valid((h)); \
+	} while (0)
 #else
-#define DUK_HSTRING_ASSERT_VALID(h)  do {} while (0)
+#define DUK_HSTRING_ASSERT_VALID(h) \
+	do { \
+	} while (0)
 #endif
 
 /*
@@ -243,11 +252,14 @@ struct duk_hstring_external {
  *  Prototypes
  */
 
-DUK_INTERNAL_DECL duk_ucodepoint_t duk_hstring_char_code_at_raw(duk_hthread *thr, duk_hstring *h, duk_uint_t pos, duk_bool_t surrogate_aware);
+DUK_INTERNAL_DECL duk_ucodepoint_t duk_hstring_char_code_at_raw(duk_hthread *thr,
+                                                                duk_hstring *h,
+                                                                duk_uint_t pos,
+                                                                duk_bool_t surrogate_aware);
 DUK_INTERNAL_DECL duk_bool_t duk_hstring_equals_ascii_cstring(duk_hstring *h, const char *cstr);
 DUK_INTERNAL_DECL duk_size_t duk_hstring_get_charlen(duk_hstring *h);
 #if !defined(DUK_USE_HSTRING_LAZY_CLEN)
 DUK_INTERNAL_DECL void duk_hstring_init_charlen(duk_hstring *h);
 #endif
 
-#endif  /* DUK_HSTRING_H_INCLUDED */
+#endif /* DUK_HSTRING_H_INCLUDED */

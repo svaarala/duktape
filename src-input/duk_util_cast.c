@@ -17,7 +17,8 @@
  * relying on fmin(), fmax(), or other intrinsics.  Out-of-range results are
  * not assumed by caller, but here value is clamped, NaN converts to minval.
  */
-#define DUK__DOUBLE_INT_CAST1(tname,minval,maxval)  do { \
+#define DUK__DOUBLE_INT_CAST1(tname, minval, maxval) \
+	do { \
 		if (DUK_LIKELY(x >= (duk_double_t) (minval))) { \
 			DUK_ASSERT(!DUK_ISNAN(x)); \
 			if (DUK_LIKELY(x <= (duk_double_t) (maxval))) { \
@@ -38,19 +39,22 @@
  * argument is a NaN, return the second argument.  This avoids a
  * NaN-to-integer cast which is undefined behavior.
  */
-#define DUK__DOUBLE_INT_CAST2(tname,minval,maxval)  do { \
+#define DUK__DOUBLE_INT_CAST2(tname, minval, maxval) \
+	do { \
 		return (tname) duk_double_fmin(duk_double_fmax(x, (duk_double_t) (minval)), (duk_double_t) (maxval)); \
 	} while (0)
 
 /* Another solution which doesn't need C99+ behavior for fmin() and fmax(). */
-#define DUK__DOUBLE_INT_CAST3(tname,minval,maxval)  do { \
+#define DUK__DOUBLE_INT_CAST3(tname, minval, maxval) \
+	do { \
 		if (DUK_ISNAN(x)) { \
 			/* 0 or any other value is fine. */ \
 			return (tname) 0; \
 		} else \
 			return (tname) DUK_FMIN(DUK_FMAX(x, (duk_double_t) (minval)), (duk_double_t) (maxval)); \
-		} \
-	} while (0)
+	} \
+	} \
+	while (0)
 
 /* C99+ solution: relies on specific fmin() and fmax() behavior in C99: if
  * one argument is NaN but the other isn't, the non-NaN argument is returned.
@@ -59,7 +63,8 @@
  * the fmin() and fmax() calls (unless one uses -ffast-math which we don't
  * support).
  */
-#define DUK__DOUBLE_INT_CAST4(tname,minval,maxval)  do { \
+#define DUK__DOUBLE_INT_CAST4(tname, minval, maxval) \
+	do { \
 		return (tname) DUK_FMIN(DUK_FMAX(x, (duk_double_t) (minval)), (duk_double_t) (maxval)); \
 	} while (0)
 
@@ -103,12 +108,12 @@ DUK_INTERNAL duk_uint32_t duk_double_to_uint32_t(duk_double_t x) {
  * infinity, at least on x64.  This number is one double unit below that
  * midpoint.  See misc/float_cast.c.
  */
-#define DUK__FLOAT_ROUND_LIMIT      340282356779733623858607532500980858880.0
+#define DUK__FLOAT_ROUND_LIMIT 340282356779733623858607532500980858880.0
 
 /* Maximum IEEE float.  Double-to-float conversion above this would be out of
  * range and thus technically undefined behavior.
  */
-#define DUK__FLOAT_MAX              340282346638528859811704183484516925440.0
+#define DUK__FLOAT_MAX 340282346638528859811704183484516925440.0
 
 DUK_INTERNAL duk_float_t duk_double_to_float_t(duk_double_t x) {
 	/* Even a double-to-float cast is technically undefined behavior if
@@ -127,8 +132,7 @@ DUK_INTERNAL duk_float_t duk_double_to_float_t(duk_double_t x) {
 	duk_double_t t;
 
 	t = DUK_FABS(x);
-	DUK_ASSERT((DUK_ISNAN(x) && DUK_ISNAN(t)) ||
-	           (!DUK_ISNAN(x) && !DUK_ISNAN(t)));
+	DUK_ASSERT((DUK_ISNAN(x) && DUK_ISNAN(t)) || (!DUK_ISNAN(x) && !DUK_ISNAN(t)));
 
 	if (DUK_LIKELY(t <= DUK__FLOAT_MAX)) {
 		/* Standard in-range case, try to get here with a minimum

@@ -11,8 +11,8 @@
 
 #if defined(DUK_USE_STRHASH_DENSE)
 /* 'magic' constants for Murmurhash2 */
-#define DUK__MAGIC_M  ((duk_uint32_t) 0x5bd1e995UL)
-#define DUK__MAGIC_R  24
+#define DUK__MAGIC_M ((duk_uint32_t) 0x5bd1e995UL)
+#define DUK__MAGIC_R 24
 
 DUK_INTERNAL duk_uint32_t duk_util_hashbytes(const duk_uint8_t *data, duk_size_t len, duk_uint32_t seed) {
 	duk_uint32_t h = seed ^ ((duk_uint32_t) len);
@@ -26,9 +26,7 @@ DUK_INTERNAL duk_uint32_t duk_util_hashbytes(const duk_uint8_t *data, duk_size_t
 #if defined(DUK_USE_HASHBYTES_UNALIGNED_U32_ACCESS)
 		duk_uint32_t k = *((const duk_uint32_t *) (const void *) data);
 #else
-		duk_uint32_t k = ((duk_uint32_t) data[0]) |
-		                 (((duk_uint32_t) data[1]) << 8) |
-		                 (((duk_uint32_t) data[2]) << 16) |
+		duk_uint32_t k = ((duk_uint32_t) data[0]) | (((duk_uint32_t) data[1]) << 8) | (((duk_uint32_t) data[2]) << 16) |
 		                 (((duk_uint32_t) data[3]) << 24);
 #endif
 
@@ -42,11 +40,14 @@ DUK_INTERNAL duk_uint32_t duk_util_hashbytes(const duk_uint8_t *data, duk_size_t
 	}
 
 	switch (len) {
-	case 3: h ^= data[2] << 16;
-	case 2: h ^= data[1] << 8;
-	case 1: h ^= data[0];
-	        h *= DUK__MAGIC_M;
-        }
+	case 3:
+		h ^= data[2] << 16;
+	case 2:
+		h ^= data[1] << 8;
+	case 1:
+		h ^= data[0];
+		h *= DUK__MAGIC_M;
+	}
 
 	h ^= h >> 13;
 	h *= DUK__MAGIC_M;
@@ -54,4 +55,4 @@ DUK_INTERNAL duk_uint32_t duk_util_hashbytes(const duk_uint8_t *data, duk_size_t
 
 	return h;
 }
-#endif  /* DUK_USE_STRHASH_DENSE */
+#endif /* DUK_USE_STRHASH_DENSE */
