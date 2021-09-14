@@ -58,7 +58,7 @@ DUK_LOCAL duk_small_int_t duk__prop_getown_proxy_tail(duk_hthread *thr) {
 	duk_small_int_t rc;
 	duk_idx_t idx_obj;
 
-	duk_call_method(thr, 2);  /* [ ... trap handler target key ] -> [ ... result ] */
+	duk_call_method(thr, 2); /* [ ... trap handler target key ] -> [ ... result ] */
 
 	idx_obj = duk_get_top_index(thr);
 
@@ -72,12 +72,15 @@ DUK_LOCAL duk_small_int_t duk__prop_getown_proxy_tail(duk_hthread *thr) {
 	duk_remove(thr, idx_obj);
 	return rc;
 
- invalid_result:
+invalid_result:
 	DUK_ERROR_TYPE(thr, DUK_STR_INVALID_TRAP_RESULT);
 	DUK_WO_NORETURN(return 0;);
 }
 
-DUK_LOCAL duk_small_int_t duk__prop_getowndesc_strkey_helper(duk_hthread *thr, duk_hobject *target, duk_hstring *key, duk_bool_t side_effect_safe) {
+DUK_LOCAL duk_small_int_t duk__prop_getowndesc_strkey_helper(duk_hthread *thr,
+                                                             duk_hobject *target,
+                                                             duk_hstring *key,
+                                                             duk_bool_t side_effect_safe) {
 	duk_small_uint_t htype;
 	duk_small_int_t rc;
 	duk_idx_t idx_target = 0;
@@ -92,7 +95,7 @@ DUK_LOCAL duk_small_int_t duk__prop_getowndesc_strkey_helper(duk_hthread *thr, d
 		duk_push_hobject(thr, target);
 	}
 
- retry_target:
+retry_target:
 	htype = DUK_HEAPHDR_GET_HTYPE((duk_heaphdr *) target);
 	DUK_ASSERT(DUK_HTYPE_IS_ANY_OBJECT(htype));
 
@@ -179,13 +182,13 @@ DUK_LOCAL duk_small_int_t duk__prop_getowndesc_strkey_helper(duk_hthread *thr, d
 	rc = duk__prop_getowndesc_strkey_plain(thr, target, key);
 	/* fall thru */
 
- return_rc:
+return_rc:
 	if (side_effect_safe) {
 		duk_remove(thr, idx_target);
 	}
 	return rc;
 
- switch_to_safe:
+switch_to_safe:
 	return duk__prop_getowndesc_strkey_safe(thr, target, key);
 }
 
@@ -251,7 +254,7 @@ DUK_LOCAL duk_small_int_t duk__prop_getowndesc_idxkey_arguments(duk_hthread *thr
 			 * matter for safety.
 			 */
 			duk_pop_unsafe(thr);
-			(void) duk_js_getvar_envrec(thr, env, varname, 1 /*throw*/);  /* -> [ ... value this_binding ] */
+			(void) duk_js_getvar_envrec(thr, env, varname, 1 /*throw*/); /* -> [ ... value this_binding ] */
 			duk_pop_unsafe(thr);
 		}
 	}
@@ -259,7 +262,10 @@ DUK_LOCAL duk_small_int_t duk__prop_getowndesc_idxkey_arguments(duk_hthread *thr
 	return rc;
 }
 
-DUK_LOCAL duk_small_int_t duk__prop_getowndesc_idxkey_helper(duk_hthread *thr, duk_hobject *target, duk_uarridx_t idx, duk_bool_t side_effect_safe) {
+DUK_LOCAL duk_small_int_t duk__prop_getowndesc_idxkey_helper(duk_hthread *thr,
+                                                             duk_hobject *target,
+                                                             duk_uarridx_t idx,
+                                                             duk_bool_t side_effect_safe) {
 	duk_small_uint_t htype;
 	duk_small_int_t rc;
 	duk_idx_t idx_target = 0;
@@ -272,7 +278,7 @@ DUK_LOCAL duk_small_int_t duk__prop_getowndesc_idxkey_helper(duk_hthread *thr, d
 		duk_push_hobject(thr, target);
 	}
 
- retry_target:
+retry_target:
 	htype = DUK_HEAPHDR_GET_HTYPE((duk_heaphdr *) target);
 	DUK_ASSERT(DUK_HTYPE_IS_ANY_OBJECT(htype));
 
@@ -353,13 +359,13 @@ DUK_LOCAL duk_small_int_t duk__prop_getowndesc_idxkey_helper(duk_hthread *thr, d
 	rc = duk__prop_getowndesc_idxkey_plain(thr, target, idx);
 	/* fall thru */
 
- return_rc:
+return_rc:
 	if (side_effect_safe) {
 		duk_remove(thr, idx_target);
 	}
 	return rc;
 
- switch_to_safe:
+switch_to_safe:
 	return duk__prop_getowndesc_idxkey_safe(thr, target, idx);
 }
 

@@ -26,23 +26,54 @@
  * not found (= continue lookup), handled inline as success or failure,
  * or special handling (Proxy and Arguments).
  */
-#define DUK__SETCHECK_NOTFOUND           0  /* property not found (continue prototype walk) */
-#define DUK__SETCHECK_FOUND              1  /* property found and is writable */
-#define DUK__SETCHECK_DONE_FAILURE       2  /* handled inline, failure result */
-#define DUK__SETCHECK_DONE_SUCCESS       3  /* handled inline, success result */
-#define DUK__SETCHECK_HANDLE_SPECIAL     4  /* special handling for Proxy and Arguments in "check" loop */
+#define DUK__SETCHECK_NOTFOUND       0 /* property not found (continue prototype walk) */
+#define DUK__SETCHECK_FOUND          1 /* property found and is writable */
+#define DUK__SETCHECK_DONE_FAILURE   2 /* handled inline, failure result */
+#define DUK__SETCHECK_DONE_SUCCESS   3 /* handled inline, success result */
+#define DUK__SETCHECK_HANDLE_SPECIAL 4 /* special handling for Proxy and Arguments in "check" loop */
 
-DUK_LOCAL_DECL duk_bool_t duk__prop_set_str_safe(duk_hthread *thr, duk_hobject *target, duk_hstring *key, duk_idx_t idx_val, duk_idx_t idx_recv, duk_bool_t throw_flag);
-DUK_LOCAL_DECL duk_bool_t duk__prop_set_str_unsafe(duk_hthread *thr, duk_hobject *target, duk_hstring *key, duk_idx_t idx_val, duk_idx_t idx_recv, duk_bool_t throw_flag);
-DUK_LOCAL_DECL duk_bool_t duk__prop_set_idx_safe(duk_hthread *thr, duk_hobject *target, duk_uarridx_t idx, duk_idx_t idx_val, duk_idx_t idx_recv, duk_bool_t throw_flag);
-DUK_LOCAL_DECL duk_bool_t duk__prop_set_idx_unsafe(duk_hthread *thr, duk_hobject *target, duk_uarridx_t idx, duk_idx_t idx_val, duk_idx_t idx_recv, duk_bool_t throw_flag);
-DUK_LOCAL_DECL duk_bool_t duk__setfinal_own_prop_idxkey_ordinary(duk_hthread *thr, duk_hobject *obj, duk_uarridx_t idx, duk_idx_t idx_val);
+DUK_LOCAL_DECL duk_bool_t duk__prop_set_str_safe(duk_hthread *thr,
+                                                 duk_hobject *target,
+                                                 duk_hstring *key,
+                                                 duk_idx_t idx_val,
+                                                 duk_idx_t idx_recv,
+                                                 duk_bool_t throw_flag);
+DUK_LOCAL_DECL duk_bool_t duk__prop_set_str_unsafe(duk_hthread *thr,
+                                                   duk_hobject *target,
+                                                   duk_hstring *key,
+                                                   duk_idx_t idx_val,
+                                                   duk_idx_t idx_recv,
+                                                   duk_bool_t throw_flag);
+DUK_LOCAL_DECL duk_bool_t duk__prop_set_idx_safe(duk_hthread *thr,
+                                                 duk_hobject *target,
+                                                 duk_uarridx_t idx,
+                                                 duk_idx_t idx_val,
+                                                 duk_idx_t idx_recv,
+                                                 duk_bool_t throw_flag);
+DUK_LOCAL_DECL duk_bool_t duk__prop_set_idx_unsafe(duk_hthread *thr,
+                                                   duk_hobject *target,
+                                                   duk_uarridx_t idx,
+                                                   duk_idx_t idx_val,
+                                                   duk_idx_t idx_recv,
+                                                   duk_bool_t throw_flag);
+DUK_LOCAL_DECL duk_bool_t duk__setfinal_own_prop_idxkey_ordinary(duk_hthread *thr,
+                                                                 duk_hobject *obj,
+                                                                 duk_uarridx_t idx,
+                                                                 duk_idx_t idx_val);
 DUK_LOCAL_DECL duk_bool_t duk__setfinal_own_prop_idxkey(duk_hthread *thr, duk_hobject *obj, duk_uarridx_t idx, duk_idx_t idx_val);
-DUK_LOCAL_DECL duk_bool_t duk__setcheck_own_prop_idxkey_ordinary(duk_hthread *thr, duk_hobject *obj, duk_uarridx_t idx, duk_idx_t idx_val, duk_idx_t idx_recv, duk_bool_t throw_flag);
+DUK_LOCAL_DECL duk_bool_t duk__setcheck_own_prop_idxkey_ordinary(duk_hthread *thr,
+                                                                 duk_hobject *obj,
+                                                                 duk_uarridx_t idx,
+                                                                 duk_idx_t idx_val,
+                                                                 duk_idx_t idx_recv,
+                                                                 duk_bool_t throw_flag);
 
-DUK_NORETURN(DUK_LOCAL duk_bool_t duk__prop_set_error_objidx_str(duk_hthread *thr, duk_idx_t idx_obj, duk_hstring *key, duk_bool_t throw_flag));
-DUK_NORETURN(DUK_LOCAL duk_bool_t duk__prop_set_error_objidx_idx(duk_hthread *thr, duk_idx_t idx_obj, duk_uarridx_t idx, duk_bool_t throw_flag));
-DUK_NORETURN(DUK_LOCAL duk_bool_t duk__prop_set_error_objidx_tvkey(duk_hthread *thr, duk_idx_t idx_obj, duk_tval *tv_key, duk_bool_t throw_flag));
+DUK_NORETURN(DUK_LOCAL duk_bool_t
+                 duk__prop_set_error_objidx_str(duk_hthread *thr, duk_idx_t idx_obj, duk_hstring *key, duk_bool_t throw_flag));
+DUK_NORETURN(DUK_LOCAL duk_bool_t
+                 duk__prop_set_error_objidx_idx(duk_hthread *thr, duk_idx_t idx_obj, duk_uarridx_t idx, duk_bool_t throw_flag));
+DUK_NORETURN(DUK_LOCAL duk_bool_t
+                 duk__prop_set_error_objidx_tvkey(duk_hthread *thr, duk_idx_t idx_obj, duk_tval *tv_key, duk_bool_t throw_flag));
 
 #if defined(DUK_USE_PARANOID_ERRORS)
 DUK_LOCAL duk_bool_t duk__prop_set_error_shared(duk_hthread *thr, duk_idx_t idx_obj, duk_bool_t throw_flag) {
@@ -52,15 +83,24 @@ DUK_LOCAL duk_bool_t duk__prop_set_error_shared(duk_hthread *thr, duk_idx_t idx_
 	}
 	return 0;
 }
-DUK_LOCAL DUK_COLD duk_bool_t duk__prop_set_error_objidx_str(duk_hthread *thr, duk_idx_t idx_obj, duk_hstring *key, duk_bool_t throw_flag) {
+DUK_LOCAL DUK_COLD duk_bool_t duk__prop_set_error_objidx_str(duk_hthread *thr,
+                                                             duk_idx_t idx_obj,
+                                                             duk_hstring *key,
+                                                             duk_bool_t throw_flag) {
 	DUK_UNREF(key);
 	return duk__prop_set_error_shared(thr, idx_obj, throw_flag);
 }
-DUK_LOCAL DUK_COLD duk_bool_t duk__prop_set_error_objidx_idx(duk_hthread *thr, duk_idx_t idx_obj, duk_uarridx_t idx, duk_bool_t throw_flag) {
+DUK_LOCAL DUK_COLD duk_bool_t duk__prop_set_error_objidx_idx(duk_hthread *thr,
+                                                             duk_idx_t idx_obj,
+                                                             duk_uarridx_t idx,
+                                                             duk_bool_t throw_flag) {
 	DUK_UNREF(idx);
 	return duk__prop_set_error_shared(thr, idx_obj, throw_flag);
 }
-DUK_LOCAL DUK_COLD duk_bool_t duk__prop_set_error_objidx_tvkey(duk_hthread *thr, duk_idx_t idx_obj, duk_tval *tv_key, duk_bool_t throw_flag) {
+DUK_LOCAL DUK_COLD duk_bool_t duk__prop_set_error_objidx_tvkey(duk_hthread *thr,
+                                                               duk_idx_t idx_obj,
+                                                               duk_tval *tv_key,
+                                                               duk_bool_t throw_flag) {
 	DUK_UNREF(tv_key);
 	return duk__prop_set_error_shared(thr, idx_obj, throw_flag);
 }
@@ -80,7 +120,10 @@ DUK_LOCAL duk_bool_t duk__prop_set_error_objidx_idx(duk_hthread *thr, duk_idx_t 
 	}
 	return 0;
 }
-DUK_LOCAL duk_bool_t duk__prop_set_error_objidx_tvkey(duk_hthread *thr, duk_idx_t idx_obj, duk_tval *tv_key, duk_bool_t throw_flag) {
+DUK_LOCAL duk_bool_t duk__prop_set_error_objidx_tvkey(duk_hthread *thr,
+                                                      duk_idx_t idx_obj,
+                                                      duk_tval *tv_key,
+                                                      duk_bool_t throw_flag) {
 	if (throw_flag) {
 		const char *str1 = duk_push_readable_idx(thr, idx_obj);
 		const char *str2 = duk_push_readable_tval(thr, tv_key);
@@ -95,19 +138,28 @@ DUK_LOCAL duk_bool_t duk__prop_set_error_shared(duk_hthread *thr, duk_idx_t idx_
 	}
 	return 0;
 }
-DUK_LOCAL DUK_COLD duk_bool_t duk__prop_set_error_objidx_str(duk_hthread *thr, duk_idx_t idx_obj, duk_hstring *key, duk_bool_t throw_flag) {
+DUK_LOCAL DUK_COLD duk_bool_t duk__prop_set_error_objidx_str(duk_hthread *thr,
+                                                             duk_idx_t idx_obj,
+                                                             duk_hstring *key,
+                                                             duk_bool_t throw_flag) {
 	DUK_UNREF(key);
 	return duk__prop_set_error_shared(thr, idx_obj, throw_flag);
 }
-DUK_LOCAL DUK_COLD duk_bool_t duk__prop_set_error_objidx_idx(duk_hthread *thr, duk_idx_t idx_obj, duk_uarridx_t idx, duk_bool_t throw_flag) {
+DUK_LOCAL DUK_COLD duk_bool_t duk__prop_set_error_objidx_idx(duk_hthread *thr,
+                                                             duk_idx_t idx_obj,
+                                                             duk_uarridx_t idx,
+                                                             duk_bool_t throw_flag) {
 	DUK_UNREF(idx);
 	return duk__prop_set_error_shared(thr, idx_obj, throw_flag);
 }
-DUK_LOCAL DUK_COLD duk_bool_t duk__prop_set_error_objidx_tvkey(duk_hthread *thr, duk_idx_t idx_obj, duk_tval *tv_key, duk_bool_t throw_flag) {
+DUK_LOCAL DUK_COLD duk_bool_t duk__prop_set_error_objidx_tvkey(duk_hthread *thr,
+                                                               duk_idx_t idx_obj,
+                                                               duk_tval *tv_key,
+                                                               duk_bool_t throw_flag) {
 	DUK_UNREF(tv_key);
 	return duk__prop_set_error_shared(thr, idx_obj, throw_flag);
 }
-#endif  /* error model */
+#endif /* error model */
 
 DUK_LOCAL void duk__prop_set_write_tval(duk_hthread *thr, duk_idx_t idx_val, duk_tval *tv_slot) {
 	duk_tval *tv_val;
@@ -188,7 +240,10 @@ DUK_LOCAL DUK_ALWAYS_INLINE duk_bool_t duk__prop_recv_direct(duk_hthread *thr, d
 /* Final [[Set]] processing for an index write to an Array with no items
  * part, in essence Array exotic [[DefineOwnProperty]] for index keys.
  */
-DUK_LOCAL duk_bool_t duk__setfinal_write_array_abandoned_idxkey(duk_hthread *thr, duk_hobject *obj, duk_uarridx_t idx, duk_idx_t idx_val) {
+DUK_LOCAL duk_bool_t duk__setfinal_write_array_abandoned_idxkey(duk_hthread *thr,
+                                                                duk_hobject *obj,
+                                                                duk_uarridx_t idx,
+                                                                duk_idx_t idx_val) {
 	duk_harray *a = (duk_harray *) obj;
 	duk_uint32_t old_len;
 	duk_uint32_t new_len;
@@ -221,7 +276,7 @@ DUK_LOCAL duk_bool_t duk__setfinal_write_array_abandoned_idxkey(duk_hthread *thr
 		DUK_ASSERT(new_len > idx);
 		DUK_ASSERT(new_len >= 1U);
 	} else {
-		new_len = 0U;  /* Marker: no length update. */
+		new_len = 0U; /* Marker: no length update. */
 	}
 
 	/* Ordinary [[DefineOwnProperty]] for index part.  May fail if item
@@ -257,8 +312,8 @@ DUK_LOCAL duk_bool_t duk__setfinal_write_array_abandoned_idxkey(duk_hthread *thr
 	DUK_HARRAY_ASSERT_VALID(thr->heap, a);
 	return rc;
 
- fail_length_not_writable:
- fail_not_extensible:
+fail_length_not_writable:
+fail_not_extensible:
 	return 0;
 }
 
@@ -270,7 +325,10 @@ DUK_LOCAL duk_bool_t duk__setfinal_write_array_abandoned_idxkey(duk_hthread *thr
  *   1 = success
  *  -1 = abandoned, caller must move on to index part
  */
-DUK_LOCAL duk_small_int_t duk__setfinal_write_array_arrayitems_idxkey(duk_hthread *thr, duk_hobject *obj, duk_uarridx_t idx, duk_idx_t idx_val) {
+DUK_LOCAL duk_small_int_t duk__setfinal_write_array_arrayitems_idxkey(duk_hthread *thr,
+                                                                      duk_hobject *obj,
+                                                                      duk_uarridx_t idx,
+                                                                      duk_idx_t idx_val) {
 	duk_harray *a = (duk_harray *) obj;
 	duk_tval *tv_slot;
 	duk_tval *tv_val;
@@ -298,7 +356,7 @@ DUK_LOCAL duk_small_int_t duk__setfinal_write_array_arrayitems_idxkey(duk_hthrea
 		DUK_ASSERT(new_len > idx);
 		DUK_ASSERT(new_len >= 1U);
 	} else {
-		new_len = 0U;  /* Marker: no length update. */
+		new_len = 0U; /* Marker: no length update. */
 	}
 
 	/* Obtain a new array items slot, or abandon.  Possible resize is
@@ -346,13 +404,13 @@ DUK_LOCAL duk_small_int_t duk__setfinal_write_array_arrayitems_idxkey(duk_hthrea
 		 * there will definitely be no length update.
 		 */
 		DUK_ASSERT(new_len == 0U);
-		DUK_TVAL_SET_TVAL_UPDREF(thr, tv_slot, tv_val);  /* side effects */
+		DUK_TVAL_SET_TVAL_UPDREF(thr, tv_slot, tv_val); /* side effects */
 	}
 	DUK_HARRAY_ASSERT_VALID(thr->heap, a);
 	return 1;
 
- fail_not_extensible:
- fail_length_not_writable:
+fail_not_extensible:
+fail_length_not_writable:
 	return 0;
 }
 
@@ -360,7 +418,10 @@ DUK_LOCAL duk_small_int_t duk__setfinal_write_array_arrayitems_idxkey(duk_hthrea
  * handles writing to the array items part (or abandoning it), the Arguments
  * exotic [[DefineOwnProperty]] has already been handled in the check phase.
  */
-DUK_LOCAL duk_small_int_t duk__setfinal_write_arguments_arrayitems_idxkey(duk_hthread *thr, duk_hobject *obj, duk_uarridx_t idx, duk_idx_t idx_val) {
+DUK_LOCAL duk_small_int_t duk__setfinal_write_arguments_arrayitems_idxkey(duk_hthread *thr,
+                                                                          duk_hobject *obj,
+                                                                          duk_uarridx_t idx,
+                                                                          duk_idx_t idx_val) {
 	duk_harray *a = (duk_harray *) obj;
 	duk_tval *tv_slot;
 	duk_tval *tv_val;
@@ -390,11 +451,11 @@ DUK_LOCAL duk_small_int_t duk__setfinal_write_arguments_arrayitems_idxkey(duk_ht
 		DUK_TVAL_SET_TVAL_INCREF(thr, tv_slot, tv_val);
 	} else {
 		/* Existing entry, no need to check extensibility. */
-		DUK_TVAL_SET_TVAL_UPDREF(thr, tv_slot, tv_val);  /* side effects */
+		DUK_TVAL_SET_TVAL_UPDREF(thr, tv_slot, tv_val); /* side effects */
 	}
 	return 1;
 
- fail_not_extensible:
+fail_not_extensible:
 	return 0;
 }
 
@@ -402,7 +463,15 @@ DUK_LOCAL duk_small_int_t duk__setfinal_write_arguments_arrayitems_idxkey(duk_ht
  * Return value: 1=found and handled, 0=not found, fail write.
  * Setter may also throw.
  */
-DUK_LOCAL duk_bool_t duk__setcheck_own_prop_found_setter_helper(duk_hthread *thr, duk_hobject *obj, duk_hstring *key, duk_uarridx_t idx, duk_idx_t idx_val, duk_idx_t idx_recv, duk_propvalue *pv, duk_uint8_t attrs, duk_bool_t use_key) {
+DUK_LOCAL duk_bool_t duk__setcheck_own_prop_found_setter_helper(duk_hthread *thr,
+                                                                duk_hobject *obj,
+                                                                duk_hstring *key,
+                                                                duk_uarridx_t idx,
+                                                                duk_idx_t idx_val,
+                                                                duk_idx_t idx_recv,
+                                                                duk_propvalue *pv,
+                                                                duk_uint8_t attrs,
+                                                                duk_bool_t use_key) {
 	duk_propaccessor *pa;
 
 	DUK_ASSERT(thr != NULL);
@@ -419,7 +488,7 @@ DUK_LOCAL duk_bool_t duk__setcheck_own_prop_found_setter_helper(duk_hthread *thr
 	pa = &pv->a;
 	if (DUK_LIKELY(pa->set != NULL)) {
 		duk_push_hobject(thr, pa->set);
-		duk_dup(thr, idx_recv);          /* receiver; original uncoerced base */
+		duk_dup(thr, idx_recv); /* receiver; original uncoerced base */
 		duk_dup(thr, idx_val);
 #if defined(DUK_USE_NONSTD_SETTER_KEY_ARGUMENT)
 		if (use_key) {
@@ -428,12 +497,12 @@ DUK_LOCAL duk_bool_t duk__setcheck_own_prop_found_setter_helper(duk_hthread *thr
 		} else {
 			(void) duk_push_u32_tostring(thr, idx);
 		}
-		duk_call_method(thr, 2);         /* [ setter receiver(= this) val key ] -> [ retval ] */
+		duk_call_method(thr, 2); /* [ setter receiver(= this) val key ] -> [ retval ] */
 #else
 		DUK_UNREF(key);
 		DUK_UNREF(idx);
 		DUK_UNREF(use_key);
-		duk_call_method(thr, 1);         /* [ setter receiver(= this) val ] -> [ retval ] */
+		duk_call_method(thr, 1); /* [ setter receiver(= this) val ] -> [ retval ] */
 #endif
 		duk_pop_unsafe(thr);
 		return 1;
@@ -444,7 +513,13 @@ DUK_LOCAL duk_bool_t duk__setcheck_own_prop_found_setter_helper(duk_hthread *thr
 }
 
 #if defined(DUK_USE_NONSTD_SETTER_KEY_ARGUMENT)
-DUK_LOCAL DUK_COLD DUK_NOINLINE duk_bool_t duk__setcheck_own_prop_found_setter_withkey(duk_hthread *thr, duk_hobject *obj, duk_hstring *key, duk_idx_t idx_val, duk_idx_t idx_recv, duk_propvalue *pv, duk_uint8_t attrs) {
+DUK_LOCAL DUK_COLD DUK_NOINLINE duk_bool_t duk__setcheck_own_prop_found_setter_withkey(duk_hthread *thr,
+                                                                                       duk_hobject *obj,
+                                                                                       duk_hstring *key,
+                                                                                       duk_idx_t idx_val,
+                                                                                       duk_idx_t idx_recv,
+                                                                                       duk_propvalue *pv,
+                                                                                       duk_uint8_t attrs) {
 	DUK_ASSERT(thr != NULL);
 	DUK_ASSERT(obj != NULL);
 	DUK_ASSERT(key != NULL);
@@ -455,7 +530,13 @@ DUK_LOCAL DUK_COLD DUK_NOINLINE duk_bool_t duk__setcheck_own_prop_found_setter_w
 
 	return duk__setcheck_own_prop_found_setter_helper(thr, obj, key, 0, idx_val, idx_recv, pv, attrs, 1 /*use_key*/);
 }
-DUK_LOCAL DUK_COLD DUK_NOINLINE duk_bool_t duk__setcheck_own_prop_found_setter_withidx(duk_hthread *thr, duk_hobject *obj, duk_uarridx_t idx, duk_idx_t idx_val, duk_idx_t idx_recv, duk_propvalue *pv, duk_uint8_t attrs) {
+DUK_LOCAL DUK_COLD DUK_NOINLINE duk_bool_t duk__setcheck_own_prop_found_setter_withidx(duk_hthread *thr,
+                                                                                       duk_hobject *obj,
+                                                                                       duk_uarridx_t idx,
+                                                                                       duk_idx_t idx_val,
+                                                                                       duk_idx_t idx_recv,
+                                                                                       duk_propvalue *pv,
+                                                                                       duk_uint8_t attrs) {
 	DUK_ASSERT(thr != NULL);
 	DUK_ASSERT(obj != NULL);
 	DUK_ASSERT_ARRIDX_VALID(idx);
@@ -466,7 +547,12 @@ DUK_LOCAL DUK_COLD DUK_NOINLINE duk_bool_t duk__setcheck_own_prop_found_setter_w
 	return duk__setcheck_own_prop_found_setter_helper(thr, obj, NULL, idx, idx_val, idx_recv, pv, attrs, 0 /*use_key*/);
 }
 #else
-DUK_LOCAL DUK_COLD DUK_NOINLINE duk_bool_t duk__setcheck_own_prop_found_setter_nokey(duk_hthread *thr, duk_hobject *obj, duk_idx_t idx_val, duk_idx_t idx_recv, duk_propvalue *pv, duk_uint8_t attrs) {
+DUK_LOCAL DUK_COLD DUK_NOINLINE duk_bool_t duk__setcheck_own_prop_found_setter_nokey(duk_hthread *thr,
+                                                                                     duk_hobject *obj,
+                                                                                     duk_idx_t idx_val,
+                                                                                     duk_idx_t idx_recv,
+                                                                                     duk_propvalue *pv,
+                                                                                     duk_uint8_t attrs) {
 	DUK_ASSERT(thr != NULL);
 	DUK_ASSERT(obj != NULL);
 	DUK_ASSERT(duk_is_valid_posidx(thr, idx_val));
@@ -477,7 +563,12 @@ DUK_LOCAL DUK_COLD DUK_NOINLINE duk_bool_t duk__setcheck_own_prop_found_setter_n
 }
 #endif
 
-DUK_LOCAL duk_bool_t duk__setcheck_own_prop_strkey_ordinary(duk_hthread *thr, duk_hobject *obj, duk_hstring *key, duk_idx_t idx_val, duk_idx_t idx_recv, duk_bool_t throw_flag) {
+DUK_LOCAL duk_bool_t duk__setcheck_own_prop_strkey_ordinary(duk_hthread *thr,
+                                                            duk_hobject *obj,
+                                                            duk_hstring *key,
+                                                            duk_idx_t idx_val,
+                                                            duk_idx_t idx_recv,
+                                                            duk_bool_t throw_flag) {
 	duk_propvalue *pv;
 	duk_uint8_t attrs;
 
@@ -492,8 +583,7 @@ DUK_LOCAL duk_bool_t duk__setcheck_own_prop_strkey_ordinary(duk_hthread *thr, du
 
 	if (duk_hobject_lookup_strprop_val_attrs(thr, obj, key, &pv, &attrs) != 0) {
 		/* Fast path for write allowed case, single branch. */
-		if (DUK_LIKELY((attrs & (DUK_PROPDESC_FLAG_WRITABLE | DUK_PROPDESC_FLAG_ACCESSOR)) ==
-		               DUK_PROPDESC_FLAG_WRITABLE)) {
+		if (DUK_LIKELY((attrs & (DUK_PROPDESC_FLAG_WRITABLE | DUK_PROPDESC_FLAG_ACCESSOR)) == DUK_PROPDESC_FLAG_WRITABLE)) {
 			/* Not an accessor, writable property.  Fast path direct writes
 			 * which are relatively common.
 			 */
@@ -526,11 +616,16 @@ DUK_LOCAL duk_bool_t duk__setcheck_own_prop_strkey_ordinary(duk_hthread *thr, du
 		return DUK__SETCHECK_NOTFOUND;
 	}
 
- fail_not_writable:
+fail_not_writable:
 	return DUK__SETCHECK_DONE_FAILURE;
 }
 
-DUK_LOCAL duk_bool_t duk__setcheck_own_prop_strkey(duk_hthread *thr, duk_hobject *obj, duk_hstring *key, duk_idx_t idx_val, duk_idx_t idx_recv, duk_bool_t throw_flag) {
+DUK_LOCAL duk_bool_t duk__setcheck_own_prop_strkey(duk_hthread *thr,
+                                                   duk_hobject *obj,
+                                                   duk_hstring *key,
+                                                   duk_idx_t idx_val,
+                                                   duk_idx_t idx_recv,
+                                                   duk_bool_t throw_flag) {
 	duk_small_uint_t htype;
 
 	DUK_ASSERT(thr != NULL);
@@ -646,18 +741,24 @@ DUK_LOCAL duk_bool_t duk__setcheck_own_prop_strkey(duk_hthread *thr, duk_hobject
 		}
 		break;
 	}
-#endif  /* DUK_USE_BUFFEROBJECT_SUPPORT */
+#endif /* DUK_USE_BUFFEROBJECT_SUPPORT */
 	default:
 		break;
 	}
 
 	return duk__setcheck_own_prop_strkey_ordinary(thr, obj, key, idx_val, idx_recv, throw_flag);
 
- fail_not_writable:
+fail_not_writable:
 	return DUK__SETCHECK_DONE_FAILURE;
 }
 
-DUK_LOCAL DUK_COLD DUK_NOINLINE duk_bool_t duk__setcheck_own_prop_idxkey_arguments(duk_hthread *thr, duk_hobject *obj, duk_uarridx_t idx, duk_idx_t idx_val, duk_idx_t idx_recv, duk_bool_t throw_flag, duk_bool_t check_only) {
+DUK_LOCAL DUK_COLD DUK_NOINLINE duk_bool_t duk__setcheck_own_prop_idxkey_arguments(duk_hthread *thr,
+                                                                                   duk_hobject *obj,
+                                                                                   duk_uarridx_t idx,
+                                                                                   duk_idx_t idx_val,
+                                                                                   duk_idx_t idx_recv,
+                                                                                   duk_bool_t throw_flag,
+                                                                                   duk_bool_t check_only) {
 	duk_harray *a = (duk_harray *) obj;
 	duk_hstring *varname;
 	duk_hobject *map;
@@ -751,7 +852,7 @@ DUK_LOCAL DUK_COLD DUK_NOINLINE duk_bool_t duk__setcheck_own_prop_idxkey_argumen
 	 * a setter, etc, due to side effects from above.
 	 */
 
- ordinary_set_check:
+ordinary_set_check:
 	DUK_DD(DUK_DDPRINT("arguments [[Set]], ordinary [[Set]] check"));
 	if (DUK_HOBJECT_HAS_ARRAY_ITEMS(obj)) {
 		if (idx < DUK_HARRAY_GET_ITEMS_LENGTH(a)) {
@@ -769,7 +870,12 @@ DUK_LOCAL DUK_COLD DUK_NOINLINE duk_bool_t duk__setcheck_own_prop_idxkey_argumen
 	return duk__setcheck_own_prop_idxkey_ordinary(thr, obj, idx, idx_val, idx_recv, throw_flag);
 }
 
-DUK_LOCAL duk_bool_t duk__setcheck_own_prop_idxkey_typedarray(duk_hthread *thr, duk_hobject *obj, duk_uarridx_t idx, duk_idx_t idx_val, duk_idx_t idx_recv, duk_bool_t throw_flag) {
+DUK_LOCAL duk_bool_t duk__setcheck_own_prop_idxkey_typedarray(duk_hthread *thr,
+                                                              duk_hobject *obj,
+                                                              duk_uarridx_t idx,
+                                                              duk_idx_t idx_val,
+                                                              duk_idx_t idx_recv,
+                                                              duk_bool_t throw_flag) {
 	duk_hbufobj *h = (duk_hbufobj *) obj;
 	duk_size_t byte_off;
 	duk_small_uint_t elem_size;
@@ -842,7 +948,7 @@ DUK_LOCAL duk_bool_t duk__setcheck_own_prop_idxkey_typedarray(duk_hthread *thr, 
 	 * is controlled so that upshifting a valid index won't wrap.
 	 */
 	if (DUK_LIKELY(idx < DUK_HBUFOBJ_GET_LOGICAL_LENGTH(h))) {
-		byte_off = idx << h->shift;  /* no wrap assuming h_bufobj->length is valid */
+		byte_off = idx << h->shift; /* no wrap assuming h_bufobj->length is valid */
 		elem_size = (duk_small_uint_t) (1U << h->shift);
 
 		if (DUK_LIKELY(h->buf != NULL && DUK_HBUFOBJ_VALID_BYTEOFFSET_EXCL(h, byte_off + elem_size))) {
@@ -858,9 +964,9 @@ DUK_LOCAL duk_bool_t duk__setcheck_own_prop_idxkey_typedarray(duk_hthread *thr, 
 		rc = DUK__SETCHECK_DONE_FAILURE;
 	}
 	duk_pop_2_unsafe(thr);
-	return rc;  /* Never continue lookup. */
+	return rc; /* Never continue lookup. */
 
- fail_detached:
+fail_detached:
 	/* If detached, unconditional TypeError for any canonical
 	 * numerix index string (even if out of range).
 	 */
@@ -868,7 +974,12 @@ DUK_LOCAL duk_bool_t duk__setcheck_own_prop_idxkey_typedarray(duk_hthread *thr, 
 	DUK_WO_NORETURN(return 0;);
 }
 
-DUK_LOCAL duk_small_int_t duk__setcheck_own_prop_idxkey_array(duk_hthread *thr, duk_hobject *obj, duk_uarridx_t idx, duk_idx_t idx_val, duk_idx_t idx_recv, duk_bool_t throw_flag) {
+DUK_LOCAL duk_small_int_t duk__setcheck_own_prop_idxkey_array(duk_hthread *thr,
+                                                              duk_hobject *obj,
+                                                              duk_uarridx_t idx,
+                                                              duk_idx_t idx_val,
+                                                              duk_idx_t idx_recv,
+                                                              duk_bool_t throw_flag) {
 	duk_harray *a = (duk_harray *) obj;
 
 	DUK_UNREF(throw_flag);
@@ -901,7 +1012,7 @@ DUK_LOCAL duk_small_int_t duk__setcheck_own_prop_idxkey_array(duk_hthread *thr, 
 			DUK_ASSERT(new_len > idx);
 			DUK_ASSERT(new_len >= 1U);
 		} else {
-			new_len = 0U;  /* Marker: no length update. */
+			new_len = 0U; /* Marker: no length update. */
 		}
 
 		/* Obtain a new array items slot, or abandon. */
@@ -935,11 +1046,11 @@ DUK_LOCAL duk_small_int_t duk__setcheck_own_prop_idxkey_array(duk_hthread *thr, 
 			/* Existing entry: no need to check extensibility and
 			 * there will definitely be no length update.
 			 */
-			DUK_TVAL_SET_TVAL_UPDREF(thr, tv_slot, tv_val);  /* side effects */
+			DUK_TVAL_SET_TVAL_UPDREF(thr, tv_slot, tv_val); /* side effects */
 			return DUK__SETCHECK_DONE_SUCCESS;
 		}
 	}
-#endif  /* DUK_USE_ARRAY_PROP_FASTPATH */
+#endif /* DUK_USE_ARRAY_PROP_FASTPATH */
 
 	/* Not a direct receiver or no fastpath.  Just check existence. */
 	if (idx < DUK_HARRAY_GET_LENGTH(a)) {
@@ -957,15 +1068,20 @@ DUK_LOCAL duk_small_int_t duk__setcheck_own_prop_idxkey_array(duk_hthread *thr, 
 	DUK_ASSERT(0);
 	return DUK__SETCHECK_NOTFOUND;
 
- abandoned:
+abandoned:
 	return -1;
 
- fail_not_extensible:
- fail_length_not_writable:
+fail_not_extensible:
+fail_length_not_writable:
 	return DUK__SETCHECK_DONE_FAILURE;
 }
 
-DUK_LOCAL duk_bool_t duk__setcheck_own_prop_idxkey_ordinary(duk_hthread *thr, duk_hobject *obj, duk_uarridx_t idx, duk_idx_t idx_val, duk_idx_t idx_recv, duk_bool_t throw_flag) {
+DUK_LOCAL duk_bool_t duk__setcheck_own_prop_idxkey_ordinary(duk_hthread *thr,
+                                                            duk_hobject *obj,
+                                                            duk_uarridx_t idx,
+                                                            duk_idx_t idx_val,
+                                                            duk_idx_t idx_recv,
+                                                            duk_bool_t throw_flag) {
 	duk_propvalue *pv;
 	duk_uint8_t attrs;
 
@@ -980,8 +1096,7 @@ DUK_LOCAL duk_bool_t duk__setcheck_own_prop_idxkey_ordinary(duk_hthread *thr, du
 
 	if (duk_hobject_lookup_idxprop_val_attrs(thr, obj, idx, &pv, &attrs) != 0) {
 		/* Fast path for write allowed case, single branch. */
-		if (DUK_LIKELY((attrs & (DUK_PROPDESC_FLAG_WRITABLE | DUK_PROPDESC_FLAG_ACCESSOR)) ==
-		               DUK_PROPDESC_FLAG_WRITABLE)) {
+		if (DUK_LIKELY((attrs & (DUK_PROPDESC_FLAG_WRITABLE | DUK_PROPDESC_FLAG_ACCESSOR)) == DUK_PROPDESC_FLAG_WRITABLE)) {
 			/* Not an accessor, writable property.  Fast path direct writes
 			 * which are relatively common.
 			 */
@@ -1014,11 +1129,16 @@ DUK_LOCAL duk_bool_t duk__setcheck_own_prop_idxkey_ordinary(duk_hthread *thr, du
 
 	return DUK__SETCHECK_NOTFOUND;
 
- fail_not_writable:
+fail_not_writable:
 	return DUK__SETCHECK_DONE_FAILURE;
 }
 
-DUK_LOCAL duk_bool_t duk__setcheck_own_prop_idxkey(duk_hthread *thr, duk_hobject *obj, duk_uarridx_t idx, duk_idx_t idx_val, duk_idx_t idx_recv, duk_bool_t throw_flag) {
+DUK_LOCAL duk_bool_t duk__setcheck_own_prop_idxkey(duk_hthread *thr,
+                                                   duk_hobject *obj,
+                                                   duk_uarridx_t idx,
+                                                   duk_idx_t idx_val,
+                                                   duk_idx_t idx_recv,
+                                                   duk_bool_t throw_flag) {
 	duk_small_uint_t htype;
 
 	DUK_ASSERT(thr != NULL);
@@ -1040,7 +1160,7 @@ DUK_LOCAL duk_bool_t duk__setcheck_own_prop_idxkey(duk_hthread *thr, duk_hobject
 			return (duk_bool_t) set_rc;
 		}
 		DUK_ASSERT(!DUK_HOBJECT_HAS_ARRAY_ITEMS(obj));
-		break;  /* Check from index part if abandoned. */
+		break; /* Check from index part if abandoned. */
 	}
 	case DUK_HTYPE_ARGUMENTS:
 		/* Arguments exotic [[Set]] is tricky, see detailed comments
@@ -1086,18 +1206,21 @@ DUK_LOCAL duk_bool_t duk__setcheck_own_prop_idxkey(duk_hthread *thr, duk_hobject
 	case DUK_HTYPE_FLOAT32ARRAY:
 	case DUK_HTYPE_FLOAT64ARRAY:
 		return duk__setcheck_own_prop_idxkey_typedarray(thr, obj, idx, idx_val, idx_recv, throw_flag);
-#endif  /* DUK_USE_BUFFEROBJECT_SUPPORT */
+#endif /* DUK_USE_BUFFEROBJECT_SUPPORT */
 	default:
 		break;
 	}
 
 	return duk__setcheck_own_prop_idxkey_ordinary(thr, obj, idx, idx_val, idx_recv, throw_flag);
 
- fail_not_writable:
+fail_not_writable:
 	return DUK__SETCHECK_DONE_FAILURE;
 }
 
-DUK_LOCAL duk_bool_t duk__setfinal_own_prop_strkey_ordinary(duk_hthread *thr, duk_hobject *obj, duk_hstring *key, duk_idx_t idx_val) {
+DUK_LOCAL duk_bool_t duk__setfinal_own_prop_strkey_ordinary(duk_hthread *thr,
+                                                            duk_hobject *obj,
+                                                            duk_hstring *key,
+                                                            duk_idx_t idx_val) {
 	duk_propvalue *pv;
 	duk_uint8_t attrs;
 
@@ -1128,7 +1251,8 @@ DUK_LOCAL duk_bool_t duk__setfinal_own_prop_strkey_ordinary(duk_hthread *thr, du
 		 * find a property but have side effects, e.g. if the handler
 		 * object is a Proxy or has a 'set' getter.
 		 */
-		if (DUK_UNLIKELY((attrs & (DUK_PROPDESC_FLAG_ACCESSOR | DUK_PROPDESC_FLAG_WRITABLE)) != DUK_PROPDESC_FLAG_WRITABLE)) {
+		if (DUK_UNLIKELY((attrs & (DUK_PROPDESC_FLAG_ACCESSOR | DUK_PROPDESC_FLAG_WRITABLE)) !=
+		                 DUK_PROPDESC_FLAG_WRITABLE)) {
 #if defined(DUK_USE_DEBUG)
 			if (attrs & DUK_PROPDESC_FLAG_ACCESSOR) {
 				DUK_D(DUK_DPRINT("receiver property is an accessor in final step of [[Set]], fail property write"));
@@ -1174,8 +1298,8 @@ DUK_LOCAL duk_bool_t duk__setfinal_own_prop_strkey_ordinary(duk_hthread *thr, du
 	}
 	return 1;
 
- fail_not_extensible:
- fail_not_writable:
+fail_not_extensible:
+fail_not_writable:
 	return 0;
 }
 
@@ -1279,19 +1403,22 @@ DUK_LOCAL duk_bool_t duk__setfinal_own_prop_strkey(duk_hthread *thr, duk_hobject
 		}
 		break;
 	}
-#endif  /* DUK_USE_BUFFEROBJECT_SUPPORT */
+#endif /* DUK_USE_BUFFEROBJECT_SUPPORT */
 	default:
 		break;
 	}
 
 	return duk__setfinal_own_prop_strkey_ordinary(thr, obj, key, idx_val);
 
- fail_not_writable:
- fail_internal:
+fail_not_writable:
+fail_internal:
 	return 0;
 }
 
-DUK_LOCAL duk_bool_t duk__setfinal_own_prop_idxkey_ordinary(duk_hthread *thr, duk_hobject *obj, duk_uarridx_t idx, duk_idx_t idx_val) {
+DUK_LOCAL duk_bool_t duk__setfinal_own_prop_idxkey_ordinary(duk_hthread *thr,
+                                                            duk_hobject *obj,
+                                                            duk_uarridx_t idx,
+                                                            duk_idx_t idx_val) {
 	duk_propvalue *pv;
 	duk_uint8_t attrs;
 
@@ -1301,11 +1428,11 @@ DUK_LOCAL duk_bool_t duk__setfinal_own_prop_idxkey_ordinary(duk_hthread *thr, du
 	DUK_ASSERT(duk_is_valid_posidx(thr, idx_val));
 
 	if (duk_hobject_lookup_idxprop_val_attrs(thr, obj, idx, &pv, &attrs) != 0) {
-		if (DUK_LIKELY((attrs & (DUK_PROPDESC_FLAG_WRITABLE | DUK_PROPDESC_FLAG_ACCESSOR)) ==
-		               DUK_PROPDESC_FLAG_WRITABLE)) {
+		if (DUK_LIKELY((attrs & (DUK_PROPDESC_FLAG_WRITABLE | DUK_PROPDESC_FLAG_ACCESSOR)) == DUK_PROPDESC_FLAG_WRITABLE)) {
 #if defined(DUK_USE_DEBUG)
 			if (attrs & DUK_PROPDESC_FLAG_ACCESSOR) {
-				DUK_D(DUK_DPRINT("receiver property is an accessor in final step of [[Set]] => fail property write"));
+				DUK_D(
+				    DUK_DPRINT("receiver property is an accessor in final step of [[Set]] => fail property write"));
 			}
 #endif
 			goto fail_not_writable;
@@ -1339,8 +1466,8 @@ DUK_LOCAL duk_bool_t duk__setfinal_own_prop_idxkey_ordinary(duk_hthread *thr, du
 	}
 	return 1;
 
- fail_not_extensible:
- fail_not_writable:
+fail_not_extensible:
+fail_not_writable:
 	return 0;
 }
 
@@ -1408,7 +1535,7 @@ DUK_LOCAL duk_bool_t duk__setfinal_own_prop_idxkey(duk_hthread *thr, duk_hobject
 			}
 			DUK_ASSERT(!DUK_HOBJECT_HAS_ARRAY_ITEMS(obj));
 		}
-		break;  /* No array items, handle in shared index part path. */
+		break; /* No array items, handle in shared index part path. */
 	case DUK_HTYPE_STRING_OBJECT:
 		/* "Check" path should have rejected writes to all exotic
 		 * index properties (0 <= idx < .length) and .length.  So
@@ -1452,7 +1579,7 @@ DUK_LOCAL duk_bool_t duk__setfinal_own_prop_idxkey(duk_hthread *thr, duk_hobject
 		DUK_ASSERT(0);
 		goto fail_internal;
 	}
-#endif  /* DUK_USE_BUFFEROBJECT_SUPPORT */
+#endif /* DUK_USE_BUFFEROBJECT_SUPPORT */
 	default:
 		break;
 	}
@@ -1460,10 +1587,10 @@ DUK_LOCAL duk_bool_t duk__setfinal_own_prop_idxkey(duk_hthread *thr, duk_hobject
 	return duk__setfinal_own_prop_idxkey_ordinary(thr, obj, idx, idx_val);
 
 #if defined(DUK_USE_ROM_OBJECTS)
- fail_not_writable:
+fail_not_writable:
 #endif
- fail_internal:
- fail_array:
+fail_internal:
+fail_array:
 	return 0;
 }
 
@@ -1474,7 +1601,7 @@ DUK_LOCAL duk_bool_t duk__prop_set_proxy_tail(duk_hthread *thr, duk_idx_t idx_va
 
 	duk_dup(thr, idx_val);
 	duk_dup(thr, idx_recv);
-	duk_call_method(thr, 4);  /* [ ... trap handler target key val receiver ] -> [ ... result ] */
+	duk_call_method(thr, 4); /* [ ... trap handler target key val receiver ] -> [ ... result ] */
 	duk_pop_unsafe(thr);
 
 #if 0
@@ -1484,7 +1611,12 @@ DUK_LOCAL duk_bool_t duk__prop_set_proxy_tail(duk_hthread *thr, duk_idx_t idx_va
 	return 1;
 }
 
-DUK_LOCAL DUK_NOINLINE duk_bool_t duk__setcheck_strkey_proxy(duk_hthread *thr, duk_hobject *obj, duk_hstring *key, duk_idx_t idx_val, duk_idx_t idx_recv, duk_bool_t throw_flag) {
+DUK_LOCAL DUK_NOINLINE duk_bool_t duk__setcheck_strkey_proxy(duk_hthread *thr,
+                                                             duk_hobject *obj,
+                                                             duk_hstring *key,
+                                                             duk_idx_t idx_val,
+                                                             duk_idx_t idx_recv,
+                                                             duk_bool_t throw_flag) {
 	DUK_ASSERT(thr != NULL);
 	DUK_ASSERT(obj != NULL);
 	DUK_ASSERT(key != NULL);
@@ -1502,7 +1634,12 @@ DUK_LOCAL DUK_NOINLINE duk_bool_t duk__setcheck_strkey_proxy(duk_hthread *thr, d
 	}
 }
 
-DUK_LOCAL DUK_NOINLINE duk_bool_t duk__setcheck_idxkey_proxy(duk_hthread *thr, duk_hobject *obj, duk_uarridx_t idx, duk_idx_t idx_val, duk_idx_t idx_recv, duk_bool_t throw_flag) {
+DUK_LOCAL DUK_NOINLINE duk_bool_t duk__setcheck_idxkey_proxy(duk_hthread *thr,
+                                                             duk_hobject *obj,
+                                                             duk_uarridx_t idx,
+                                                             duk_idx_t idx_val,
+                                                             duk_idx_t idx_recv,
+                                                             duk_bool_t throw_flag) {
 	DUK_ASSERT(thr != NULL);
 	DUK_ASSERT(obj != NULL);
 	DUK_ASSERT(duk_is_valid_posidx(thr, idx_val));
@@ -1518,7 +1655,15 @@ DUK_LOCAL DUK_NOINLINE duk_bool_t duk__setcheck_idxkey_proxy(duk_hthread *thr, d
 	}
 }
 
-DUK_LOCAL DUK_ALWAYS_INLINE duk_bool_t duk__prop_set_stroridx_helper(duk_hthread *thr, duk_hobject *target, duk_hstring *key, duk_uarridx_t idx, duk_idx_t idx_val, duk_idx_t idx_recv, duk_bool_t throw_flag, duk_bool_t use_key, duk_bool_t side_effect_safe) {
+DUK_LOCAL DUK_ALWAYS_INLINE duk_bool_t duk__prop_set_stroridx_helper(duk_hthread *thr,
+                                                                     duk_hobject *target,
+                                                                     duk_hstring *key,
+                                                                     duk_uarridx_t idx,
+                                                                     duk_idx_t idx_val,
+                                                                     duk_idx_t idx_recv,
+                                                                     duk_bool_t throw_flag,
+                                                                     duk_bool_t use_key,
+                                                                     duk_bool_t side_effect_safe) {
 	duk_bool_t rc;
 	duk_small_uint_t sanity;
 	duk_tval *tv_recv;
@@ -1558,7 +1703,7 @@ DUK_LOCAL DUK_ALWAYS_INLINE duk_bool_t duk__prop_set_stroridx_helper(duk_hthread
 		}
 		DUK_GC_TORTURE(thr->heap);
 
-	 recheck_rc:
+	recheck_rc:
 		if (rc == DUK__SETCHECK_NOTFOUND) {
 			/* Not found, continue lookup with ordinary [[Set]]. */
 		} else if (rc == DUK__SETCHECK_FOUND) {
@@ -1572,7 +1717,8 @@ DUK_LOCAL DUK_ALWAYS_INLINE duk_bool_t duk__prop_set_stroridx_helper(duk_hthread
 			goto fail;
 		} else {
 			DUK_ASSERT(rc == DUK__SETCHECK_HANDLE_SPECIAL);
-			DUK_ASSERT(DUK_HOBJECT_GET_HTYPE(target) == DUK_HTYPE_PROXY || DUK_HOBJECT_GET_HTYPE(target) == DUK_HTYPE_ARGUMENTS);
+			DUK_ASSERT(DUK_HOBJECT_GET_HTYPE(target) == DUK_HTYPE_PROXY ||
+			           DUK_HOBJECT_GET_HTYPE(target) == DUK_HTYPE_ARGUMENTS);
 
 			/* Proxy or Arguments: special handling, require safe path.
 			 * This awkward handling is done so that we can avoid
@@ -1603,7 +1749,13 @@ DUK_LOCAL DUK_ALWAYS_INLINE duk_bool_t duk__prop_set_stroridx_helper(duk_hthread
 					if (use_key) {
 						DUK_ASSERT(0);
 					} else {
-						rc = duk__setcheck_own_prop_idxkey_arguments(thr, target, idx, idx_val, idx_recv, throw_flag, 0 /*check_only*/);
+						rc = duk__setcheck_own_prop_idxkey_arguments(thr,
+						                                             target,
+						                                             idx,
+						                                             idx_val,
+						                                             idx_recv,
+						                                             throw_flag,
+						                                             0 /*check_only*/);
 						goto recheck_rc;
 					}
 				}
@@ -1626,7 +1778,7 @@ DUK_LOCAL DUK_ALWAYS_INLINE duk_bool_t duk__prop_set_stroridx_helper(duk_hthread
 			DUK_ASSERT(DUK_HOBJECT_GET_HTYPE(target) != DUK_HTYPE_PROXY);
 		}
 
-	 go_next:
+	go_next:
 		DUK_ASSERT(next != NULL);
 		if (side_effect_safe) {
 			duk_tval *tv_target;
@@ -1644,7 +1796,7 @@ DUK_LOCAL DUK_ALWAYS_INLINE duk_bool_t duk__prop_set_stroridx_helper(duk_hthread
 	DUK_ERROR_RANGE_PROTO_SANITY(thr);
 	DUK_WO_NORETURN(return 0;);
 
- allow_write:
+allow_write:
 	/* Property (a) not found in inheritance chain, or (b) found a data
 	 * property which doesn't prevent a write.  Getters and proxies are
 	 * handled when they are found and we don't come back here.  Receiver
@@ -1668,13 +1820,13 @@ DUK_LOCAL DUK_ALWAYS_INLINE duk_bool_t duk__prop_set_stroridx_helper(duk_hthread
 		goto fail;
 	}
 
- success:
+success:
 	if (side_effect_safe) {
 		duk_pop_unsafe(thr);
 	}
 	return 1;
 
- fail:
+fail:
 	/* This pop is needed even on error, because throw_flag may be 0
 	 * in which case we don't actually throw.
 	 */
@@ -1687,7 +1839,7 @@ DUK_LOCAL DUK_ALWAYS_INLINE duk_bool_t duk__prop_set_stroridx_helper(duk_hthread
 		return duk__prop_set_error_objidx_idx(thr, idx_recv, idx, throw_flag);
 	}
 
- switch_to_safe:
+switch_to_safe:
 	if (use_key) {
 		return duk__prop_set_str_safe(thr, target, key, idx_val, idx_recv, throw_flag);
 	} else {
@@ -1695,31 +1847,88 @@ DUK_LOCAL DUK_ALWAYS_INLINE duk_bool_t duk__prop_set_stroridx_helper(duk_hthread
 	}
 }
 
-DUK_LOCAL DUK_NOINLINE duk_bool_t duk__prop_set_str_safe(duk_hthread *thr, duk_hobject *target, duk_hstring *key, duk_idx_t idx_val, duk_idx_t idx_recv, duk_bool_t throw_flag) {
-	return duk__prop_set_stroridx_helper(thr, target, key, 0, idx_val, idx_recv, throw_flag, 1 /*use_key*/, 1 /*side_effect_safe*/);
+DUK_LOCAL DUK_NOINLINE duk_bool_t duk__prop_set_str_safe(duk_hthread *thr,
+                                                         duk_hobject *target,
+                                                         duk_hstring *key,
+                                                         duk_idx_t idx_val,
+                                                         duk_idx_t idx_recv,
+                                                         duk_bool_t throw_flag) {
+	return duk__prop_set_stroridx_helper(thr,
+	                                     target,
+	                                     key,
+	                                     0,
+	                                     idx_val,
+	                                     idx_recv,
+	                                     throw_flag,
+	                                     1 /*use_key*/,
+	                                     1 /*side_effect_safe*/);
 }
 
-DUK_LOCAL duk_bool_t duk__prop_set_str_unsafe(duk_hthread *thr, duk_hobject *target, duk_hstring *key, duk_idx_t idx_val, duk_idx_t idx_recv, duk_bool_t throw_flag) {
+DUK_LOCAL duk_bool_t duk__prop_set_str_unsafe(duk_hthread *thr,
+                                              duk_hobject *target,
+                                              duk_hstring *key,
+                                              duk_idx_t idx_val,
+                                              duk_idx_t idx_recv,
+                                              duk_bool_t throw_flag) {
 #if defined(DUK_USE_PREFER_SIZE)
 	return duk__prop_set_str_safe(thr, target, key, 0, idx_val, idx_recv, throw_flag);
 #else
-	return duk__prop_set_stroridx_helper(thr, target, key, 0, idx_val, idx_recv, throw_flag, 1 /*use_key*/, 0 /*side_effect_safe*/);
+	return duk__prop_set_stroridx_helper(thr,
+	                                     target,
+	                                     key,
+	                                     0,
+	                                     idx_val,
+	                                     idx_recv,
+	                                     throw_flag,
+	                                     1 /*use_key*/,
+	                                     0 /*side_effect_safe*/);
 #endif
 }
 
-DUK_LOCAL DUK_NOINLINE duk_bool_t duk__prop_set_idx_safe(duk_hthread *thr, duk_hobject *target, duk_uarridx_t idx, duk_idx_t idx_val, duk_idx_t idx_recv, duk_bool_t throw_flag) {
-	return duk__prop_set_stroridx_helper(thr, target, NULL, idx, idx_val, idx_recv, throw_flag, 0 /*use_key*/, 1 /*side_effect_safe*/);
+DUK_LOCAL DUK_NOINLINE duk_bool_t duk__prop_set_idx_safe(duk_hthread *thr,
+                                                         duk_hobject *target,
+                                                         duk_uarridx_t idx,
+                                                         duk_idx_t idx_val,
+                                                         duk_idx_t idx_recv,
+                                                         duk_bool_t throw_flag) {
+	return duk__prop_set_stroridx_helper(thr,
+	                                     target,
+	                                     NULL,
+	                                     idx,
+	                                     idx_val,
+	                                     idx_recv,
+	                                     throw_flag,
+	                                     0 /*use_key*/,
+	                                     1 /*side_effect_safe*/);
 }
 
-DUK_LOCAL duk_bool_t duk__prop_set_idx_unsafe(duk_hthread *thr, duk_hobject *target, duk_uarridx_t idx, duk_idx_t idx_val, duk_idx_t idx_recv, duk_bool_t throw_flag) {
+DUK_LOCAL duk_bool_t duk__prop_set_idx_unsafe(duk_hthread *thr,
+                                              duk_hobject *target,
+                                              duk_uarridx_t idx,
+                                              duk_idx_t idx_val,
+                                              duk_idx_t idx_recv,
+                                              duk_bool_t throw_flag) {
 #if defined(DUK_USE_PREFER_SIZE)
 	return duk__prop_set_idx_safe(thr, target, NULL, idx, idx_val, idx_recv, throw_flag);
 #else
-	return duk__prop_set_stroridx_helper(thr, target, NULL, idx, idx_val, idx_recv, throw_flag, 0 /*use_key*/, 0 /*side_effect_safe*/);
+	return duk__prop_set_stroridx_helper(thr,
+	                                     target,
+	                                     NULL,
+	                                     idx,
+	                                     idx_val,
+	                                     idx_recv,
+	                                     throw_flag,
+	                                     0 /*use_key*/,
+	                                     0 /*side_effect_safe*/);
 #endif
 }
 
-DUK_LOCAL duk_bool_t duk__prop_set_str(duk_hthread *thr, duk_hobject *obj, duk_hstring *key, duk_idx_t idx_val, duk_idx_t idx_recv, duk_bool_t throw_flag) {
+DUK_LOCAL duk_bool_t duk__prop_set_str(duk_hthread *thr,
+                                       duk_hobject *obj,
+                                       duk_hstring *key,
+                                       duk_idx_t idx_val,
+                                       duk_idx_t idx_recv,
+                                       duk_bool_t throw_flag) {
 	DUK_ASSERT(thr != NULL);
 	DUK_ASSERT(obj != NULL);
 	DUK_ASSERT(key != NULL);
@@ -1733,7 +1942,12 @@ DUK_LOCAL duk_bool_t duk__prop_set_str(duk_hthread *thr, duk_hobject *obj, duk_h
 	return duk__prop_set_str_unsafe(thr, obj, key, idx_val, idx_recv, throw_flag);
 }
 
-DUK_LOCAL duk_bool_t duk__prop_set_idx(duk_hthread *thr, duk_hobject *obj, duk_uarridx_t idx, duk_idx_t idx_val, duk_idx_t idx_recv, duk_bool_t throw_flag) {
+DUK_LOCAL duk_bool_t duk__prop_set_idx(duk_hthread *thr,
+                                       duk_hobject *obj,
+                                       duk_uarridx_t idx,
+                                       duk_idx_t idx_val,
+                                       duk_idx_t idx_recv,
+                                       duk_bool_t throw_flag) {
 	DUK_ASSERT(thr != NULL);
 	DUK_ASSERT(obj != NULL);
 	DUK_ASSERT_ARRIDX_VALID(idx);
@@ -1746,7 +1960,8 @@ DUK_LOCAL duk_bool_t duk__prop_set_idx(duk_hthread *thr, duk_hobject *obj, duk_u
 	return duk__prop_set_idx_unsafe(thr, obj, idx, idx_val, idx_recv, throw_flag);
 }
 
-DUK_LOCAL duk_bool_t duk__prop_putvalue_idx_inidx(duk_hthread *thr, duk_idx_t idx_recv, duk_uarridx_t idx, duk_idx_t idx_val, duk_bool_t throw_flag) {
+DUK_LOCAL duk_bool_t
+duk__prop_putvalue_idx_inidx(duk_hthread *thr, duk_idx_t idx_recv, duk_uarridx_t idx, duk_idx_t idx_val, duk_bool_t throw_flag) {
 	duk_hobject *next;
 	duk_small_uint_t next_bidx;
 	duk_tval *tv_recv;
@@ -1837,7 +2052,7 @@ DUK_LOCAL duk_bool_t duk__prop_putvalue_idx_inidx(duk_hthread *thr, duk_idx_t id
 		} else
 #endif
 		{
-			coerced_val = duk_to_uint32(thr, idx_val);  /* arbitrary side effects */
+			coerced_val = duk_to_uint32(thr, idx_val); /* arbitrary side effects */
 		}
 
 		if (DUK_LIKELY(idx < DUK_HBUFFER_GET_SIZE(h))) {
@@ -1866,14 +2081,15 @@ DUK_LOCAL duk_bool_t duk__prop_putvalue_idx_inidx(duk_hthread *thr, duk_idx_t id
 
 	next = thr->builtins[next_bidx];
 	/* fall thru */
- go_next:
+go_next:
 	return duk__prop_set_idx(thr, next, idx, idx_val, idx_recv, throw_flag);
 
- fail_not_writable:
+fail_not_writable:
 	return duk__prop_set_error_objidx_idx(thr, idx_recv, idx, throw_flag);
 }
 
-DUK_LOCAL duk_bool_t duk__prop_putvalue_str_inidx(duk_hthread *thr, duk_idx_t idx_recv, duk_hstring *key, duk_idx_t idx_val, duk_bool_t throw_flag) {
+DUK_LOCAL duk_bool_t
+duk__prop_putvalue_str_inidx(duk_hthread *thr, duk_idx_t idx_recv, duk_hstring *key, duk_idx_t idx_val, duk_bool_t throw_flag) {
 	duk_hobject *next;
 	duk_small_uint_t next_bidx;
 	duk_tval *tv_recv;
@@ -1972,14 +2188,15 @@ DUK_LOCAL duk_bool_t duk__prop_putvalue_str_inidx(duk_hthread *thr, duk_idx_t id
 
 	next = thr->builtins[next_bidx];
 	/* fall thru */
- go_next:
+go_next:
 	return duk__prop_set_str(thr, next, key, idx_val, idx_recv, throw_flag);
 
- fail_not_writable:
+fail_not_writable:
 	return duk__prop_set_error_objidx_str(thr, idx_recv, key, throw_flag);
 }
 
-DUK_INTERNAL duk_bool_t duk_prop_putvalue_idx_inidx(duk_hthread *thr, duk_idx_t idx_recv, duk_uarridx_t idx, duk_idx_t idx_val, duk_bool_t throw_flag) {
+DUK_INTERNAL duk_bool_t
+duk_prop_putvalue_idx_inidx(duk_hthread *thr, duk_idx_t idx_recv, duk_uarridx_t idx, duk_idx_t idx_val, duk_bool_t throw_flag) {
 	DUK_ASSERT(thr != NULL);
 	DUK_ASSERT(duk_is_valid_posidx(thr, idx_recv));
 	DUK_ASSERT(duk_is_valid_posidx(thr, idx_val));
@@ -1999,7 +2216,8 @@ DUK_INTERNAL duk_bool_t duk_prop_putvalue_idx_inidx(duk_hthread *thr, duk_idx_t 
 	}
 }
 
-DUK_INTERNAL duk_bool_t duk_prop_putvalue_str_inidx(duk_hthread *thr, duk_idx_t idx_recv, duk_hstring *key, duk_idx_t idx_val, duk_bool_t throw_flag) {
+DUK_INTERNAL duk_bool_t
+duk_prop_putvalue_str_inidx(duk_hthread *thr, duk_idx_t idx_recv, duk_hstring *key, duk_idx_t idx_val, duk_bool_t throw_flag) {
 	DUK_ASSERT(thr != NULL);
 	DUK_ASSERT(duk_is_valid_posidx(thr, idx_recv));
 	DUK_ASSERT(key != NULL);
@@ -2013,7 +2231,8 @@ DUK_INTERNAL duk_bool_t duk_prop_putvalue_str_inidx(duk_hthread *thr, duk_idx_t 
 	}
 }
 
-DUK_INTERNAL duk_bool_t duk_prop_putvalue_inidx(duk_hthread *thr, duk_idx_t idx_recv, duk_tval *tv_key, duk_idx_t idx_val, duk_bool_t throw_flag) {
+DUK_INTERNAL duk_bool_t
+duk_prop_putvalue_inidx(duk_hthread *thr, duk_idx_t idx_recv, duk_tval *tv_key, duk_idx_t idx_val, duk_bool_t throw_flag) {
 	duk_bool_t rc;
 	duk_hstring *key;
 	duk_uarridx_t idx;
@@ -2096,11 +2315,11 @@ DUK_INTERNAL duk_bool_t duk_prop_putvalue_inidx(duk_hthread *thr, duk_idx_t idx_
 	duk_pop_unsafe(thr);
 	return rc;
 
- use_idx:
+use_idx:
 	DUK_ASSERT_ARRIDX_VALID(idx);
 	return duk__prop_putvalue_idx_inidx(thr, idx_recv, idx, idx_val, throw_flag);
 
- use_str:
+use_str:
 	DUK_ASSERT(!DUK_HSTRING_HAS_ARRIDX(key));
 	return duk__prop_putvalue_str_inidx(thr, idx_recv, key, idx_val, throw_flag);
 }
