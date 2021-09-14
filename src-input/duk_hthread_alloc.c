@@ -42,7 +42,7 @@ DUK_INTERNAL duk_bool_t duk_hthread_init_stacks(duk_heap *heap, duk_hthread *thr
 
 	return 1;
 
- fail:
+fail:
 	DUK_FREE(heap, thr->valstack);
 	DUK_ASSERT(thr->callstack_curr == NULL);
 

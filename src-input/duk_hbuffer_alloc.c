@@ -25,7 +25,7 @@ DUK_INTERNAL duk_hbuffer *duk_hbuffer_alloc(duk_heap *heap, duk_size_t size, duk
 	 */
 	if (size > DUK_HBUFFER_MAX_BYTELEN) {
 		DUK_D(DUK_DPRINT("hbuffer alloc failed: size too large: %ld", (long) size));
-		return NULL;  /* no need to write 'out_bufdata' */
+		return NULL; /* no need to write 'out_bufdata' */
 	}
 
 	if (flags & DUK_BUF_FLAG_EXTERNAL) {
@@ -37,7 +37,7 @@ DUK_INTERNAL duk_hbuffer *duk_hbuffer_alloc(duk_heap *heap, duk_size_t size, duk
 	} else {
 		header_size = sizeof(duk_hbuffer_fixed);
 		alloc_size = sizeof(duk_hbuffer_fixed) + size;
-		DUK_ASSERT(alloc_size >= sizeof(duk_hbuffer_fixed));  /* no wrapping */
+		DUK_ASSERT(alloc_size >= sizeof(duk_hbuffer_fixed)); /* no wrapping */
 	}
 
 	res = (duk_hbuffer *) DUK_ALLOC(heap, alloc_size);
@@ -47,8 +47,7 @@ DUK_INTERNAL duk_hbuffer *duk_hbuffer_alloc(duk_heap *heap, duk_size_t size, duk
 
 	/* zero everything unless requested not to do so */
 #if defined(DUK_USE_ZERO_BUFFER_DATA)
-	duk_memzero((void *) res,
-	            (flags & DUK_BUF_FLAG_NOZERO) ? header_size : alloc_size);
+	duk_memzero((void *) res, (flags & DUK_BUF_FLAG_NOZERO) ? header_size : alloc_size);
 #else
 	duk_memzero((void *) res, header_size);
 #endif
@@ -71,7 +70,7 @@ DUK_INTERNAL duk_hbuffer *duk_hbuffer_alloc(duk_heap *heap, duk_size_t size, duk
 		void *ptr;
 
 		if (size > 0) {
-			DUK_ASSERT(!(flags & DUK_BUF_FLAG_EXTERNAL));  /* alloc external with size zero */
+			DUK_ASSERT(!(flags & DUK_BUF_FLAG_EXTERNAL)); /* alloc external with size zero */
 			DUK_DDD(DUK_DDDPRINT("dynamic buffer with nonzero size, alloc actual buffer"));
 #if defined(DUK_USE_ZERO_BUFFER_DATA)
 			ptr = DUK_ALLOC_ZEROED(heap, size);
@@ -111,16 +110,16 @@ DUK_INTERNAL duk_hbuffer *duk_hbuffer_alloc(duk_heap *heap, duk_size_t size, duk
 	} else {
 		DUK_ASSERT(!(flags & DUK_BUF_FLAG_EXTERNAL));
 	}
-        DUK_HEAP_INSERT_INTO_HEAP_ALLOCATED(heap, &res->hdr);
+	DUK_HEAP_INSERT_INTO_HEAP_ALLOCATED(heap, &res->hdr);
 
 	DUK_DDD(DUK_DDDPRINT("allocated hbuffer: %p", (void *) res));
 	return res;
 
- alloc_error:
+alloc_error:
 	DUK_DD(DUK_DDPRINT("hbuffer allocation failed"));
 
 	DUK_FREE(heap, res);
-	return NULL;  /* no need to write 'out_bufdata' */
+	return NULL; /* no need to write 'out_bufdata' */
 }
 
 /* For indirect allocs. */

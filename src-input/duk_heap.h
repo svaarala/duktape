@@ -14,46 +14,50 @@
  *  Heap flags
  */
 
-#define DUK_HEAP_FLAG_MARKANDSWEEP_RECLIMIT_REACHED            (1U << 0)  /* mark-and-sweep marking reached a recursion limit and must use multi-pass marking */
-#define DUK_HEAP_FLAG_INTERRUPT_RUNNING                        (1U << 1)  /* executor interrupt running (used to avoid nested interrupts) */
-#define DUK_HEAP_FLAG_FINALIZER_NORESCUE                       (1U << 2)  /* heap destruction ongoing, finalizer rescue no longer possible */
-#define DUK_HEAP_FLAG_DEBUGGER_PAUSED                          (1U << 3)  /* debugger is paused: talk with debug client until step/resume */
+#define DUK_HEAP_FLAG_MARKANDSWEEP_RECLIMIT_REACHED \
+	(1U << 0) /* mark-and-sweep marking reached a recursion limit and must use multi-pass marking */
+#define DUK_HEAP_FLAG_INTERRUPT_RUNNING  (1U << 1) /* executor interrupt running (used to avoid nested interrupts) */
+#define DUK_HEAP_FLAG_FINALIZER_NORESCUE (1U << 2) /* heap destruction ongoing, finalizer rescue no longer possible */
+#define DUK_HEAP_FLAG_DEBUGGER_PAUSED    (1U << 3) /* debugger is paused: talk with debug client until step/resume */
 
-#define DUK__HEAP_HAS_FLAGS(heap,bits)               ((heap)->flags & (bits))
-#define DUK__HEAP_SET_FLAGS(heap,bits)  do { \
+#define DUK__HEAP_HAS_FLAGS(heap, bits) ((heap)->flags & (bits))
+#define DUK__HEAP_SET_FLAGS(heap, bits) \
+	do { \
 		(heap)->flags |= (bits); \
 	} while (0)
-#define DUK__HEAP_CLEAR_FLAGS(heap,bits)  do { \
+#define DUK__HEAP_CLEAR_FLAGS(heap, bits) \
+	do { \
 		(heap)->flags &= ~(bits); \
 	} while (0)
 
-#define DUK_HEAP_HAS_MARKANDSWEEP_RECLIMIT_REACHED(heap)   DUK__HEAP_HAS_FLAGS((heap), DUK_HEAP_FLAG_MARKANDSWEEP_RECLIMIT_REACHED)
-#define DUK_HEAP_HAS_INTERRUPT_RUNNING(heap)               DUK__HEAP_HAS_FLAGS((heap), DUK_HEAP_FLAG_INTERRUPT_RUNNING)
-#define DUK_HEAP_HAS_FINALIZER_NORESCUE(heap)              DUK__HEAP_HAS_FLAGS((heap), DUK_HEAP_FLAG_FINALIZER_NORESCUE)
-#define DUK_HEAP_HAS_DEBUGGER_PAUSED(heap)                 DUK__HEAP_HAS_FLAGS((heap), DUK_HEAP_FLAG_DEBUGGER_PAUSED)
+#define DUK_HEAP_HAS_MARKANDSWEEP_RECLIMIT_REACHED(heap) DUK__HEAP_HAS_FLAGS((heap), DUK_HEAP_FLAG_MARKANDSWEEP_RECLIMIT_REACHED)
+#define DUK_HEAP_HAS_INTERRUPT_RUNNING(heap)             DUK__HEAP_HAS_FLAGS((heap), DUK_HEAP_FLAG_INTERRUPT_RUNNING)
+#define DUK_HEAP_HAS_FINALIZER_NORESCUE(heap)            DUK__HEAP_HAS_FLAGS((heap), DUK_HEAP_FLAG_FINALIZER_NORESCUE)
+#define DUK_HEAP_HAS_DEBUGGER_PAUSED(heap)               DUK__HEAP_HAS_FLAGS((heap), DUK_HEAP_FLAG_DEBUGGER_PAUSED)
 
-#define DUK_HEAP_SET_MARKANDSWEEP_RECLIMIT_REACHED(heap)   DUK__HEAP_SET_FLAGS((heap), DUK_HEAP_FLAG_MARKANDSWEEP_RECLIMIT_REACHED)
-#define DUK_HEAP_SET_INTERRUPT_RUNNING(heap)               DUK__HEAP_SET_FLAGS((heap), DUK_HEAP_FLAG_INTERRUPT_RUNNING)
-#define DUK_HEAP_SET_FINALIZER_NORESCUE(heap)              DUK__HEAP_SET_FLAGS((heap), DUK_HEAP_FLAG_FINALIZER_NORESCUE)
-#define DUK_HEAP_SET_DEBUGGER_PAUSED(heap)                 DUK__HEAP_SET_FLAGS((heap), DUK_HEAP_FLAG_DEBUGGER_PAUSED)
+#define DUK_HEAP_SET_MARKANDSWEEP_RECLIMIT_REACHED(heap) DUK__HEAP_SET_FLAGS((heap), DUK_HEAP_FLAG_MARKANDSWEEP_RECLIMIT_REACHED)
+#define DUK_HEAP_SET_INTERRUPT_RUNNING(heap)             DUK__HEAP_SET_FLAGS((heap), DUK_HEAP_FLAG_INTERRUPT_RUNNING)
+#define DUK_HEAP_SET_FINALIZER_NORESCUE(heap)            DUK__HEAP_SET_FLAGS((heap), DUK_HEAP_FLAG_FINALIZER_NORESCUE)
+#define DUK_HEAP_SET_DEBUGGER_PAUSED(heap)               DUK__HEAP_SET_FLAGS((heap), DUK_HEAP_FLAG_DEBUGGER_PAUSED)
 
-#define DUK_HEAP_CLEAR_MARKANDSWEEP_RECLIMIT_REACHED(heap) DUK__HEAP_CLEAR_FLAGS((heap), DUK_HEAP_FLAG_MARKANDSWEEP_RECLIMIT_REACHED)
-#define DUK_HEAP_CLEAR_INTERRUPT_RUNNING(heap)             DUK__HEAP_CLEAR_FLAGS((heap), DUK_HEAP_FLAG_INTERRUPT_RUNNING)
-#define DUK_HEAP_CLEAR_FINALIZER_NORESCUE(heap)            DUK__HEAP_CLEAR_FLAGS((heap), DUK_HEAP_FLAG_FINALIZER_NORESCUE)
-#define DUK_HEAP_CLEAR_DEBUGGER_PAUSED(heap)               DUK__HEAP_CLEAR_FLAGS((heap), DUK_HEAP_FLAG_DEBUGGER_PAUSED)
+#define DUK_HEAP_CLEAR_MARKANDSWEEP_RECLIMIT_REACHED(heap) \
+	DUK__HEAP_CLEAR_FLAGS((heap), DUK_HEAP_FLAG_MARKANDSWEEP_RECLIMIT_REACHED)
+#define DUK_HEAP_CLEAR_INTERRUPT_RUNNING(heap)  DUK__HEAP_CLEAR_FLAGS((heap), DUK_HEAP_FLAG_INTERRUPT_RUNNING)
+#define DUK_HEAP_CLEAR_FINALIZER_NORESCUE(heap) DUK__HEAP_CLEAR_FLAGS((heap), DUK_HEAP_FLAG_FINALIZER_NORESCUE)
+#define DUK_HEAP_CLEAR_DEBUGGER_PAUSED(heap)    DUK__HEAP_CLEAR_FLAGS((heap), DUK_HEAP_FLAG_DEBUGGER_PAUSED)
 
 /*
  *  Longjmp types, also double as identifying continuation type for a rethrow (in 'finally')
  */
 
-#define DUK_LJ_TYPE_UNKNOWN      0    /* unused */
-#define DUK_LJ_TYPE_THROW        1    /* value1 -> error object */
-#define DUK_LJ_TYPE_YIELD        2    /* value1 -> yield value, iserror -> error / normal */
-#define DUK_LJ_TYPE_RESUME       3    /* value1 -> resume value, value2 -> resumee thread, iserror -> error/normal */
-#define DUK_LJ_TYPE_BREAK        4    /* value1 -> label number, pseudo-type to indicate a break continuation (for ENDFIN) */
-#define DUK_LJ_TYPE_CONTINUE     5    /* value1 -> label number, pseudo-type to indicate a continue continuation (for ENDFIN) */
-#define DUK_LJ_TYPE_RETURN       6    /* value1 -> return value, pseudo-type to indicate a return continuation (for ENDFIN) */
-#define DUK_LJ_TYPE_NORMAL       7    /* no value, pseudo-type to indicate a normal continuation (for ENDFIN) */
+#define DUK_LJ_TYPE_UNKNOWN  0 /* unused */
+#define DUK_LJ_TYPE_THROW    1 /* value1 -> error object */
+#define DUK_LJ_TYPE_YIELD    2 /* value1 -> yield value, iserror -> error / normal */
+#define DUK_LJ_TYPE_RESUME   3 /* value1 -> resume value, value2 -> resumee thread, iserror -> error/normal */
+#define DUK_LJ_TYPE_BREAK    4 /* value1 -> label number, pseudo-type to indicate a break continuation (for ENDFIN) */
+#define DUK_LJ_TYPE_CONTINUE 5 /* value1 -> label number, pseudo-type to indicate a continue continuation (for ENDFIN) */
+#define DUK_LJ_TYPE_RETURN   6 /* value1 -> return value, pseudo-type to indicate a return continuation (for ENDFIN) */
+#define DUK_LJ_TYPE_NORMAL   7 /* no value, pseudo-type to indicate a normal continuation (for ENDFIN) */
 
 /*
  *  Mark-and-sweep flags
@@ -66,19 +70,19 @@
 /* Emergency mark-and-sweep: try extra hard, even at the cost of
  * performance.
  */
-#define DUK_MS_FLAG_EMERGENCY                (1U << 0)
+#define DUK_MS_FLAG_EMERGENCY (1U << 0)
 
 /* Postpone rescue decisions for reachable objects with FINALIZED set.
  * Used during finalize_list processing to avoid incorrect rescue
  * decisions due to finalize_list being a reachability root.
  */
-#define DUK_MS_FLAG_POSTPONE_RESCUE          (1U << 1)
+#define DUK_MS_FLAG_POSTPONE_RESCUE (1U << 1)
 
 /* Don't compact objects; needed during object property table resize
  * to prevent a recursive resize.  It would suffice to protect only the
  * current object being resized, but this is not yet implemented.
  */
-#define DUK_MS_FLAG_NO_OBJECT_COMPACTION     (1U << 2)
+#define DUK_MS_FLAG_NO_OBJECT_COMPACTION (1U << 2)
 
 /*
  *  Thread switching
@@ -89,9 +93,10 @@
  */
 
 #if defined(DUK_USE_INTERRUPT_COUNTER)
-#define DUK_HEAP_SWITCH_THREAD(heap,newthr)  duk_heap_switch_thread((heap), (newthr))
+#define DUK_HEAP_SWITCH_THREAD(heap, newthr) duk_heap_switch_thread((heap), (newthr))
 #else
-#define DUK_HEAP_SWITCH_THREAD(heap,newthr)  do { \
+#define DUK_HEAP_SWITCH_THREAD(heap, newthr) \
+	do { \
 		(heap)->curr_thread = (newthr); \
 	} while (0)
 #endif
@@ -101,11 +106,14 @@
  */
 
 #if defined(DUK_USE_DEBUG)
-#define DUK_STATS_INC(heap,fieldname) do { \
+#define DUK_STATS_INC(heap, fieldname) \
+	do { \
 		(heap)->fieldname += 1; \
 	} while (0)
 #else
-#define DUK_STATS_INC(heap,fieldname) do {} while (0)
+#define DUK_STATS_INC(heap, fieldname) \
+	do { \
+	} while (0)
 #endif
 
 /*
@@ -123,36 +131,41 @@
  * only during init phases).
  */
 #if defined(DUK_USE_REFERENCE_COUNTING)
-#define DUK_HEAP_MARK_AND_SWEEP_TRIGGER_MULT              12800L  /* 50x heap size */
-#define DUK_HEAP_MARK_AND_SWEEP_TRIGGER_ADD               1024L
-#define DUK_HEAP_MARK_AND_SWEEP_TRIGGER_SKIP              256L
+#define DUK_HEAP_MARK_AND_SWEEP_TRIGGER_MULT 12800L /* 50x heap size */
+#define DUK_HEAP_MARK_AND_SWEEP_TRIGGER_ADD  1024L
+#define DUK_HEAP_MARK_AND_SWEEP_TRIGGER_SKIP 256L
 #else
-#define DUK_HEAP_MARK_AND_SWEEP_TRIGGER_MULT              256L    /* 1x heap size */
-#define DUK_HEAP_MARK_AND_SWEEP_TRIGGER_ADD               1024L
-#define DUK_HEAP_MARK_AND_SWEEP_TRIGGER_SKIP              256L
+#define DUK_HEAP_MARK_AND_SWEEP_TRIGGER_MULT 256L /* 1x heap size */
+#define DUK_HEAP_MARK_AND_SWEEP_TRIGGER_ADD  1024L
+#define DUK_HEAP_MARK_AND_SWEEP_TRIGGER_SKIP 256L
 #endif
 
 /* GC torture. */
 #if defined(DUK_USE_GC_TORTURE)
-#define DUK_GC_TORTURE(heap) do { duk_heap_mark_and_sweep((heap), 0); } while (0)
+#define DUK_GC_TORTURE(heap) \
+	do { \
+		duk_heap_mark_and_sweep((heap), 0); \
+	} while (0)
 #else
-#define DUK_GC_TORTURE(heap) do { } while (0)
+#define DUK_GC_TORTURE(heap) \
+	do { \
+	} while (0)
 #endif
 
 /* Stringcache is used for speeding up char-offset-to-byte-offset
  * translations for non-ASCII strings.
  */
-#define DUK_HEAP_STRCACHE_SIZE                            4
-#define DUK_HEAP_STRINGCACHE_NOCACHE_LIMIT                16  /* strings up to the this length are not cached */
+#define DUK_HEAP_STRCACHE_SIZE             4
+#define DUK_HEAP_STRINGCACHE_NOCACHE_LIMIT 16 /* strings up to the this length are not cached */
 
 /* Some list management macros. */
-#define DUK_HEAP_INSERT_INTO_HEAP_ALLOCATED(heap,hdr)     duk_heap_insert_into_heap_allocated((heap), (hdr))
+#define DUK_HEAP_INSERT_INTO_HEAP_ALLOCATED(heap, hdr) duk_heap_insert_into_heap_allocated((heap), (hdr))
 #if defined(DUK_USE_REFERENCE_COUNTING)
-#define DUK_HEAP_REMOVE_FROM_HEAP_ALLOCATED(heap,hdr)     duk_heap_remove_from_heap_allocated((heap), (hdr))
+#define DUK_HEAP_REMOVE_FROM_HEAP_ALLOCATED(heap, hdr) duk_heap_remove_from_heap_allocated((heap), (hdr))
 #endif
 #if defined(DUK_USE_FINALIZER_SUPPORT)
-#define DUK_HEAP_INSERT_INTO_FINALIZE_LIST(heap,hdr)      duk_heap_insert_into_finalize_list((heap), (hdr))
-#define DUK_HEAP_REMOVE_FROM_FINALIZE_LIST(heap,hdr)      duk_heap_remove_from_finalize_list((heap), (hdr))
+#define DUK_HEAP_INSERT_INTO_FINALIZE_LIST(heap, hdr) duk_heap_insert_into_finalize_list((heap), (hdr))
+#define DUK_HEAP_REMOVE_FROM_FINALIZE_LIST(heap, hdr) duk_heap_remove_from_finalize_list((heap), (hdr))
 #endif
 
 /*
@@ -161,30 +174,24 @@
 
 /* heap string indices are autogenerated in duk_strings.h */
 #if defined(DUK_USE_ROM_STRINGS)
-#define DUK_HEAP_GET_STRING(heap,idx) \
-	((duk_hstring *) DUK_LOSE_CONST(duk_rom_strings_stridx[(idx)]))
-#else  /* DUK_USE_ROM_STRINGS */
+#define DUK_HEAP_GET_STRING(heap, idx) ((duk_hstring *) DUK_LOSE_CONST(duk_rom_strings_stridx[(idx)]))
+#else /* DUK_USE_ROM_STRINGS */
 #if defined(DUK_USE_HEAPPTR16)
-#define DUK_HEAP_GET_STRING(heap,idx) \
-	((duk_hstring *) DUK_USE_HEAPPTR_DEC16((heap)->heap_udata, (heap)->strs16[(idx)]))
+#define DUK_HEAP_GET_STRING(heap, idx) ((duk_hstring *) DUK_USE_HEAPPTR_DEC16((heap)->heap_udata, (heap)->strs16[(idx)]))
 #else
-#define DUK_HEAP_GET_STRING(heap,idx) \
-	((heap)->strs[(idx)])
+#define DUK_HEAP_GET_STRING(heap, idx) ((heap)->strs[(idx)])
 #endif
-#endif  /* DUK_USE_ROM_STRINGS */
+#endif /* DUK_USE_ROM_STRINGS */
 
 /*
  *  Raw memory calls: relative to heap, but no GC interaction
  */
 
-#define DUK_ALLOC_RAW(heap,size) \
-	((heap)->alloc_func((heap)->heap_udata, (size)))
+#define DUK_ALLOC_RAW(heap, size) ((heap)->alloc_func((heap)->heap_udata, (size)))
 
-#define DUK_REALLOC_RAW(heap,ptr,newsize) \
-	((heap)->realloc_func((heap)->heap_udata, (void *) (ptr), (newsize)))
+#define DUK_REALLOC_RAW(heap, ptr, newsize) ((heap)->realloc_func((heap)->heap_udata, (void *) (ptr), (newsize)))
 
-#define DUK_FREE_RAW(heap,ptr) \
-	((heap)->free_func((heap)->heap_udata, (void *) (ptr)))
+#define DUK_FREE_RAW(heap, ptr) ((heap)->free_func((heap)->heap_udata, (void *) (ptr)))
 
 /*
  *  Memory calls: relative to heap, GC interaction, but no error throwing.
@@ -217,11 +224,11 @@
 /* callback for indirect reallocs, request for current pointer */
 typedef void *(*duk_mem_getptr)(duk_heap *heap, void *ud);
 
-#define DUK_ALLOC(heap,size)                            duk_heap_mem_alloc((heap), (size))
-#define DUK_ALLOC_ZEROED(heap,size)                     duk_heap_mem_alloc_zeroed((heap), (size))
-#define DUK_REALLOC(heap,ptr,newsize)                   duk_heap_mem_realloc((heap), (ptr), (newsize))
-#define DUK_REALLOC_INDIRECT(heap,cb,ud,newsize)        duk_heap_mem_realloc_indirect((heap), (cb), (ud), (newsize))
-#define DUK_FREE(heap,ptr)                              duk_heap_mem_free((heap), (ptr))
+#define DUK_ALLOC(heap, size)                       duk_heap_mem_alloc((heap), (size))
+#define DUK_ALLOC_ZEROED(heap, size)                duk_heap_mem_alloc_zeroed((heap), (size))
+#define DUK_REALLOC(heap, ptr, newsize)             duk_heap_mem_realloc((heap), (ptr), (newsize))
+#define DUK_REALLOC_INDIRECT(heap, cb, ud, newsize) duk_heap_mem_realloc_indirect((heap), (cb), (ud), (newsize))
+#define DUK_FREE(heap, ptr)                         duk_heap_mem_free((heap), (ptr))
 
 /*
  *  Checked allocation, relative to a thread
@@ -230,24 +237,26 @@ typedef void *(*duk_mem_getptr)(duk_heap *heap, void *ud);
  *  for convenience.
  */
 
-#define DUK_ALLOC_CHECKED(thr,size)                     duk_heap_mem_alloc_checked((thr), (size))
-#define DUK_ALLOC_CHECKED_ZEROED(thr,size)              duk_heap_mem_alloc_checked_zeroed((thr), (size))
-#define DUK_FREE_CHECKED(thr,ptr)                       duk_heap_mem_free((thr)->heap, (ptr))
+#define DUK_ALLOC_CHECKED(thr, size)        duk_heap_mem_alloc_checked((thr), (size))
+#define DUK_ALLOC_CHECKED_ZEROED(thr, size) duk_heap_mem_alloc_checked_zeroed((thr), (size))
+#define DUK_FREE_CHECKED(thr, ptr)          duk_heap_mem_free((thr)->heap, (ptr))
 
 /*
  *  Memory constants
  */
 
-#define DUK_HEAP_ALLOC_FAIL_MARKANDSWEEP_LIMIT           10  /* Retry allocation after mark-and-sweep for this
-                                                              * many times.  A single mark-and-sweep round is
-                                                              * not guaranteed to free all unreferenced memory
-                                                              * because of finalization (in fact, ANY number of
-                                                              * rounds is strictly not enough).
-                                                              */
+#define DUK_HEAP_ALLOC_FAIL_MARKANDSWEEP_LIMIT \
+	10 /* Retry allocation after mark-and-sweep for this \
+	    * many times.  A single mark-and-sweep round is \
+	    * not guaranteed to free all unreferenced memory \
+	    * because of finalization (in fact, ANY number of \
+	    * rounds is strictly not enough). \
+	    */
 
-#define DUK_HEAP_ALLOC_FAIL_MARKANDSWEEP_EMERGENCY_LIMIT  3  /* Starting from this round, use emergency mode
-                                                              * for mark-and-sweep.
-                                                              */
+#define DUK_HEAP_ALLOC_FAIL_MARKANDSWEEP_EMERGENCY_LIMIT \
+	3 /* Starting from this round, use emergency mode \
+	   * for mark-and-sweep. \
+	   */
 
 /*
  *  Debugger support
@@ -256,26 +265,26 @@ typedef void *(*duk_mem_getptr)(duk_heap *heap, void *ud);
 /* Maximum number of breakpoints.  Only breakpoints that are set are
  * consulted so increasing this has no performance impact.
  */
-#define DUK_HEAP_MAX_BREAKPOINTS          16
+#define DUK_HEAP_MAX_BREAKPOINTS 16
 
 /* Opcode interval for a Date-based status/peek rate limit check.  Only
  * relevant when debugger is attached.  Requesting a timestamp may be a
  * slow operation on some platforms so this shouldn't be too low.  On the
  * other hand a high value makes Duktape react to a pause request slowly.
  */
-#define DUK_HEAP_DBG_RATELIMIT_OPCODES    4000
+#define DUK_HEAP_DBG_RATELIMIT_OPCODES 4000
 
 /* Milliseconds between status notify and transport peeks. */
-#define DUK_HEAP_DBG_RATELIMIT_MILLISECS  200
+#define DUK_HEAP_DBG_RATELIMIT_MILLISECS 200
 
 /* Debugger pause flags. */
-#define DUK_PAUSE_FLAG_ONE_OPCODE        (1U << 0)   /* pause when a single opcode has been executed */
-#define DUK_PAUSE_FLAG_ONE_OPCODE_ACTIVE (1U << 1)   /* one opcode pause actually active; artifact of current implementation */
-#define DUK_PAUSE_FLAG_LINE_CHANGE       (1U << 2)   /* pause when current line number changes */
-#define DUK_PAUSE_FLAG_FUNC_ENTRY        (1U << 3)   /* pause when entering a function */
-#define DUK_PAUSE_FLAG_FUNC_EXIT         (1U << 4)   /* pause when exiting current function */
-#define DUK_PAUSE_FLAG_CAUGHT_ERROR      (1U << 5)   /* pause when about to throw an error that is caught */
-#define DUK_PAUSE_FLAG_UNCAUGHT_ERROR    (1U << 6)   /* pause when about to throw an error that won't be caught */
+#define DUK_PAUSE_FLAG_ONE_OPCODE        (1U << 0) /* pause when a single opcode has been executed */
+#define DUK_PAUSE_FLAG_ONE_OPCODE_ACTIVE (1U << 1) /* one opcode pause actually active; artifact of current implementation */
+#define DUK_PAUSE_FLAG_LINE_CHANGE       (1U << 2) /* pause when current line number changes */
+#define DUK_PAUSE_FLAG_FUNC_ENTRY        (1U << 3) /* pause when entering a function */
+#define DUK_PAUSE_FLAG_FUNC_EXIT         (1U << 4) /* pause when exiting current function */
+#define DUK_PAUSE_FLAG_CAUGHT_ERROR      (1U << 5) /* pause when about to throw an error that is caught */
+#define DUK_PAUSE_FLAG_UNCAUGHT_ERROR    (1U << 6) /* pause when about to throw an error that won't be caught */
 
 struct duk_breakpoint {
 	duk_hstring *filename;
@@ -303,21 +312,23 @@ struct duk_strcache_entry {
  */
 
 struct duk_ljstate {
-	duk_jmpbuf *jmpbuf_ptr;   /* current setjmp() catchpoint */
-	duk_small_uint_t type;    /* longjmp type */
-	duk_bool_t iserror;       /* isError flag for yield */
-	duk_tval value1;          /* 1st related value (type specific) */
-	duk_tval value2;          /* 2nd related value (type specific) */
+	duk_jmpbuf *jmpbuf_ptr; /* current setjmp() catchpoint */
+	duk_small_uint_t type; /* longjmp type */
+	duk_bool_t iserror; /* isError flag for yield */
+	duk_tval value1; /* 1st related value (type specific) */
+	duk_tval value2; /* 2nd related value (type specific) */
 };
 
-#define DUK_ASSERT_LJSTATE_UNSET(heap) do { \
+#define DUK_ASSERT_LJSTATE_UNSET(heap) \
+	do { \
 		DUK_ASSERT(heap != NULL); \
 		DUK_ASSERT(heap->lj.type == DUK_LJ_TYPE_UNKNOWN); \
 		DUK_ASSERT(heap->lj.iserror == 0); \
 		DUK_ASSERT(DUK_TVAL_IS_UNDEFINED(&heap->lj.value1)); \
 		DUK_ASSERT(DUK_TVAL_IS_UNDEFINED(&heap->lj.value2)); \
 	} while (0)
-#define DUK_ASSERT_LJSTATE_SET(heap) do { \
+#define DUK_ASSERT_LJSTATE_SET(heap) \
+	do { \
 		DUK_ASSERT(heap != NULL); \
 		DUK_ASSERT(heap->lj.type != DUK_LJ_TYPE_UNKNOWN); \
 	} while (0)
@@ -337,9 +348,14 @@ struct duk_litcache_entry {
 
 #if defined(DUK_USE_ASSERTIONS)
 DUK_INTERNAL_DECL void duk_heap_assert_valid(duk_heap *heap);
-#define DUK_HEAP_ASSERT_VALID(heap)  do { duk_heap_assert_valid((heap)); } while (0)
+#define DUK_HEAP_ASSERT_VALID(heap) \
+	do { \
+		duk_heap_assert_valid((heap)); \
+	} while (0)
 #else
-#define DUK_HEAP_ASSERT_VALID(heap)  do {} while (0)
+#define DUK_HEAP_ASSERT_VALID(heap) \
+	do { \
+	} while (0)
 #endif
 
 struct duk_heap {
@@ -493,9 +509,9 @@ struct duk_heap {
 	/* Random number state for duk_util_tinyrandom.c. */
 #if !defined(DUK_USE_GET_RANDOM_DOUBLE)
 #if defined(DUK_USE_PREFER_SIZE) || !defined(DUK_USE_64BIT_OPS)
-	duk_uint32_t rnd_state;  /* State for Shamir's three-op algorithm */
+	duk_uint32_t rnd_state; /* State for Shamir's three-op algorithm */
 #else
-	duk_uint64_t rnd_state[2];  /* State for xoroshiro128+ */
+	duk_uint64_t rnd_state[2]; /* State for xoroshiro128+ */
 #endif
 #endif
 
@@ -518,8 +534,8 @@ struct duk_heap {
 	/* Debugger state. */
 #if defined(DUK_USE_DEBUGGER_SUPPORT)
 	/* Callbacks and udata; dbg_read_cb != NULL is used to indicate attached state. */
-	duk_debug_read_function dbg_read_cb;                /* required, NULL implies detached */
-	duk_debug_write_function dbg_write_cb;              /* required */
+	duk_debug_read_function dbg_read_cb; /* required, NULL implies detached */
+	duk_debug_write_function dbg_write_cb; /* required */
 	duk_debug_peek_function dbg_peek_cb;
 	duk_debug_read_flush_function dbg_read_flush_cb;
 	duk_debug_write_flush_function dbg_write_flush_cb;
@@ -528,29 +544,32 @@ struct duk_heap {
 	void *dbg_udata;
 
 	/* The following are only relevant when debugger is attached. */
-	duk_bool_t dbg_processing;              /* currently processing messages or breakpoints: don't enter message processing recursively (e.g. no breakpoints when processing debugger eval) */
-	duk_bool_t dbg_state_dirty;             /* resend state next time executor is about to run */
-	duk_bool_t dbg_force_restart;           /* force executor restart to recheck breakpoints; used to handle function returns (see GH-303) */
-	duk_bool_t dbg_detaching;               /* debugger detaching; used to avoid calling detach handler recursively */
-	duk_small_uint_t dbg_pause_flags;       /* flags for automatic pause behavior */
-	duk_activation *dbg_pause_act;          /* activation related to pause behavior (pause on line change, function entry/exit) */
-	duk_uint32_t dbg_pause_startline;       /* starting line number for line change related pause behavior */
-	duk_breakpoint dbg_breakpoints[DUK_HEAP_MAX_BREAKPOINTS];  /* breakpoints: [0,breakpoint_count[ gc reachable */
+	duk_bool_t dbg_processing; /* currently processing messages or breakpoints: don't enter message processing recursively (e.g.
+	                              no breakpoints when processing debugger eval) */
+	duk_bool_t dbg_state_dirty; /* resend state next time executor is about to run */
+	duk_bool_t
+	    dbg_force_restart; /* force executor restart to recheck breakpoints; used to handle function returns (see GH-303) */
+	duk_bool_t dbg_detaching; /* debugger detaching; used to avoid calling detach handler recursively */
+	duk_small_uint_t dbg_pause_flags; /* flags for automatic pause behavior */
+	duk_activation *dbg_pause_act; /* activation related to pause behavior (pause on line change, function entry/exit) */
+	duk_uint32_t dbg_pause_startline; /* starting line number for line change related pause behavior */
+	duk_breakpoint dbg_breakpoints[DUK_HEAP_MAX_BREAKPOINTS]; /* breakpoints: [0,breakpoint_count[ gc reachable */
 	duk_small_uint_t dbg_breakpoint_count;
-	duk_breakpoint *dbg_breakpoints_active[DUK_HEAP_MAX_BREAKPOINTS + 1];  /* currently active breakpoints: NULL term, borrowed pointers */
+	duk_breakpoint
+	    *dbg_breakpoints_active[DUK_HEAP_MAX_BREAKPOINTS + 1]; /* currently active breakpoints: NULL term, borrowed pointers */
 	/* XXX: make active breakpoints actual copies instead of pointers? */
 
 	/* These are for rate limiting Status notifications and transport peeking. */
-	duk_uint_t dbg_exec_counter;            /* cumulative opcode execution count (overflows are OK) */
-	duk_uint_t dbg_last_counter;            /* value of dbg_exec_counter when we last did a Date-based check */
-	duk_double_t dbg_last_time;             /* time when status/peek was last done (Date-based rate limit) */
+	duk_uint_t dbg_exec_counter; /* cumulative opcode execution count (overflows are OK) */
+	duk_uint_t dbg_last_counter; /* value of dbg_exec_counter when we last did a Date-based check */
+	duk_double_t dbg_last_time; /* time when status/peek was last done (Date-based rate limit) */
 
 	/* Used to support single-byte stream lookahead. */
 	duk_bool_t dbg_have_next_byte;
 	duk_uint8_t dbg_next_byte;
-#endif  /* DUK_USE_DEBUGGER_SUPPORT */
+#endif /* DUK_USE_DEBUGGER_SUPPORT */
 #if defined(DUK_USE_ASSERTIONS)
-	duk_bool_t dbg_calling_transport;       /* transport call in progress, calling into Duktape forbidden */
+	duk_bool_t dbg_calling_transport; /* transport call in progress, calling into Duktape forbidden */
 #endif
 
 	/* String intern table (weak refs). */
@@ -559,12 +578,12 @@ struct duk_heap {
 #else
 	duk_hstring **strtable;
 #endif
-	duk_uint32_t st_mask;    /* mask for lookup, st_size - 1 */
-	duk_uint32_t st_size;    /* stringtable size */
+	duk_uint32_t st_mask; /* mask for lookup, st_size - 1 */
+	duk_uint32_t st_size; /* stringtable size */
 #if (DUK_USE_STRTAB_MINSIZE != DUK_USE_STRTAB_MAXSIZE)
-	duk_uint32_t st_count;   /* string count for resize load factor checks */
+	duk_uint32_t st_count; /* string count for resize load factor checks */
 #endif
-	duk_bool_t st_resizing;  /* string table is being resized; avoid recursive resize */
+	duk_bool_t st_resizing; /* string table is being resized; avoid recursive resize */
 
 	/* String access cache (codepoint offset -> byte offset) for fast string
 	 * character looping; 'weak' reference which needs special handling in GC.
@@ -678,7 +697,9 @@ DUK_INTERNAL_DECL void duk_heap_switch_thread(duk_heap *heap, duk_hthread *new_t
 DUK_INTERNAL_DECL duk_hstring *duk_heap_strtable_intern(duk_heap *heap, const duk_uint8_t *str, duk_uint32_t blen);
 DUK_INTERNAL_DECL duk_hstring *duk_heap_strtable_intern_checked(duk_hthread *thr, const duk_uint8_t *str, duk_uint32_t len);
 #if defined(DUK_USE_LITCACHE_SIZE)
-DUK_INTERNAL_DECL duk_hstring *duk_heap_strtable_intern_literal_checked(duk_hthread *thr, const duk_uint8_t *str, duk_uint32_t blen);
+DUK_INTERNAL_DECL duk_hstring *duk_heap_strtable_intern_literal_checked(duk_hthread *thr,
+                                                                        const duk_uint8_t *str,
+                                                                        duk_uint32_t blen);
 #endif
 DUK_INTERNAL_DECL duk_hstring *duk_heap_strtable_intern_u32(duk_heap *heap, duk_uint32_t val);
 DUK_INTERNAL_DECL duk_hstring *duk_heap_strtable_intern_u32_checked(duk_hthread *thr, duk_uint32_t val);
@@ -693,7 +714,9 @@ DUK_INTERNAL void duk_heap_strtable_dump(duk_heap *heap);
 #endif
 
 DUK_INTERNAL_DECL void duk_heap_strcache_string_remove(duk_heap *heap, duk_hstring *h);
-DUK_INTERNAL_DECL duk_uint_fast32_t duk_heap_strcache_offset_char2byte(duk_hthread *thr, duk_hstring *h, duk_uint_fast32_t char_offset);
+DUK_INTERNAL_DECL duk_uint_fast32_t duk_heap_strcache_offset_char2byte(duk_hthread *thr,
+                                                                       duk_hstring *h,
+                                                                       duk_uint_fast32_t char_offset);
 
 #if defined(DUK_USE_PROVIDE_DEFAULT_ALLOC_FUNCTIONS)
 DUK_INTERNAL_DECL void *duk_default_alloc_function(void *udata, duk_size_t size);
@@ -714,10 +737,10 @@ DUK_INTERNAL_DECL void duk_heap_free_freelists(duk_heap *heap);
 #if defined(DUK_USE_FINALIZER_SUPPORT)
 DUK_INTERNAL_DECL void duk_heap_run_finalizer(duk_heap *heap, duk_hobject *obj);
 DUK_INTERNAL_DECL void duk_heap_process_finalize_list(duk_heap *heap);
-#endif  /* DUK_USE_FINALIZER_SUPPORT */
+#endif /* DUK_USE_FINALIZER_SUPPORT */
 
 DUK_INTERNAL_DECL void duk_heap_mark_and_sweep(duk_heap *heap, duk_small_uint_t flags);
 
 DUK_INTERNAL_DECL duk_uint32_t duk_heap_hashstring(duk_heap *heap, const duk_uint8_t *str, duk_size_t len);
 
-#endif  /* DUK_HEAP_H_INCLUDED */
+#endif /* DUK_HEAP_H_INCLUDED */

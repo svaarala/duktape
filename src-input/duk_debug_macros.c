@@ -18,7 +18,7 @@
 #error debugging enabled (DUK_USE_DEBUG) but DUK_USE_DEBUG_WRITE not defined
 #endif
 
-#define DUK__DEBUG_BUFSIZE  DUK_USE_DEBUG_BUFSIZE
+#define DUK__DEBUG_BUFSIZE DUK_USE_DEBUG_BUFSIZE
 
 #if defined(DUK_USE_VARIADIC_MACROS)
 
@@ -46,7 +46,7 @@ DUK_INTERNAL void duk_debug_log(duk_int_t level, const char *file, duk_int_t lin
 	va_end(ap);
 }
 
-#else  /* DUK_USE_VARIADIC_MACROS */
+#else /* DUK_USE_VARIADIC_MACROS */
 
 DUK_INTERNAL char duk_debug_file_stash[DUK_DEBUG_STASH_SIZE];
 DUK_INTERNAL duk_int_t duk_debug_line_stash;
@@ -77,12 +77,12 @@ DUK_INTERNAL void duk_debug_log(const char *fmt, ...) {
 	va_end(ap);
 }
 
-#endif  /* DUK_USE_VARIADIC_MACROS */
+#endif /* DUK_USE_VARIADIC_MACROS */
 
-#else  /* DUK_USE_DEBUG */
+#else /* DUK_USE_DEBUG */
 
 /*
  *  Debugging disabled
  */
 
-#endif  /* DUK_USE_DEBUG */
+#endif /* DUK_USE_DEBUG */

@@ -47,8 +47,10 @@ DUK_INTERNAL void duk_err_longjmp(duk_hthread *thr) {
 	DUK_ASSERT(thr->heap != NULL);
 
 	DUK_DD(DUK_DDPRINT("longjmp error: type=%d iserror=%d value1=%!T value2=%!T",
-	                   (int) thr->heap->lj.type, (int) thr->heap->lj.iserror,
-	                   &thr->heap->lj.value1, &thr->heap->lj.value2));
+	                   (int) thr->heap->lj.type,
+	                   (int) thr->heap->lj.iserror,
+	                   &thr->heap->lj.value1,
+	                   &thr->heap->lj.value2));
 
 	/* Prevent finalizer execution during error handling.  All error
 	 * handling sites will process pending finalizers once error handling
@@ -66,11 +68,11 @@ DUK_INTERNAL void duk_err_longjmp(duk_hthread *thr) {
 	DUK_ASSERT_LJSTATE_SET(thr->heap);
 
 	thr->heap->pf_prevent_count++;
-	DUK_ASSERT(thr->heap->pf_prevent_count != 0);  /* Wrap. */
+	DUK_ASSERT(thr->heap->pf_prevent_count != 0); /* Wrap. */
 
 #if defined(DUK_USE_ASSERTIONS)
 	/* XXX: set this immediately when longjmp state is set */
-	DUK_ASSERT(thr->heap->error_not_allowed == 0);  /* Detect error within critical section. */
+	DUK_ASSERT(thr->heap->error_not_allowed == 0); /* Detect error within critical section. */
 	thr->heap->error_not_allowed = 1;
 #endif
 
@@ -82,8 +84,10 @@ DUK_INTERNAL void duk_err_longjmp(duk_hthread *thr) {
 	 */
 	if (!thr->heap->lj.jmpbuf_ptr) {
 		DUK_D(DUK_DPRINT("uncaught error: type=%d iserror=%d value1=%!T value2=%!T",
-		                 (int) thr->heap->lj.type, (int) thr->heap->lj.iserror,
-		                 &thr->heap->lj.value1, &thr->heap->lj.value2));
+		                 (int) thr->heap->lj.type,
+		                 (int) thr->heap->lj.iserror,
+		                 &thr->heap->lj.value1,
+		                 &thr->heap->lj.value2));
 
 #if defined(DUK_USE_PREFER_SIZE)
 		duk__uncaught_minimal(thr);
@@ -94,7 +98,7 @@ DUK_INTERNAL void duk_err_longjmp(duk_hthread *thr) {
 	}
 
 #if defined(DUK_USE_CPP_EXCEPTIONS)
-	throw duk_internal_exception();  /* dummy */
+	throw duk_internal_exception(); /* dummy */
 #else
 	DUK_LONGJMP(thr->heap->lj.jmpbuf_ptr->jb);
 #endif

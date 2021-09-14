@@ -85,7 +85,7 @@ DUK_EXTERNAL void duk_suspend(duk_hthread *thr, duk_thread_state *state) {
 
 	DUK_ASSERT_API_ENTRY(thr);
 	DUK_ASSERT(thr->heap != NULL);
-	DUK_ASSERT(state != NULL);  /* unvalidated */
+	DUK_ASSERT(state != NULL); /* unvalidated */
 
 	/* Currently not supported when called from within a finalizer.
 	 * If that is done, the finalizer will remain running indefinitely,
@@ -129,7 +129,7 @@ DUK_EXTERNAL void duk_resume(duk_hthread *thr, const duk_thread_state *state) {
 
 	DUK_ASSERT_API_ENTRY(thr);
 	DUK_ASSERT(thr->heap != NULL);
-	DUK_ASSERT(state != NULL);  /* unvalidated */
+	DUK_ASSERT(state != NULL); /* unvalidated */
 
 	/* Shouldn't be necessary if duk_suspend() is called before
 	 * duk_resume(), but assert in case API sequence is incorrect.
@@ -171,7 +171,7 @@ DUK_EXTERNAL void duk_set_global_object(duk_hthread *thr) {
 	DUK_UNREF(h_prev_glob);
 	thr->builtins[DUK_BIDX_GLOBAL] = h_glob;
 	DUK_HOBJECT_INCREF(thr, h_glob);
-	DUK_HOBJECT_DECREF_ALLOWNULL(thr, h_prev_glob);  /* side effects, in theory (referenced by global env) */
+	DUK_HOBJECT_DECREF_ALLOWNULL(thr, h_prev_glob); /* side effects, in theory (referenced by global env) */
 
 	/*
 	 *  Replace lexical environment for global scope
@@ -182,9 +182,7 @@ DUK_EXTERNAL void duk_set_global_object(duk_hthread *thr) {
 	 *  same (initial) built-ins.
 	 */
 
-	h_env = duk_hobjenv_alloc(thr,
-	                          DUK_HOBJECT_FLAG_EXTENSIBLE |
-	                          DUK_HOBJECT_CLASS_AS_FLAGS(DUK_HOBJECT_CLASS_OBJENV));
+	h_env = duk_hobjenv_alloc(thr, DUK_HOBJECT_FLAG_EXTENSIBLE | DUK_HOBJECT_CLASS_AS_FLAGS(DUK_HOBJECT_CLASS_OBJENV));
 	DUK_ASSERT(h_env != NULL);
 	DUK_ASSERT(DUK_HOBJECT_GET_PROTOTYPE(thr->heap, (duk_hobject *) h_env) == NULL);
 
@@ -199,8 +197,8 @@ DUK_EXTERNAL void duk_set_global_object(duk_hthread *thr) {
 	h_prev_env = thr->builtins[DUK_BIDX_GLOBAL_ENV];
 	thr->builtins[DUK_BIDX_GLOBAL_ENV] = (duk_hobject *) h_env;
 	DUK_HOBJECT_INCREF(thr, (duk_hobject *) h_env);
-	DUK_HOBJECT_DECREF_ALLOWNULL(thr, h_prev_env);  /* side effects */
-	DUK_UNREF(h_env);  /* without refcounts */
+	DUK_HOBJECT_DECREF_ALLOWNULL(thr, h_prev_env); /* side effects */
+	DUK_UNREF(h_env); /* without refcounts */
 	DUK_UNREF(h_prev_env);
 
 	/* [ ... new_glob ] */

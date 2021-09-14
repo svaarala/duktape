@@ -58,7 +58,8 @@ DUK_LOCAL DUK_NOINLINE_PERF DUK_COLD void *duk__heap_mem_alloc_slowpath(duk_heap
 		res = heap->alloc_func(heap->heap_udata, size);
 		if (res != NULL) {
 			DUK_D(DUK_DPRINT("duk_heap_mem_alloc() succeeded after gc (pass %ld), alloc size %ld",
-			                 (long) (i + 1), (long) size));
+			                 (long) (i + 1),
+			                 (long) size));
 			return res;
 		}
 	}
@@ -102,7 +103,7 @@ DUK_INTERNAL DUK_INLINE_PERF DUK_HOT void *duk_heap_mem_alloc(duk_heap *heap, du
 		return res;
 	}
 
- slowpath:
+slowpath:
 
 	if (size == 0) {
 		DUK_D(DUK_DPRINT("first alloc attempt returned NULL for zero size alloc, use slow path to deal with it"));
@@ -218,7 +219,8 @@ DUK_LOCAL DUK_NOINLINE_PERF DUK_COLD void *duk__heap_mem_realloc_slowpath(duk_he
 		res = heap->realloc_func(heap->heap_udata, ptr, newsize);
 		if (res || newsize == 0) {
 			DUK_D(DUK_DPRINT("duk_heap_mem_realloc() succeeded after gc (pass %ld), alloc size %ld",
-			                 (long) (i + 1), (long) newsize));
+			                 (long) (i + 1),
+			                 (long) newsize));
 			return res;
 		}
 	}
@@ -259,7 +261,7 @@ DUK_INTERNAL DUK_INLINE_PERF DUK_HOT void *duk_heap_mem_realloc(duk_heap *heap, 
 		return res;
 	}
 
- slowpath:
+slowpath:
 
 	if (newsize == 0) {
 		DUK_D(DUK_DPRINT("first realloc attempt returned NULL for zero size realloc, use slow path to deal with it"));
@@ -276,7 +278,10 @@ DUK_INTERNAL DUK_INLINE_PERF DUK_HOT void *duk_heap_mem_realloc(duk_heap *heap, 
  */
 
 /* Slow path: voluntary GC triggered, first realloc attempt failed, or zero size. */
-DUK_LOCAL DUK_NOINLINE_PERF DUK_COLD void *duk__heap_mem_realloc_indirect_slowpath(duk_heap *heap, duk_mem_getptr cb, void *ud, duk_size_t newsize) {
+DUK_LOCAL DUK_NOINLINE_PERF DUK_COLD void *duk__heap_mem_realloc_indirect_slowpath(duk_heap *heap,
+                                                                                   duk_mem_getptr cb,
+                                                                                   void *ud,
+                                                                                   duk_size_t newsize) {
 	void *res;
 	duk_small_int_t i;
 
@@ -329,7 +334,8 @@ DUK_LOCAL DUK_NOINLINE_PERF DUK_COLD void *duk__heap_mem_realloc_indirect_slowpa
 		ptr_post = cb(heap, ud);
 		if (ptr_pre != ptr_post) {
 			DUK_DD(DUK_DDPRINT("realloc base pointer changed by mark-and-sweep: %p -> %p",
-			                   (void *) ptr_pre, (void *) ptr_post));
+			                   (void *) ptr_pre,
+			                   (void *) ptr_post));
 		}
 #endif
 
@@ -341,7 +347,8 @@ DUK_LOCAL DUK_NOINLINE_PERF DUK_COLD void *duk__heap_mem_realloc_indirect_slowpa
 		res = heap->realloc_func(heap->heap_udata, cb(heap, ud), newsize);
 		if (res || newsize == 0) {
 			DUK_D(DUK_DPRINT("duk_heap_mem_realloc_indirect() succeeded after gc (pass %ld), alloc size %ld",
-			                 (long) (i + 1), (long) newsize));
+			                 (long) (i + 1),
+			                 (long) newsize));
 			return res;
 		}
 	}
@@ -350,7 +357,10 @@ DUK_LOCAL DUK_NOINLINE_PERF DUK_COLD void *duk__heap_mem_realloc_indirect_slowpa
 	return NULL;
 }
 
-DUK_INTERNAL DUK_INLINE_PERF DUK_HOT void *duk_heap_mem_realloc_indirect(duk_heap *heap, duk_mem_getptr cb, void *ud, duk_size_t newsize) {
+DUK_INTERNAL DUK_INLINE_PERF DUK_HOT void *duk_heap_mem_realloc_indirect(duk_heap *heap,
+                                                                         duk_mem_getptr cb,
+                                                                         void *ud,
+                                                                         duk_size_t newsize) {
 	void *res;
 
 	DUK_ASSERT(heap != NULL);
@@ -381,10 +391,11 @@ DUK_INTERNAL DUK_INLINE_PERF DUK_HOT void *duk_heap_mem_realloc_indirect(duk_hea
 		return res;
 	}
 
- slowpath:
+slowpath:
 
 	if (newsize == 0) {
-		DUK_D(DUK_DPRINT("first indirect realloc attempt returned NULL for zero size realloc, use slow path to deal with it"));
+		DUK_D(DUK_DPRINT(
+		    "first indirect realloc attempt returned NULL for zero size realloc, use slow path to deal with it"));
 	} else {
 		DUK_D(DUK_DPRINT("first indirect realloc attempt failed, attempt to gc and retry"));
 	}

@@ -31,7 +31,7 @@ DUK_INTERNAL duk_ret_t duk_bi_thread_constructor(duk_hthread *thr) {
 	 */
 	duk_push_hobject(new_thr, func);
 
-	return 1;  /* return thread */
+	return 1; /* return thread */
 }
 #endif
 
@@ -77,14 +77,15 @@ DUK_INTERNAL duk_ret_t duk_bi_thread_resume(duk_hthread *ctx) {
 	 */
 
 	if (thr->callstack_top < 2) {
-		DUK_DD(DUK_DDPRINT("resume state invalid: callstack should contain at least 2 entries (caller and Duktape.Thread.resume)"));
+		DUK_DD(DUK_DDPRINT(
+		    "resume state invalid: callstack should contain at least 2 entries (caller and Duktape.Thread.resume)"));
 		goto state_error;
 	}
 	DUK_ASSERT(thr->callstack_curr != NULL);
 	DUK_ASSERT(thr->callstack_curr->parent != NULL);
-	DUK_ASSERT(DUK_ACT_GET_FUNC(thr->callstack_curr) != NULL);  /* us */
+	DUK_ASSERT(DUK_ACT_GET_FUNC(thr->callstack_curr) != NULL); /* us */
 	DUK_ASSERT(DUK_HOBJECT_IS_NATFUNC(DUK_ACT_GET_FUNC(thr->callstack_curr)));
-	DUK_ASSERT(DUK_ACT_GET_FUNC(thr->callstack_curr->parent) != NULL);  /* caller */
+	DUK_ASSERT(DUK_ACT_GET_FUNC(thr->callstack_curr->parent) != NULL); /* caller */
 
 	caller_func = DUK_ACT_GET_FUNC(thr->callstack_curr->parent);
 	if (!DUK_HOBJECT_IS_COMPFUNC(caller_func)) {
@@ -96,14 +97,12 @@ DUK_INTERNAL duk_ret_t duk_bi_thread_resume(duk_hthread *ctx) {
 	 * like for yield.
 	 */
 
-	if (thr_resume->state != DUK_HTHREAD_STATE_INACTIVE &&
-	    thr_resume->state != DUK_HTHREAD_STATE_YIELDED) {
+	if (thr_resume->state != DUK_HTHREAD_STATE_INACTIVE && thr_resume->state != DUK_HTHREAD_STATE_YIELDED) {
 		DUK_DD(DUK_DDPRINT("resume state invalid: target thread must be INACTIVE or YIELDED"));
 		goto state_error;
 	}
 
-	DUK_ASSERT(thr_resume->state == DUK_HTHREAD_STATE_INACTIVE ||
-	           thr_resume->state == DUK_HTHREAD_STATE_YIELDED);
+	DUK_ASSERT(thr_resume->state == DUK_HTHREAD_STATE_INACTIVE || thr_resume->state == DUK_HTHREAD_STATE_YIELDED);
 
 	/* Further state-dependent pre-checks */
 
@@ -121,14 +120,13 @@ DUK_INTERNAL duk_ret_t duk_bi_thread_resume(duk_hthread *ctx) {
 		 * because an error in the RESUME handler call processing will
 		 * not be handled very cleanly.
 		 */
-		if ((thr_resume->callstack_top != 0) ||
-		    (thr_resume->valstack_top - thr_resume->valstack != 1)) {
+		if ((thr_resume->callstack_top != 0) || (thr_resume->valstack_top - thr_resume->valstack != 1)) {
 			goto state_error;
 		}
 
 		duk_push_tval(thr, DUK_GET_TVAL_NEGIDX(thr_resume, -1));
 		duk_resolve_nonbound_function(thr);
-		h_fun = duk_require_hobject(thr, -1);  /* reject lightfuncs on purpose */
+		h_fun = duk_require_hobject(thr, -1); /* reject lightfuncs on purpose */
 		if (!DUK_HOBJECT_IS_CALLABLE(h_fun) || !DUK_HOBJECT_IS_COMPFUNC(h_fun)) {
 			goto state_error;
 		}
@@ -157,8 +155,8 @@ DUK_INTERNAL duk_ret_t duk_bi_thread_resume(duk_hthread *ctx) {
 
 #if defined(DUK_USE_AUGMENT_ERROR_THROW)
 	if (is_error) {
-		DUK_ASSERT_TOP(thr, 2);  /* value (error) is at stack top */
-		duk_err_augment_error_throw(thr);  /* in resumer's context */
+		DUK_ASSERT_TOP(thr, 2); /* value (error) is at stack top */
+		duk_err_augment_error_throw(thr); /* in resumer's context */
 	}
 #endif
 
@@ -182,21 +180,21 @@ DUK_INTERNAL duk_ret_t duk_bi_thread_resume(duk_hthread *ctx) {
 
 	/* lj value2: thread */
 	DUK_ASSERT(thr->valstack_bottom < thr->valstack_top);
-	DUK_TVAL_SET_TVAL_UPDREF(thr, &thr->heap->lj.value2, &thr->valstack_bottom[0]);  /* side effects */
+	DUK_TVAL_SET_TVAL_UPDREF(thr, &thr->heap->lj.value2, &thr->valstack_bottom[0]); /* side effects */
 
 	/* lj value1: value */
 	DUK_ASSERT(thr->valstack_bottom + 1 < thr->valstack_top);
-	DUK_TVAL_SET_TVAL_UPDREF(thr, &thr->heap->lj.value1, &thr->valstack_bottom[1]);  /* side effects */
+	DUK_TVAL_SET_TVAL_UPDREF(thr, &thr->heap->lj.value1, &thr->valstack_bottom[1]); /* side effects */
 	DUK_TVAL_CHKFAST_INPLACE_SLOW(&thr->heap->lj.value1);
 
 	thr->heap->lj.iserror = is_error;
 
-	DUK_ASSERT(thr->heap->lj.jmpbuf_ptr != NULL);  /* call is from executor, so we know we have a jmpbuf */
-	duk_err_longjmp(thr);  /* execution resumes in bytecode executor */
+	DUK_ASSERT(thr->heap->lj.jmpbuf_ptr != NULL); /* call is from executor, so we know we have a jmpbuf */
+	duk_err_longjmp(thr); /* execution resumes in bytecode executor */
 	DUK_UNREACHABLE();
 	/* Never here, fall through to error (from compiler point of view). */
 
- state_error:
+state_error:
 	DUK_DCERROR_TYPE_INVALID_STATE(thr);
 }
 #endif
@@ -245,14 +243,15 @@ DUK_INTERNAL duk_ret_t duk_bi_thread_yield(duk_hthread *thr) {
 	DUK_ASSERT(thr->resumer->state == DUK_HTHREAD_STATE_RESUMED);
 
 	if (thr->callstack_top < 2) {
-		DUK_DD(DUK_DDPRINT("yield state invalid: callstack should contain at least 2 entries (caller and Duktape.Thread.yield)"));
+		DUK_DD(DUK_DDPRINT(
+		    "yield state invalid: callstack should contain at least 2 entries (caller and Duktape.Thread.yield)"));
 		goto state_error;
 	}
 	DUK_ASSERT(thr->callstack_curr != NULL);
 	DUK_ASSERT(thr->callstack_curr->parent != NULL);
-	DUK_ASSERT(DUK_ACT_GET_FUNC(thr->callstack_curr) != NULL);  /* us */
+	DUK_ASSERT(DUK_ACT_GET_FUNC(thr->callstack_curr) != NULL); /* us */
 	DUK_ASSERT(DUK_HOBJECT_IS_NATFUNC(DUK_ACT_GET_FUNC(thr->callstack_curr)));
-	DUK_ASSERT(DUK_ACT_GET_FUNC(thr->callstack_curr->parent) != NULL);  /* caller */
+	DUK_ASSERT(DUK_ACT_GET_FUNC(thr->callstack_curr->parent) != NULL); /* caller */
 
 	caller_func = DUK_ACT_GET_FUNC(thr->callstack_curr->parent);
 	if (!DUK_HOBJECT_IS_COMPFUNC(caller_func)) {
@@ -260,10 +259,11 @@ DUK_INTERNAL duk_ret_t duk_bi_thread_yield(duk_hthread *thr) {
 		goto state_error;
 	}
 
-	DUK_ASSERT(thr->callstack_preventcount >= 1);  /* should never be zero, because we (Duktape.Thread.yield) are on the stack */
+	DUK_ASSERT(thr->callstack_preventcount >= 1); /* should never be zero, because we (Duktape.Thread.yield) are on the stack */
 	if (thr->callstack_preventcount != 1) {
 		/* Note: the only yield-preventing call is Duktape.Thread.yield(), hence check for 1, not 0 */
-		DUK_DD(DUK_DDPRINT("yield state invalid: there must be no yield-preventing calls in current thread callstack (preventcount is %ld)",
+		DUK_DD(DUK_DDPRINT("yield state invalid: there must be no yield-preventing calls in current thread callstack "
+		                   "(preventcount is %ld)",
 		                   (long) thr->callstack_preventcount));
 		goto state_error;
 	}
@@ -277,18 +277,16 @@ DUK_INTERNAL duk_ret_t duk_bi_thread_yield(duk_hthread *thr) {
 
 #if defined(DUK_USE_AUGMENT_ERROR_THROW)
 	if (is_error) {
-		DUK_ASSERT_TOP(thr, 1);  /* value (error) is at stack top */
-		duk_err_augment_error_throw(thr);  /* in yielder's context */
+		DUK_ASSERT_TOP(thr, 1); /* value (error) is at stack top */
+		duk_err_augment_error_throw(thr); /* in yielder's context */
 	}
 #endif
 
 #if defined(DUK_USE_DEBUG)
 	if (is_error) {
-		DUK_DDD(DUK_DDDPRINT("YIELD ERROR: value=%!T",
-		                     (duk_tval *) duk_get_tval(thr, 0)));
+		DUK_DDD(DUK_DDDPRINT("YIELD ERROR: value=%!T", (duk_tval *) duk_get_tval(thr, 0)));
 	} else {
-		DUK_DDD(DUK_DDDPRINT("YIELD NORMAL: value=%!T",
-		                     (duk_tval *) duk_get_tval(thr, 0)));
+		DUK_DDD(DUK_DDDPRINT("YIELD NORMAL: value=%!T", (duk_tval *) duk_get_tval(thr, 0)));
 	}
 #endif
 
@@ -303,17 +301,17 @@ DUK_INTERNAL duk_ret_t duk_bi_thread_yield(duk_hthread *thr) {
 
 	/* lj value1: value */
 	DUK_ASSERT(thr->valstack_bottom < thr->valstack_top);
-	DUK_TVAL_SET_TVAL_UPDREF(thr, &thr->heap->lj.value1, &thr->valstack_bottom[0]);  /* side effects */
+	DUK_TVAL_SET_TVAL_UPDREF(thr, &thr->heap->lj.value1, &thr->valstack_bottom[0]); /* side effects */
 	DUK_TVAL_CHKFAST_INPLACE_SLOW(&thr->heap->lj.value1);
 
 	thr->heap->lj.iserror = is_error;
 
-	DUK_ASSERT(thr->heap->lj.jmpbuf_ptr != NULL);  /* call is from executor, so we know we have a jmpbuf */
-	duk_err_longjmp(thr);  /* execution resumes in bytecode executor */
+	DUK_ASSERT(thr->heap->lj.jmpbuf_ptr != NULL); /* call is from executor, so we know we have a jmpbuf */
+	duk_err_longjmp(thr); /* execution resumes in bytecode executor */
 	DUK_UNREACHABLE();
 	/* Never here, fall through to error (from compiler point of view). */
 
- state_error:
+state_error:
 	DUK_DCERROR_TYPE_INVALID_STATE(thr);
 }
 #endif

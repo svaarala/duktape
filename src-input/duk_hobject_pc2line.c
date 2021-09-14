@@ -35,7 +35,7 @@ DUK_INTERNAL void duk_hobject_pc2line_pack(duk_hthread *thr, duk_compiler_instr 
 
 	hdr = (duk_uint32_t *) DUK_HBUFFER_DYNAMIC_GET_DATA_PTR(thr->heap, h_buf);
 	DUK_ASSERT(hdr != NULL);
-	hdr[0] = (duk_uint32_t) length;  /* valid pc range is [0, length[ */
+	hdr[0] = (duk_uint32_t) length; /* valid pc range is [0, length[ */
 
 	curr_pc = 0U;
 	while (curr_pc < length) {
@@ -64,8 +64,8 @@ DUK_INTERNAL void duk_hobject_pc2line_pack(duk_hthread *thr, duk_compiler_instr 
 
 		for (;;) {
 			curr_pc++;
-			if ( ((curr_pc % DUK_PC2LINE_SKIP) == 0) ||  /* end of diff run */
-			     (curr_pc >= length) ) {                 /* end of bytecode */
+			if (((curr_pc % DUK_PC2LINE_SKIP) == 0) || /* end of diff run */
+			    (curr_pc >= length)) { /* end of bytecode */
 				break;
 			}
 			DUK_ASSERT(curr_pc < length);
@@ -112,7 +112,9 @@ DUK_INTERNAL void duk_hobject_pc2line_pack(duk_hthread *thr, duk_compiler_instr 
 	(void) duk_to_fixed_buffer(thr, -1, NULL);
 
 	DUK_DDD(DUK_DDDPRINT("final pc2line data: pc_limit=%ld, length=%ld, %lf bits/opcode --> %!ixT",
-	                     (long) length, (long) new_size, (double) new_size * 8.0 / (double) length,
+	                     (long) length,
+	                     (long) new_size,
+	                     (double) new_size * 8.0 / (double) length,
 	                     (duk_tval *) duk_get_tval(thr, -1)));
 }
 
@@ -152,8 +154,7 @@ DUK_LOCAL duk_uint_fast32_t duk__hobject_pc2line_query_raw(duk_hthread *thr, duk
 	pc_limit = hdr[0];
 	if (pc >= pc_limit) {
 		/* Note: pc is unsigned and cannot be negative */
-		DUK_DD(DUK_DDPRINT("pc2line lookup failed: pc out of bounds (pc=%ld, limit=%ld)",
-		                   (long) pc, (long) pc_limit));
+		DUK_DD(DUK_DDPRINT("pc2line lookup failed: pc out of bounds (pc=%ld, limit=%ld)", (long) pc, (long) pc_limit));
 		goto pc2line_error;
 	}
 
@@ -161,7 +162,8 @@ DUK_LOCAL duk_uint_fast32_t duk__hobject_pc2line_query_raw(duk_hthread *thr, duk
 	start_offset = hdr[1 + hdr_index * 2 + 1];
 	if ((duk_size_t) start_offset > DUK_HBUFFER_FIXED_GET_SIZE(buf)) {
 		DUK_DD(DUK_DDPRINT("pc2line lookup failed: start_offset out of bounds (start_offset=%ld, buffer_size=%ld)",
-		                   (long) start_offset, (long) DUK_HBUFFER_GET_SIZE((duk_hbuffer *) buf)));
+		                   (long) start_offset,
+		                   (long) DUK_HBUFFER_GET_SIZE((duk_hbuffer *) buf)));
 		goto pc2line_error;
 	}
 
@@ -188,7 +190,7 @@ DUK_LOCAL duk_uint_fast32_t duk__hobject_pc2line_query_raw(duk_hthread *thr, duk
 				if (duk_bd_decode_flag(bd_ctx)) {
 					/* 1 1 1 <32 bits> */
 					duk_uint_fast32_t t;
-					t = duk_bd_decode(bd_ctx, 16);  /* workaround: max nbits = 24 now */
+					t = duk_bd_decode(bd_ctx, 16); /* workaround: max nbits = 24 now */
 					t = (t << 16) + duk_bd_decode(bd_ctx, 16);
 					curr_line = t;
 				} else {
@@ -213,7 +215,7 @@ DUK_LOCAL duk_uint_fast32_t duk__hobject_pc2line_query_raw(duk_hthread *thr, duk
 	DUK_DDD(DUK_DDDPRINT("pc2line lookup result: pc %ld -> line %ld", (long) pc, (long) curr_line));
 	return curr_line;
 
- pc2line_error:
+pc2line_error:
 	DUK_D(DUK_DPRINT("pc2line conversion failed for pc=%ld", (long) pc));
 	return 0;
 }
@@ -241,4 +243,4 @@ DUK_INTERNAL duk_uint_fast32_t duk_hobject_pc2line_query(duk_hthread *thr, duk_i
 	return line;
 }
 
-#endif  /* DUK_USE_PC2LINE */
+#endif /* DUK_USE_PC2LINE */

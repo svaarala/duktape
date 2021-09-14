@@ -13,7 +13,7 @@ DUK_LOCAL void duk__get_this_regexp(duk_hthread *thr) {
 	h = duk_require_hobject_with_class(thr, -1, DUK_HOBJECT_CLASS_REGEXP);
 	DUK_ASSERT(h != NULL);
 	DUK_UNREF(h);
-	duk_insert(thr, 0);  /* prepend regexp to valstack 0 index */
+	duk_insert(thr, 0); /* prepend regexp to valstack 0 index */
 }
 
 /* XXX: much to improve (code size) */
@@ -23,10 +23,8 @@ DUK_INTERNAL duk_ret_t duk_bi_regexp_constructor(duk_hthread *thr) {
 	DUK_ASSERT_TOP(thr, 2);
 	h_pattern = duk_get_hobject(thr, 0);
 
-	if (!duk_is_constructor_call(thr) &&
-	    h_pattern != NULL &&
-	    DUK_HOBJECT_GET_CLASS_NUMBER(h_pattern) == DUK_HOBJECT_CLASS_REGEXP &&
-	    duk_is_undefined(thr, 1)) {
+	if (!duk_is_constructor_call(thr) && h_pattern != NULL &&
+	    DUK_HOBJECT_GET_CLASS_NUMBER(h_pattern) == DUK_HOBJECT_CLASS_REGEXP && duk_is_undefined(thr, 1)) {
 		/* Called as a function, pattern has [[Class]] "RegExp" and
 		 * flags is undefined -> return object as is.
 		 */
@@ -41,8 +39,7 @@ DUK_INTERNAL duk_ret_t duk_bi_regexp_constructor(duk_hthread *thr) {
 	 * call.
 	 */
 
-	if (h_pattern != NULL &&
-	    DUK_HOBJECT_GET_CLASS_NUMBER(h_pattern) == DUK_HOBJECT_CLASS_REGEXP) {
+	if (h_pattern != NULL && DUK_HOBJECT_GET_CLASS_NUMBER(h_pattern) == DUK_HOBJECT_CLASS_REGEXP) {
 		duk_get_prop_stridx_short(thr, 0, DUK_STRIDX_SOURCE);
 		if (duk_is_undefined(thr, 1)) {
 			/* In ES5 one would need to read the flags individually;
@@ -58,20 +55,21 @@ DUK_INTERNAL duk_ret_t duk_bi_regexp_constructor(duk_hthread *thr) {
 			duk_push_hstring_empty(thr);
 		} else {
 			duk_dup_0(thr);
-			duk_to_string(thr, -1);  /* Rejects Symbols. */
+			duk_to_string(thr, -1); /* Rejects Symbols. */
 		}
 		if (duk_is_undefined(thr, 1)) {
 			duk_push_hstring_empty(thr);
 		} else {
 			duk_dup_1(thr);
-			duk_to_string(thr, -1);  /* Rejects Symbols. */
+			duk_to_string(thr, -1); /* Rejects Symbols. */
 		}
 
 		/* [ ... pattern flags ] */
 	}
 
 	DUK_DDD(DUK_DDDPRINT("RegExp constructor/function call, pattern=%!T, flags=%!T",
-	                     (duk_tval *) duk_get_tval(thr, -2), (duk_tval *) duk_get_tval(thr, -1)));
+	                     (duk_tval *) duk_get_tval(thr, -2),
+	                     (duk_tval *) duk_get_tval(thr, -1)));
 
 	/* [ ... pattern flags ] (both uncoerced) */
 
@@ -121,7 +119,7 @@ DUK_INTERNAL duk_ret_t duk_bi_regexp_prototype_tostring(duk_hthread *thr) {
 	duk_push_this(thr);
 	duk_push_literal(thr, "/");
 	duk_get_prop_stridx(thr, 0, DUK_STRIDX_SOURCE);
-	duk_dup_m2(thr);  /* another "/" */
+	duk_dup_m2(thr); /* another "/" */
 	duk_get_prop_stridx(thr, 0, DUK_STRIDX_FLAGS);
 	duk_concat(thr, 4);
 	return 1;
@@ -131,7 +129,7 @@ DUK_INTERNAL duk_ret_t duk_bi_regexp_prototype_flags(duk_hthread *thr) {
 	/* .flags is ES2015 but present even when ES2015 bindings are
 	 * disabled because the constructor relies on it.
 	 */
-	duk_uint8_t buf[8];  /* enough for all flags + NUL */
+	duk_uint8_t buf[8]; /* enough for all flags + NUL */
 	duk_uint8_t *p = buf;
 
 	/* .flags is generic and works on any object. */
@@ -172,7 +170,7 @@ DUK_INTERNAL duk_ret_t duk_bi_regexp_prototype_shared_getter(duk_hthread *thr) {
 		duk_xget_owndataprop_stridx_short(thr, 0, DUK_STRIDX_INT_SOURCE);
 		duk_xget_owndataprop_stridx_short(thr, 0, DUK_STRIDX_INT_BYTECODE);
 		h_bc = duk_require_hstring(thr, -1);
-		re_flags = (duk_small_uint_t) DUK_HSTRING_GET_DATA(h_bc)[0];  /* Safe even if h_bc length is 0 (= NUL) */
+		re_flags = (duk_small_uint_t) DUK_HSTRING_GET_DATA(h_bc)[0]; /* Safe even if h_bc length is 0 (= NUL) */
 		duk_pop(thr);
 	} else if (h == thr->builtins[DUK_BIDX_REGEXP_PROTOTYPE]) {
 		/* In ES2015 and ES2016 a TypeError would be thrown here.
@@ -183,7 +181,7 @@ DUK_INTERNAL duk_ret_t duk_bi_regexp_prototype_shared_getter(duk_hthread *thr) {
 		if (magic != 16 /* .source */) {
 			return 0;
 		}
-		duk_push_literal(thr, "(?:)");  /* .source handled by switch-case */
+		duk_push_literal(thr, "(?:)"); /* .source handled by switch-case */
 		re_flags = 0;
 	} else {
 		DUK_DCERROR_TYPE_INVALID_ARGS(thr);
@@ -192,15 +190,15 @@ DUK_INTERNAL duk_ret_t duk_bi_regexp_prototype_shared_getter(duk_hthread *thr) {
 	/* [ regexp source ] */
 
 	switch (magic) {
-	case 0: {  /* global */
+	case 0: { /* global */
 		duk_push_boolean(thr, (re_flags & DUK_RE_FLAG_GLOBAL));
 		break;
 	}
-	case 1: {  /* ignoreCase */
+	case 1: { /* ignoreCase */
 		duk_push_boolean(thr, (re_flags & DUK_RE_FLAG_IGNORE_CASE));
 		break;
 	}
-	case 2: {  /* multiline */
+	case 2: { /* multiline */
 		duk_push_boolean(thr, (re_flags & DUK_RE_FLAG_MULTILINE));
 		break;
 	}
@@ -214,7 +212,7 @@ DUK_INTERNAL duk_ret_t duk_bi_regexp_prototype_shared_getter(duk_hthread *thr) {
 		break;
 	}
 #endif
-	default: {  /* source */
+	default: { /* source */
 		/* leave 'source' on top */
 		break;
 	}
@@ -223,4 +221,4 @@ DUK_INTERNAL duk_ret_t duk_bi_regexp_prototype_shared_getter(duk_hthread *thr) {
 	return 1;
 }
 
-#endif  /* DUK_USE_REGEXP_SUPPORT */
+#endif /* DUK_USE_REGEXP_SUPPORT */

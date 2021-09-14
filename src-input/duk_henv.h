@@ -8,11 +8,21 @@
 #if defined(DUK_USE_ASSERTIONS)
 DUK_INTERNAL_DECL void duk_hdecenv_assert_valid(duk_hdecenv *h);
 DUK_INTERNAL_DECL void duk_hobjenv_assert_valid(duk_hobjenv *h);
-#define DUK_HDECENV_ASSERT_VALID(h)  do { duk_hdecenv_assert_valid((h)); } while (0)
-#define DUK_HOBJENV_ASSERT_VALID(h)  do { duk_hobjenv_assert_valid((h)); } while (0)
+#define DUK_HDECENV_ASSERT_VALID(h) \
+	do { \
+		duk_hdecenv_assert_valid((h)); \
+	} while (0)
+#define DUK_HOBJENV_ASSERT_VALID(h) \
+	do { \
+		duk_hobjenv_assert_valid((h)); \
+	} while (0)
 #else
-#define DUK_HDECENV_ASSERT_VALID(h)  do {} while (0)
-#define DUK_HOBJENV_ASSERT_VALID(h)  do {} while (0)
+#define DUK_HDECENV_ASSERT_VALID(h) \
+	do { \
+	} while (0)
+#define DUK_HOBJENV_ASSERT_VALID(h) \
+	do { \
+	} while (0)
 #endif
 
 struct duk_hdecenv {
@@ -42,4 +52,4 @@ struct duk_hobjenv {
 	duk_bool_t has_this;
 };
 
-#endif  /* DUK_HENV_H_INCLUDED */
+#endif /* DUK_HENV_H_INCLUDED */

@@ -7,9 +7,14 @@
 
 #if defined(DUK_USE_ASSERTIONS)
 DUK_INTERNAL_DECL void duk_hproxy_assert_valid(duk_hproxy *h);
-#define DUK_HPROXY_ASSERT_VALID(h)  do { duk_hproxy_assert_valid((h)); } while (0)
+#define DUK_HPROXY_ASSERT_VALID(h) \
+	do { \
+		duk_hproxy_assert_valid((h)); \
+	} while (0)
 #else
-#define DUK_HPROXY_ASSERT_VALID(h)  do {} while (0)
+#define DUK_HPROXY_ASSERT_VALID(h) \
+	do { \
+	} while (0)
 #endif
 
 struct duk_hproxy {
@@ -23,4 +28,4 @@ struct duk_hproxy {
 	duk_hobject *handler;
 };
 
-#endif  /* DUK_HPROXY_H_INCLUDED */
+#endif /* DUK_HPROXY_H_INCLUDED */

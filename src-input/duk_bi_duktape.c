@@ -60,7 +60,7 @@ DUK_INTERNAL duk_ret_t duk_bi_duktape_object_fin(duk_hthread *thr) {
 		return 1;
 	}
 }
-#endif  /* DUK_USE_FINALIZER_SUPPORT */
+#endif /* DUK_USE_FINALIZER_SUPPORT */
 
 DUK_INTERNAL duk_ret_t duk_bi_duktape_object_enc(duk_hthread *thr) {
 	duk_hstring *h_str;
@@ -70,7 +70,7 @@ DUK_INTERNAL duk_ret_t duk_bi_duktape_object_enc(duk_hthread *thr) {
 	 * non-existent optional parameters.
 	 */
 
-	h_str = duk_require_hstring(thr, 0);  /* Could reject symbols, but no point: won't match comparisons. */
+	h_str = duk_require_hstring(thr, 0); /* Could reject symbols, but no point: won't match comparisons. */
 	duk_require_valid_index(thr, 1);
 
 	if (h_str == DUK_HTHREAD_STRING_HEX(thr)) {
@@ -87,9 +87,8 @@ DUK_INTERNAL duk_ret_t duk_bi_duktape_object_enc(duk_hthread *thr) {
 		                             1 /*idx_value*/,
 		                             2 /*idx_replacer*/,
 		                             3 /*idx_space*/,
-		                             DUK_JSON_FLAG_EXT_CUSTOM |
-		                             DUK_JSON_FLAG_ASCII_ONLY |
-		                             DUK_JSON_FLAG_AVOID_KEY_QUOTES /*flags*/);
+		                             DUK_JSON_FLAG_EXT_CUSTOM | DUK_JSON_FLAG_ASCII_ONLY |
+		                                 DUK_JSON_FLAG_AVOID_KEY_QUOTES /*flags*/);
 #endif
 #if defined(DUK_USE_JSON_SUPPORT) && defined(DUK_USE_JC)
 	} else if (h_str == DUK_HTHREAD_STRING_JC(thr)) {
@@ -97,8 +96,7 @@ DUK_INTERNAL duk_ret_t duk_bi_duktape_object_enc(duk_hthread *thr) {
 		                             1 /*idx_value*/,
 		                             2 /*idx_replacer*/,
 		                             3 /*idx_space*/,
-		                             DUK_JSON_FLAG_EXT_COMPATIBLE |
-		                             DUK_JSON_FLAG_ASCII_ONLY /*flags*/);
+		                             DUK_JSON_FLAG_EXT_COMPATIBLE | DUK_JSON_FLAG_ASCII_ONLY /*flags*/);
 #endif
 	} else {
 		DUK_DCERROR_TYPE_INVALID_ARGS(thr);
@@ -114,7 +112,7 @@ DUK_INTERNAL duk_ret_t duk_bi_duktape_object_dec(duk_hthread *thr) {
 	 * non-existent optional parameters.
 	 */
 
-	h_str = duk_require_hstring(thr, 0);  /* Could reject symbols, but no point: won't match comparisons */
+	h_str = duk_require_hstring(thr, 0); /* Could reject symbols, but no point: won't match comparisons */
 	duk_require_valid_index(thr, 1);
 
 	if (h_str == DUK_HTHREAD_STRING_HEX(thr)) {
@@ -127,17 +125,11 @@ DUK_INTERNAL duk_ret_t duk_bi_duktape_object_dec(duk_hthread *thr) {
 		DUK_ASSERT_TOP(thr, 2);
 #if defined(DUK_USE_JSON_SUPPORT) && defined(DUK_USE_JX)
 	} else if (h_str == DUK_HTHREAD_STRING_JX(thr)) {
-		duk_bi_json_parse_helper(thr,
-		                         1 /*idx_value*/,
-		                         2 /*idx_replacer*/,
-		                         DUK_JSON_FLAG_EXT_CUSTOM /*flags*/);
+		duk_bi_json_parse_helper(thr, 1 /*idx_value*/, 2 /*idx_replacer*/, DUK_JSON_FLAG_EXT_CUSTOM /*flags*/);
 #endif
 #if defined(DUK_USE_JSON_SUPPORT) && defined(DUK_USE_JC)
 	} else if (h_str == DUK_HTHREAD_STRING_JC(thr)) {
-		duk_bi_json_parse_helper(thr,
-		                         1 /*idx_value*/,
-		                         2 /*idx_replacer*/,
-		                         DUK_JSON_FLAG_EXT_COMPATIBLE /*flags*/);
+		duk_bi_json_parse_helper(thr, 1 /*idx_value*/, 2 /*idx_replacer*/, DUK_JSON_FLAG_EXT_COMPATIBLE /*flags*/);
 #endif
 	} else {
 		DUK_DCERROR_TYPE_INVALID_ARGS(thr);
@@ -152,7 +144,7 @@ DUK_INTERNAL duk_ret_t duk_bi_duktape_object_dec(duk_hthread *thr) {
 DUK_INTERNAL duk_ret_t duk_bi_duktape_object_compact(duk_hthread *thr) {
 	DUK_ASSERT_TOP(thr, 1);
 	duk_compact(thr, 0);
-	return 1;  /* return the argument object */
+	return 1; /* return the argument object */
 }
 
-#endif  /* DUK_USE_DUKTAPE_BUILTIN */
+#endif /* DUK_USE_DUKTAPE_BUILTIN */

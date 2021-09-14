@@ -108,7 +108,7 @@ DUK_INTERNAL duk_small_uint_t duk_double_signbit(duk_double_t x) {
 DUK_INTERNAL duk_double_t duk_double_trunc_towards_zero(duk_double_t x) {
 	/* XXX: optimize */
 	duk_small_uint_t s = duk_double_signbit(x);
-	x = DUK_FLOOR(DUK_FABS(x));  /* truncate towards zero */
+	x = DUK_FLOOR(DUK_FABS(x)); /* truncate towards zero */
 	if (s) {
 		x = -x;
 	}

@@ -11,8 +11,8 @@
 /* Buffer sizes for some UNIX calls.  Larger than strictly necessary
  * to avoid Valgrind errors.
  */
-#define DUK__STRPTIME_BUF_SIZE  64
-#define DUK__STRFTIME_BUF_SIZE  64
+#define DUK__STRPTIME_BUF_SIZE 64
+#define DUK__STRFTIME_BUF_SIZE 64
 
 #if defined(DUK_USE_DATE_NOW_GETTIMEOFDAY)
 /* Get current ECMAScript time (= UNIX/Posix time, but in milliseconds). */
@@ -26,12 +26,11 @@ DUK_INTERNAL duk_double_t duk_bi_date_get_now_gettimeofday(void) {
 	}
 
 	/* As of Duktape 2.2.0 allow fractions. */
-	d = ((duk_double_t) tv.tv_sec) * 1000.0 +
-	    ((duk_double_t) tv.tv_usec) / 1000.0;
+	d = ((duk_double_t) tv.tv_sec) * 1000.0 + ((duk_double_t) tv.tv_usec) / 1000.0;
 
 	return d;
 }
-#endif  /* DUK_USE_DATE_NOW_GETTIMEOFDAY */
+#endif /* DUK_USE_DATE_NOW_GETTIMEOFDAY */
 
 #if defined(DUK_USE_DATE_NOW_TIME)
 /* Not a very good provider: only full seconds are available. */
@@ -45,7 +44,7 @@ DUK_INTERNAL duk_double_t duk_bi_date_get_now_time(void) {
 	}
 	return ((duk_double_t) t) * 1000.0;
 }
-#endif  /* DUK_USE_DATE_NOW_TIME */
+#endif /* DUK_USE_DATE_NOW_TIME */
 
 #if defined(DUK_USE_DATE_TZO_GMTIME) || defined(DUK_USE_DATE_TZO_GMTIME_R) || defined(DUK_USE_DATE_TZO_GMTIME_S)
 /* Get local time offset (in seconds) for a certain (UTC) instant 'd'. */
@@ -128,7 +127,7 @@ DUK_INTERNAL duk_int_t duk_bi_date_get_local_tzoffset_gmtime(duk_double_t d) {
 	DUK_ASSERT(parts[DUK_DATE_IDX_YEAR] >= 1970 && parts[DUK_DATE_IDX_YEAR] <= 2038);
 
 	d = duk_bi_date_get_timeval_from_dparts(dparts, 0 /*flags*/);
-	DUK_ASSERT(d >= 0 && d < 2147483648.0 * 1000.0);  /* unsigned 31-bit range */
+	DUK_ASSERT(d >= 0 && d < 2147483648.0 * 1000.0); /* unsigned 31-bit range */
 	t = (time_t) (d / 1000.0);
 	DUK_DDD(DUK_DDDPRINT("timeval: %lf -> time_t %ld", (double) d, (long) t));
 
@@ -150,14 +149,26 @@ DUK_INTERNAL duk_int_t duk_bi_date_get_local_tzoffset_gmtime(duk_double_t d) {
 #endif
 	DUK_DDD(DUK_DDDPRINT("gmtime result: tm={sec:%ld,min:%ld,hour:%ld,mday:%ld,mon:%ld,year:%ld,"
 	                     "wday:%ld,yday:%ld,isdst:%ld}",
-	                     (long) tms[0].tm_sec, (long) tms[0].tm_min, (long) tms[0].tm_hour,
-	                     (long) tms[0].tm_mday, (long) tms[0].tm_mon, (long) tms[0].tm_year,
-	                     (long) tms[0].tm_wday, (long) tms[0].tm_yday, (long) tms[0].tm_isdst));
+	                     (long) tms[0].tm_sec,
+	                     (long) tms[0].tm_min,
+	                     (long) tms[0].tm_hour,
+	                     (long) tms[0].tm_mday,
+	                     (long) tms[0].tm_mon,
+	                     (long) tms[0].tm_year,
+	                     (long) tms[0].tm_wday,
+	                     (long) tms[0].tm_yday,
+	                     (long) tms[0].tm_isdst));
 	DUK_DDD(DUK_DDDPRINT("localtime result: tm={sec:%ld,min:%ld,hour:%ld,mday:%ld,mon:%ld,year:%ld,"
 	                     "wday:%ld,yday:%ld,isdst:%ld}",
-	                     (long) tms[1].tm_sec, (long) tms[1].tm_min, (long) tms[1].tm_hour,
-	                     (long) tms[1].tm_mday, (long) tms[1].tm_mon, (long) tms[1].tm_year,
-	                     (long) tms[1].tm_wday, (long) tms[1].tm_yday, (long) tms[1].tm_isdst));
+	                     (long) tms[1].tm_sec,
+	                     (long) tms[1].tm_min,
+	                     (long) tms[1].tm_hour,
+	                     (long) tms[1].tm_mday,
+	                     (long) tms[1].tm_mon,
+	                     (long) tms[1].tm_year,
+	                     (long) tms[1].tm_wday,
+	                     (long) tms[1].tm_yday,
+	                     (long) tms[1].tm_isdst));
 
 	/* tm_isdst is both an input and an output to mktime(), use 0 to
 	 * avoid DST handling in mktime():
@@ -166,8 +177,8 @@ DUK_INTERNAL duk_int_t duk_bi_date_get_local_tzoffset_gmtime(duk_double_t d) {
 	 */
 	tms[0].tm_isdst = 0;
 	tms[1].tm_isdst = 0;
-	t1 = mktime(&tms[0]);  /* UTC */
-	t2 = mktime(&tms[1]);  /* local */
+	t1 = mktime(&tms[0]); /* UTC */
+	t2 = mktime(&tms[1]); /* local */
 	if (t1 == (time_t) -1 || t2 == (time_t) -1) {
 		/* This check used to be for (t < 0) but on some platforms
 		 * time_t is unsigned and apparently the proper way to detect
@@ -190,12 +201,12 @@ DUK_INTERNAL duk_int_t duk_bi_date_get_local_tzoffset_gmtime(duk_double_t d) {
 #endif
 	return (duk_int_t) difftime(t2, t1);
 
- mktime_error:
+mktime_error:
 	/* XXX: return something more useful, so that caller can throw? */
 	DUK_D(DUK_DPRINT("mktime() failed, d=%lf", (double) d));
 	return 0;
 }
-#endif  /* DUK_USE_DATE_TZO_GMTIME */
+#endif /* DUK_USE_DATE_TZO_GMTIME */
 
 #if defined(DUK_USE_DATE_PRS_STRPTIME)
 DUK_INTERNAL duk_bool_t duk_bi_date_parse_string_strptime(duk_hthread *thr, const char *str) {
@@ -205,7 +216,7 @@ DUK_INTERNAL duk_bool_t duk_bi_date_parse_string_strptime(duk_hthread *thr, cons
 
 	/* Copy to buffer with slack to avoid Valgrind gripes from strptime. */
 	DUK_ASSERT(str != NULL);
-	duk_memzero(buf, sizeof(buf));  /* valgrind whine without this */
+	duk_memzero(buf, sizeof(buf)); /* valgrind whine without this */
 	DUK_SNPRINTF(buf, sizeof(buf), "%s", (const char *) str);
 	buf[sizeof(buf) - 1] = (char) 0;
 
@@ -215,10 +226,16 @@ DUK_INTERNAL duk_bool_t duk_bi_date_parse_string_strptime(duk_hthread *thr, cons
 	if (strptime((const char *) buf, "%c", &tm) != NULL) {
 		DUK_DDD(DUK_DDDPRINT("before mktime: tm={sec:%ld,min:%ld,hour:%ld,mday:%ld,mon:%ld,year:%ld,"
 		                     "wday:%ld,yday:%ld,isdst:%ld}",
-		                     (long) tm.tm_sec, (long) tm.tm_min, (long) tm.tm_hour,
-		                     (long) tm.tm_mday, (long) tm.tm_mon, (long) tm.tm_year,
-		                     (long) tm.tm_wday, (long) tm.tm_yday, (long) tm.tm_isdst));
-		tm.tm_isdst = -1;  /* negative: dst info not available */
+		                     (long) tm.tm_sec,
+		                     (long) tm.tm_min,
+		                     (long) tm.tm_hour,
+		                     (long) tm.tm_mday,
+		                     (long) tm.tm_mon,
+		                     (long) tm.tm_year,
+		                     (long) tm.tm_wday,
+		                     (long) tm.tm_yday,
+		                     (long) tm.tm_isdst));
+		tm.tm_isdst = -1; /* negative: dst info not available */
 
 		t = mktime(&tm);
 		DUK_DDD(DUK_DDDPRINT("mktime() -> %ld", (long) t));
@@ -230,7 +247,7 @@ DUK_INTERNAL duk_bool_t duk_bi_date_parse_string_strptime(duk_hthread *thr, cons
 
 	return 0;
 }
-#endif  /* DUK_USE_DATE_PRS_STRPTIME */
+#endif /* DUK_USE_DATE_PRS_STRPTIME */
 
 #if defined(DUK_USE_DATE_PRS_GETDATE)
 DUK_INTERNAL duk_bool_t duk_bi_date_parse_string_getdate(duk_hthread *thr, const char *str) {
@@ -257,10 +274,13 @@ DUK_INTERNAL duk_bool_t duk_bi_date_parse_string_getdate(duk_hthread *thr, const
 
 	return 0;
 }
-#endif  /* DUK_USE_DATE_PRS_GETDATE */
+#endif /* DUK_USE_DATE_PRS_GETDATE */
 
 #if defined(DUK_USE_DATE_FMT_STRFTIME)
-DUK_INTERNAL duk_bool_t duk_bi_date_format_parts_strftime(duk_hthread *thr, duk_int_t *parts, duk_int_t tzoffset, duk_small_uint_t flags) {
+DUK_INTERNAL duk_bool_t duk_bi_date_format_parts_strftime(duk_hthread *thr,
+                                                          duk_int_t *parts,
+                                                          duk_int_t tzoffset,
+                                                          duk_small_uint_t flags) {
 	char buf[DUK__STRFTIME_BUF_SIZE];
 	struct tm tm;
 	const char *fmt;
@@ -278,8 +298,7 @@ DUK_INTERNAL duk_bool_t duk_bi_date_format_parts_strftime(duk_hthread *thr, duk_
 	 * probably not an accurate guarantee of strftime() supporting or not
 	 * supporting a large time range (the full ECMAScript range).
 	 */
-	if (sizeof(time_t) < 8 &&
-	    (parts[DUK_DATE_IDX_YEAR] < 1970 || parts[DUK_DATE_IDX_YEAR] > 2037)) {
+	if (sizeof(time_t) < 8 && (parts[DUK_DATE_IDX_YEAR] < 1970 || parts[DUK_DATE_IDX_YEAR] > 2037)) {
 		/* be paranoid for 32-bit time values (even avoiding negative ones) */
 		return 0;
 	}
@@ -288,8 +307,8 @@ DUK_INTERNAL duk_bool_t duk_bi_date_format_parts_strftime(duk_hthread *thr, duk_
 	tm.tm_sec = parts[DUK_DATE_IDX_SECOND];
 	tm.tm_min = parts[DUK_DATE_IDX_MINUTE];
 	tm.tm_hour = parts[DUK_DATE_IDX_HOUR];
-	tm.tm_mday = parts[DUK_DATE_IDX_DAY];       /* already one-based */
-	tm.tm_mon = parts[DUK_DATE_IDX_MONTH] - 1;  /* one-based -> zero-based */
+	tm.tm_mday = parts[DUK_DATE_IDX_DAY]; /* already one-based */
+	tm.tm_mon = parts[DUK_DATE_IDX_MONTH] - 1; /* one-based -> zero-based */
 	tm.tm_year = parts[DUK_DATE_IDX_YEAR] - 1900;
 	tm.tm_wday = parts[DUK_DATE_IDX_WEEKDAY];
 	tm.tm_isdst = 0;
@@ -309,7 +328,7 @@ DUK_INTERNAL duk_bool_t duk_bi_date_format_parts_strftime(duk_hthread *thr, duk_
 	duk_push_string(thr, buf);
 	return 1;
 }
-#endif  /* DUK_USE_DATE_FMT_STRFTIME */
+#endif /* DUK_USE_DATE_FMT_STRFTIME */
 
 #if defined(DUK_USE_GET_MONOTONIC_TIME_CLOCK_GETTIME)
 DUK_INTERNAL duk_double_t duk_bi_date_get_monotonic_time_clock_gettime(void) {

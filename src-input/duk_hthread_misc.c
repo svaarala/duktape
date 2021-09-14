@@ -12,7 +12,7 @@ DUK_INTERNAL void duk_hthread_terminate(duk_hthread *thr) {
 	}
 
 	thr->valstack_bottom = thr->valstack;
-	duk_set_top(thr, 0);  /* unwinds valstack, updating refcounts */
+	duk_set_top(thr, 0); /* unwinds valstack, updating refcounts */
 
 	thr->state = DUK_HTHREAD_STATE_TERMINATED;
 
@@ -43,7 +43,7 @@ DUK_INTERNAL duk_uint_fast32_t duk_hthread_get_act_curr_pc(duk_hthread *thr, duk
 	}
 	return 0;
 }
-#endif  /* DUK_USE_DEBUGGER_SUPPORT */
+#endif /* DUK_USE_DEBUGGER_SUPPORT */
 
 DUK_INTERNAL duk_uint_fast32_t duk_hthread_get_act_prev_pc(duk_hthread *thr, duk_activation *act) {
 	duk_instr_t *bcode;

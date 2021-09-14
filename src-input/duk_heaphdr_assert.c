@@ -75,4 +75,4 @@ DUK_INTERNAL void duk_heaphdr_assert_valid_subclassed(duk_heaphdr *h) {
 	}
 }
 
-#endif  /* DUK_USE_ASSERTIONS */
+#endif /* DUK_USE_ASSERTIONS */

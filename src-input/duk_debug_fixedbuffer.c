@@ -56,7 +56,7 @@ DUK_INTERNAL void duk_fb_sprintf(duk_fixedbuffer *fb, const char *fmt, ...) {
 }
 
 DUK_INTERNAL void duk_fb_put_funcptr(duk_fixedbuffer *fb, duk_uint8_t *fptr, duk_size_t fptr_size) {
-	char buf[64+1];
+	char buf[64 + 1];
 	duk_debug_format_funcptr(buf, sizeof(buf), fptr, fptr_size);
 	buf[sizeof(buf) - 1] = (char) 0;
 	duk_fb_put_cstring(fb, buf);
@@ -66,4 +66,4 @@ DUK_INTERNAL duk_bool_t duk_fb_is_full(duk_fixedbuffer *fb) {
 	return (fb->offset >= fb->length);
 }
 
-#endif  /* DUK_USE_DEBUG */
+#endif /* DUK_USE_DEBUG */

@@ -15,14 +15,14 @@ DUK_INTERNAL const duk_int8_t duk_is_idchar_tab[128] = {
 	 * 1: IdentifierStart and IdentifierPart
 	 * -1: IdentifierPart only
 	 */
-	0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,   /* 0x00...0x0f */
-	0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,   /* 0x10...0x1f */
-	0,  0,  0,  0,  1,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,   /* 0x20...0x2f */
-	-1, -1, -1, -1, -1, -1, -1, -1, -1, -1, 0,  0,  0,  0,  0,  0,   /* 0x30...0x3f */
-	0,  1,  1,  1,  1,  1,  1,  1,  1,  1,  1,  1,  1,  1,  1,  1,   /* 0x40...0x4f */
-	1,  1,  1,  1,  1,  1,  1,  1,  1,  1,  1,  0,  0,  0,  0,  1,   /* 0x50...0x5f */
-	0,  1,  1,  1,  1,  1,  1,  1,  1,  1,  1,  1,  1,  1,  1,  1,   /* 0x60...0x6f */
-	1,  1,  1,  1,  1,  1,  1,  1,  1,  1,  1,  0,  0,  0,  0,  0    /* 0x70...0x7f */
+	0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0, 0, 0, 0, 0, 0, /* 0x00...0x0f */
+	0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0, 0, 0, 0, 0, 0, /* 0x10...0x1f */
+	0,  0,  0,  0,  1,  0,  0,  0,  0,  0,  0, 0, 0, 0, 0, 0, /* 0x20...0x2f */
+	-1, -1, -1, -1, -1, -1, -1, -1, -1, -1, 0, 0, 0, 0, 0, 0, /* 0x30...0x3f */
+	0,  1,  1,  1,  1,  1,  1,  1,  1,  1,  1, 1, 1, 1, 1, 1, /* 0x40...0x4f */
+	1,  1,  1,  1,  1,  1,  1,  1,  1,  1,  1, 0, 0, 0, 0, 1, /* 0x50...0x5f */
+	0,  1,  1,  1,  1,  1,  1,  1,  1,  1,  1, 1, 1, 1, 1, 1, /* 0x60...0x6f */
+	1,  1,  1,  1,  1,  1,  1,  1,  1,  1,  1, 0, 0, 0, 0, 0 /* 0x70...0x7f */
 };
 #endif
 
@@ -72,15 +72,13 @@ DUK_INTERNAL duk_small_int_t duk_unicode_get_cesu8_length(duk_ucodepoint_t cp) {
 		/* Encoded as surrogate pair, each encoding to 3 bytes for
 		 * 6 bytes total.  Codepoints above U+10FFFF encode as 6 bytes
 		 * too, see duk_unicode_encode_cesu8().
-		  */
+		 */
 		return 3 + 3;
 	}
 }
-#endif  /* DUK_USE_ASSERTIONS */
+#endif /* DUK_USE_ASSERTIONS */
 
-DUK_INTERNAL const duk_uint8_t duk_unicode_xutf8_markers[7] = {
-	0x00, 0xc0, 0xe0, 0xf0, 0xf8, 0xfc, 0xfe
-};
+DUK_INTERNAL const duk_uint8_t duk_unicode_xutf8_markers[7] = { 0x00, 0xc0, 0xe0, 0xf0, 0xf8, 0xfc, 0xfe };
 
 /* Encode to extended UTF-8; 'out' must have space for at least
  * DUK_UNICODE_MAX_XUTF8_LENGTH bytes.  Allows encoding of any
@@ -95,7 +93,7 @@ DUK_INTERNAL duk_small_int_t duk_unicode_encode_xutf8(duk_ucodepoint_t cp, duk_u
 	len = duk_unicode_get_xutf8_length(cp);
 	DUK_ASSERT(len > 0);
 
-	marker = duk_unicode_xutf8_markers[len - 1];  /* 64-bit OK because always >= 0 */
+	marker = duk_unicode_xutf8_markers[len - 1]; /* 64-bit OK because always >= 0 */
 
 	i = len;
 	DUK_ASSERT(i > 0);
@@ -180,7 +178,11 @@ DUK_INTERNAL duk_small_int_t duk_unicode_encode_cesu8(duk_ucodepoint_t cp, duk_u
 }
 
 /* Decode helper.  Return zero on error. */
-DUK_INTERNAL duk_small_int_t duk_unicode_decode_xutf8(duk_hthread *thr, const duk_uint8_t **ptr, const duk_uint8_t *ptr_start, const duk_uint8_t *ptr_end, duk_ucodepoint_t *out_cp) {
+DUK_INTERNAL duk_small_int_t duk_unicode_decode_xutf8(duk_hthread *thr,
+                                                      const duk_uint8_t **ptr,
+                                                      const duk_uint8_t *ptr_start,
+                                                      const duk_uint8_t *ptr_end,
+                                                      duk_ucodepoint_t *out_cp) {
 	const duk_uint8_t *p;
 	duk_uint32_t res;
 	duk_uint_fast8_t ch;
@@ -242,7 +244,7 @@ DUK_INTERNAL duk_small_int_t duk_unicode_decode_xutf8(duk_hthread *thr, const du
 		goto fail;
 	}
 
-	DUK_ASSERT(p >= ptr_start);  /* verified at beginning */
+	DUK_ASSERT(p >= ptr_start); /* verified at beginning */
 	if (p + n > ptr_end) {
 		/* check pointer at end */
 		goto fail;
@@ -268,12 +270,15 @@ DUK_INTERNAL duk_small_int_t duk_unicode_decode_xutf8(duk_hthread *thr, const du
 	*out_cp = res;
 	return 1;
 
- fail:
+fail:
 	return 0;
 }
 
 /* used by e.g. duk_regexp_executor.c, string built-ins */
-DUK_INTERNAL duk_ucodepoint_t duk_unicode_decode_xutf8_checked(duk_hthread *thr, const duk_uint8_t **ptr, const duk_uint8_t *ptr_start, const duk_uint8_t *ptr_end) {
+DUK_INTERNAL duk_ucodepoint_t duk_unicode_decode_xutf8_checked(duk_hthread *thr,
+                                                               const duk_uint8_t **ptr,
+                                                               const duk_uint8_t *ptr_start,
+                                                               const duk_uint8_t *ptr_end) {
 	duk_ucodepoint_t cp;
 
 	if (duk_unicode_decode_xutf8(thr, ptr, ptr_start, ptr_end, &cp)) {
@@ -320,7 +325,7 @@ DUK_INTERNAL duk_size_t duk_unicode_unvalidated_utf8_length(const duk_uint8_t *d
 	DUK_ASSERT(clen <= blen);
 	return clen;
 }
-#else  /* DUK_USE_PREFER_SIZE */
+#else /* DUK_USE_PREFER_SIZE */
 /* This seems like a good overall approach.  Fast path for ASCII in 4 byte
  * blocks.
  */
@@ -332,7 +337,7 @@ DUK_INTERNAL duk_size_t duk_unicode_unvalidated_utf8_length(const duk_uint8_t *d
 	duk_size_t ncont;
 	duk_size_t clen;
 
-	ncont = 0;  /* number of continuation (non-initial) bytes in [0x80,0xbf] */
+	ncont = 0; /* number of continuation (non-initial) bytes in [0x80,0xbf] */
 	p = data;
 	p_end = data + blen;
 	if (blen < 16) {
@@ -357,7 +362,7 @@ DUK_INTERNAL duk_size_t duk_unicode_unvalidated_utf8_length(const duk_uint8_t *d
 		duk_uint32_t x;
 		x = *p32++;
 		if (DUK_LIKELY((x & 0x80808080UL) == 0)) {
-			;  /* ASCII fast path */
+			; /* ASCII fast path */
 		} else {
 			/* Flip highest bit of each byte which changes
 			 * the bit pattern 10xxxxxx into 00xxxxxx which
@@ -381,7 +386,7 @@ DUK_INTERNAL duk_size_t duk_unicode_unvalidated_utf8_length(const duk_uint8_t *d
 	p = (const duk_uint8_t *) p32;
 	/* Fall through to handle the rest. */
 
- skip_fastpath:
+skip_fastpath:
 	while (p != p_end) {
 		duk_uint8_t x;
 		x = *p++;
@@ -395,7 +400,7 @@ DUK_INTERNAL duk_size_t duk_unicode_unvalidated_utf8_length(const duk_uint8_t *d
 	DUK_ASSERT(clen <= blen);
 	return clen;
 }
-#endif  /* DUK_USE_PREFER_SIZE */
+#endif /* DUK_USE_PREFER_SIZE */
 
 /* Check whether a string is UTF-8 compatible or not. */
 DUK_INTERNAL duk_bool_t duk_unicode_is_utf8_compatible(const duk_uint8_t *buf, duk_size_t len) {
@@ -444,18 +449,18 @@ DUK_INTERNAL duk_bool_t duk_unicode_is_utf8_compatible(const duk_uint8_t *buf, d
 		 * 1111 0xxx + 3*CONT -> [0x10000, 0x10ffff]
 		 */
 		left = len - i;
-		if (t <= 0xdfU) {  /* 1101 1111 = 0xdf */
-			if (t <= 0xbfU) {  /* 1011 1111 = 0xbf */
+		if (t <= 0xdfU) { /* 1101 1111 = 0xdf */
+			if (t <= 0xbfU) { /* 1011 1111 = 0xbf */
 				return 0;
 			}
 			ncont = 1;
 			mincp = 0x80UL;
 			cp = t & 0x1fU;
-		} else if (t <= 0xefU) {  /* 1110 1111 = 0xef */
+		} else if (t <= 0xefU) { /* 1110 1111 = 0xef */
 			ncont = 2;
 			mincp = 0x800UL;
 			cp = t & 0x0fU;
-		} else if (t <= 0xf7U) {  /* 1111 0111 = 0xf7 */
+		} else if (t <= 0xf7U) { /* 1111 0111 = 0xf7 */
 			ncont = 3;
 			mincp = 0x10000UL;
 			cp = t & 0x07U;
@@ -467,7 +472,7 @@ DUK_INTERNAL duk_bool_t duk_unicode_is_utf8_compatible(const duk_uint8_t *buf, d
 		}
 		while (ncont > 0U) {
 			t = buf[i++];
-			if ((t & 0xc0U) != 0x80U) {  /* 10xx xxxx */
+			if ((t & 0xc0U) != 0x80U) { /* 10xx xxxx */
 				return 0;
 			}
 			cp = (cp << 6) + (t & 0x3fU);
@@ -533,7 +538,9 @@ DUK_LOCAL duk_small_int_t duk__uni_range_match(const duk_uint8_t *unitab, duk_si
 		/* [r1,r2] is the range */
 
 		DUK_DDD(DUK_DDDPRINT("duk__uni_range_match: cp=%06lx range=[0x%06lx,0x%06lx]",
-		                     (unsigned long) cp, (unsigned long) r1, (unsigned long) r2));
+		                     (unsigned long) cp,
+		                     (unsigned long) r1,
+		                     (unsigned long) r2));
 		if (cp >= r1 && cp <= r2) {
 			return 1;
 		}
@@ -603,19 +610,17 @@ DUK_INTERNAL duk_small_int_t duk_unicode_is_whitespace(duk_codepoint_t cp) {
 	/* cp == -1 (EOF) never matches and causes return value 0 */
 
 	lo = (duk_uint_fast8_t) (cp & 0xff);
-	hi = (duk_uint_fast32_t) (cp >> 8);  /* does not fit into an uchar */
+	hi = (duk_uint_fast32_t) (cp >> 8); /* does not fit into an uchar */
 
 	if (hi == 0x0000UL) {
-		if (lo == 0x09U || lo == 0x0bU || lo == 0x0cU ||
-		    lo == 0x20U || lo == 0xa0U) {
+		if (lo == 0x09U || lo == 0x0bU || lo == 0x0cU || lo == 0x20U || lo == 0xa0U) {
 			return 1;
 		}
 	} else if (hi == 0x0020UL) {
 		if (lo <= 0x0aU || lo == 0x2fU || lo == 0x5fU) {
 			return 1;
 		}
-	} else if (cp == 0x1680L || cp == 0x180eL || cp == 0x3000L ||
-	           cp == 0xfeffL) {
+	} else if (cp == 0x1680L || cp == 0x180eL || cp == 0x3000L || cp == 0xfeffL) {
 		return 1;
 	}
 
@@ -634,8 +639,7 @@ DUK_INTERNAL duk_small_int_t duk_unicode_is_line_terminator(duk_codepoint_t cp) 
 	 *  into a single line terminator.  This must be handled by the caller.
 	 */
 
-	if (cp == 0x000aL || cp == 0x000dL || cp == 0x2028L ||
-	    cp == 0x2029L) {
+	if (cp == 0x000aL || cp == 0x000dL || cp == 0x2028L || cp == 0x2029L) {
 		return 1;
 	}
 
@@ -686,9 +690,7 @@ DUK_INTERNAL duk_small_int_t duk_unicode_is_identifier_start(duk_codepoint_t cp)
 #if defined(DUK_USE_IDCHAR_FASTPATH)
 		return (cp >= 0) && (duk_is_idchar_tab[cp] > 0);
 #else
-		if ((cp >= 'a' && cp <= 'z') ||
-		    (cp >= 'A' && cp <= 'Z') ||
-		    cp == '_' || cp == '$') {
+		if ((cp >= 'a' && cp <= 'z') || (cp >= 'A' && cp <= 'Z') || cp == '_' || cp == '$') {
 			return 1;
 		}
 		return 0;
@@ -698,17 +700,13 @@ DUK_INTERNAL duk_small_int_t duk_unicode_is_identifier_start(duk_codepoint_t cp)
 	/* Non-ASCII slow path (range-by-range linear comparison), very slow */
 
 #if defined(DUK_USE_SOURCE_NONBMP)
-	if (duk__uni_range_match(duk_unicode_ids_noa,
-	                         (duk_size_t) sizeof(duk_unicode_ids_noa),
-	                         (duk_codepoint_t) cp)) {
+	if (duk__uni_range_match(duk_unicode_ids_noa, (duk_size_t) sizeof(duk_unicode_ids_noa), (duk_codepoint_t) cp)) {
 		return 1;
 	}
 	return 0;
 #else
 	if (cp < 0x10000L) {
-		if (duk__uni_range_match(duk_unicode_ids_noabmp,
-		                         sizeof(duk_unicode_ids_noabmp),
-		                         (duk_codepoint_t) cp)) {
+		if (duk__uni_range_match(duk_unicode_ids_noabmp, sizeof(duk_unicode_ids_noabmp), (duk_codepoint_t) cp)) {
 			return 1;
 		}
 		return 0;
@@ -775,10 +773,7 @@ DUK_INTERNAL duk_small_int_t duk_unicode_is_identifier_part(duk_codepoint_t cp) 
 #if defined(DUK_USE_IDCHAR_FASTPATH)
 		return (cp >= 0) && (duk_is_idchar_tab[cp] != 0);
 #else
-		if ((cp >= 'a' && cp <= 'z') ||
-		    (cp >= 'A' && cp <= 'Z') ||
-		    (cp >= '0' && cp <= '9') ||
-		    cp == '_' || cp == '$') {
+		if ((cp >= 'a' && cp <= 'z') || (cp >= 'A' && cp <= 'Z') || (cp >= '0' && cp <= '9') || cp == '_' || cp == '$') {
 			return 1;
 		}
 		return 0;
@@ -788,20 +783,14 @@ DUK_INTERNAL duk_small_int_t duk_unicode_is_identifier_part(duk_codepoint_t cp) 
 	/* Non-ASCII slow path (range-by-range linear comparison), very slow */
 
 #if defined(DUK_USE_SOURCE_NONBMP)
-	if (duk__uni_range_match(duk_unicode_ids_noa,
-	                         sizeof(duk_unicode_ids_noa),
-	                         (duk_codepoint_t) cp) ||
-	    duk__uni_range_match(duk_unicode_idp_m_ids_noa,
-	                         sizeof(duk_unicode_idp_m_ids_noa),
-	                         (duk_codepoint_t) cp)) {
+	if (duk__uni_range_match(duk_unicode_ids_noa, sizeof(duk_unicode_ids_noa), (duk_codepoint_t) cp) ||
+	    duk__uni_range_match(duk_unicode_idp_m_ids_noa, sizeof(duk_unicode_idp_m_ids_noa), (duk_codepoint_t) cp)) {
 		return 1;
 	}
 	return 0;
 #else
 	if (cp < 0x10000L) {
-		if (duk__uni_range_match(duk_unicode_ids_noabmp,
-		                         sizeof(duk_unicode_ids_noabmp),
-		                         (duk_codepoint_t) cp) ||
+		if (duk__uni_range_match(duk_unicode_ids_noabmp, sizeof(duk_unicode_ids_noabmp), (duk_codepoint_t) cp) ||
 		    duk__uni_range_match(duk_unicode_idp_m_ids_noabmp,
 		                         sizeof(duk_unicode_idp_m_ids_noabmp),
 		                         (duk_codepoint_t) cp)) {
@@ -837,8 +826,7 @@ DUK_INTERNAL duk_small_int_t duk_unicode_is_letter(duk_codepoint_t cp) {
 
 	/* ASCII (and EOF) fast path -- quick accept and reject */
 	if (cp <= 0x7fL) {
-		if ((cp >= 'a' && cp <= 'z') ||
-		    (cp >= 'A' && cp <= 'Z')) {
+		if ((cp >= 'a' && cp <= 'z') || (cp >= 'A' && cp <= 'Z')) {
 			return 1;
 		}
 		return 0;
@@ -847,20 +835,14 @@ DUK_INTERNAL duk_small_int_t duk_unicode_is_letter(duk_codepoint_t cp) {
 	/* Non-ASCII slow path (range-by-range linear comparison), very slow */
 
 #if defined(DUK_USE_SOURCE_NONBMP)
-	if (duk__uni_range_match(duk_unicode_ids_noa,
-	                         sizeof(duk_unicode_ids_noa),
-	                         (duk_codepoint_t) cp) &&
-	    !duk__uni_range_match(duk_unicode_ids_m_let_noa,
-	                          sizeof(duk_unicode_ids_m_let_noa),
-	                          (duk_codepoint_t) cp)) {
+	if (duk__uni_range_match(duk_unicode_ids_noa, sizeof(duk_unicode_ids_noa), (duk_codepoint_t) cp) &&
+	    !duk__uni_range_match(duk_unicode_ids_m_let_noa, sizeof(duk_unicode_ids_m_let_noa), (duk_codepoint_t) cp)) {
 		return 1;
 	}
 	return 0;
 #else
 	if (cp < 0x10000L) {
-		if (duk__uni_range_match(duk_unicode_ids_noabmp,
-		                         sizeof(duk_unicode_ids_noabmp),
-		                         (duk_codepoint_t) cp) &&
+		if (duk__uni_range_match(duk_unicode_ids_noabmp, sizeof(duk_unicode_ids_noabmp), (duk_codepoint_t) cp) &&
 		    !duk__uni_range_match(duk_unicode_ids_m_let_noabmp,
 		                          sizeof(duk_unicode_ids_m_let_noabmp),
 		                          (duk_codepoint_t) cp)) {
@@ -897,10 +879,7 @@ DUK_INTERNAL duk_small_int_t duk_unicode_is_letter(duk_codepoint_t cp) {
  */
 
 DUK_LOCAL
-duk_codepoint_t duk__slow_case_conversion(duk_hthread *thr,
-                                          duk_bufwriter_ctx *bw,
-                                          duk_codepoint_t cp,
-                                          duk_bitdecoder_ctx *bd_ctx) {
+duk_codepoint_t duk__slow_case_conversion(duk_hthread *thr, duk_bufwriter_ctx *bw, duk_codepoint_t cp, duk_bitdecoder_ctx *bd_ctx) {
 	duk_small_int_t skip = 0;
 	duk_small_int_t n;
 	duk_small_int_t t;
@@ -930,10 +909,13 @@ duk_codepoint_t duk__slow_case_conversion(duk_hthread *thr,
 			start_o = (duk_codepoint_t) duk_bd_decode(bd_ctx, 16);
 			count = (duk_small_int_t) duk_bd_decode(bd_ctx, 7);
 			DUK_DDD(DUK_DDDPRINT("range: start_i=%ld, start_o=%ld, count=%ld, skip=%ld",
-			                     (long) start_i, (long) start_o, (long) count, (long) skip));
+			                     (long) start_i,
+			                     (long) start_o,
+			                     (long) count,
+			                     (long) skip));
 
 			if (cp >= start_i) {
-				tmp_cp = cp - start_i;  /* always >= 0 */
+				tmp_cp = cp - start_i; /* always >= 0 */
 				if (tmp_cp < (duk_codepoint_t) count * (duk_codepoint_t) skip &&
 				    (tmp_cp % (duk_codepoint_t) skip) == 0) {
 					DUK_DDD(DUK_DDDPRINT("range matches input codepoint"));
@@ -985,7 +967,7 @@ duk_codepoint_t duk__slow_case_conversion(duk_hthread *thr,
 	DUK_DDD(DUK_DDDPRINT("no rule matches, output is same as input"));
 	/* fall through */
 
- single:
+single:
 	if (bw != NULL) {
 		DUK_BW_WRITE_RAW_XUTF8(thr, bw, (duk_ucodepoint_t) cp);
 	}
@@ -1047,9 +1029,9 @@ duk_codepoint_t duk__case_transform_helper(duk_hthread *thr,
 		 *  The rule is not locale/language specific so it is supported.
 		 */
 
-		if (cp == 0x03a3L &&    /* U+03A3 = GREEK CAPITAL LETTER SIGMA */
-		    duk_unicode_is_letter(prev) &&        /* prev exists and is not a letter */
-		    !duk_unicode_is_letter(next)) {       /* next does not exist or next is not a letter */
+		if (cp == 0x03a3L && /* U+03A3 = GREEK CAPITAL LETTER SIGMA */
+		    duk_unicode_is_letter(prev) && /* prev exists and is not a letter */
+		    !duk_unicode_is_letter(next)) { /* next does not exist or next is not a letter */
 			/* Capital sigma occurred at "end of word", lowercase to
 			 * U+03C2 = GREEK SMALL LETTER FINAL SIGMA.  Otherwise
 			 * fall through and let the normal rules lowercase it to
@@ -1075,13 +1057,13 @@ duk_codepoint_t duk__case_transform_helper(duk_hthread *thr,
 	}
 	return duk__slow_case_conversion(thr, bw, cp, &bd_ctx);
 
- singlechar:
+singlechar:
 	if (bw != NULL) {
 		DUK_BW_WRITE_RAW_XUTF8(thr, bw, (duk_ucodepoint_t) cp);
 	}
 	return cp;
 
- /* unused now, not needed until Turkish/Azeri */
+	/* unused now, not needed until Turkish/Azeri */
 #if 0
  nochar:
 	return -1;
@@ -1099,7 +1081,7 @@ DUK_INTERNAL void duk_unicode_case_convert_string(duk_hthread *thr, duk_bool_t u
 	const duk_uint8_t *p, *p_start, *p_end;
 	duk_codepoint_t prev, curr, next;
 
-	h_input = duk_require_hstring(thr, -1);  /* Accept symbols. */
+	h_input = duk_require_hstring(thr, -1); /* Accept symbols. */
 	DUK_ASSERT(h_input != NULL);
 
 	bw = &bw_alloc;
@@ -1111,7 +1093,8 @@ DUK_INTERNAL void duk_unicode_case_convert_string(duk_hthread *thr, duk_bool_t u
 	p_end = p_start + DUK_HSTRING_GET_BYTELEN(h_input);
 	p = p_start;
 
-	prev = -1; DUK_UNREF(prev);
+	prev = -1;
+	DUK_UNREF(prev);
 	curr = -1;
 	next = -1;
 	for (;;) {
@@ -1136,17 +1119,12 @@ DUK_INTERNAL void duk_unicode_case_convert_string(duk_hthread *thr, duk_bool_t u
 			/* Ensure space for maximum multi-character result; estimate is overkill. */
 			DUK_BW_ENSURE(thr, bw, 8 * DUK_UNICODE_MAX_XUTF8_LENGTH);
 
-			duk__case_transform_helper(thr,
-			                           bw,
-			                           (duk_codepoint_t) curr,
-			                           prev,
-			                           next,
-			                           uppercase);
+			duk__case_transform_helper(thr, bw, (duk_codepoint_t) curr, prev, next, uppercase);
 		}
 	}
 
 	DUK_BW_COMPACT(thr, bw);
-	(void) duk_buffer_to_string(thr, -1);  /* Safe, output is encoded. */
+	(void) duk_buffer_to_string(thr, -1); /* Safe, output is encoded. */
 	/* invalidates h_buf pointer */
 	duk_remove_m2(thr);
 }
@@ -1169,15 +1147,15 @@ DUK_INTERNAL duk_codepoint_t duk_unicode_re_canonicalize_char(duk_hthread *thr, 
 		return (duk_codepoint_t) duk_unicode_re_canon_lookup[cp];
 	}
 	return cp;
-#else  /* DUK_USE_REGEXP_CANON_WORKAROUND */
+#else /* DUK_USE_REGEXP_CANON_WORKAROUND */
 	duk_codepoint_t y;
 
 	y = duk__case_transform_helper(thr,
-	                               NULL,    /* NULL is allowed, no output */
-	                               cp,      /* curr char */
-	                               -1,      /* prev char */
-	                               -1,      /* next char */
-	                               1);      /* uppercase */
+	                               NULL, /* NULL is allowed, no output */
+	                               cp, /* curr char */
+	                               -1, /* prev char */
+	                               -1, /* next char */
+	                               1); /* uppercase */
 
 	if ((y < 0) || (cp >= 0x80 && y < 0x80)) {
 		/* multiple codepoint conversion or non-ASCII mapped to ASCII
@@ -1187,7 +1165,7 @@ DUK_INTERNAL duk_codepoint_t duk_unicode_re_canonicalize_char(duk_hthread *thr, 
 	}
 
 	return y;
-#endif  /* DUK_USE_REGEXP_CANON_WORKAROUND */
+#endif /* DUK_USE_REGEXP_CANON_WORKAROUND */
 }
 
 /*
@@ -1200,10 +1178,7 @@ DUK_INTERNAL duk_small_int_t duk_unicode_re_is_wordchar(duk_codepoint_t x) {
 	 *  Note: the description in E5 Section 15.10.2.6 has a typo, it
 	 *  contains 'A' twice and lacks 'a'; the intent is [0-9a-zA-Z_].
 	 */
-	if ((x >= '0' && x <= '9') ||
-	    (x >= 'a' && x <= 'z') ||
-	    (x >= 'A' && x <= 'Z') ||
-	    (x == '_')) {
+	if ((x >= '0' && x <= '9') || (x >= 'a' && x <= 'z') || (x >= 'A' && x <= 'Z') || (x == '_')) {
 		return 1;
 	}
 	return 0;
@@ -1215,51 +1190,36 @@ DUK_INTERNAL duk_small_int_t duk_unicode_re_is_wordchar(duk_codepoint_t x) {
 
 /* exposed because lexer needs these too */
 DUK_INTERNAL const duk_uint16_t duk_unicode_re_ranges_digit[2] = {
-	(duk_uint16_t) 0x0030UL, (duk_uint16_t) 0x0039UL,
+	(duk_uint16_t) 0x0030UL,
+	(duk_uint16_t) 0x0039UL,
 };
 DUK_INTERNAL const duk_uint16_t duk_unicode_re_ranges_white[22] = {
-	(duk_uint16_t) 0x0009UL, (duk_uint16_t) 0x000DUL,
-	(duk_uint16_t) 0x0020UL, (duk_uint16_t) 0x0020UL,
-	(duk_uint16_t) 0x00A0UL, (duk_uint16_t) 0x00A0UL,
-	(duk_uint16_t) 0x1680UL, (duk_uint16_t) 0x1680UL,
-	(duk_uint16_t) 0x180EUL, (duk_uint16_t) 0x180EUL,
-	(duk_uint16_t) 0x2000UL, (duk_uint16_t) 0x200AUL,
-	(duk_uint16_t) 0x2028UL, (duk_uint16_t) 0x2029UL,
-	(duk_uint16_t) 0x202FUL, (duk_uint16_t) 0x202FUL,
-	(duk_uint16_t) 0x205FUL, (duk_uint16_t) 0x205FUL,
-	(duk_uint16_t) 0x3000UL, (duk_uint16_t) 0x3000UL,
+	(duk_uint16_t) 0x0009UL, (duk_uint16_t) 0x000DUL, (duk_uint16_t) 0x0020UL, (duk_uint16_t) 0x0020UL, (duk_uint16_t) 0x00A0UL,
+	(duk_uint16_t) 0x00A0UL, (duk_uint16_t) 0x1680UL, (duk_uint16_t) 0x1680UL, (duk_uint16_t) 0x180EUL, (duk_uint16_t) 0x180EUL,
+	(duk_uint16_t) 0x2000UL, (duk_uint16_t) 0x200AUL, (duk_uint16_t) 0x2028UL, (duk_uint16_t) 0x2029UL, (duk_uint16_t) 0x202FUL,
+	(duk_uint16_t) 0x202FUL, (duk_uint16_t) 0x205FUL, (duk_uint16_t) 0x205FUL, (duk_uint16_t) 0x3000UL, (duk_uint16_t) 0x3000UL,
 	(duk_uint16_t) 0xFEFFUL, (duk_uint16_t) 0xFEFFUL,
 };
 DUK_INTERNAL const duk_uint16_t duk_unicode_re_ranges_wordchar[8] = {
-	(duk_uint16_t) 0x0030UL, (duk_uint16_t) 0x0039UL,
-	(duk_uint16_t) 0x0041UL, (duk_uint16_t) 0x005AUL,
-	(duk_uint16_t) 0x005FUL, (duk_uint16_t) 0x005FUL,
-	(duk_uint16_t) 0x0061UL, (duk_uint16_t) 0x007AUL,
+	(duk_uint16_t) 0x0030UL, (duk_uint16_t) 0x0039UL, (duk_uint16_t) 0x0041UL, (duk_uint16_t) 0x005AUL,
+	(duk_uint16_t) 0x005FUL, (duk_uint16_t) 0x005FUL, (duk_uint16_t) 0x0061UL, (duk_uint16_t) 0x007AUL,
 };
 DUK_INTERNAL const duk_uint16_t duk_unicode_re_ranges_not_digit[4] = {
-	(duk_uint16_t) 0x0000UL, (duk_uint16_t) 0x002FUL,
-	(duk_uint16_t) 0x003AUL, (duk_uint16_t) 0xFFFFUL,
+	(duk_uint16_t) 0x0000UL,
+	(duk_uint16_t) 0x002FUL,
+	(duk_uint16_t) 0x003AUL,
+	(duk_uint16_t) 0xFFFFUL,
 };
 DUK_INTERNAL const duk_uint16_t duk_unicode_re_ranges_not_white[24] = {
-	(duk_uint16_t) 0x0000UL, (duk_uint16_t) 0x0008UL,
-	(duk_uint16_t) 0x000EUL, (duk_uint16_t) 0x001FUL,
-	(duk_uint16_t) 0x0021UL, (duk_uint16_t) 0x009FUL,
-	(duk_uint16_t) 0x00A1UL, (duk_uint16_t) 0x167FUL,
-	(duk_uint16_t) 0x1681UL, (duk_uint16_t) 0x180DUL,
-	(duk_uint16_t) 0x180FUL, (duk_uint16_t) 0x1FFFUL,
-	(duk_uint16_t) 0x200BUL, (duk_uint16_t) 0x2027UL,
-	(duk_uint16_t) 0x202AUL, (duk_uint16_t) 0x202EUL,
-	(duk_uint16_t) 0x2030UL, (duk_uint16_t) 0x205EUL,
-	(duk_uint16_t) 0x2060UL, (duk_uint16_t) 0x2FFFUL,
-	(duk_uint16_t) 0x3001UL, (duk_uint16_t) 0xFEFEUL,
-	(duk_uint16_t) 0xFF00UL, (duk_uint16_t) 0xFFFFUL,
+	(duk_uint16_t) 0x0000UL, (duk_uint16_t) 0x0008UL, (duk_uint16_t) 0x000EUL, (duk_uint16_t) 0x001FUL, (duk_uint16_t) 0x0021UL,
+	(duk_uint16_t) 0x009FUL, (duk_uint16_t) 0x00A1UL, (duk_uint16_t) 0x167FUL, (duk_uint16_t) 0x1681UL, (duk_uint16_t) 0x180DUL,
+	(duk_uint16_t) 0x180FUL, (duk_uint16_t) 0x1FFFUL, (duk_uint16_t) 0x200BUL, (duk_uint16_t) 0x2027UL, (duk_uint16_t) 0x202AUL,
+	(duk_uint16_t) 0x202EUL, (duk_uint16_t) 0x2030UL, (duk_uint16_t) 0x205EUL, (duk_uint16_t) 0x2060UL, (duk_uint16_t) 0x2FFFUL,
+	(duk_uint16_t) 0x3001UL, (duk_uint16_t) 0xFEFEUL, (duk_uint16_t) 0xFF00UL, (duk_uint16_t) 0xFFFFUL,
 };
 DUK_INTERNAL const duk_uint16_t duk_unicode_re_ranges_not_wordchar[10] = {
-	(duk_uint16_t) 0x0000UL, (duk_uint16_t) 0x002FUL,
-	(duk_uint16_t) 0x003AUL, (duk_uint16_t) 0x0040UL,
-	(duk_uint16_t) 0x005BUL, (duk_uint16_t) 0x005EUL,
-	(duk_uint16_t) 0x0060UL, (duk_uint16_t) 0x0060UL,
-	(duk_uint16_t) 0x007BUL, (duk_uint16_t) 0xFFFFUL,
+	(duk_uint16_t) 0x0000UL, (duk_uint16_t) 0x002FUL, (duk_uint16_t) 0x003AUL, (duk_uint16_t) 0x0040UL, (duk_uint16_t) 0x005BUL,
+	(duk_uint16_t) 0x005EUL, (duk_uint16_t) 0x0060UL, (duk_uint16_t) 0x0060UL, (duk_uint16_t) 0x007BUL, (duk_uint16_t) 0xFFFFUL,
 };
 
-#endif  /* DUK_USE_REGEXP_SUPPORT */
+#endif /* DUK_USE_REGEXP_SUPPORT */

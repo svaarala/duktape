@@ -12,17 +12,17 @@
  */
 
 typedef struct {
-	duk_uint8_t *out;      /* where to write next byte(s) */
-	duk_codepoint_t lead;  /* lead surrogate */
+	duk_uint8_t *out; /* where to write next byte(s) */
+	duk_codepoint_t lead; /* lead surrogate */
 } duk__encode_context;
 
 typedef struct {
 	/* UTF-8 decoding state */
-	duk_codepoint_t codepoint;  /* built up incrementally */
-	duk_uint8_t upper;          /* max value of next byte (decode error otherwise) */
-	duk_uint8_t lower;          /* min value of next byte (ditto) */
-	duk_uint8_t needed;         /* how many more bytes we need */
-	duk_uint8_t bom_handled;    /* BOM seen or no longer expected */
+	duk_codepoint_t codepoint; /* built up incrementally */
+	duk_uint8_t upper; /* max value of next byte (decode error otherwise) */
+	duk_uint8_t lower; /* min value of next byte (ditto) */
+	duk_uint8_t needed; /* how many more bytes we need */
+	duk_uint8_t bom_handled; /* BOM seen or no longer expected */
 
 	/* Decoder configuration */
 	duk_uint8_t fatal;
@@ -32,9 +32,9 @@ typedef struct {
 /* The signed duk_codepoint_t type is used to signal a decoded codepoint
  * (>= 0) or various other states using negative values.
  */
-#define DUK__CP_CONTINUE   (-1)  /* continue to next byte, no completed codepoint */
-#define DUK__CP_ERROR      (-2)  /* decoding error */
-#define DUK__CP_RETRY      (-3)  /* decoding error; retry last byte */
+#define DUK__CP_CONTINUE (-1) /* continue to next byte, no completed codepoint */
+#define DUK__CP_ERROR    (-2) /* decoding error */
+#define DUK__CP_RETRY    (-3) /* decoding error; retry last byte */
 
 /*
  *  Raw helpers for encoding/decoding
@@ -121,7 +121,7 @@ DUK_LOCAL duk_codepoint_t duk__utf8_decode_next(duk__decode_context *dec_ctx, du
 			} else {
 				/* got a codepoint */
 				duk_codepoint_t ret;
-				DUK_ASSERT(dec_ctx->codepoint <= 0x10ffffL);  /* Decoding rules guarantee. */
+				DUK_ASSERT(dec_ctx->codepoint <= 0x10ffffL); /* Decoding rules guarantee. */
 				ret = dec_ctx->codepoint;
 				dec_ctx->codepoint = 0x0000L;
 				dec_ctx->needed = 0;
@@ -177,7 +177,8 @@ DUK_LOCAL void duk__utf8_encode_char(void *udata, duk_codepoint_t codepoint) {
 		} else {
 			/* low surrogate */
 			if (enc_ctx->lead != 0x0000L) {
-				codepoint = (duk_codepoint_t) (0x010000L + ((enc_ctx->lead - 0xd800L) << 10) + (codepoint - 0xdc00L));
+				codepoint =
+				    (duk_codepoint_t) (0x010000L + ((enc_ctx->lead - 0xd800L) << 10) + (codepoint - 0xdc00L));
 				enc_ctx->lead = 0x0000L;
 			} else {
 				/* unpaired low surrogate */
@@ -198,7 +199,7 @@ DUK_LOCAL void duk__utf8_encode_char(void *udata, duk_codepoint_t codepoint) {
 	 */
 	enc_ctx->out += duk_unicode_encode_xutf8((duk_ucodepoint_t) codepoint, enc_ctx->out);
 }
-#endif  /* DUK_USE_ENCODING_BUILTINS */
+#endif /* DUK_USE_ENCODING_BUILTINS */
 
 /* Shared helper for buffer-to-string using a TextDecoder() compatible UTF-8
  * decoder.
@@ -227,18 +228,15 @@ DUK_LOCAL duk_ret_t duk__decode_helper(duk_hthread *thr, duk__decode_context *de
 		duk_push_fixed_buffer_nozero(thr, 0);
 		duk_replace(thr, 0);
 	}
-	(void) duk_require_buffer_data(thr, 0, &len);  /* Need 'len', avoid pointer. */
+	(void) duk_require_buffer_data(thr, 0, &len); /* Need 'len', avoid pointer. */
 
-	if (duk_check_type_mask(thr, 1, DUK_TYPE_MASK_UNDEFINED |
-	                                DUK_TYPE_MASK_NULL |
-	                                DUK_TYPE_MASK_NONE)) {
+	if (duk_check_type_mask(thr, 1, DUK_TYPE_MASK_UNDEFINED | DUK_TYPE_MASK_NULL | DUK_TYPE_MASK_NONE)) {
 		/* Use defaults, treat missing value like undefined. */
 	} else {
-		duk_require_type_mask(thr, 1, DUK_TYPE_MASK_UNDEFINED |
-	                                      DUK_TYPE_MASK_NULL |
-	                                      DUK_TYPE_MASK_LIGHTFUNC |
-	                                      DUK_TYPE_MASK_BUFFER |
-		                              DUK_TYPE_MASK_OBJECT);
+		duk_require_type_mask(thr,
+		                      1,
+		                      DUK_TYPE_MASK_UNDEFINED | DUK_TYPE_MASK_NULL | DUK_TYPE_MASK_LIGHTFUNC |
+		                          DUK_TYPE_MASK_BUFFER | DUK_TYPE_MASK_OBJECT);
 		if (duk_get_prop_literal(thr, 1, "stream")) {
 			stream = duk_to_boolean(thr, -1);
 		}
@@ -256,7 +254,8 @@ DUK_LOCAL duk_ret_t duk__decode_helper(duk_hthread *thr, duk__decode_context *de
 		DUK_ERROR_TYPE(thr, DUK_STR_RESULT_TOO_LONG);
 		DUK_WO_NORETURN(return 0;);
 	}
-	output = (duk_uint8_t *) duk_push_fixed_buffer_nozero(thr, 3 + (3 * len));  /* used parts will be always manually written over */
+	output =
+	    (duk_uint8_t *) duk_push_fixed_buffer_nozero(thr, 3 + (3 * len)); /* used parts will be always manually written over */
 
 	input = (const duk_uint8_t *) duk_get_buffer_data(thr, 0, &len_tmp);
 	DUK_ASSERT(input != NULL || len == 0);
@@ -288,7 +287,7 @@ DUK_LOCAL duk_ret_t duk__decode_helper(duk_hthread *thr, duk__decode_context *de
 			/* Decoding error with or without retry. */
 			DUK_ASSERT(codepoint == DUK__CP_ERROR || codepoint == DUK__CP_RETRY);
 			if (codepoint == DUK__CP_RETRY) {
-				--in;  /* retry last byte */
+				--in; /* retry last byte */
 			}
 			/* replacement mode: replace with U+FFFD */
 			codepoint = DUK_UNICODE_CP_REPLACEMENT_CHARACTER;
@@ -321,7 +320,7 @@ DUK_LOCAL duk_ret_t duk__decode_helper(duk_hthread *thr, duk__decode_context *de
 				DUK_ASSERT(out <= output + (3 + (3 * len)));
 			}
 		}
-		duk__utf8_decode_init(dec_ctx);  /* Initialize decoding state for potential reuse. */
+		duk__utf8_decode_init(dec_ctx); /* Initialize decoding state for potential reuse. */
 	}
 
 	/* Output buffer is fixed and thus stable even if there had been
@@ -330,7 +329,7 @@ DUK_LOCAL duk_ret_t duk__decode_helper(duk_hthread *thr, duk__decode_context *de
 	duk_push_lstring(thr, (const char *) output, (duk_size_t) (out - output));
 	return 1;
 
- fail_type:
+fail_type:
 	DUK_ERROR_TYPE(thr, DUK_STR_UTF8_DECODE_FAILED);
 	DUK_WO_NORETURN(return 0;);
 }
@@ -389,7 +388,7 @@ DUK_INTERNAL duk_ret_t duk_bi_textencoder_prototype_encode(duk_hthread *thr) {
 	output = (duk_uint8_t *) duk_push_dynamic_buffer(thr, 3 * len);
 
 	if (len > 0) {
-		DUK_ASSERT(duk_is_string(thr, 0));  /* True if len > 0. */
+		DUK_ASSERT(duk_is_string(thr, 0)); /* True if len > 0. */
 
 		/* XXX: duk_decode_string() is used to process the input
 		 * string.  For standard ECMAScript strings, represented
@@ -465,7 +464,7 @@ DUK_INTERNAL duk_ret_t duk_bi_textdecoder_constructor(duk_hthread *thr) {
 	dec_ctx = (duk__decode_context *) duk_push_fixed_buffer(thr, sizeof(duk__decode_context));
 	dec_ctx->fatal = (duk_uint8_t) fatal;
 	dec_ctx->ignore_bom = (duk_uint8_t) ignore_bom;
-	duk__utf8_decode_init(dec_ctx);  /* Initializes remaining fields. */
+	duk__utf8_decode_init(dec_ctx); /* Initializes remaining fields. */
 
 	duk_put_prop_literal(thr, -2, DUK_INTERNAL_SYMBOL("Context"));
 	return 0;
@@ -511,7 +510,7 @@ DUK_INTERNAL duk_ret_t duk_bi_textdecoder_prototype_decode(duk_hthread *thr) {
 	dec_ctx = duk__get_textdecoder_context(thr);
 	return duk__decode_helper(thr, dec_ctx);
 }
-#endif  /* DUK_USE_ENCODING_BUILTINS */
+#endif /* DUK_USE_ENCODING_BUILTINS */
 
 /*
  *  Internal helper for Node.js Buffer
@@ -525,8 +524,8 @@ DUK_INTERNAL duk_ret_t duk_bi_textdecoder_prototype_decode(duk_hthread *thr) {
 DUK_INTERNAL duk_ret_t duk_textdecoder_decode_utf8_nodejs(duk_hthread *thr) {
 	duk__decode_context dec_ctx;
 
-	dec_ctx.fatal = 0;  /* use replacement chars */
-	dec_ctx.ignore_bom = 1;  /* ignore BOMs (matches Node.js Buffer .toString()) */
+	dec_ctx.fatal = 0; /* use replacement chars */
+	dec_ctx.ignore_bom = 1; /* ignore BOMs (matches Node.js Buffer .toString()) */
 	duk__utf8_decode_init(&dec_ctx);
 
 	return duk__decode_helper(thr, &dec_ctx);

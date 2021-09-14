@@ -68,7 +68,7 @@ DUK_INTERNAL void duk_proxy_ownkeys_postprocess(duk_hthread *thr, duk_hobject *h
 		duk_def_prop(thr, -3, DUK_DEFPROP_HAVE_VALUE | DUK_DEFPROP_SET_WEC);
 		continue;
 
-	 skip_key:
+	skip_key:
 		duk_pop(thr);
 		continue;
 	}
@@ -85,14 +85,14 @@ DUK_INTERNAL void duk_proxy_ownkeys_postprocess(duk_hthread *thr, duk_hobject *h
 	 * handled above.
 	 */
 }
-#endif  /* DUK_USE_ES6_PROXY */
+#endif /* DUK_USE_ES6_PROXY */
 
 #if defined(DUK_USE_ES6_PROXY)
 DUK_INTERNAL duk_ret_t duk_bi_proxy_constructor(duk_hthread *thr) {
-	DUK_ASSERT_TOP(thr, 2);  /* [ target handler ] */
+	DUK_ASSERT_TOP(thr, 2); /* [ target handler ] */
 
 	duk_require_constructor_call(thr);
-	duk_push_proxy(thr, 0 /*flags*/);  /* [ target handler ] -> [ proxy ] */
-	return 1;  /* replacement */
+	duk_push_proxy(thr, 0 /*flags*/); /* [ target handler ] -> [ proxy ] */
+	return 1; /* replacement */
 }
-#endif  /* DUK_USE_ES6_PROXY */
+#endif /* DUK_USE_ES6_PROXY */

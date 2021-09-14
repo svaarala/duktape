@@ -6,7 +6,7 @@
 
 #if defined(DUK_USE_ROM_STRINGS)
 /* Fixed seed value used with ROM strings. */
-#define DUK__FIXED_HASH_SEED       0xabcd1234
+#define DUK__FIXED_HASH_SEED 0xabcd1234
 #endif
 
 /*
@@ -95,8 +95,8 @@ DUK_INTERNAL void duk_free_hstring(duk_heap *heap, duk_hstring *h) {
 
 #if defined(DUK_USE_HSTRING_EXTDATA) && defined(DUK_USE_EXTSTR_FREE)
 	if (DUK_HSTRING_HAS_EXTDATA(h)) {
-		DUK_DDD(DUK_DDDPRINT("free extstr: hstring %!O, extdata: %p",
-		                     h, DUK_HSTRING_GET_EXTDATA((duk_hstring_external *) h)));
+		DUK_DDD(
+		    DUK_DDDPRINT("free extstr: hstring %!O, extdata: %p", h, DUK_HSTRING_GET_EXTDATA((duk_hstring_external *) h)));
 		DUK_USE_EXTSTR_FREE(heap->heap_udata, (const void *) DUK_HSTRING_GET_EXTDATA((duk_hstring_external *) h));
 	}
 #endif
@@ -120,7 +120,6 @@ DUK_INTERNAL void duk_heap_free_heaphdr_raw(duk_heap *heap, duk_heaphdr *hdr) {
 		DUK_ASSERT(DUK_HEAPHDR_GET_TYPE(hdr) == DUK_HTYPE_BUFFER);
 		duk_free_hbuffer(heap, (duk_hbuffer *) hdr);
 	}
-
 }
 
 /*
@@ -150,10 +149,10 @@ DUK_LOCAL duk_size_t duk__heap_free_activation_freelist(duk_heap *heap) {
 		count_act++;
 #endif
 	}
-	heap->activation_free = NULL;  /* needed when called from mark-and-sweep */
+	heap->activation_free = NULL; /* needed when called from mark-and-sweep */
 	return count_act;
 }
-#endif  /* DUK_USE_CACHE_ACTIVATION */
+#endif /* DUK_USE_CACHE_ACTIVATION */
 
 #if defined(DUK_USE_CACHE_CATCHER)
 DUK_LOCAL duk_size_t duk__heap_free_catcher_freelist(duk_heap *heap) {
@@ -169,11 +168,11 @@ DUK_LOCAL duk_size_t duk__heap_free_catcher_freelist(duk_heap *heap) {
 		count_cat++;
 #endif
 	}
-	heap->catcher_free = NULL;  /* needed when called from mark-and-sweep */
+	heap->catcher_free = NULL; /* needed when called from mark-and-sweep */
 
 	return count_cat;
 }
-#endif  /* DUK_USE_CACHE_CATCHER */
+#endif /* DUK_USE_CACHE_CATCHER */
 
 DUK_INTERNAL void duk_heap_free_freelists(duk_heap *heap) {
 	duk_size_t count_act = 0;
@@ -189,8 +188,8 @@ DUK_INTERNAL void duk_heap_free_freelists(duk_heap *heap) {
 	DUK_UNREF(count_act);
 	DUK_UNREF(count_cat);
 
-	DUK_D(DUK_DPRINT("freed %ld activation freelist entries, %ld catcher freelist entries",
-	                 (long) count_act, (long) count_cat));
+	DUK_D(
+	    DUK_DPRINT("freed %ld activation freelist entries, %ld catcher freelist entries", (long) count_act, (long) count_cat));
 }
 
 DUK_LOCAL void duk__free_allocated(duk_heap *heap) {
@@ -203,8 +202,7 @@ DUK_LOCAL void duk__free_allocated(duk_heap *heap) {
 		 * because they may happen with finalizer processing.
 		 */
 
-		DUK_DDD(DUK_DDDPRINT("FINALFREE (allocated): %!iO",
-		                     (duk_heaphdr *) curr));
+		DUK_DDD(DUK_DDDPRINT("FINALFREE (allocated): %!iO", (duk_heaphdr *) curr));
 		next = DUK_HEAPHDR_GET_NEXT(heap, curr);
 		duk_heap_free_heaphdr_raw(heap, curr);
 		curr = next;
@@ -218,14 +216,13 @@ DUK_LOCAL void duk__free_finalize_list(duk_heap *heap) {
 
 	curr = heap->finalize_list;
 	while (curr) {
-		DUK_DDD(DUK_DDDPRINT("FINALFREE (finalize_list): %!iO",
-		                     (duk_heaphdr *) curr));
+		DUK_DDD(DUK_DDDPRINT("FINALFREE (finalize_list): %!iO", (duk_heaphdr *) curr));
 		next = DUK_HEAPHDR_GET_NEXT(heap, curr);
 		duk_heap_free_heaphdr_raw(heap, curr);
 		curr = next;
 	}
 }
-#endif  /* DUK_USE_FINALIZER_SUPPORT */
+#endif /* DUK_USE_FINALIZER_SUPPORT */
 
 DUK_LOCAL void duk__free_stringtable(duk_heap *heap) {
 	/* strings are only tracked by stringtable */
@@ -243,9 +240,9 @@ DUK_LOCAL void duk__free_run_finalizers(duk_heap *heap) {
 	DUK_ASSERT(heap != NULL);
 
 #if defined(DUK_USE_REFERENCE_COUNTING)
-	DUK_ASSERT(heap->refzero_list == NULL);  /* refzero not running -> must be empty */
+	DUK_ASSERT(heap->refzero_list == NULL); /* refzero not running -> must be empty */
 #endif
-	DUK_ASSERT(heap->finalize_list == NULL);  /* mark-and-sweep last pass */
+	DUK_ASSERT(heap->finalize_list == NULL); /* mark-and-sweep last pass */
 
 	if (heap->heap_thread == NULL) {
 		/* May happen when heap allocation fails right off.  There
@@ -268,11 +265,11 @@ DUK_LOCAL void duk__free_run_finalizers(duk_heap *heap) {
 	DUK_ASSERT(heap->ms_running == 0);
 	DUK_ASSERT(heap->ms_prevent_count == 0);
 	heap->pf_prevent_count = 1;
-	heap->ms_running = 2;  /* Use distinguishable value. */
-	heap->ms_prevent_count = 1;  /* Bump, because mark-and-sweep assumes it's bumped when ms_running is set. */
+	heap->ms_running = 2; /* Use distinguishable value. */
+	heap->ms_prevent_count = 1; /* Bump, because mark-and-sweep assumes it's bumped when ms_running is set. */
 
-	curr_limit = 0;  /* suppress warning, not used */
-	for (round_no = 0; ; round_no++) {
+	curr_limit = 0; /* suppress warning, not used */
+	for (round_no = 0;; round_no++) {
 		curr = heap->heap_allocated;
 		count_all = 0;
 		count_finalized = 0;
@@ -287,7 +284,8 @@ DUK_LOCAL void duk__free_run_finalizers(duk_heap *heap) {
 
 				if (DUK_HOBJECT_HAS_FINALIZER_FAST(heap, (duk_hobject *) curr)) {
 					if (!DUK_HEAPHDR_HAS_FINALIZED((duk_heaphdr *) curr)) {
-						DUK_ASSERT(DUK_HEAP_HAS_FINALIZER_NORESCUE(heap));  /* maps to finalizer 2nd argument */
+						DUK_ASSERT(
+						    DUK_HEAP_HAS_FINALIZER_NORESCUE(heap)); /* maps to finalizer 2nd argument */
 						duk_heap_run_finalizer(heap, (duk_hobject *) curr);
 						count_finalized++;
 					}
@@ -314,10 +312,13 @@ DUK_LOCAL void duk__free_run_finalizers(duk_heap *heap) {
 			 */
 			curr_limit = count_all * 2;
 		} else {
-			curr_limit = (curr_limit * 3) / 4;   /* Decrease by 25% every round */
+			curr_limit = (curr_limit * 3) / 4; /* Decrease by 25% every round */
 		}
 		DUK_D(DUK_DPRINT("finalizer round %ld complete, %ld objects, tried to execute %ld finalizers, current limit is %ld",
-		                 (long) round_no, (long) count_all, (long) count_finalized, (long) curr_limit));
+		                 (long) round_no,
+		                 (long) count_all,
+		                 (long) count_finalized,
+		                 (long) curr_limit));
 
 		if (count_finalized == 0) {
 			DUK_D(DUK_DPRINT("no more finalizable objects, forced finalization finished"));
@@ -334,7 +335,7 @@ DUK_LOCAL void duk__free_run_finalizers(duk_heap *heap) {
 	heap->ms_running = 0;
 	heap->pf_prevent_count = 0;
 }
-#endif  /* DUK_USE_FINALIZER_SUPPORT */
+#endif /* DUK_USE_FINALIZER_SUPPORT */
 
 DUK_INTERNAL void duk_heap_free(duk_heap *heap) {
 	DUK_D(DUK_DPRINT("free heap: %p", (void *) heap));
@@ -377,7 +378,7 @@ DUK_INTERNAL void duk_heap_free(duk_heap *heap) {
 	duk_heap_mark_and_sweep(heap, 0);
 	DUK_D(DUK_DPRINT("forced gc #3 in heap destruction (don't run finalizers)"));
 	heap->pf_skip_finalizers = 1;
-	duk_heap_mark_and_sweep(heap, 0);  /* Skip finalizers; queue finalizable objects to heap_allocated. */
+	duk_heap_mark_and_sweep(heap, 0); /* Skip finalizers; queue finalizable objects to heap_allocated. */
 
 	/* There are never objects in refzero_list at this point, or at any
 	 * point beyond a DECREF (even a DECREF_NORZ).  Since Duktape 2.1
@@ -386,17 +387,17 @@ DUK_INTERNAL void duk_heap_free(duk_heap *heap) {
 	 * refcount.
 	 */
 #if defined(DUK_USE_REFERENCE_COUNTING)
-	DUK_ASSERT(heap->refzero_list == NULL);  /* Always processed to completion inline. */
+	DUK_ASSERT(heap->refzero_list == NULL); /* Always processed to completion inline. */
 #endif
 #if defined(DUK_USE_FINALIZER_SUPPORT)
-	DUK_ASSERT(heap->finalize_list == NULL);  /* Last mark-and-sweep with skip_finalizers. */
+	DUK_ASSERT(heap->finalize_list == NULL); /* Last mark-and-sweep with skip_finalizers. */
 #endif
 
 #if defined(DUK_USE_FINALIZER_SUPPORT)
 	DUK_D(DUK_DPRINT("run finalizers for remaining finalizable objects"));
-	DUK_HEAP_SET_FINALIZER_NORESCUE(heap);  /* Rescue no longer supported. */
+	DUK_HEAP_SET_FINALIZER_NORESCUE(heap); /* Rescue no longer supported. */
 	duk__free_run_finalizers(heap);
-#endif  /* DUK_USE_FINALIZER_SUPPORT */
+#endif /* DUK_USE_FINALIZER_SUPPORT */
 
 	/* Note: heap->heap_thread, heap->curr_thread, and heap->heap_object
 	 * are on the heap allocated list.
@@ -409,7 +410,7 @@ DUK_INTERNAL void duk_heap_free(duk_heap *heap) {
 	duk__free_allocated(heap);
 
 #if defined(DUK_USE_REFERENCE_COUNTING)
-	DUK_ASSERT(heap->refzero_list == NULL);  /* Always processed to completion inline. */
+	DUK_ASSERT(heap->refzero_list == NULL); /* Always processed to completion inline. */
 #endif
 
 #if defined(DUK_USE_FINALIZER_SUPPORT)
@@ -452,7 +453,9 @@ DUK_LOCAL duk_bool_t duk__init_heap_strings(duk_heap *heap) {
 		while (h != NULL) {
 			hash = duk_heap_hashstring(heap, (const duk_uint8_t *) DUK_HSTRING_GET_DATA(h), DUK_HSTRING_GET_BYTELEN(h));
 			DUK_DD(DUK_DDPRINT("duk_rom_strings_lookup[%d] -> hash 0x%08lx, computed 0x%08lx",
-			                   (int) i, (unsigned long) DUK_HSTRING_GET_HASH(h), (unsigned long) hash));
+			                   (int) i,
+			                   (unsigned long) DUK_HSTRING_GET_HASH(h),
+			                   (unsigned long) hash));
 			DUK_ASSERT(hash == (duk_uint32_t) DUK_HSTRING_GET_HASH(h));
 
 			h = (const duk_hstring *) h->hdr.h_next;
@@ -461,11 +464,11 @@ DUK_LOCAL duk_bool_t duk__init_heap_strings(duk_heap *heap) {
 #endif
 	return 1;
 }
-#else  /* DUK_USE_ROM_STRINGS */
+#else /* DUK_USE_ROM_STRINGS */
 
 DUK_LOCAL duk_bool_t duk__init_heap_strings(duk_heap *heap) {
 	duk_bitdecoder_ctx bd_ctx;
-	duk_bitdecoder_ctx *bd = &bd_ctx;  /* convenience */
+	duk_bitdecoder_ctx *bd = &bd_ctx; /* convenience */
 	duk_small_uint_t i;
 
 	duk_memzero(&bd_ctx, sizeof(bd_ctx));
@@ -521,18 +524,16 @@ DUK_LOCAL duk_bool_t duk__init_heap_strings(duk_heap *heap) {
 
 	return 1;
 
- failed:
+failed:
 	return 0;
 }
-#endif  /* DUK_USE_ROM_STRINGS */
+#endif /* DUK_USE_ROM_STRINGS */
 
 DUK_LOCAL duk_bool_t duk__init_heap_thread(duk_heap *heap) {
 	duk_hthread *thr;
 
 	DUK_D(DUK_DPRINT("heap init: alloc heap thread"));
-	thr = duk_hthread_alloc_unchecked(heap,
-	                                  DUK_HOBJECT_FLAG_EXTENSIBLE |
-	                                  DUK_HOBJECT_CLASS_AS_FLAGS(DUK_HOBJECT_CLASS_THREAD));
+	thr = duk_hthread_alloc_unchecked(heap, DUK_HOBJECT_FLAG_EXTENSIBLE | DUK_HOBJECT_CLASS_AS_FLAGS(DUK_HOBJECT_CLASS_THREAD));
 	if (thr == NULL) {
 		DUK_D(DUK_DPRINT("failed to alloc heap_thread"));
 		return 0;
@@ -540,16 +541,16 @@ DUK_LOCAL duk_bool_t duk__init_heap_thread(duk_heap *heap) {
 	thr->state = DUK_HTHREAD_STATE_INACTIVE;
 #if defined(DUK_USE_ROM_STRINGS)
 	/* No strs[] pointer. */
-#else  /* DUK_USE_ROM_STRINGS */
+#else /* DUK_USE_ROM_STRINGS */
 #if defined(DUK_USE_HEAPPTR16)
 	thr->strs16 = heap->strs16;
 #else
 	thr->strs = heap->strs;
 #endif
-#endif  /* DUK_USE_ROM_STRINGS */
+#endif /* DUK_USE_ROM_STRINGS */
 
 	heap->heap_thread = thr;
-	DUK_HTHREAD_INCREF(thr, thr);  /* Note: first argument not really used */
+	DUK_HTHREAD_INCREF(thr, thr); /* Note: first argument not really used */
 
 	/* 'thr' is now reachable */
 
@@ -568,7 +569,8 @@ DUK_LOCAL duk_bool_t duk__init_heap_thread(duk_heap *heap) {
 }
 
 #if defined(DUK_USE_DEBUG)
-#define DUK__DUMPSZ(t)  do { \
+#define DUK__DUMPSZ(t) \
+	do { \
 		DUK_D(DUK_DPRINT("" #t "=%ld", (long) sizeof(t))); \
 	} while (0)
 
@@ -577,20 +579,20 @@ DUK_LOCAL duk_bool_t duk__init_heap_thread(duk_heap *heap) {
  * enough; the limits will then not be printed accurately but the magnitude
  * will be correct.
  */
-#define DUK__DUMPLM_SIGNED_RAW(t,a,b)  do { \
-		DUK_D(DUK_DPRINT(t "=[%ld,%ld]=[%lf,%lf]", \
-		                 (long) (a), (long) (b), \
-		                 (double) (a), (double) (b))); \
+#define DUK__DUMPLM_SIGNED_RAW(t, a, b) \
+	do { \
+		DUK_D(DUK_DPRINT(t "=[%ld,%ld]=[%lf,%lf]", (long) (a), (long) (b), (double) (a), (double) (b))); \
 	} while (0)
-#define DUK__DUMPLM_UNSIGNED_RAW(t,a,b)  do { \
-		DUK_D(DUK_DPRINT(t "=[%lu,%lu]=[%lf,%lf]", \
-		                 (unsigned long) (a), (unsigned long) (b), \
-		                 (double) (a), (double) (b))); \
+#define DUK__DUMPLM_UNSIGNED_RAW(t, a, b) \
+	do { \
+		DUK_D(DUK_DPRINT(t "=[%lu,%lu]=[%lf,%lf]", (unsigned long) (a), (unsigned long) (b), (double) (a), (double) (b))); \
 	} while (0)
-#define DUK__DUMPLM_SIGNED(t)  do { \
+#define DUK__DUMPLM_SIGNED(t) \
+	do { \
 		DUK__DUMPLM_SIGNED_RAW("DUK_" #t "_{MIN,MAX}", DUK_##t##_MIN, DUK_##t##_MAX); \
 	} while (0)
-#define DUK__DUMPLM_UNSIGNED(t)  do { \
+#define DUK__DUMPLM_UNSIGNED(t) \
+	do { \
 		DUK__DUMPLM_UNSIGNED_RAW("DUK_" #t "_{MIN,MAX}", DUK_##t##_MIN, DUK_##t##_MAX); \
 	} while (0)
 
@@ -663,7 +665,7 @@ DUK_LOCAL void duk__dump_type_sizes(void) {
 	DUK__DUMPSZ(duk_tval);
 
 	/* structs from duk_forwdecl.h */
-	DUK__DUMPSZ(duk_jmpbuf);  /* just one 'int' for C++ exceptions */
+	DUK__DUMPSZ(duk_jmpbuf); /* just one 'int' for C++ exceptions */
 	DUK__DUMPSZ(duk_heaphdr);
 	DUK__DUMPSZ(duk_heaphdr_string);
 	DUK__DUMPSZ(duk_hstring);
@@ -787,7 +789,7 @@ DUK_LOCAL void duk__dump_misc_options(void) {
 	DUK_D(DUK_DPRINT("IEEE double endianness: ???"));
 #endif
 }
-#endif  /* DUK_USE_DEBUG */
+#endif /* DUK_USE_DEBUG */
 
 DUK_INTERNAL
 duk_heap *duk_heap_alloc(duk_alloc_function alloc_func,
@@ -808,7 +810,7 @@ duk_heap *duk_heap_alloc(duk_alloc_function alloc_func,
 
 	DUK_ASSERT((DUK_HTYPE_STRING & 0x01U) == 0);
 	DUK_ASSERT((DUK_HTYPE_BUFFER & 0x01U) == 0);
-	DUK_ASSERT((DUK_HTYPE_OBJECT & 0x01U) == 1);  /* DUK_HEAPHDR_IS_OBJECT() relies ont his. */
+	DUK_ASSERT((DUK_HTYPE_OBJECT & 0x01U) == 1); /* DUK_HEAPHDR_IS_OBJECT() relies ont his. */
 
 	/*
 	 *  Debug dump type sizes
@@ -849,7 +851,7 @@ duk_heap *duk_heap_alloc(duk_alloc_function alloc_func,
 #endif
 		fatal_func(heap_udata, "sizeof(duk_tval) not 8 or 16, cannot use DUK_USE_EXEC_REGCONST_OPTIMIZE option");
 	}
-#endif  /* DUK_USE_EXEC_REGCONST_OPTIMIZE */
+#endif /* DUK_USE_EXEC_REGCONST_OPTIMIZE */
 
 	/*
 	 *  Computed values (e.g. INFINITY)
@@ -933,18 +935,18 @@ duk_heap *duk_heap_alloc(duk_alloc_function alloc_func,
 #endif
 #if defined(DUK_USE_ROM_STRINGS)
 	/* no res->strs[] */
-#else  /* DUK_USE_ROM_STRINGS */
+#else /* DUK_USE_ROM_STRINGS */
 #if defined(DUK_USE_HEAPPTR16)
 	/* res->strs16[] is zeroed and zero decodes to NULL, so no NULL inits. */
 #else
 	{
 		duk_small_uint_t i;
-	        for (i = 0; i < DUK_HEAP_NUM_STRINGS; i++) {
+		for (i = 0; i < DUK_HEAP_NUM_STRINGS; i++) {
 			res->strs[i] = NULL;
-	        }
+		}
 	}
 #endif
-#endif  /* DUK_USE_ROM_STRINGS */
+#endif /* DUK_USE_ROM_STRINGS */
 #if defined(DUK_USE_DEBUGGER_SUPPORT)
 	res->dbg_read_cb = NULL;
 	res->dbg_write_cb = NULL;
@@ -955,7 +957,7 @@ duk_heap *duk_heap_alloc(duk_alloc_function alloc_func,
 	res->dbg_udata = NULL;
 	res->dbg_pause_act = NULL;
 #endif
-#endif  /* DUK_USE_EXPLICIT_NULL_INIT */
+#endif /* DUK_USE_EXPLICIT_NULL_INIT */
 
 	res->alloc_func = alloc_func;
 	res->realloc_func = realloc_func;
@@ -994,17 +996,17 @@ duk_heap *duk_heap_alloc(duk_alloc_function alloc_func,
 	/* XXX: make a common DUK_USE_ option, and allow custom fixed seed? */
 	DUK_D(DUK_DPRINT("using rom strings, force heap hash_seed to fixed value 0x%08lx", (long) DUK__FIXED_HASH_SEED));
 	res->hash_seed = (duk_uint32_t) DUK__FIXED_HASH_SEED;
-#else  /* DUK_USE_ROM_STRINGS */
+#else /* DUK_USE_ROM_STRINGS */
 	res->hash_seed = (duk_uint32_t) (duk_uintptr_t) res;
 #if !defined(DUK_USE_STRHASH_DENSE)
-	res->hash_seed ^= 5381;  /* Bernstein hash init value is normally 5381; XOR it in in case pointer low bits are 0 */
+	res->hash_seed ^= 5381; /* Bernstein hash init value is normally 5381; XOR it in in case pointer low bits are 0 */
 #endif
-#endif  /* DUK_USE_ROM_STRINGS */
+#endif /* DUK_USE_ROM_STRINGS */
 
 #if defined(DUK_USE_EXPLICIT_NULL_INIT)
 	res->lj.jmpbuf_ptr = NULL;
 #endif
-	DUK_ASSERT(res->lj.type == DUK_LJ_TYPE_UNKNOWN);  /* zero */
+	DUK_ASSERT(res->lj.type == DUK_LJ_TYPE_UNKNOWN); /* zero */
 	DUK_ASSERT(res->lj.iserror == 0);
 	DUK_TVAL_SET_UNDEFINED(&res->lj.value1);
 	DUK_TVAL_SET_UNDEFINED(&res->lj.value2);
@@ -1040,14 +1042,14 @@ duk_heap *duk_heap_alloc(duk_alloc_function alloc_func,
 #if defined(DUK_USE_EXPLICIT_NULL_INIT)
 	{
 		duk_uint32_t i;
-	        for (i = 0; i < st_initsize; i++) {
+		for (i = 0; i < st_initsize; i++) {
 			res->strtable[i] = NULL;
-	        }
+		}
 	}
 #else
 	duk_memzero(res->strtable, sizeof(duk_hstring *) * st_initsize);
-#endif  /* DUK_USE_EXPLICIT_NULL_INIT */
-#endif  /* DUK_USE_STRTAB_PTRCOMP */
+#endif /* DUK_USE_EXPLICIT_NULL_INIT */
+#endif /* DUK_USE_STRTAB_PTRCOMP */
 
 	/*
 	 *  Init stringcache
@@ -1077,7 +1079,7 @@ duk_heap *duk_heap_alloc(duk_alloc_function alloc_func,
 		}
 	}
 #endif
-#endif  /* DUK_USE_LITCACHE_SIZE */
+#endif /* DUK_USE_LITCACHE_SIZE */
 
 	/* XXX: error handling is incomplete.  It would be cleanest if
 	 * there was a setjmp catchpoint, so that all init code could
@@ -1118,9 +1120,9 @@ duk_heap *duk_heap_alloc(duk_alloc_function alloc_func,
 #endif
 	DUK_D(DUK_DPRINT("heap init: initialize heap object"));
 	DUK_ASSERT(res->heap_thread != NULL);
-	res->heap_object = duk_hobject_alloc_unchecked(res, DUK_HOBJECT_FLAG_EXTENSIBLE |
-	                                                    DUK_HOBJECT_FLAG_FASTREFS |
-	                                                    DUK_HOBJECT_CLASS_AS_FLAGS(DUK_HOBJECT_CLASS_OBJECT));
+	res->heap_object = duk_hobject_alloc_unchecked(res,
+	                                               DUK_HOBJECT_FLAG_EXTENSIBLE | DUK_HOBJECT_FLAG_FASTREFS |
+	                                                   DUK_HOBJECT_CLASS_AS_FLAGS(DUK_HOBJECT_CLASS_OBJECT));
 	if (res->heap_object == NULL) {
 		goto failed;
 	}
@@ -1136,8 +1138,8 @@ duk_heap *duk_heap_alloc(duk_alloc_function alloc_func,
 	duk_util_tinyrandom_prepare_seed(res->heap_thread);
 #else
 	res->rnd_state[0] = (duk_uint64_t) duk_time_get_ecmascript_time(res->heap_thread);
-	DUK_ASSERT(res->rnd_state[1] == 0);  /* Not filled here, filled in by seed preparation. */
-#if 0  /* Manual test values matching misc/xoroshiro128plus_test.c. */
+	DUK_ASSERT(res->rnd_state[1] == 0); /* Not filled here, filled in by seed preparation. */
+#if 0 /* Manual test values matching misc/xoroshiro128plus_test.c. */
 	res->rnd_state[0] = DUK_U64_CONSTANT(0xdeadbeef12345678);
 	res->rnd_state[1] = DUK_U64_CONSTANT(0xcafed00d12345678);
 #endif
@@ -1189,7 +1191,7 @@ duk_heap *duk_heap_alloc(duk_alloc_function alloc_func,
 	DUK_D(DUK_DPRINT("allocated heap: %p", (void *) res));
 	return res;
 
- failed:
+failed:
 	DUK_D(DUK_DPRINT("heap allocation failed"));
 
 	if (res != NULL) {

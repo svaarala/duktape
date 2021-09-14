@@ -12,7 +12,7 @@
  *   32
  * Include additional space to be safe.
  */
-#define  DUK_BI_DATE_ISO8601_BUFSIZE  40
+#define DUK_BI_DATE_ISO8601_BUFSIZE 40
 
 /* Helpers exposed for internal use */
 DUK_INTERNAL_DECL void duk_bi_date_timeval_to_parts(duk_double_t d, duk_int_t *parts, duk_double_t *dparts, duk_small_uint_t flags);
@@ -50,7 +50,10 @@ DUK_INTERNAL_DECL duk_bool_t duk_bi_date_parse_string_strptime(duk_hthread *thr,
 DUK_INTERNAL_DECL duk_bool_t duk_bi_date_parse_string_getdate(duk_hthread *thr, const char *str);
 #endif
 #if defined(DUK_USE_DATE_FMT_STRFTIME)
-DUK_INTERNAL_DECL duk_bool_t duk_bi_date_format_parts_strftime(duk_hthread *thr, duk_int_t *parts, duk_int_t tzoffset, duk_small_uint_t flags);
+DUK_INTERNAL_DECL duk_bool_t duk_bi_date_format_parts_strftime(duk_hthread *thr,
+                                                               duk_int_t *parts,
+                                                               duk_int_t tzoffset,
+                                                               duk_small_uint_t flags);
 #endif
 
 #if defined(DUK_USE_GET_MONOTONIC_TIME_CLOCK_GETTIME)
@@ -61,10 +64,7 @@ DUK_INTERNAL_DECL duk_double_t duk_bi_date_get_monotonic_time_windows_qpc(void);
 #endif
 
 DUK_INTERNAL_DECL
-void duk_bi_json_parse_helper(duk_hthread *thr,
-                              duk_idx_t idx_value,
-                              duk_idx_t idx_reviver,
-                              duk_small_uint_t flags);
+void duk_bi_json_parse_helper(duk_hthread *thr, duk_idx_t idx_value, duk_idx_t idx_reviver, duk_small_uint_t flags);
 DUK_INTERNAL_DECL
 void duk_bi_json_stringify_helper(duk_hthread *thr,
                                   duk_idx_t idx_value,
@@ -78,4 +78,4 @@ DUK_INTERNAL_DECL duk_ret_t duk_textdecoder_decode_utf8_nodejs(duk_hthread *thr)
 DUK_INTERNAL_DECL void duk_proxy_ownkeys_postprocess(duk_hthread *thr, duk_hobject *h_proxy_target, duk_uint_t flags);
 #endif
 
-#endif  /* DUK_BUILTIN_PROTOS_H_INCLUDED */
+#endif /* DUK_BUILTIN_PROTOS_H_INCLUDED */

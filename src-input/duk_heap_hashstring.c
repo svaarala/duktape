@@ -21,9 +21,9 @@
 
 #if defined(DUK_USE_STRHASH_DENSE)
 /* Constants for duk_hashstring(). */
-#define DUK__STRHASH_SHORTSTRING   4096L
-#define DUK__STRHASH_MEDIUMSTRING  (256L * 1024L)
-#define DUK__STRHASH_BLOCKSIZE     256L
+#define DUK__STRHASH_SHORTSTRING  4096L
+#define DUK__STRHASH_MEDIUMSTRING (256L * 1024L)
+#define DUK__STRHASH_BLOCKSIZE    256L
 
 DUK_INTERNAL duk_uint32_t duk_heap_hashstring(duk_heap *heap, const duk_uint8_t *str, duk_size_t len) {
 	duk_uint32_t hash;
@@ -80,7 +80,7 @@ DUK_INTERNAL duk_uint32_t duk_heap_hashstring(duk_heap *heap, const duk_uint8_t 
 #endif
 	return hash;
 }
-#else  /* DUK_USE_STRHASH_DENSE */
+#else /* DUK_USE_STRHASH_DENSE */
 DUK_INTERNAL duk_uint32_t duk_heap_hashstring(duk_heap *heap, const duk_uint8_t *str, duk_size_t len) {
 	duk_uint32_t hash;
 	duk_size_t step;
@@ -98,10 +98,10 @@ DUK_INTERNAL duk_uint32_t duk_heap_hashstring(duk_heap *heap, const duk_uint8_t 
 	 * more often in the suffix than in the prefix.
 	 */
 
-	hash = heap->hash_seed ^ ((duk_uint32_t) len);  /* Bernstein hash init value is normally 5381 */
+	hash = heap->hash_seed ^ ((duk_uint32_t) len); /* Bernstein hash init value is normally 5381 */
 	step = (len >> DUK_USE_STRHASH_SKIP_SHIFT) + 1;
 	for (off = len; off >= step; off -= step) {
-		DUK_ASSERT(off >= 1);  /* off >= step, and step >= 1 */
+		DUK_ASSERT(off >= 1); /* off >= step, and step >= 1 */
 		hash = (hash * 33) + str[off - 1];
 	}
 
@@ -113,4 +113,4 @@ DUK_INTERNAL duk_uint32_t duk_heap_hashstring(duk_heap *heap, const duk_uint8_t 
 #endif
 	return hash;
 }
-#endif  /* DUK_USE_STRHASH_DENSE */
+#endif /* DUK_USE_STRHASH_DENSE */
