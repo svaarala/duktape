@@ -291,7 +291,7 @@ static duk_uint8_t *duk__dump_func(duk_hthread *thr, duk_hcompfunc *func, duk_bu
 	DUK_ASSERT((duk_size_t) (ins_end - ins) == (duk_size_t) count_instr);
 #if defined(DUK_USE_INTEGER_BE)
 	duk_memcpy_unsafe((void *) p, (const void *) ins, (size_t) (ins_end - ins) * 4);
-	p += (size_t) (ins_end - ins) * 4 ;
+	p += (size_t) (ins_end - ins) * 4;
 #else
 	while (ins != ins_end) {
 		tmp32 = (duk_uint32_t) (*ins);
