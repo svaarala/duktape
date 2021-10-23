@@ -8,19 +8,26 @@
 #  Makefile uses the combined source file.
 #
 
-DUKTAPE_SOURCES = src/duktape.c
+DUKTAPE_SOURCES = src/duktape.o
 
 # Compiler options are quite flexible.  GCC versions have a significant impact
 # on the size of -Os code, e.g. gcc-4.6 is much worse than gcc-4.5.
 
 CC = gcc
-CCOPTS = -Os -pedantic -std=c99 -Wall -fstrict-aliasing -fomit-frame-pointer
-CCOPTS += -I./src  # for combined sources
-CCLIBS = -lm
-DEFINES =
+LD = $(CC)
+CFLAGS = -Os -pedantic -std=c99 -Wall -fstrict-aliasing -fomit-frame-pointer
+CFLAGS += -I./src  # for combined sources
+LDFLAGS = -lm
 
 # If you want a 32-bit build on a 64-bit host
-#CCOPTS += -m32
+#CFLAGS += -m32
+
+RM = rm -f
+
+%.o: %.c
+	$(CC) $(CFLAGS) -c $< -o $@
+
+OBJECTS = examples/hello/hello.o
 
 # Use the tools/configure.py utility to modify Duktape default configuration:
 # http://duktape.org/guide.html#compiling
@@ -28,5 +35,10 @@ DEFINES =
 
 # For debugging, use -O0 -g -ggdb, and don't add -fomit-frame-pointer
 
-hello: $(DUKTAPE_SOURCES) examples/hello/hello.c
-	$(CC) -o $@ $(DEFINES) $(CCOPTS) $(DUKTAPE_SOURCES) examples/hello/hello.c $(CCLIBS)
+hello: $(DUKTAPE_SOURCES) $(OBJECTS)
+	$(LD) -o $@ $(DUKTAPE_SOURCES) $(OBJECTS) $(LDFLAGS)
+
+all: hello
+
+clean:
+	$(RM) $(DUKTAPE_SOURCES) $(OBJECTS) hello

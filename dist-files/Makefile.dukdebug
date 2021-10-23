@@ -2,40 +2,58 @@
 #  Duktape command line tool with debugger support.
 #
 
-DUKTAPE_SOURCES = prep/duktape.c
+DUKTAPE_SOURCES = src-debug/duktape.o
 
-# Windows (MinGW): use examples/debug-trans-socket/duk_trans_socket_windows.c
-# and link with -lws2_32.
 CMDLINE_SOURCES = \
-	examples/cmdline/duk_cmdline.c \
-	examples/debug-trans-socket/duk_trans_socket_unix.c
+	examples/cmdline/duk_cmdline.o
 
 CC = gcc
-CCOPTS = -Os -pedantic -std=c99 -Wall -fstrict-aliasing -fomit-frame-pointer
-CCOPTS += -I./prep -I./examples/cmdline -I./examples/debug-trans-socket
-CCOPTS += -DDUK_CMDLINE_DEBUGGER_SUPPORT     # enable --debugger in ./duk
-CCLIBS = -lm
+LD = $(CC)
+CFLAGS = -Os -pedantic -std=c99 -Wall -fstrict-aliasing -fomit-frame-pointer
+CFLAGS += -I./src-debug -I./examples/cmdline -I./examples/debug-trans-socket
+CFLAGS += -DDUK_CMDLINE_DEBUGGER_SUPPORT # enable --debugger in ./dukd
+LDFLAGS = -lm
+
+# If compiling for Windows, pass WINDOWS=1 to make.
+ifeq ($(WINDOWS),1)
+	CMDLINE_SOURCES += examples/debug-trans-socket/duk_trans_socket_windows.o
+	LDFLAGS += -lws2_32
+else
+	CMDLINE_SOURCES += examples/debug-trans-socket/duk_trans_socket_unix.o
+endif
+
+RM = rm -f
+
+%.o: %.c
+	$(CC) $(CFLAGS) -c $< -o $@
 
 # Enable a few optional modules.
-CCOPTS += -DDUK_CMDLINE_PRINTALERT_SUPPORT -I./extras/print-alert
-CMDLINE_SOURCES += extras/print-alert/duk_print_alert.c
-CCOPTS += -DDUK_CMDLINE_CONSOLE_SUPPORT -I./extras/console
-CMDLINE_SOURCES += extras/console/duk_console.c
-CCOPTS += -DDUK_CMDLINE_LOGGING_SUPPORT -I./extras/logging
-CMDLINE_SOURCES += extras/logging/duk_logging.c
-CCOPTS += -DDUK_CMDLINE_MODULE_SUPPORT -I./extras/module-duktape
-CMDLINE_SOURCES += extras/module-duktape/duk_module_duktape.c
+CFLAGS += -DDUK_CMDLINE_PRINTALERT_SUPPORT -I./extras/print-alert
+CMDLINE_SOURCES += extras/print-alert/duk_print_alert.o
+CFLAGS += -DDUK_CMDLINE_CONSOLE_SUPPORT -I./extras/console
+CMDLINE_SOURCES += extras/console/duk_console.o
+CFLAGS += -DDUK_CMDLINE_LOGGING_SUPPORT -I./extras/logging
+CMDLINE_SOURCES += extras/logging/duk_logging.o
+CFLAGS += -DDUK_CMDLINE_MODULE_SUPPORT -I./extras/module-duktape
+CMDLINE_SOURCES += extras/module-duktape/duk_module_duktape.o
+
+all: dukd
 
 # Use tools/configure.py to prepare Duktape config header and sources with
 # custom configuration.
-duk: $(CMDLINE_SOURCES)
-	@rm -rf prep
+src-debug:
 	python2 tools/configure.py \
 		--source-directory src-input \
-		--output-directory prep \
+		--output-directory $@ \
 		--config-metadata config \
 		-DDUK_USE_DEBUGGER_SUPPORT \
 		-DDUK_USE_INTERRUPT_COUNTER \
 		-DDUK_USE_DEBUGGER_DUMPHEAP \
 		-DDUK_USE_DEBUGGER_INSPECT
-	$(CC) -o $@ $(DEFINES) $(CCOPTS) $(DUKTAPE_SOURCES) $(CMDLINE_SOURCES) $(CCLIBS)
+
+dukd: src-debug $(DUKTAPE_SOURCES) $(CMDLINE_SOURCES)
+	$(LD) -o $@ $(DUKTAPE_SOURCES) $(CMDLINE_SOURCES) $(LDFLAGS)
+
+clean:
+	$(RM) $(OBJECTS) dukd
+	$(RM) -r src-debug
