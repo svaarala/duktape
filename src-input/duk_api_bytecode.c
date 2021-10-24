@@ -290,8 +290,9 @@ static duk_uint8_t *duk__dump_func(duk_hthread *thr, duk_hcompfunc *func, duk_bu
 	ins_end = DUK_HCOMPFUNC_GET_CODE_END(thr->heap, func);
 	DUK_ASSERT((duk_size_t) (ins_end - ins) == (duk_size_t) count_instr);
 #if defined(DUK_USE_INTEGER_BE)
-	duk_memcpy_unsafe((void *) p, (const void *) ins, (size_t) (ins_end - ins) * 4);
-	p += (size_t) (ins_end - ins) * 4;
+	duk_memcpy_unsafe((void *) p, (const void *) ins, count_instr * sizeof(duk_instr_t));
+	p += count_instr * sizeof(duk_instr_t);
+	DUK_UNREF(ins_end);
 #else
 	while (ins != ins_end) {
 		tmp32 = (duk_uint32_t) (*ins);
