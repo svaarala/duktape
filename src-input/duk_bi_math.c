@@ -323,7 +323,7 @@ DUK_INTERNAL duk_ret_t duk_bi_math_object_min(duk_hthread *thr) {
 }
 
 DUK_INTERNAL duk_ret_t duk_bi_math_object_random(duk_hthread *thr) {
-	duk_push_number(thr, (duk_double_t) DUK_UTIL_GET_RANDOM_DOUBLE(thr));
+	duk_push_number(thr, (duk_double_t) duk_util_get_random_double(thr));
 	return 1;
 }
 

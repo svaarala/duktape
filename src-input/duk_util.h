@@ -5,12 +5,6 @@
 #if !defined(DUK_UTIL_H_INCLUDED)
 #define DUK_UTIL_H_INCLUDED
 
-#if defined(DUK_USE_GET_RANDOM_DOUBLE)
-#define DUK_UTIL_GET_RANDOM_DOUBLE(thr) DUK_USE_GET_RANDOM_DOUBLE((thr)->heap_udata)
-#else
-#define DUK_UTIL_GET_RANDOM_DOUBLE(thr) duk_util_tinyrandom_get_double(thr)
-#endif
-
 /*
  *  Some useful constants
  */
@@ -619,6 +613,8 @@ DUK_INTERNAL_DECL void duk_raw_writeinc_cesu8(duk_uint8_t **p, duk_ucodepoint_t 
 #if defined(DUK_USE_DEBUGGER_SUPPORT) /* For now only needed by the debugger. */
 DUK_INTERNAL_DECL void duk_byteswap_bytes(duk_uint8_t *p, duk_small_uint_t len);
 #endif
+
+DUK_INTERNAL_DECL duk_double_t duk_util_get_random_double(duk_hthread *thr);
 
 /* memcpy(), memmove() etc wrappers.  The plain variants like duk_memcpy()
  * assume C99+ and 'src' and 'dst' pointers must be non-NULL even when the
