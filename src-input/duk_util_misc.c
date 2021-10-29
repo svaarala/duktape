@@ -151,3 +151,15 @@ DUK_INTERNAL void duk_byteswap_bytes(duk_uint8_t *p, duk_small_uint_t len) {
 	}
 }
 #endif
+
+/*
+ *  Random
+ */
+
+DUK_INTERNAL duk_double_t duk_util_get_random_double(duk_hthread *thr) {
+#if defined(DUK_USE_GET_RANDOM_DOUBLE)
+	return DUK_USE_GET_RANDOM_DOUBLE(thr->heap->heap_udata);
+#else
+	return duk_util_tinyrandom_get_double(thr);
+#endif
+}
