@@ -1382,3 +1382,4 @@ duktape_releases:
     - "Fix broken bytecode dump on big endian architectures (GH-2430, GH-2431, GH-2434)"
     - "Use yaml.safe_load() instead of yaml.load() in Py2 tooling (GH-2384)"
     - "Reformat source with clang-format-12 (GH-2416, GH-2421, GH-2423, GH-2424, GH-2425, GH-2426, GH-2427, GH-2428)"
+    - "Fix DUK_USE_GET_RANDOM_DOUBLE() argument handling (GH-2432, GH-2435)"
