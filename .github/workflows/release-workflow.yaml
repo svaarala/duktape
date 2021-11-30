@@ -12,9 +12,9 @@ jobs:
         run: |
           sudo apt -qqy update
           sudo apt -qqy install build-essential make python python-yaml bc git
-      #- name: Build Docker images
-      #  run: |
-      #    make docker-images
+      - name: Build Docker images
+        run: |
+          make docker-images
       - name: Minimal test
         run: |
           make ecmatest
@@ -22,10 +22,8 @@ jobs:
       - name: Dist source
         run: |
           make cleanall
-          #make docker-dist-source-wd
-          #make docker-dist-site-wd
-          make dist-source
-          make dist-site
+          make docker-dist-source-wd
+          make docker-dist-site-wd
           ls -l dist/
       - name: Upload artifacts
         uses: actions/upload-artifact@v2
