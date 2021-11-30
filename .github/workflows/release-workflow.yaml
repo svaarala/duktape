@@ -1,0 +1,33 @@
+name: Release
+on:
+  workflow_dispatch:
+jobs:
+  dist_source_and_site:
+    name: Dist source and site
+    runs-on: ubuntu-18.04
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v2
+      - name: Install packages
+        run: |
+          sudo apt -qqy update
+          sudo apt -qqy install build-essential make python python-yaml bc git
+      #- name: Build Docker images
+      #  run: |
+      #    make docker-images
+      - name: Minimal test
+        run: |
+          make ecmatest
+          make apitest
+      - name: Dist source
+        run: |
+          make cleanall
+          #make docker-dist-source-wd
+          #make docker-dist-site-wd
+          make dist-source
+          make dist-site
+          ls -l dist/
+      - name: Upload artifacts
+        uses: actions/upload-artifact@v2
+        path: |
+          dist/*.tar.xz
