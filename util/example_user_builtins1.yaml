@@ -187,7 +187,6 @@ objects:
         value: 123.4                  # Interpreted as an IEEE double
         attributes: wec
       - key: "ieeeDoubleType"         # Allows exact specification of IEEE doubles
-        value:
         attributes: wec
         value:
           type: double
