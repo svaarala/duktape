@@ -759,10 +759,10 @@ DUK_LOCAL void duk__regexp_match_helper(duk_hthread *thr, duk_small_int_t force_
 	duk_memzero(&re_ctx, sizeof(re_ctx));
 
 	re_ctx.thr = thr;
-	re_ctx.input = (const duk_uint8_t *) DUK_HSTRING_GET_DATA(h_input);
-	re_ctx.input_end = re_ctx.input + DUK_HSTRING_GET_BYTELEN(h_input);
-	re_ctx.bytecode = (const duk_uint8_t *) DUK_HSTRING_GET_DATA(h_bytecode);
-	re_ctx.bytecode_end = re_ctx.bytecode + DUK_HSTRING_GET_BYTELEN(h_bytecode);
+	re_ctx.input = (const duk_uint8_t *) duk_hstring_get_data(h_input);
+	re_ctx.input_end = re_ctx.input + duk_hstring_get_bytelen(h_input);
+	re_ctx.bytecode = (const duk_uint8_t *) duk_hstring_get_data(h_bytecode);
+	re_ctx.bytecode_end = re_ctx.bytecode + duk_hstring_get_bytelen(h_bytecode);
 	re_ctx.saved = NULL;
 	re_ctx.recursion_limit = DUK_USE_REGEXP_EXECUTOR_RECLIMIT;
 	re_ctx.steps_limit = DUK_RE_EXECUTE_STEPS_LIMIT;
@@ -827,7 +827,7 @@ DUK_LOCAL void duk__regexp_match_helper(duk_hthread *thr, duk_small_int_t force_
 	duk_pop_nodecref_unsafe(thr);
 
 	if (global) {
-		if (d < 0.0 || d > (double) DUK_HSTRING_GET_CHARLEN(h_input)) {
+		if (d < 0.0 || d > (double) duk_hstring_get_charlen(h_input)) {
 			/* match fail */
 			char_offset = 0; /* not really necessary */
 			DUK_ASSERT(match == 0);
@@ -843,7 +843,7 @@ DUK_LOCAL void duk__regexp_match_helper(duk_hthread *thr, duk_small_int_t force_
 		char_offset = (duk_uint32_t) 0;
 	}
 
-	DUK_ASSERT(char_offset <= DUK_HSTRING_GET_CHARLEN(h_input));
+	DUK_ASSERT(char_offset <= duk_hstring_get_charlen(h_input));
 	sp = re_ctx.input + duk_heap_strcache_offset_char2byte(thr, h_input, char_offset);
 
 	/*
@@ -859,7 +859,7 @@ DUK_LOCAL void duk__regexp_match_helper(duk_hthread *thr, duk_small_int_t force_
 	for (;;) {
 		/* char offset in [0, h_input->clen] (both ends inclusive), checked before entry */
 		DUK_ASSERT_DISABLE(char_offset >= 0);
-		DUK_ASSERT(char_offset <= DUK_HSTRING_GET_CHARLEN(h_input));
+		DUK_ASSERT(char_offset <= duk_hstring_get_charlen(h_input));
 
 		/* Note: re_ctx.steps is intentionally not reset, it applies to the entire unanchored match */
 		DUK_ASSERT(re_ctx.recursion_depth == 0);
@@ -897,7 +897,7 @@ DUK_LOCAL void duk__regexp_match_helper(duk_hthread *thr, duk_small_int_t force_
 
 		/* advance by one character (code point) and one char_offset */
 		char_offset++;
-		if (char_offset > DUK_HSTRING_GET_CHARLEN(h_input)) {
+		if (char_offset > duk_hstring_get_charlen(h_input)) {
 			/*
 			 *  Note:
 			 *

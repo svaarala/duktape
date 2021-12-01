@@ -1080,12 +1080,12 @@ DUK_INTERNAL void duk_unicode_case_convert_string(duk_hthread *thr, duk_bool_t u
 	DUK_ASSERT(h_input != NULL);
 
 	bw = &bw_alloc;
-	DUK_BW_INIT_PUSHBUF(thr, bw, DUK_HSTRING_GET_BYTELEN(h_input));
+	DUK_BW_INIT_PUSHBUF(thr, bw, duk_hstring_get_bytelen(h_input));
 
 	/* [ ... input buffer ] */
 
-	p_start = (const duk_uint8_t *) DUK_HSTRING_GET_DATA(h_input);
-	p_end = p_start + DUK_HSTRING_GET_BYTELEN(h_input);
+	p_start = (const duk_uint8_t *) duk_hstring_get_data(h_input);
+	p_end = p_start + duk_hstring_get_bytelen(h_input);
 	p = p_start;
 
 	prev = -1;

@@ -300,10 +300,10 @@ check seems to nullify the potential (rare) benefits.
 ROM string link pointer reuse
 -----------------------------
 
-ROM strings don't need a ``h_next`` field.  It could be used fo string
+ROM strings don't need a ``h_next`` field.  It could be used for string
 data, provided that both arridx and clen have been dropped so that the
 ``duk_hstring`` struct itself is actually empty.  This does need a change
-to ``DUK_HSTRING_GET_DATA()`` macro though.
+to ``duk_hstring_get_data()`` accessor though.
 
 Remove heap->st_size field
 --------------------------

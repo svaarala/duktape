@@ -1176,7 +1176,7 @@ DUK_LOCAL duk_bool_t duk__setcheck_own_prop_idxkey(duk_hthread *thr,
 		duk_hstring *h;
 
 		h = duk_hobject_lookup_intvalue_hstring(thr, obj);
-		if (h != NULL && idx < DUK_HSTRING_GET_CHARLEN(h)) {
+		if (h != NULL && idx < duk_hstring_get_charlen(h)) {
 			goto fail_not_writable;
 		}
 		/* Out of bounds, go to normal property table. */
@@ -2011,7 +2011,7 @@ duk__prop_putvalue_idx_inidx(duk_hthread *thr, duk_idx_t idx_recv, duk_uarridx_t
 		duk_hstring *h = DUK_TVAL_GET_STRING(tv_recv);
 
 		if (DUK_LIKELY(!DUK_HSTRING_HAS_SYMBOL(h))) {
-			if (idx < DUK_HSTRING_GET_CHARLEN(h)) {
+			if (idx < duk_hstring_get_charlen(h)) {
 				goto fail_not_writable;
 			}
 			next_bidx = DUK_BIDX_STRING_PROTOTYPE;
@@ -2225,7 +2225,7 @@ duk_prop_putvalue_str_inidx(duk_hthread *thr, duk_idx_t idx_recv, duk_hstring *k
 	DUK_ASSERT(throw_flag == 0 || throw_flag == 1);
 
 	if (DUK_UNLIKELY(DUK_HSTRING_HAS_ARRIDX(key))) {
-		return duk__prop_putvalue_idx_inidx(thr, idx_recv, DUK_HSTRING_GET_ARRIDX_FAST_KNOWN(key), idx_val, throw_flag);
+		return duk__prop_putvalue_idx_inidx(thr, idx_recv, duk_hstring_get_arridx_fast_known(key), idx_val, throw_flag);
 	} else {
 		return duk__prop_putvalue_str_inidx(thr, idx_recv, key, idx_val, throw_flag);
 	}
@@ -2254,7 +2254,7 @@ duk_prop_putvalue_inidx(duk_hthread *thr, duk_idx_t idx_recv, duk_tval *tv_key, 
 	case DUK_TAG_STRING:
 		key = DUK_TVAL_GET_STRING(tv_key);
 		if (DUK_UNLIKELY(DUK_HSTRING_HAS_ARRIDX(key))) {
-			idx = DUK_HSTRING_GET_ARRIDX_FAST_KNOWN(key);
+			idx = duk_hstring_get_arridx_fast_known(key);
 			goto use_idx;
 		} else {
 			goto use_str;

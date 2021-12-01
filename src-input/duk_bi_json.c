@@ -307,7 +307,7 @@ DUK_LOCAL void duk__json_dec_req_stridx(duk_json_dec_ctx *js_ctx, duk_small_uint
 	h = DUK_HTHREAD_GET_STRING(js_ctx->thr, stridx);
 	DUK_ASSERT(h != NULL);
 
-	p = (const duk_uint8_t *) DUK_HSTRING_GET_DATA(h) + 1;
+	p = (const duk_uint8_t *) duk_hstring_get_data(h) + 1;
 	DUK_ASSERT(*(js_ctx->p - 1) == *(p - 1)); /* first character has been matched */
 
 	for (;;) {
@@ -1180,8 +1180,8 @@ DUK_LOCAL void duk__json_enc_key_autoquote(duk_json_enc_ctx *js_ctx, duk_hstring
 	 */
 
 	if (js_ctx->flag_avoid_key_quotes) {
-		k_len = DUK_HSTRING_GET_BYTELEN(k);
-		p_start = (const duk_int8_t *) DUK_HSTRING_GET_DATA(k);
+		k_len = duk_hstring_get_bytelen(k);
+		p_start = (const duk_int8_t *) duk_hstring_get_data(k);
 		p_end = p_start + k_len;
 		p = p_start;
 
@@ -1225,8 +1225,8 @@ DUK_LOCAL void duk__json_enc_quote_string(duk_json_enc_ctx *js_ctx, duk_hstring 
 	DUK_DDD(DUK_DDDPRINT("duk__json_enc_quote_string: h_str=%!O", (duk_heaphdr *) h_str));
 
 	DUK_ASSERT(h_str != NULL);
-	p_start = DUK_HSTRING_GET_DATA(h_str);
-	p_end = p_start + DUK_HSTRING_GET_BYTELEN(h_str);
+	p_start = duk_hstring_get_data(h_str);
+	p_end = p_start + duk_hstring_get_bytelen(h_str);
 	p = p_start;
 
 	DUK__EMIT_1(js_ctx, DUK_ASC_DOUBLEQUOTE);
@@ -1684,7 +1684,7 @@ DUK_LOCAL void duk__json_enc_bufobj(duk_json_enc_ctx *js_ctx, duk_hbufobj *h_buf
 #if defined(DUK_USE_PREFER_SIZE)
 DUK_LOCAL void duk__json_enc_newline_indent(duk_json_enc_ctx *js_ctx, duk_uint_t depth) {
 	DUK_ASSERT(js_ctx->h_gap != NULL);
-	DUK_ASSERT(DUK_HSTRING_GET_BYTELEN(js_ctx->h_gap) > 0); /* caller guarantees */
+	DUK_ASSERT(duk_hstring_get_bytelen(js_ctx->h_gap) > 0); /* caller guarantees */
 
 	DUK__EMIT_1(js_ctx, 0x0a);
 	while (depth-- > 0) {
@@ -1701,7 +1701,7 @@ DUK_LOCAL void duk__json_enc_newline_indent(duk_json_enc_ctx *js_ctx, duk_uint_t
 	duk_uint8_t *p;
 
 	DUK_ASSERT(js_ctx->h_gap != NULL);
-	DUK_ASSERT(DUK_HSTRING_GET_BYTELEN(js_ctx->h_gap) > 0); /* caller guarantees */
+	DUK_ASSERT(duk_hstring_get_bytelen(js_ctx->h_gap) > 0); /* caller guarantees */
 
 	DUK__EMIT_1(js_ctx, 0x0a);
 	if (DUK_UNLIKELY(depth == 0)) {
@@ -1714,8 +1714,7 @@ DUK_LOCAL void duk__json_enc_newline_indent(duk_json_enc_ctx *js_ctx, duk_uint_t
 	 * avoid multiply with gap_len on every loop.
 	 */
 
-	gap_data = (const duk_uint8_t *) DUK_HSTRING_GET_DATA(js_ctx->h_gap);
-	gap_len = (duk_size_t) DUK_HSTRING_GET_BYTELEN(js_ctx->h_gap);
+	gap_data = (const duk_uint8_t *) duk_hstring_get_data_and_bytelen(js_ctx->h_gap, &gap_len);
 	DUK_ASSERT(gap_len > 0);
 
 	need_bytes = gap_len * depth;
@@ -2843,9 +2842,9 @@ void duk_bi_json_parse_helper(duk_hthread *thr, duk_idx_t idx_value, duk_idx_t i
 	 * valid and points to the string NUL terminator (which is always
 	 * guaranteed for duk_hstrings.
 	 */
-	js_ctx->p_start = (const duk_uint8_t *) DUK_HSTRING_GET_DATA(h_text);
+	js_ctx->p_start = (const duk_uint8_t *) duk_hstring_get_data(h_text);
 	js_ctx->p = js_ctx->p_start;
-	js_ctx->p_end = ((const duk_uint8_t *) DUK_HSTRING_GET_DATA(h_text)) + DUK_HSTRING_GET_BYTELEN(h_text);
+	js_ctx->p_end = js_ctx->p_start + duk_hstring_get_bytelen(h_text);
 	DUK_ASSERT(*(js_ctx->p_end) == 0x00);
 
 	duk__json_dec_value(js_ctx); /* -> [ ... value ] */
@@ -3100,7 +3099,7 @@ void duk_bi_json_stringify_helper(duk_hthread *thr,
 		 * against byte length because character length is more
 		 * expensive.
 		 */
-		if (DUK_HSTRING_GET_BYTELEN(js_ctx->h_gap) == 0) {
+		if (duk_hstring_get_bytelen(js_ctx->h_gap) == 0) {
 			js_ctx->h_gap = NULL;
 		}
 	}

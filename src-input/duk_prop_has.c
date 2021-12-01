@@ -51,7 +51,7 @@ DUK_LOCAL duk_small_int_t duk__prop_hasown_idxkey_stringobj(duk_hthread *thr, du
 
 	h = duk_hobject_lookup_intvalue_hstring(thr, obj);
 	if (DUK_LIKELY(h != NULL)) {
-		if (DUK_LIKELY(!DUK_HSTRING_HAS_SYMBOL(h) && idx < DUK_HSTRING_GET_CHARLEN(h))) {
+		if (DUK_LIKELY(!DUK_HSTRING_HAS_SYMBOL(h) && idx < duk_hstring_get_charlen(h))) {
 			return DUK__HASOWN_FOUND;
 		}
 	}
@@ -443,7 +443,7 @@ DUK_INTERNAL duk_bool_t duk_prop_has_strkey(duk_hthread *thr, duk_tval *tv_obj, 
 	DUK_ASSERT(key != NULL);
 
 	if (DUK_UNLIKELY(DUK_HSTRING_HAS_ARRIDX(key))) {
-		return duk__prop_has_idxkey(thr, tv_obj, DUK_HSTRING_GET_ARRIDX_FAST_KNOWN(key));
+		return duk__prop_has_idxkey(thr, tv_obj, duk_hstring_get_arridx_fast_known(key));
 	} else {
 		return duk__prop_has_strkey(thr, tv_obj, key);
 	}
@@ -500,7 +500,7 @@ DUK_INTERNAL duk_bool_t duk_prop_has(duk_hthread *thr, duk_tval *tv_obj, duk_tva
 	case DUK_TAG_STRING:
 		key = DUK_TVAL_GET_STRING(tv_key);
 		if (DUK_UNLIKELY(DUK_HSTRING_HAS_ARRIDX(key))) {
-			idx = DUK_HSTRING_GET_ARRIDX_FAST_KNOWN(key);
+			idx = duk_hstring_get_arridx_fast_known(key);
 			goto use_idx;
 		} else {
 			DUK_ASSERT(!DUK_HSTRING_HAS_ARRIDX(key));

@@ -170,7 +170,7 @@ DUK_INTERNAL duk_ret_t duk_bi_regexp_prototype_shared_getter(duk_hthread *thr) {
 		duk_xget_owndataprop_stridx_short(thr, 0, DUK_STRIDX_INT_SOURCE);
 		duk_xget_owndataprop_stridx_short(thr, 0, DUK_STRIDX_INT_BYTECODE);
 		h_bc = duk_require_hstring(thr, -1);
-		re_flags = (duk_small_uint_t) DUK_HSTRING_GET_DATA(h_bc)[0]; /* Safe even if h_bc length is 0 (= NUL) */
+		re_flags = (duk_small_uint_t) duk_hstring_get_data(h_bc)[0]; /* Safe even if h_bc length is 0 (= NUL) */
 		duk_pop(thr);
 	} else if (h == thr->builtins[DUK_BIDX_REGEXP_PROTOTYPE]) {
 		/* In ES2015 and ES2016 a TypeError would be thrown here.

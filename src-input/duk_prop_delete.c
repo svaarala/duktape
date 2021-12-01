@@ -685,7 +685,7 @@ retry_target:
 
 		h = duk_hobject_lookup_intvalue_hstring(thr, target);
 		if (DUK_LIKELY(h != NULL)) {
-			if (DUK_LIKELY(!DUK_HSTRING_HAS_SYMBOL(h) && idx < DUK_HSTRING_GET_CHARLEN(h))) {
+			if (DUK_LIKELY(!DUK_HSTRING_HAS_SYMBOL(h) && idx < duk_hstring_get_charlen(h))) {
 				goto fail_not_configurable;
 			}
 		}
@@ -772,7 +772,7 @@ DUK_INTERNAL duk_bool_t duk_prop_delete_obj_strkey(duk_hthread *thr,
                                                    duk_hstring *key,
                                                    duk_small_uint_t delprop_flags) {
 	if (DUK_UNLIKELY(DUK_HSTRING_HAS_ARRIDX(key))) {
-		return duk__prop_delete_obj_idxkey_unsafe(thr, obj, DUK_HSTRING_GET_ARRIDX_FAST_KNOWN(key), delprop_flags);
+		return duk__prop_delete_obj_idxkey_unsafe(thr, obj, duk_hstring_get_arridx_fast_known(key), delprop_flags);
 	} else {
 		return duk__prop_delete_obj_strkey_unsafe(thr, obj, key, delprop_flags);
 	}
@@ -876,7 +876,7 @@ DUK_LOCAL duk_bool_t duk__prop_delete_idxkey(duk_hthread *thr,
 	case DUK_TAG_STRING: {
 		duk_hstring *h = DUK_TVAL_GET_STRING(tv_obj);
 
-		if (!DUK_HSTRING_HAS_SYMBOL(h) && idx < DUK_HSTRING_GET_CHARLEN(h)) {
+		if (!DUK_HSTRING_HAS_SYMBOL(h) && idx < duk_hstring_get_charlen(h)) {
 			goto fail_not_configurable;
 		}
 		break;
@@ -915,7 +915,7 @@ DUK_INTERNAL duk_bool_t duk_prop_delete_strkey(duk_hthread *thr,
                                                duk_hstring *key,
                                                duk_small_uint_t delprop_flags) {
 	if (DUK_UNLIKELY(DUK_HSTRING_HAS_ARRIDX(key))) {
-		return duk__prop_delete_idxkey(thr, idx_obj, DUK_HSTRING_GET_ARRIDX_FAST_KNOWN(key), delprop_flags);
+		return duk__prop_delete_idxkey(thr, idx_obj, duk_hstring_get_arridx_fast_known(key), delprop_flags);
 	} else {
 		return duk__prop_delete_strkey(thr, idx_obj, key, delprop_flags);
 	}
@@ -955,7 +955,7 @@ DUK_INTERNAL duk_bool_t duk_prop_deleteoper(duk_hthread *thr, duk_idx_t idx_obj,
 	case DUK_TAG_STRING:
 		key = DUK_TVAL_GET_STRING(tv_key);
 		if (DUK_UNLIKELY(DUK_HSTRING_HAS_ARRIDX(key))) {
-			idx = DUK_HSTRING_GET_ARRIDX_FAST_KNOWN(key);
+			idx = duk_hstring_get_arridx_fast_known(key);
 			goto use_idx;
 		} else {
 			DUK_ASSERT(!DUK_HSTRING_HAS_ARRIDX(key));

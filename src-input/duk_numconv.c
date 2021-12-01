@@ -1845,7 +1845,7 @@ DUK_LOCAL DUK_NOINLINE void duk__numconv_parse_raw(duk_hthread *thr, duk_small_i
 	}
 	h_str = duk_require_hstring(thr, -1);
 	DUK_ASSERT(h_str != NULL);
-	p = (const duk_uint8_t *) DUK_HSTRING_GET_DATA(h_str);
+	p = (const duk_uint8_t *) duk_hstring_get_data(h_str);
 
 	neg = 0;
 	ch = *p;
@@ -2153,7 +2153,7 @@ DUK_LOCAL DUK_NOINLINE void duk__numconv_parse_raw(duk_hthread *thr, duk_small_i
 			if ((flags & DUK_S2N_FLAG_ALLOW_EMPTY_AS_ZERO) == 0) {
 				DUK_DDD(DUK_DDDPRINT("parse failed: empty string not allowed (as zero)"));
 				goto parse_fail;
-			} else if (DUK_HSTRING_GET_BYTELEN(h_str) != 0) {
+			} else if (duk_hstring_get_bytelen(h_str) != 0) {
 				DUK_DDD(DUK_DDDPRINT("parse failed: no digits, but not empty (had a +/- sign)"));
 				goto parse_fail;
 			}

@@ -2175,9 +2175,9 @@ duk_regconst_t duk__ispec_toregconst_raw(duk_compiler_ctx *comp_ctx,
 
 #if 0 /* XXX: to be implemented? */
 			/* Use special opcodes to load short strings */
-			if (DUK_HSTRING_GET_BYTELEN(h) <= 2) {
+			if (duk_hstring_get_bytelen(h) <= 2) {
 				/* Encode into a single opcode (18 bits can encode 1-2 bytes + length indicator) */
-			} else if (DUK_HSTRING_GET_BYTELEN(h) <= 6) {
+			} else if (duk_hstring_get_bytelen(h) <= 6) {
 				/* Encode into a double constant (53 bits can encode 6*8 = 48 bits + 3-bit length */
 			}
 #endif
@@ -6743,8 +6743,8 @@ retry_parse:
 				 * strings like "use strict\u0000foo" as required.
 				 */
 
-				if (DUK_HSTRING_GET_BYTELEN(h_dir) == 10 &&
-				    DUK_STRCMP((const char *) DUK_HSTRING_GET_DATA(h_dir), "use strict") == 0) {
+				if (duk_hstring_get_bytelen(h_dir) == 10 &&
+				    DUK_STRCMP((const char *) duk_hstring_get_data(h_dir), "use strict") == 0) {
 #if defined(DUK_USE_STRICT_DECL)
 					DUK_DDD(DUK_DDDPRINT("use strict directive detected: strict flag %ld -> %ld",
 					                     (long) comp_ctx->curr_func.is_strict,
@@ -6753,8 +6753,8 @@ retry_parse:
 #else
 					DUK_DDD(DUK_DDDPRINT("use strict detected but strict declarations disabled, ignoring"));
 #endif
-				} else if (DUK_HSTRING_GET_BYTELEN(h_dir) == 14 &&
-				           DUK_STRCMP((const char *) DUK_HSTRING_GET_DATA(h_dir), "use duk notail") == 0) {
+				} else if (duk_hstring_get_bytelen(h_dir) == 14 &&
+				           DUK_STRCMP((const char *) duk_hstring_get_data(h_dir), "use duk notail") == 0) {
 					DUK_DDD(DUK_DDDPRINT("use duk notail directive detected: notail flag %ld -> %ld",
 					                     (long) comp_ctx->curr_func.is_notail,
 					                     (long) 1));

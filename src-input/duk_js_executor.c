@@ -2147,9 +2147,9 @@ DUK_LOCAL void duk__executor_recheck_debugger(duk_hthread *thr, duk_activation *
 				bp_match = 1;
 				DUK_DD(DUK_DDPRINT("breakpoint filename and line match: "
 				                   "%s:%ld vs. %s (line %ld vs. %ld-%ld)",
-				                   DUK_HSTRING_GET_DATA(bp->filename),
+				                   duk_hstring_get_data(bp->filename),
 				                   (long) bp->line,
-				                   DUK_HSTRING_GET_DATA(filename),
+				                   duk_hstring_get_data(filename),
 				                   (long) bp->line,
 				                   (long) fun->start_line,
 				                   (long) fun->end_line));

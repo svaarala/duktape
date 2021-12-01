@@ -87,6 +87,7 @@ DUK_LOCAL duk_ret_t duk__do_compile(duk_hthread *thr, void *udata) {
 
 	if (!comp_args->src_buffer) {
 		duk_hstring *h_sourcecode;
+		duk_size_t src_length;
 
 		h_sourcecode = duk_get_hstring(thr, -2);
 		if ((flags & DUK_COMPILE_NOSOURCE) || /* args incorrect */
@@ -95,8 +96,8 @@ DUK_LOCAL duk_ret_t duk__do_compile(duk_hthread *thr, void *udata) {
 			DUK_WO_NORETURN(return 0;);
 		}
 		DUK_ASSERT(h_sourcecode != NULL);
-		comp_args->src_buffer = (const duk_uint8_t *) DUK_HSTRING_GET_DATA(h_sourcecode);
-		comp_args->src_length = (duk_size_t) DUK_HSTRING_GET_BYTELEN(h_sourcecode);
+		comp_args->src_buffer = (const duk_uint8_t *) duk_hstring_get_data_and_bytelen(h_sourcecode, &src_length);
+		comp_args->src_length = src_length;
 	}
 	DUK_ASSERT(comp_args->src_buffer != NULL);
 

@@ -115,16 +115,18 @@ DUK_LOCAL int duk__transform_helper(duk_hthread *thr, duk__transform_callback ca
 	duk__transform_context tfm_ctx_alloc;
 	duk__transform_context *tfm_ctx = &tfm_ctx_alloc;
 	duk_codepoint_t cp;
+	duk_size_t input_blen;
 
 	tfm_ctx->thr = thr;
 
 	tfm_ctx->h_str = duk_to_hstring(thr, 0);
 	DUK_ASSERT(tfm_ctx->h_str != NULL);
 
-	DUK_BW_INIT_PUSHBUF(thr, &tfm_ctx->bw, DUK_HSTRING_GET_BYTELEN(tfm_ctx->h_str)); /* initial size guess */
+	input_blen = duk_hstring_get_bytelen(tfm_ctx->h_str);
+	DUK_BW_INIT_PUSHBUF(thr, &tfm_ctx->bw, input_blen); /* initial size guess */
 
-	tfm_ctx->p_start = DUK_HSTRING_GET_DATA(tfm_ctx->h_str);
-	tfm_ctx->p_end = tfm_ctx->p_start + DUK_HSTRING_GET_BYTELEN(tfm_ctx->h_str);
+	tfm_ctx->p_start = duk_hstring_get_data(tfm_ctx->h_str);
+	tfm_ctx->p_end = tfm_ctx->p_start + input_blen;
 	tfm_ctx->p = tfm_ctx->p_start;
 
 	while (tfm_ctx->p < tfm_ctx->p_end) {
@@ -179,6 +181,7 @@ DUK_LOCAL void duk__transform_callback_encode_uri(duk__transform_context *tfm_ct
 		 * back because of strict UTF-8 checks in URI decoding.
 		 * (However, we could just as well allow them here.)
 		 */
+
 		goto uri_error;
 	} else {
 		/* Non-BMP characters within valid UTF-8 range: encode as is.
@@ -481,7 +484,7 @@ DUK_INTERNAL duk_ret_t duk_bi_global_object_eval(duk_hthread *thr) {
 	}
 
 	duk_push_hstring_stridx(thr, DUK_STRIDX_INPUT); /* XXX: copy from caller? */
-	duk_js_compile(thr, (const duk_uint8_t *) DUK_HSTRING_GET_DATA(h), (duk_size_t) DUK_HSTRING_GET_BYTELEN(h), comp_flags);
+	duk_js_compile(thr, (const duk_uint8_t *) duk_hstring_get_data(h), (duk_size_t) duk_hstring_get_bytelen(h), comp_flags);
 	func = (duk_hcompfunc *) duk_known_hobject(thr, -1);
 	DUK_ASSERT(DUK_HOBJECT_IS_COMPFUNC((duk_hobject *) func));
 

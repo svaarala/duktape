@@ -368,7 +368,7 @@ DUK_INTERNAL duk_ret_t duk_bi_textencoder_prototype_encode(duk_hthread *thr) {
 		h_input = duk_to_hstring(thr, 0);
 		DUK_ASSERT(h_input != NULL);
 
-		len = (duk_size_t) DUK_HSTRING_GET_CHARLEN(h_input);
+		len = (duk_size_t) duk_hstring_get_charlen(h_input);
 		if (len >= DUK_HBUFFER_MAX_BYTELEN / 3) {
 			DUK_ERROR_TYPE(thr, DUK_STR_RESULT_TOO_LONG);
 			DUK_WO_NORETURN(return 0;);

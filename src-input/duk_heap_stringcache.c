@@ -106,14 +106,14 @@ DUK_INTERNAL duk_uint_fast32_t duk_heap_strcache_offset_char2byte(duk_hthread *t
 	 *  For ASCII strings, the answer is simple.
 	 */
 
-	if (DUK_LIKELY(DUK_HSTRING_IS_ASCII(h))) {
+	if (DUK_LIKELY(duk_hstring_is_ascii(h) != 0)) {
 		return char_offset;
 	}
 
-	char_length = (duk_uint_fast32_t) DUK_HSTRING_GET_CHARLEN(h);
+	char_length = (duk_uint_fast32_t) duk_hstring_get_charlen(h);
 	DUK_ASSERT(char_offset <= char_length);
 
-	if (DUK_LIKELY(DUK_HSTRING_IS_ASCII(h))) {
+	if (DUK_LIKELY(duk_hstring_is_ascii(h) != 0)) {
 		/* Must recheck because the 'is ascii' flag may be set
 		 * lazily.  Alternatively, we could just compare charlen
 		 * to bytelen.
@@ -135,8 +135,8 @@ DUK_INTERNAL duk_uint_fast32_t duk_heap_strcache_offset_char2byte(duk_hthread *t
 	DUK_DDD(DUK_DDDPRINT("non-ascii string %p, char_offset=%ld, clen=%ld, blen=%ld",
 	                     (void *) h,
 	                     (long) char_offset,
-	                     (long) DUK_HSTRING_GET_CHARLEN(h),
-	                     (long) DUK_HSTRING_GET_BYTELEN(h)));
+	                     (long) duk_hstring_get_charlen(h),
+	                     (long) duk_hstring_get_bytelen(h)));
 
 	heap = thr->heap;
 	sce = NULL;
@@ -172,14 +172,14 @@ DUK_INTERNAL duk_uint_fast32_t duk_heap_strcache_offset_char2byte(duk_hthread *t
 	 *    - cache entry (if exists)
 	 */
 
-	DUK_ASSERT(DUK_HSTRING_GET_CHARLEN(h) >= char_offset);
+	DUK_ASSERT(duk_hstring_get_charlen(h) >= char_offset);
 	dist_start = char_offset;
 	dist_end = char_length - char_offset;
 	dist_sce = 0;
 	DUK_UNREF(dist_sce); /* initialize for debug prints, needed if sce==NULL */
 
-	p_start = (const duk_uint8_t *) DUK_HSTRING_GET_DATA(h);
-	p_end = (const duk_uint8_t *) (p_start + DUK_HSTRING_GET_BYTELEN(h));
+	p_start = (const duk_uint8_t *) duk_hstring_get_data(h);
+	p_end = (const duk_uint8_t *) (p_start + duk_hstring_get_bytelen(h));
 	p_found = NULL;
 
 	if (sce) {
