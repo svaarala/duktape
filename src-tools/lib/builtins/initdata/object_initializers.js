@@ -298,7 +298,8 @@ exports.emitInitializerTypesAndMacrosSource = emitInitializerTypesAndMacrosSourc
 // Portable and exact float initializer.
 function getDoubleBytesInitializer(val) {
     assert(typeof val === 'string' && val.length == 16);
-    var tmp = hexDecode(val).map((t) => '' + t + 'U');
+    var arr = [... hexDecode(val)];
+    var tmp = arr.map((t) => '' + t + 'U');
     return 'DUK__DBLBYTES(' + tmp.join(',') + ')';
 }
 
