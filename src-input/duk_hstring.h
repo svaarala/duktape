@@ -189,5 +189,7 @@ DUK_INTERNAL_DECL duk_ucodepoint_t duk_hstring_char_code_at_raw(duk_hthread *thr
                                                                 duk_uint_t pos,
                                                                 duk_bool_t surrogate_aware);
 DUK_INTERNAL_DECL duk_bool_t duk_hstring_equals_ascii_cstring(duk_hstring *h, const char *cstr);
+DUK_INTERNAL_DECL duk_bool_t duk_hstring_is_symbol_initial_byte(duk_uint8_t t);
+DUK_INTERNAL_DECL duk_bool_t duk_hstring_is_valid_hstring_data(const duk_uint8_t *p, duk_size_t blen);
 
 #endif /* DUK_HSTRING_H_INCLUDED */

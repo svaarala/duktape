@@ -268,7 +268,9 @@ DUK_INTERNAL_DECL duk_uint32_t duk_unicode_wtf8_sanitize_detect(const duk_uint8_
                                                                 duk_uint32_t blen,
                                                                 duk_uint8_t *out,
                                                                 duk_uint32_t *out_charlen);
-DUK_INTERNAL_DECL duk_uint32_t duk_unicode_wtf8_sanitize_keepcheck(const duk_uint8_t *str, duk_uint32_t blen);
+DUK_INTERNAL_DECL duk_uint32_t duk_unicode_wtf8_sanitize_keepcheck(const duk_uint8_t *str,
+                                                                   duk_uint32_t blen,
+                                                                   duk_uint32_t *out_charlen);
 DUK_INTERNAL_DECL duk_size_t duk_unicode_wtf8_charlength(const duk_uint8_t *data, duk_size_t blen);
 DUK_INTERNAL_DECL duk_hstring *duk_push_wtf8_substring_hstring(duk_hthread *thr,
                                                                duk_hstring *h_input,

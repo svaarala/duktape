@@ -723,7 +723,6 @@ DUK_LOCAL void duk__regexp_match_helper(duk_hthread *thr, duk_small_int_t force_
 	DUK_ASSERT((re_ctx.nsaved % 2) == 0);
 
 	p_buf = (duk_uint8_t *) duk_push_fixed_buffer_nozero(thr, sizeof(duk_re_sp_t) * re_ctx.nsaved);
-	DUK_UNREF(p_buf);
 	re_ctx.saved = (duk_re_sp_t *) duk_get_buffer(thr, -1, NULL);
 	DUK_ASSERT(re_ctx.saved != NULL);
 

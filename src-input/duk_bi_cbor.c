@@ -475,7 +475,7 @@ DUK_LOCAL void duk__cbor_encode_string_top(duk_cbor_encode_context *enc_ctx) {
 #else
 	duk__cbor_encode_uint32(enc_ctx,
 	                        (duk_uint32_t) len,
-	                        (DUK_LIKELY(duk_unicode_is_utf8_compatible(str, len) != 0) ? 0x60U : 0x40U));
+	                        (DUK_LIKELY(duk_unicode_is_valid_utf8(str, len) != 0) ? 0x60U : 0x40U));
 #endif
 	duk__cbor_encode_ensure(enc_ctx, len);
 	p = enc_ctx->ptr;

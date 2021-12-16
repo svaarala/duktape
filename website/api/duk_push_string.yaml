@@ -18,12 +18,24 @@ summary: |
   <code><a href="#duk_push_lstring">duk_push_lstring</a></code> on purpose.</p>
 
   <div class="note">
-  C code should normally only push valid CESU-8 strings to the stack.
+  C code should normally only push valid WTF-8 strings to the stack.
+
   Some invalid CESU-8/UTF-8 byte sequences are reserved for special
   uses such as representing Symbol values.  When you push such an invalid
   byte sequence, the value on the value stack will behave like a string for
   C code but will appear as a <code>Symbol</code> for ECMAScript code.
   See <a href="guide.html#symbols">Symbols</a> for more discussion.
+
+  Input strings not matching the internal Symbol representation will be
+  sanitized to WTF-8: UTF-8 is accepted as is, paired surrogates encoded in
+  (loose) CESU-8 will be combined to UTF-8, unpaired surrogates encoded in
+  (loose) CESU-8 will be left as is, and invalid byte sequences will be
+  replaced with one or more U+FFFD characters.  Replacement behavior
+  matches <a href="http://unicode.org/review/pr-121.html">Recommended Practice for Replacement Characters</a>
+  (same as TextDecoder).
+
+  Internal string representation was changed from (loose) CESU-8 +
+  extended UTF-8 to WTF-8 in Duktape 3.x.
   </div>
 
   <p>If input string might contain internal NUL characters, use

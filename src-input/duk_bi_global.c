@@ -136,6 +136,7 @@ DUK_LOCAL int duk__transform_helper(duk_hthread *thr, duk__transform_callback ca
 
 	DUK_BW_COMPACT(thr, &tfm_ctx->bw);
 
+	/* WTF-8 sanitization happens in the buffer-to-string conversion at the latest. */
 	(void) duk_buffer_to_string(thr, -1); /* Safe if transform is safe. */
 	return 1;
 }

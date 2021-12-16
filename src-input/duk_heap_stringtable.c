@@ -732,12 +732,94 @@ DUK_LOCAL duk_hstring *duk__strtab_romstring_lookup(duk_heap *heap, const duk_ui
 }
 #endif /* DUK_USE_ROM_STRINGS */
 
+/* Slow path for string intern check where the optimistic intern check failed
+ * and the string was determined to be invalid WTF-8 and in need of sanitization.
+ * After sanitization we will need to rehash and recheck the string table.
+ */
+DUK_LOCAL DUK_COLD duk_hstring *duk__heap_strtable_intern_wtf8sanitize(duk_heap *heap,
+                                                                       const duk_uint8_t *str,
+                                                                       duk_uint32_t blen,
+                                                                       duk_uint32_t blen_keep,
+                                                                       duk_uint32_t clen_keep) {
+	duk_hstring *h;
+
+	/* 'blen_keep' bytes can be kept, but the rest may need
+	 * some rewrites.
+	 *
+	 * Symbols are handled elsewhere (keep without rewrite).
+	 */
+	duk_uint32_t blen_remain;
+	duk_uint8_t tmp[DUK__WTF8_INTERN_SHORT_LIMIT * 3];
+	duk_uint8_t *tmp_alloc = NULL;
+
+	blen_remain = blen - blen_keep;
+
+	if (DUK_LIKELY(blen <= DUK__WTF8_INTERN_SHORT_LIMIT)) {
+		duk_uint32_t new_blen;
+		duk_uint32_t new_clen;
+
+		duk_memcpy((void *) tmp, (const void *) str, blen_keep);
+		new_blen = duk_unicode_wtf8_sanitize_string(str + blen_keep, blen_remain, tmp + blen_keep, &new_clen);
+		str = tmp;
+		blen = blen_keep + new_blen;
+	} else {
+		duk_uint32_t blen_alloc;
+		duk_uint32_t new_blen;
+		duk_uint32_t new_clen;
+
+		heap->pf_prevent_count++;
+		DUK_ASSERT(heap->pf_prevent_count != 0); /* Wrap. */
+
+		/* Temporary: avoid overflow.  Better would be to detect overflow
+		 * dynamically as we go.
+		 */
+		if (blen >= 0x33333333UL) {
+			DUK_D(DUK_DPRINT("input too long for wtf-8 temporary during string intern check"));
+			h = NULL;
+			goto done;
+		}
+
+		blen_alloc = blen * 3; /* Max expansion: 3x. */
+		tmp_alloc = (duk_uint8_t *) DUK_ALLOC(heap, blen_alloc);
+
+		DUK_ASSERT(heap->pf_prevent_count > 0);
+		heap->pf_prevent_count--;
+
+		if (DUK_UNLIKELY(!tmp_alloc)) {
+			DUK_D(DUK_DPRINT("failed to allocate wtf-8 temporary during string intern check"));
+			h = NULL;
+			goto done;
+		}
+
+		duk_memcpy((void *) tmp_alloc, (const void *) str, blen_keep);
+		new_blen = duk_unicode_wtf8_sanitize_string(str + blen_keep, blen_remain, tmp_alloc + blen_keep, &new_clen);
+		str = tmp_alloc;
+		blen = blen_keep + new_blen;
+	}
+
+	/* Recursive invocation.  We must have an exact guarantee that there won't
+	 * be another recursion in this call, i.e. sanitization result is accepted
+	 * by keepcheck in the next recursive call.
+	 */
+	DUK_ASSERT(duk_unicode_is_valid_wtf8(str, blen));
+	h = duk_heap_strtable_intern(heap, str, blen);
+
+	if (DUK_UNLIKELY(tmp_alloc != NULL)) {
+		DUK_FREE(heap, (void *) tmp_alloc);
+	}
+done:
+	return h;
+}
+
+/* Intern a string/Symbol candidate and return interned duk_hstring.  Input string
+ * may be either a Symbol representation or an arbitrary byte string.  Non-Symbol
+ * strings are guaranteed to be valid WTF-8 after interning.
+ */
 DUK_INTERNAL duk_hstring *duk_heap_strtable_intern(duk_heap *heap, const duk_uint8_t *str, duk_uint32_t blen) {
 	duk_uint32_t strhash;
 	duk_hstring *h;
-	duk_uint8_t tmp[DUK__WTF8_INTERN_SHORT_LIMIT * 3];
-	duk_uint8_t *tmp_alloc = NULL;
 	duk_uint32_t blen_keep;
+	duk_uint32_t clen_keep;
 	duk_uint32_t clen;
 
 	DUK_DDD(DUK_DDDPRINT("intern check: heap=%p, str=%p, blen=%lu", (void *) heap, (const void *) str, (unsigned long) blen));
@@ -749,75 +831,14 @@ DUK_INTERNAL duk_hstring *duk_heap_strtable_intern(duk_heap *heap, const duk_uin
 	DUK_ASSERT(blen == 0 || str != NULL);
 	DUK_ASSERT(blen <= DUK_HSTRING_MAX_BYTELEN); /* Caller is responsible for ensuring this. */
 
-	/* Sanitize input string to valid WTF-8 by replacing invalid sequences
-	 * with U+FFFD replacements and combining valid surrogate pairs.  Optimize
-	 * for not needing to do so, i.e. input string is already valid WTF-8.
-	 */
-	clen = 0;
-	blen_keep = duk_unicode_wtf8_sanitize_keepcheck(str, blen);
-	DUK_ASSERT(blen_keep <= blen);
-	if (DUK_LIKELY(blen_keep == blen)) {
-		/* Input string can be kept 1:1 with no change.  No need to
-		 * rewrite for string intern check.  All valid ASCII, UTF-8,
-		 * and WTF-8 strings should come here (at present ASCII only).
-		 *
-		 * Also Symbol strings are handled here now: keepcheck must
-		 * return blen_keep == blen for them.
-		 */
-		DUK_STATS_INC(heap, stats_strtab_intern_notemp);
-	} else {
-		/* 'blen_keep' bytes can be kept, but the rest may need
-		 * some rewrites.
-		 */
-		duk_uint32_t blen_remain;
-
-		DUK_STATS_INC(heap, stats_strtab_intern_temp);
-		blen_remain = blen - blen_keep;
-
-		if (DUK_LIKELY(blen <= DUK__WTF8_INTERN_SHORT_LIMIT)) {
-			duk_uint32_t new_blen;
-			duk_uint32_t new_clen;
-
-			duk_memcpy((void *) tmp, (const void *) str, blen_keep);
-			new_blen = duk_unicode_wtf8_sanitize_string(str + blen_keep, blen_remain, tmp + blen_keep, &new_clen);
-			str = tmp;
-			blen = blen_keep + new_blen;
-		} else {
-			duk_uint32_t blen_alloc;
-			duk_uint32_t new_blen;
-			duk_uint32_t new_clen;
-
-			heap->pf_prevent_count++;
-			DUK_ASSERT(heap->pf_prevent_count != 0); /* Wrap. */
-
-			if (blen >= 0x33333333UL) {
-				DUK_D(DUK_DPRINT("input too long for wtf-8 temporary during string intern check"));
-				h = NULL;
-				goto done;
-			}
-
-			blen_alloc = blen * 3; /* Max expansion: 3x. */
-			tmp_alloc = (duk_uint8_t *) DUK_ALLOC(heap, blen_alloc);
-
-			DUK_ASSERT(heap->pf_prevent_count > 0);
-			heap->pf_prevent_count--;
-
-			if (DUK_UNLIKELY(!tmp_alloc)) {
-				DUK_D(DUK_DPRINT("failed to allocate wtf-8 temporary during string intern check"));
-				h = NULL;
-				goto done;
-			}
-
-			duk_memcpy((void *) tmp_alloc, (const void *) str, blen_keep);
-			new_blen = duk_unicode_wtf8_sanitize_string(str + blen_keep, blen_remain, tmp_alloc + blen_keep, &new_clen);
-			str = tmp_alloc;
-			blen = blen_keep + new_blen;
-		}
-	}
-
 	strhash = duk_heap_hashstring(heap, str, (duk_size_t) blen);
 
-	/* String table lookup. */
+	/* String table lookup using tentative assumption that input is
+	 * valid WTF-8.  If the string is found in the string table the
+	 * assumption must have been correct because we only insert sanitized
+	 * WTF-8 strings into the string table.  So in this case we can avoid
+	 * an explicit sanitization step.
+	 */
 
 	DUK_ASSERT(DUK__GET_STRTABLE(heap) != NULL);
 	DUK_ASSERT(heap->st_size > 0);
@@ -831,6 +852,7 @@ DUK_INTERNAL duk_hstring *duk_heap_strtable_intern(duk_heap *heap, const duk_uin
 		if (duk_hstring_get_hash(h) == strhash && duk_hstring_get_bytelen(h) == blen &&
 		    duk_memcmp_unsafe((const void *) str, (const void *) duk_hstring_get_data(h), (size_t) blen) == 0) {
 			/* Found existing entry. */
+			DUK_ASSERT(duk_hstring_is_valid_hstring_data(str, blen));
 			DUK_STATS_INC(heap, stats_strtab_intern_hit);
 			goto done;
 		}
@@ -845,24 +867,65 @@ DUK_INTERNAL duk_hstring *duk_heap_strtable_intern(duk_heap *heap, const duk_uin
 #if defined(DUK_USE_ROM_STRINGS)
 	h = duk__strtab_romstring_lookup(heap, str, blen, strhash);
 	if (h != NULL) {
+		DUK_ASSERT(duk_hstring_is_valid_hstring_data(str, blen));
 		DUK_STATS_INC(heap, stats_strtab_intern_hit);
 		goto done;
 	}
 #endif
 
-	/* Not found in string table; insert. */
+	/* Not found in the string table.  Either it's a new string or the
+	 * input needs sanitization first.
+	 *
+	 * First do a "keepcheck", i.e. check if the input is valid WTF-8.
+	 * If it is, we've already done the lookup above and can be sure
+	 * that the string is new.
+	 *
+	 * If the "keepcheck" fails to accept the whole string, sanitize the
+	 * remainder and recheck the string insert recursively.  This is the
+	 * slowest path, but only happens when the string is new and the string
+	 * is not valid WTF-8.
+	 */
 
+	blen_keep = duk_unicode_wtf8_sanitize_keepcheck(str, blen, &clen_keep);
+	DUK_ASSERT(blen_keep <= blen);
+	if (DUK_LIKELY(blen_keep == blen)) {
+		/* Input string either a Symbol string or valid WTF-8, no need for
+		 * string sanitization.  Since the string can be used as is, and the
+		 * string table lookup already failed above, we can proceed to intern
+		 * the string using the existing string data and string hash.
+		 *
+		 * Symbol strings are also handled here now: keepcheck must return
+		 * blen_keep == blen for them.
+		 */
+		DUK_STATS_INC(heap, stats_strtab_intern_notemp);
+		clen = clen_keep;
+	} else {
+		/* Sanitize input string to valid WTF-8 by replacing invalid sequences
+		 * with U+FFFD replacements and combining valid surrogate pairs.  Optimize
+		 * for not needing to do so, i.e. input string is already valid WTF-8.
+		 *
+		 * The maximum expansion of this process is 3x (one byte to 3 bytes of
+		 * U+FFFD replacement).
+		 *
+		 * Once sanitized, we need to re-hash the string and check the string table
+		 * again.  However, this is only needed for invalid WTF-8 inputs, i.e.
+		 * (1) strings containing uncombined surrogate pairs in CESU-8 form, or
+		 * (2) outright invalid data.
+		 */
+		DUK_ASSERT(blen > 0);
+		DUK_ASSERT(!duk_hstring_is_symbol_initial_byte(str[0]));
+
+		DUK_STATS_INC(heap, stats_strtab_intern_temp);
+		return duk__heap_strtable_intern_wtf8sanitize(heap, str, blen, blen_keep, clen_keep);
+	}
+
+	/* Not found in string table; insert. */
 	DUK_STATS_INC(heap, stats_strtab_intern_miss);
 
-	/* For now compute final charlen here, should be done inline in WTF-8 sanitize. */
-	clen = duk_hstring_is_symbol_initial_byte(str[0]) ? 0 : duk_unicode_wtf8_charlength(str, blen);
 	h = duk__strtable_do_intern(heap, str, blen, clen, strhash);
 	goto done;
 
 done:
-	if (DUK_UNLIKELY(tmp_alloc != NULL)) {
-		DUK_FREE(heap, (void *) tmp_alloc);
-	}
 	return h; /* may be NULL */
 }
 

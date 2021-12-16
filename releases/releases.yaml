@@ -1369,6 +1369,7 @@ duktape_releases:
   #release_date: 'XXXX-XX-XX'
   #state: 'planned'
   changes:
+    - "Switch internal string representation to WTF-8 (from CESU-8 + extended UTF-8), so that C API callers now always see valid WTF-8 strings while ECMAScript code now always sees standard ECMAScript strings (GH-2447 and multiple follow-ups)"
     - "Rename duk_is_null_or_undefined() to duk_is_nullish() to better match new ECMAScript terminology, duk_is_null_or_undefined() is still available as a macro (GH-2313)"
     - "Remove prepared source variants other than src/ (matches Duktape 2.x src-noline/) from the distributable (GH-2209)"
     - "Accept unlabelled function statements outside of top level for strict functions (using hoist semantics), previously they were rejected with a SyntaxError (GH-2213)"
