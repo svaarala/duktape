@@ -1,15 +1,14 @@
 /*
  *  String.prototype.repeat() for an internal string just concatenates the
- *  internal representations.  At the join point between segments this may
- *  generate valid codepoints.  This is not a compliance issue because all
- *  compliant strings are CESU-8 encoded and have no such isses; it's also
- *  not a sandboxing issue because the concatenation process can't create
- *  internal keys unless you already have one at hand.  The prefix of the
- *  result is also from the repeated string so you also can't create a new
- *  prefix byte by repeating something.
+ *  internal representations.  With WTF-8 sanitization all byte sequences
+ *  ultimately treated as strings are in valid WTF-8 so concatenation cannot
+ *  create e.g. symbol values.  However, at the joint between segments
+ *  invalid surrogates may pair up to generate a valid surrogate pair which
+ *  is combined in the result.
  */
 
 /*@include util-buffer.js@*/
+/*@include util-string.js@*/
 
 /*---
 {
@@ -19,28 +18,25 @@
 
 /*===
 4
-65533 65 66 67
-12
-|fe414243fe414243fe414243|
+"<U+FFFD>ABC"
+15
+"<U+DC12>foo<U+D834><U+DC12>foo<U+D834><U+DC12>foo<U+D834>"
+|edb092666f6ff09d8092666f6ff09d8092666f6feda0b4|
 ===*/
 
 function test() {
     var str, res;
 
-    function dump(x) {
-        var res = [];
-        for (var i = 0; i < x.length; i++) {
-            res.push(x.charCodeAt(i));
-        }
-        print(res.join(' '));
-    }
-
-    // Internal prefix 0xFE is just repeated, unaffected.
+    // Internal prefix 0xFE is replaced by U+FFFD and is repeated, unaffected.
     str = bufferToStringRaw(new Uint8Array([ 0xfe, 0x41, 0x42, 0x43 ]));
     print(str.length);
-    dump(str);
+    safePrintString(str);
+
+    // Surrogates may pair up at join point.
+    str = '\udc12foo\ud834';
     res = str.repeat(3);
     print(res.length);
+    safePrintString(res);
     print(Duktape.enc('jx', Uint8Array.allocPlain(res)));
 }
 

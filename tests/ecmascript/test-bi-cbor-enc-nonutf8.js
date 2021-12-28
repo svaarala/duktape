@@ -14,8 +14,8 @@
 |666f6fedb080626172|
 4d666f6fedb08064383030626172
 |666f6fedb08064383030626172|
-4c666f6feda0bdedb2a9626172
-|666f6feda0bdedb2a9626172|
+6a666f6ff09f92a9626172
+"foo\U0001f4a9bar"
 done
 ===*/
 
@@ -37,7 +37,8 @@ test('foo\udc00bar');
 test('foo\udc00d800bar');
 
 // Paired surrogate.  Currently CBOR.encode() does not combine the
-// surrogate.
+// surrogate by itself, but WTF-8 string intern step does that so
+// the outcome is a combined codepoint.
 test('foo\ud83d\udca9bar');
 
 // XXX: Add coverage when C API exists:

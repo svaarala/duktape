@@ -33,24 +33,24 @@ TypeError
 TypeError
 TypeError
 TypeError
-"\u07ad\xbe\xef"
-string "<U+07AD><U+FFFD>"
-|deadbeef|
-"\xfe\ue74c"
-string "<U+FFFD><U+E74C><U+074C><U+FFFD>"
-|feeeddcc|
+"\u07ad\ufffd\ufffd"
+string "<U+07AD><U+FFFD><U+FFFD>"
+|deadefbfbdefbfbd|
+"\ufffd\ufffd\ufffd\ufffd"
+string "<U+FFFD><U+FFFD><U+FFFD><U+FFFD>"
+|efbfbdefbfbdefbfbdefbfbd|
 "abcd"
 string "abcd"
 |61626364|
-"\x00\x01\x02\xfe\xff"
+"\x00\x01\x02\ufffd\ufffd"
 string "<U+0000><U+0001><U+0002><U+FFFD><U+FFFD>"
-|000102feff|
-"\U7df785b4\x12\u03ba\xfe\xca"
-string "<U+85B4><U+85B4><U+6D12><U+448E>xV4<U+0012><U+03BA><U+FFFD><U+FFFD><U+FFFD>"
-|fefdfdfd78563412cefafeca|
-"\x00\x00\x00\x00\x00\x00\x00\x00\x9a\x99\x99\x99\x99\x99\xb9?\x9a\x99\x99\x99\x99\x99\u067f\x00\x00\x00\x00\x00\x00\u0ff333333\u3fc0\x00\x00\x00\x00\x00\U0003f9a6ffff\U001bf000\x00\x00\x00\x00\U00fda659\x99\x99\x99\U01fc0000\x00\x00@\x8f@"
-string "<U+0000><U+0000><U+0000><U+0000><U+0000><U+0000><U+0000><U+0000>?<U+067F>?<U+0000><U+0000><U+0000><U+0000><U+0000><U+0000><U+0FF3>?333333<U+3FC0>?<U+0000><U+0000><U+0000><U+0000><U+0000><U+0000><U+F9A6>?ffffff<U+F000>?<U+0000><U+0000><U+0000><U+0000><U+0000><U+0000><U+A659>?<U+0000>?<U+0000><U+0000><U+0000><U+0000><U+0000>@@"
-|00000000000000009a9999999999b93f9a9999999999d93f000000000000e03f333333333333e33f000000000000f03f666666666666f63f000000000000f83f9a9999999999f93f0000000000408f40|
+|000102efbfbdefbfbd|
+"\ufffd\ufffd\ufffd\ufffdxV4\x12\ufffd\ufffd\ufffd\ufffd"
+string "<U+FFFD><U+FFFD><U+FFFD><U+FFFD>xV4<U+0012><U+FFFD><U+FFFD><U+FFFD><U+FFFD>"
+|efbfbdefbfbdefbfbdefbfbd78563412efbfbdefbfbdefbfbdefbfbd|
+"\x00\x00\x00\x00\x00\x00\x00\x00\ufffd\ufffd\ufffd\ufffd\ufffd\ufffd\ufffd?\ufffd\ufffd\ufffd\ufffd\ufffd\ufffd\ufffd?\x00\x00\x00\x00\x00\x00\ufffd?333333\ufffd?\x00\x00\x00\x00\x00\x00\ufffd?ffffff\ufffd?\x00\x00\x00\x00\x00\x00\ufffd?\ufffd\ufffd\ufffd\ufffd\ufffd\ufffd\ufffd?\x00\x00\x00\x00\x00@\ufffd@"
+string "<U+0000><U+0000><U+0000><U+0000><U+0000><U+0000><U+0000><U+0000><U+FFFD><U+FFFD><U+FFFD><U+FFFD><U+FFFD><U+FFFD><U+FFFD>?<U+FFFD><U+FFFD><U+FFFD><U+FFFD><U+FFFD><U+FFFD><U+FFFD>?<U+0000><U+0000><U+0000><U+0000><U+0000><U+0000><U+FFFD>?333333<U+FFFD>?<U+0000><U+0000><U+0000><U+0000><U+0000><U+0000><U+FFFD>?ffffff<U+FFFD>?<U+0000><U+0000><U+0000><U+0000><U+0000><U+0000><U+FFFD>?<U+FFFD><U+FFFD><U+FFFD><U+FFFD><U+FFFD><U+FFFD><U+FFFD>?<U+0000><U+0000><U+0000><U+0000><U+0000>@<U+FFFD>@"
+|0000000000000000efbfbdefbfbdefbfbdefbfbdefbfbdefbfbdefbfbd3fefbfbdefbfbdefbfbdefbfbdefbfbdefbfbdefbfbd3f000000000000efbfbd3f333333333333efbfbd3f000000000000efbfbd3f666666666666efbfbd3f000000000000efbfbd3fefbfbdefbfbdefbfbdefbfbdefbfbdefbfbdefbfbd3f000000000040efbfbd40|
 "\x04\x00\x05\x00\x06\x00\x07\x00"
 string "<U+0004><U+0000><U+0005><U+0000><U+0006><U+0000><U+0007><U+0000>"
 |0400050006000700|

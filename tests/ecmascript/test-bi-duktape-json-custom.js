@@ -296,8 +296,8 @@ character escape encode
 "foo" "foo"
 "\xfc" "\u00fc"
 "\uabcd" "\uabcd"
-"\U0010fedc" "U+0010fedc"
-"\Udeadbeef" "U+deadbeef"
+"\U0010fedc" "\udbff\udedc"
+"\ufffd\ufffd\ufffd\ufffd\ufffd\ufffd\ufffd" "\ufffd\ufffd\ufffd\ufffd\ufffd\ufffd\ufffd"
 character escape decode
 jx 0a0a0a0a0a0a0a
 SyntaxError
@@ -305,7 +305,7 @@ jx c3bec3bec3bec3bec3bec3be
 SyntaxError
 jx e18aafe18aafe18aafe18aaf
 SyntaxError
-jx fe839eab9bbbaffe839eab9bbbaf
+jx efbfbdefbfbdefbfbdefbfbdefbfbdefbfbdefbfbdefbfbdefbfbdefbfbdefbfbdefbfbdefbfbdefbfbd
 SyntaxError
 ===*/
 
@@ -731,13 +731,13 @@ try {
 /*===
 invalid xutf-8
 e188
-json  22c3a1c28822
-jx "\xe1\x88"
-jc "\u00e1\u0088"
+json  22efbfbd22
+jx "\ufffd"
+jc "\ufffd"
 c080
-json  220022
-jx "\x00"
-jc "\u0000"
+json  22efbfbdefbfbd22
+jx "\ufffd\ufffd"
+jc "\ufffd\ufffd"
 ===*/
 
 /* Test invalid XUTF-8 handling in all modes, including standard JSON.  This

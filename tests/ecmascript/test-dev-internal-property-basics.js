@@ -13,11 +13,11 @@
 
 /*===
 for-in: foo
-for-in:  <255>quux
-JSON.stringify: {"foo":1," <195><191>quux":4}
-JX encoded: {foo:1," \xffquux":4}
-Object.keys: foo, <255>quux
-Object.getOwnPropertyNames: foo,bar, <255>quux
+for-in:  <239><191><189>quux
+JSON.stringify: {"foo":1," <239><191><189>quux":4}
+JX encoded: {foo:1," \ufffdquux":4}
+Object.keys: foo, <239><191><189>quux
+Object.getOwnPropertyNames: foo,bar, <239><191><189>quux
 direct access: 3
 ===*/
 

@@ -5,15 +5,9 @@
 
 var text;
 
-/*---
-{
-    "custom": true
-}
----*/
-
 /*===
 65
-65601
+65
 0
 0
 1
@@ -30,8 +24,8 @@ var text;
 
 print(String.fromCharCode(65).charCodeAt(0));
 
-// This is now coerced with ToUint32() by default to better support non-BMP
-// strings.  The expected output is non-compliant so testcase is marked custom.
+// This is now coerced with ToUint16() as in standard ECMAScript.  Duktape 2.x
+// used ToUint32() to better support non-BMP strings.
 print(String.fromCharCode(65536 + 65).charCodeAt(0));
 
 print(String.fromCharCode(undefined).charCodeAt(0));
