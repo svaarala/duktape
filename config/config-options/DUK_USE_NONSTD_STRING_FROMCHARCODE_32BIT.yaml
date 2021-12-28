@@ -1,6 +1,7 @@
 define: DUK_USE_NONSTD_STRING_FROMCHARCODE_32BIT
 introduced: 1.2.0
-default: true
+removed: 3.0.0
+default: false
 tags:
   - ecmascript
   - compliance
@@ -10,3 +11,5 @@ description: >
   useful because Duktape supports non-BMP strings.
 
   When disabled, Duktape provides the compliant behavior.
+
+  Removed in Duktape 3.x with WTF-8 string representation change.
