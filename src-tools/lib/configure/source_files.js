@@ -130,6 +130,7 @@ const sourceFiles = [
     'duk_unicode.h',
     'duk_unicode_support.c',
     'duk_unicode_tables.c',
+    'duk_unicode_wtf8.c',
     'duk_util.h',
     'duk_util_bitdecoder.c',
     'duk_util_bitencoder.c',
