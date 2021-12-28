@@ -105,6 +105,12 @@ DUK_LOCAL void duk__concat_and_join_helper(duk_hthread *thr, duk_idx_t count_in,
 
 	/* [ ... buf ] */
 
+	/* The accumulation buffer contains string parts which are valid
+	 * WTF-8 individually, but unpaired surrogates may pair up in the
+	 * join points and must be combined.  This could be done inline
+	 * when the parts are processed above, but here we rely on the intern
+	 * WTF-8 sanitization step to combine surrogate pairs.
+	 */
 	(void) duk_buffer_to_string(thr, -1); /* Safe if inputs are safe. */
 
 	/* [ ... res ] */
@@ -153,6 +159,9 @@ DUK_INTERNAL void duk_concat_2(duk_hthread *thr) {
 	duk_memcpy((void *) buf, (const void *) duk_hstring_get_data(h1), (size_t) blen1);
 	duk_memcpy((void *) (buf + blen1), (const void *) duk_hstring_get_data(h2), (size_t) blen2);
 
+	/* Surrogates in the join point may need to be combined, handled by
+	 * the intern WTF-8 sanitize step.
+	 */
 	(void) duk_buffer_to_string(thr, -1); /* Safe if inputs are safe. */
 
 	/* [ ... str1 str2 buf ] */
@@ -228,7 +237,6 @@ DUK_EXTERNAL void duk_map_string(duk_hthread *thr, duk_idx_t idx, duk_map_char_f
 		/* XXX: could write output in chunks with fewer ensure calls,
 		 * but relative benefit would be small here.
 		 */
-
 		if (p >= p_end) {
 			break;
 		}
@@ -238,16 +246,14 @@ DUK_EXTERNAL void duk_map_string(duk_hthread *thr, duk_idx_t idx, duk_map_char_f
 		DUK_BW_WRITE_ENSURE_XUTF8(thr, bw, cp);
 	}
 
+	/* Surrogates in join point are paired by string intern WTF-8 sanitize step. */
 	DUK_BW_COMPACT(thr, bw);
-	(void) duk_buffer_to_string(thr, -1); /* Safe, extended UTF-8 encoded. */
+	(void) duk_buffer_to_string(thr, -1);
 	duk_replace(thr, idx);
 }
 
 DUK_EXTERNAL void duk_substring(duk_hthread *thr, duk_idx_t idx, duk_size_t start_offset, duk_size_t end_offset) {
 	duk_hstring *h;
-	duk_hstring *res;
-	duk_size_t start_byte_offset;
-	duk_size_t end_byte_offset;
 	duk_size_t charlen;
 
 	DUK_ASSERT_API_ENTRY(thr);
@@ -273,18 +279,7 @@ DUK_EXTERNAL void duk_substring(duk_hthread *thr, duk_idx_t idx, duk_size_t star
 	DUK_ASSERT(start_offset <= DUK_UINT32_MAX);
 	DUK_ASSERT(end_offset <= DUK_UINT32_MAX);
 
-	start_byte_offset = (duk_size_t) duk_heap_strcache_offset_char2byte(thr, h, (duk_uint_fast32_t) start_offset);
-	end_byte_offset = (duk_size_t) duk_heap_strcache_offset_char2byte(thr, h, (duk_uint_fast32_t) end_offset);
-
-	DUK_ASSERT(end_byte_offset >= start_byte_offset);
-	DUK_ASSERT(end_byte_offset - start_byte_offset <= DUK_UINT32_MAX); /* Guaranteed by string limits. */
-
-	/* No size check is necessary. */
-	res = duk_heap_strtable_intern_checked(thr,
-	                                       duk_hstring_get_data(h) + start_byte_offset,
-	                                       (duk_uint32_t) (end_byte_offset - start_byte_offset));
-
-	duk_push_hstring(thr, res);
+	(void) duk_push_wtf8_substring_hstring(thr, h, start_offset, end_offset);
 	duk_replace(thr, idx);
 }
 

@@ -941,7 +941,7 @@ DUK_INTERNAL_DECL duk_bool_t duk_hobject_define_property_helper(duk_hthread *thr
 DUK_INTERNAL_DECL void duk_hobject_object_get_own_property_descriptor(duk_hthread *thr, duk_idx_t obj_idx);
 DUK_INTERNAL_DECL void duk_hobject_object_seal_freeze_helper(duk_hthread *thr, duk_hobject *obj, duk_bool_t is_freeze);
 DUK_INTERNAL_DECL duk_bool_t duk_hobject_object_is_sealed_frozen_helper(duk_hthread *thr, duk_hobject *obj, duk_bool_t is_frozen);
-DUK_INTERNAL_DECL duk_bool_t duk_hobject_object_ownprop_helper(duk_hthread *thr, duk_small_uint_t required_desc_flags);
+DUK_INTERNAL_DECL duk_ret_t duk_hobject_object_ownprop_helper(duk_hthread *thr, duk_small_uint_t required_desc_flags);
 
 /* internal properties */
 DUK_INTERNAL_DECL duk_tval *duk_hobject_get_internal_value_tval_ptr(duk_heap *heap, duk_hobject *obj);

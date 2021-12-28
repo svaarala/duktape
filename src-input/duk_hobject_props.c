@@ -6202,7 +6202,7 @@ fail_not_configurable:
  *  Object.prototype.hasOwnProperty() and Object.prototype.propertyIsEnumerable().
  */
 
-DUK_INTERNAL duk_bool_t duk_hobject_object_ownprop_helper(duk_hthread *thr, duk_small_uint_t required_desc_flags) {
+DUK_INTERNAL duk_ret_t duk_hobject_object_ownprop_helper(duk_hthread *thr, duk_small_uint_t required_desc_flags) {
 	duk_hstring *h_v;
 	duk_hobject *h_obj;
 	duk_propdesc desc;
@@ -6217,8 +6217,7 @@ DUK_INTERNAL duk_bool_t duk_hobject_object_ownprop_helper(duk_hthread *thr, duk_
 
 	ret = duk_hobject_get_own_propdesc(thr, h_obj, h_v, &desc, 0 /*flags*/); /* don't push value */
 
-	duk_push_boolean(thr, ret && ((desc.flags & required_desc_flags) == required_desc_flags));
-	return 1;
+	return duk_push_boolean_return1(thr, ret && ((desc.flags & required_desc_flags) == required_desc_flags));
 }
 
 /*

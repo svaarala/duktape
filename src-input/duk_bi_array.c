@@ -177,8 +177,7 @@ DUK_INTERNAL duk_ret_t duk_bi_array_constructor(duk_hthread *thr) {
 
 DUK_INTERNAL duk_ret_t duk_bi_array_constructor_is_array(duk_hthread *thr) {
 	DUK_ASSERT_TOP(thr, 1);
-	duk_push_boolean(thr, duk_js_isarray(DUK_GET_TVAL_POSIDX(thr, 0)));
-	return 1;
+	return duk_push_boolean_return1(thr, duk_js_isarray(DUK_GET_TVAL_POSIDX(thr, 0)));
 }
 
 /*

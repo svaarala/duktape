@@ -1819,8 +1819,7 @@ DUK_INTERNAL duk_ret_t duk_bi_date_prototype_set_time(duk_hthread *thr) {
 
 #if defined(DUK_USE_SYMBOL_BUILTIN)
 DUK_INTERNAL duk_ret_t duk_bi_date_prototype_toprimitive(duk_hthread *thr) {
-	duk_size_t hintlen;
-	const char *hintstr;
+	duk_hstring *h_hintstr;
 	duk_int_t hint;
 
 	/* Invokes OrdinaryToPrimitive() with suitable hint.  Note that the
@@ -1833,10 +1832,10 @@ DUK_INTERNAL duk_ret_t duk_bi_date_prototype_toprimitive(duk_hthread *thr) {
 	duk_require_object(thr, -1);
 	DUK_ASSERT_TOP(thr, 2);
 
-	hintstr = duk_require_lstring(thr, 0, &hintlen);
-	if ((hintlen == 6 && DUK_STRCMP(hintstr, "string") == 0) || (hintlen == 7 && DUK_STRCMP(hintstr, "default") == 0)) {
+	h_hintstr = duk_require_hstring(thr, 0);
+	if (duk_hstring_equals_ascii_cstring(h_hintstr, "string") || duk_hstring_equals_ascii_cstring(h_hintstr, "default")) {
 		hint = DUK_HINT_STRING;
-	} else if (hintlen == 6 && DUK_STRCMP(hintstr, "number") == 0) {
+	} else if (duk_hstring_equals_ascii_cstring(h_hintstr, "number")) {
 		hint = DUK_HINT_NUMBER;
 	} else {
 		DUK_DCERROR_TYPE_INVALID_ARGS(thr);

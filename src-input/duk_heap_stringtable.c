@@ -24,7 +24,6 @@
 
 #define DUK__STRTAB_U32_MAX_STRLEN 10 /* 4'294'967'295 */
 
-/* #define DUK__WTF8_EXPERIMENT 1 */
 #define DUK__WTF8_INTERN_SHORT_LIMIT 256
 
 /*
@@ -223,7 +222,7 @@ DUK_LOCAL duk_hstring *duk__strtable_alloc_hstring(duk_heap *heap,
 		 */
 		DUK_HSTRING_SET_ARRIDX(res);
 		DUK_HSTRING_SET_ASCII(res);
-		DUK_ASSERT(duk_unicode_unvalidated_utf8_length(data, (duk_size_t) blen) == blen);
+		DUK_ASSERT(duk_unicode_wtf8_charlength(data, (duk_size_t) blen) == blen);
 	} else {
 		/* Because 'data' is NUL-terminated, we don't need a
 		 * blen > 0 check here.  For NUL (0x00) the symbol
@@ -682,9 +681,11 @@ DUK_LOCAL duk_hstring *duk__strtable_do_intern(duk_heap *heap, const duk_uint8_t
 }
 
 /*
+ *  String intern check
+ *
  *  Intern a string from str/blen, returning either an existing duk_hstring
  *  or adding a new one into the string table.  The input string does -not-
- *  need to be NUL terminated.
+ *  need to be NUL terminated and may not be valid WTF-8.
  *
  *  The input 'str' argument may point to a Duktape managed data area such as
  *  the data area of a dynamic buffer.  It's crucial to avoid any side effects
@@ -724,93 +725,12 @@ DUK_LOCAL duk_hstring *duk__strtab_romstring_lookup(duk_heap *heap, const duk_ui
 }
 #endif /* DUK_USE_ROM_STRINGS */
 
-#if defined(DUK__WTF8_EXPERIMENT)
-DUK_LOCAL duk_uint32_t duk__combine_surrogates(const duk_uint8_t *str, duk_uint32_t blen, duk_uint8_t *out) {
-	const duk_uint8_t *p;
-	const duk_uint8_t *p_end;
-	duk_uint8_t *q;
-
-	/* Many optimization possibilities here for this initial placeholder. */
-	p = str;
-	p_end = str + blen;
-	q = out;
-
-	while (p != p_end) {
-		duk_uint8_t t;
-
-		DUK_ASSERT(p < p_end);
-
-		/* >>> u'\ud7ff'.encode('utf-8')
-		 * '\xed\x9f\xbf'
-		 * >>> u'\ud800'.encode('utf-8')
-		 * '\xed\xa0\x80'
-		 * >>> u'\udc00'.encode('utf-8')
-		 * '\xed\xb0\x80'
-		 * >>> u'\udfff'.encode('utf-8')
-		 * '\xed\xbf\xbf'
-		 * >>> u'\ue000'.encode('utf-8')
-		 * '\xee\x80\x80'
-		 */
-		t = *p++;
-		if (DUK_LIKELY(t != 0xedU)) {
-			*q++ = t;
-		} else {
-			/* A CESU-8 surrogate pair is 6 bytes and we just checked
-			 * the first byte.  Check the rest; this could be
-			 * implemented as a few 32-bit integer mask checks
-			 * that can compile down to unaligned memory reads on
-			 * x86.
-			 */
-			if ((p_end - p >= 5) && (p[0] >= 0xa0U && p[0] <= 0xafU) && (p[1] >= 0x80U && p[1] <= 0xbfU) &&
-			    (p[2] == 0xedU) && (p[3] >= 0xb0U && p[3] <= 0xbfU) && (p[4] >= 0x80U && p[4] <= 0xbfU)) {
-				/* Valid CESU-8 high-low surrogate pair.
-				 * Decode the pair, then re-encode as UTF-8.
-				 * The result is always in [U+10000,U+10FFFF]
-				 * and a 4-byte UTF-8 encoding.
-				 *
-				 * >>> u'\U00010000'.encode('utf-8')
-				 * '\xf0\x90\x80\x80'
-				 * >>> u'\U0010ffff'.encode('utf-8')
-				 * '\xf4\x8f\xbf\xbf'
-				 *
-				 * CESU-8 surrogate encoding, top five bits are 1yyyy
-				 * 11101101 1010yyYY 10xxxxxx 11101101 1011XXXX 10xxxxxx
-				 *   p[-1]   p[0]      p[1]     p[2]     p[3]     p[4]
-				 *
-				 * Encoding into UTF-8 4-byte representation:
-				 * 1111 0xxx 10xxxxxx 10xxxxxx 10xxxxxx
-				 *
-				 * Compute result bytes before writing so that in-place
-				 * rewriting works correctly.
-				 */
-				duk_uint32_t hi, lo, cp;
-
-				hi = (((duk_uint32_t) p[0] & 0x0fU) << 6U) + ((duk_uint32_t) p[1] & 0x3fU);
-				lo = (((duk_uint32_t) p[3] & 0x0fU) << 6U) + ((duk_uint32_t) p[4] & 0x3fU);
-				cp = 0x10000UL + (hi << 10U) + lo;
-
-				*q++ = 0xf0U + ((cp >> 18U) & 0x07U);
-				*q++ = 0x80U + ((cp >> 12U) & 0x3fU);
-				*q++ = 0x80U + ((cp >> 6U) & 0x3fU);
-				*q++ = 0x80U + (cp & 0x3fU);
-				p += 5;
-			} else {
-				*q++ = t;
-			}
-		}
-	}
-
-	return (duk_uint32_t) (q - out);
-}
-#endif /* DUK__WTF8_EXPERIMENT */
-
 DUK_INTERNAL duk_hstring *duk_heap_strtable_intern(duk_heap *heap, const duk_uint8_t *str, duk_uint32_t blen) {
 	duk_uint32_t strhash;
 	duk_hstring *h;
-#if defined(DUK__WTF8_EXPERIMENT)
-	duk_uint8_t tmp[DUK__WTF8_INTERN_SHORT_LIMIT];
+	duk_uint8_t tmp[DUK__WTF8_INTERN_SHORT_LIMIT * 3];
 	duk_uint8_t *tmp_alloc = NULL;
-#endif
+	duk_uint32_t blen_keep;
 
 	DUK_DDD(DUK_DDDPRINT("intern check: heap=%p, str=%p, blen=%lu", (void *) heap, (const void *) str, (unsigned long) blen));
 
@@ -820,34 +740,70 @@ DUK_INTERNAL duk_hstring *duk_heap_strtable_intern(duk_heap *heap, const duk_uin
 	DUK_ASSERT(heap != NULL);
 	DUK_ASSERT(blen == 0 || str != NULL);
 	DUK_ASSERT(blen <= DUK_HSTRING_MAX_BYTELEN); /* Caller is responsible for ensuring this. */
-	strhash = duk_heap_hashstring(heap, str, (duk_size_t) blen);
 
-	/* Combine unpaired surrogates, with a fast path for not needing to
-	 * do so.
+	/* Sanitize input string to valid WTF-8 by replacing invalid sequences
+	 * with U+FFFD replacements and combining valid surrogate pairs.  Optimize
+	 * for not needing to do so, i.e. input string is already valid WTF-8.
 	 */
-#if defined(DUK__WTF8_EXPERIMENT)
-	if (DUK_LIKELY(blen <= DUK__WTF8_INTERN_SHORT_LIMIT)) {
-		blen = duk__combine_surrogates(str, blen, tmp);
-		str = tmp;
+
+	blen_keep = duk_unicode_wtf8_sanitize_keepcheck(str, blen);
+	DUK_ASSERT(blen_keep <= blen);
+	if (DUK_LIKELY(blen_keep == blen)) {
+		/* Input string can be kept 1:1 with no change.  No need to
+		 * rewrite for string intern check.  All valid ASCII, UTF-8,
+		 * and WTF-8 strings should come here (at present ASCII only).
+		 *
+		 * Also Symbol strings are handled here now: keepcheck must
+		 * return blen_keep == blen for them.
+		 */
 	} else {
-		heap->pf_prevent_count++;
-		DUK_ASSERT(heap->pf_prevent_count != 0); /* Wrap. */
+		/* 'blen_keep' bytes can be kept, but the rest may need
+		 * some rewrites.
+		 *
+		 * Symbols are handled above (keep without rewrite).
+		 */
+		duk_uint32_t blen_remain = blen - blen_keep;
 
-		tmp_alloc = DUK_ALLOC(heap, blen); /* Can't become longer. */
+		if (DUK_LIKELY(blen <= DUK__WTF8_INTERN_SHORT_LIMIT)) {
+			duk_uint32_t new_blen;
 
-		DUK_ASSERT(heap->pf_prevent_count > 0);
-		heap->pf_prevent_count--;
+			duk_memcpy((void *) tmp, (const void *) str, blen_keep);
+			new_blen = duk_unicode_wtf8_sanitize_string(str + blen_keep, blen_remain, tmp + blen_keep);
+			str = tmp;
+			blen = blen_keep + new_blen;
+		} else {
+			duk_uint32_t blen_alloc;
+			duk_uint32_t new_blen;
 
-		if (DUK_UNLIKELY(!tmp_alloc)) {
-			DUK_D(DUK_DPRINT("failed to allocate wtf-8 temporary for string intern check"));
-			h = NULL;
-			goto done;
+			heap->pf_prevent_count++;
+			DUK_ASSERT(heap->pf_prevent_count != 0); /* Wrap. */
+
+			if (blen >= 0x33333333UL) {
+				DUK_D(DUK_DPRINT("input too long for wtf-8 temporary during string intern check"));
+				h = NULL;
+				goto done;
+			}
+
+			blen_alloc = blen * 3; /* Max expansion: 3x. */
+			tmp_alloc = (duk_uint8_t *) DUK_ALLOC(heap, blen_alloc);
+
+			DUK_ASSERT(heap->pf_prevent_count > 0);
+			heap->pf_prevent_count--;
+
+			if (DUK_UNLIKELY(!tmp_alloc)) {
+				DUK_D(DUK_DPRINT("failed to allocate wtf-8 temporary during string intern check"));
+				h = NULL;
+				goto done;
+			}
+
+			duk_memcpy((void *) tmp_alloc, (const void *) str, blen_keep);
+			new_blen = duk_unicode_wtf8_sanitize_string(str + blen_keep, blen_remain, tmp_alloc + blen_keep);
+			str = tmp_alloc;
+			blen = blen_keep + new_blen;
 		}
-
-		blen = duk__combine_surrogates(str, blen, tmp_alloc);
-		str = tmp_alloc;
 	}
-#endif
+
+	strhash = duk_heap_hashstring(heap, str, (duk_size_t) blen);
 
 	/* String table lookup. */
 

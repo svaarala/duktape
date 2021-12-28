@@ -44,7 +44,7 @@ DUK_INTERNAL duk_bool_t duk_unicode_is_valid_wtf8(const duk_uint8_t *data, duk_s
 			duk_uint8_t lower = (t == 0xf0U ? 0x90U : 0x80U);
 			duk_uint8_t upper = (t == 0xf4U ? 0x8fU : 0xbfU);
 
-			if (p_end - p >= 4 && p[1] >= lower && p[1] <= lower && p[2] >= 0x80U && p[2] <= 0xbfU && p[3] >= 0x80U &&
+			if (p_end - p >= 4 && p[1] >= lower && p[1] <= upper && p[2] >= 0x80U && p[2] <= 0xbfU && p[3] >= 0x80U &&
 			    p[3] <= 0xbfU) {
 				p += 4;
 			} else {
@@ -66,7 +66,7 @@ DUK_INTERNAL duk_bool_t duk_unicode_is_valid_wtf8(const duk_uint8_t *data, duk_s
  */
 DUK_LOCAL duk_uint32_t duk__unicode_wtf8_sanitize_string_reference(const duk_uint8_t *str,
                                                                    duk_uint32_t str_blen,
-                                                                   duk_uint8_t *out) {
+                                                                   duk_uint8_t *out_data) {
 	const duk_uint8_t *p;
 	const duk_uint8_t *p_end;
 	duk_uint8_t *q;
@@ -75,11 +75,11 @@ DUK_LOCAL duk_uint32_t duk__unicode_wtf8_sanitize_string_reference(const duk_uin
 	duk_uint32_t out_clen;
 
 	DUK_ASSERT(str_blen == 0 || str != NULL);
-	DUK_ASSERT(out != NULL);
+	DUK_ASSERT(out_data != NULL);
 
 	p = str;
 	p_end = str + str_blen;
-	q = out;
+	q = out_data;
 
 	while (p != p_end) {
 		duk_uint8_t t;
@@ -127,7 +127,8 @@ DUK_LOCAL duk_uint32_t duk__unicode_wtf8_sanitize_string_reference(const duk_uin
 				upper = (t == 0xf4U ? 0x8fU : 0xbfU);
 			} else {
 				/* Invalid initial byte. */
-				DUK_ASSERT(t >= 0xf5U && t <= 0xffU);
+				DUK_ASSERT(t >= 0xf5U);
+				DUK_ASSERT_DISABLE(t <= 0xffU);
 				goto replacement;
 			}
 		} else {
@@ -207,9 +208,10 @@ DUK_LOCAL duk_uint32_t duk__unicode_wtf8_sanitize_string_reference(const duk_uin
 		out_clen_sub += 2; /* 3 bytes, 1 char */
 	}
 
-	out_blen = (duk_uint32_t) (q - out);
+	out_blen = (duk_uint32_t) (q - out_data);
 	DUK_ASSERT(out_clen_sub <= out_blen);
 	out_clen = out_blen - out_clen_sub;
+	DUK_UNREF(out_clen);
 
 	return out_blen;
 }
@@ -257,6 +259,7 @@ DUK_INTERNAL duk_uint32_t duk_unicode_wtf8_sanitize_detect(const duk_uint8_t *st
 	}
 }
 
+#if 0
 DUK_LOCAL duk_uint32_t duk__unicode_wtf8_sanitize_asciicheck_reference(const duk_uint8_t *str, duk_uint32_t blen) {
 	duk_uint32_t i;
 
@@ -271,6 +274,7 @@ DUK_LOCAL duk_uint32_t duk__unicode_wtf8_sanitize_asciicheck_reference(const duk
 
 	return blen;
 }
+#endif
 
 DUK_LOCAL DUK_NOINLINE duk_uint32_t duk__unicode_wtf8_sanitize_asciicheck_optimized(const duk_uint8_t *str, duk_uint32_t blen) {
 	const duk_uint8_t *p;
@@ -421,146 +425,82 @@ DUK_INTERNAL duk_size_t duk_unicode_wtf8_charlength(const duk_uint8_t *data, duk
  * may be that the start and/or end offset are in the middle of a non-BMP codepoint
  * in which case we must manufacture a surrogate character.
  */
-DUK_INTERNAL void duk_unicode_wtf8_substring(duk_hthread *thr,
-                                             const duk_uint8_t *data,
-                                             duk_size_t blen,
-                                             duk_size_t start_offset,
-                                             duk_size_t end_offset) {
+
+DUK_INTERNAL duk_hstring *duk_push_wtf8_substring_hstring(duk_hthread *thr,
+                                                          duk_hstring *h_input,
+                                                          duk_size_t start_offset,
+                                                          duk_size_t end_offset) {
+	const duk_uint8_t *data;
+	duk_uint32_t blen;
 	duk_uint_t prefix_surrogate = 0;
 	duk_uint_t suffix_surrogate = 0;
 	duk_size_t copy_start;
 	duk_size_t copy_end;
-	duk_size_t string_size;
-	duk_size_t off;
-	duk_size_t target_off;
-	const duk_uint8_t *p;
+	duk_uint32_t start_byteoff;
+	duk_uint32_t start_charoff;
+	duk_uint32_t end_byteoff;
+	duk_uint32_t end_charoff;
 
-	DUK_DD(DUK_DDPRINT("thr=%p, data=%p, blen=%ld, start_offset=%ld, end_offset=%ld",
-	                   (void *) thr,
-	                   (void *) data,
-	                   (long) blen,
-	                   (long) start_offset,
-	                   (long) end_offset));
-
-	DUK_ASSERT(duk_unicode_is_valid_wtf8(data, blen));
+	/* ASCII fast path. */
+	if (duk_hstring_get_charlen(h_input) == duk_hstring_get_bytelen(h_input)) {
+		duk_push_lstring(thr,
+		                 (const char *) (duk_hstring_get_data(h_input) + start_offset),
+		                 (duk_size_t) (end_offset - start_offset));
+		return duk_known_hstring_m1(thr);
+	}
 
 	/* Caller must validate input to be WTF-8 and offsets to be valid and
 	 * non-crossed.
 	 */
+	data = duk_hstring_get_data(h_input);
+	blen = duk_hstring_get_bytelen(h_input);
+	DUK_ASSERT(duk_unicode_is_valid_wtf8(data, blen));
+	DUK_UNREF(blen);
 	DUK_ASSERT(data != NULL || blen == 0);
 	DUK_ASSERT(start_offset <= end_offset);
 
-	/* No string cache support yet, so scan to start/end is intentionally naive. */
+	/* Special handling for zero-size input to avoid corner case below:
+	 * for an empty substring the start and end offset might both be
+	 * splitting the same non-BMP codepoint.
+	 */
+	if (start_offset == end_offset) {
+		duk_push_hstring_empty(thr);
+		goto done;
+	}
 
 	/* Scan to start. */
-	p = data;
-	off = 0;
-	for (;;) {
-		duk_uint8_t t;
+	duk_strcache_scan_char2byte_wtf8(thr, h_input, start_offset, &start_byteoff, &start_charoff);
 
-		if (off >= start_offset) {
-			/* start_offset > off: happens when prefix_surrogate is emitted. */
-			copy_start = (duk_size_t) (p - data);
-			break;
-		}
+	if (DUK_UNLIKELY(start_charoff != start_offset)) {
+		/* Start position split a logical surrogate pair encoded
+		 * as a single WTF-8 codepoint, extract surrogate as prefix.
+		 */
+		duk_ucodepoint_t start_cp;
 
-		t = *p;
-		if (DUK_LIKELY(t <= 0x7fU)) {
-			p++;
-			off++;
-			continue;
-		}
-		DUK_ASSERT(t >= 0x80U);
-		DUK_ASSERT(!(t <= 0xbfU)); /* Continuation byte, assume valid WTF-8. */
-		DUK_ASSERT(t != 0xc0U);
-		DUK_ASSERT(t != 0xc1U);
-		DUK_ASSERT(t <= 0xf4U);
-
-		if (t <= 0xdfU) {
-			DUK_ASSERT(t >= 0xc0U && t <= 0xdfU);
-			p += 2;
-			off++;
-		} else if (t <= 0xefU) {
-			DUK_ASSERT(t >= 0xe0U && t <= 0xefU);
-			p += 3;
-			off++;
-		} else {
-			/* Non-BMP: check if we need to split it and create a
-			 * low surrogate prefix for the substring result.
-			 */
-			DUK_ASSERT(t >= 0xf0U && t <= 0xf4U);
-			if (start_offset == off + 1) {
-				if (end_offset > start_offset) {
-					duk_ucodepoint_t cp;
-
-					cp = ((t & 0x07U) << 18U) + ((p[1] & 0x3fU) << 12U) + ((p[2] & 0x3fU) << 6U) +
-					     (p[3] & 0x3fU);
-					prefix_surrogate = 0xdc00UL + ((cp - 0x10000UL) & 0x3ffUL);
-				} else {
-					/* start_offset == end_offset special handling so we
-					 * don't need upfront special handling for it.
-					 */
-					; /* No prefix surrogate. */
-				}
-			}
-			p += 4;
-			off += 2;
-		}
+		start_cp = duk_unicode_wtf8_decode_known(duk_hstring_get_data(h_input) + start_byteoff);
+		prefix_surrogate = 0xdc00UL + ((start_cp - 0x10000UL) & 0x3ffUL);
+		copy_start = start_byteoff + 4; /* Skip encoded non-BMP codepoint. */
+	} else {
+		copy_start = start_byteoff;
 	}
 
 	DUK_DD(DUK_DDPRINT("copy_start=%ld, prefix_surrogate=%ld", (long) copy_start, (long) prefix_surrogate));
 
-	/* Scan to end. */
-	for (;;) {
-		duk_uint8_t t;
+	duk_strcache_scan_char2byte_wtf8(thr, h_input, end_offset, &end_byteoff, &end_charoff);
 
-		if (off >= end_offset) {
-			/* end_offset > off: happens when suffix_surrogate is emitted. */
-			copy_end = (duk_size_t) (p - data);
-			break;
-		}
+	if (DUK_UNLIKELY(end_charoff != end_offset)) {
+		/* End position splits a logical surrogate pair encoded
+		 * as a single WTF-8 codepoint, extract surrogate as suffix.
+		 */
+		duk_ucodepoint_t end_cp;
 
-		t = *p;
-		if (DUK_LIKELY(t <= 0x7fU)) {
-			p++;
-			off++;
-			continue;
-		}
-		DUK_ASSERT(t >= 0x80U);
-		DUK_ASSERT(!(t <= 0xbfU)); /* Continuation byte, assume valid WTF-8. */
-		DUK_ASSERT(t != 0xc0U);
-		DUK_ASSERT(t != 0xc1U);
-		DUK_ASSERT(t <= 0xf4U);
-
-		if (t <= 0xdfU) {
-			DUK_ASSERT(t >= 0xc0U && t <= 0xdfU);
-			p += 2;
-			off++;
-		} else if (t <= 0xefU) {
-			DUK_ASSERT(t >= 0xe0U && t <= 0xefU);
-			p += 3;
-			off++;
-		} else {
-			/* Non-BMP: check if we need to split it and create a
-			 * high surrogate suffix for the substring result.
-			 */
-			DUK_ASSERT(t >= 0xf0U && t <= 0xf4U);
-			if (end_offset == off + 1) {
-				duk_ucodepoint_t cp;
-
-				DUK_ASSERT(end_offset > start_offset);
-				cp = ((t & 0x07U) << 18U) + ((p[1] & 0x3fU) << 12U) + ((p[2] & 0x3fU) << 6U) + (p[3] & 0x3fU);
-				suffix_surrogate = 0xd800UL + ((cp - 0x10000UL) >> 10U);
-				/* Don't step 'p' here so copy_end won't include
-				 * the non-BMP codepoint.
-				 */
-				off += 2;
-			} else {
-				p += 4;
-				off += 2;
-			}
-		}
+		end_cp = duk_unicode_wtf8_decode_known(duk_hstring_get_data(h_input) + end_byteoff);
+		suffix_surrogate = 0xd800UL + ((end_cp - 0x10000UL) >> 10U);
+		copy_end = end_byteoff;
+	} else {
+		copy_end = end_byteoff;
 	}
+	DUK_ASSERT(copy_end >= copy_start);
 
 	DUK_DD(DUK_DDPRINT("copy_end=%ld, suffix_surrogate=%ld", (long) copy_end, (long) suffix_surrogate));
 
@@ -614,6 +554,103 @@ DUK_INTERNAL void duk_unicode_wtf8_substring(duk_hthread *thr,
 		duk_push_lstring(thr, (const char *) buf, alloc_size);
 		duk_remove_m2(thr);
 	}
+
+done:
+	return duk_known_hstring_m1(thr);
+}
+
+/* Find a string from within an input string. Must account for non-BMP codepoints,
+ * e.g. search string may start with a low surrogate which must be correctly matched
+ * with combined surrogates in the input.
+ *
+ * Empty string always matches.
+ */
+
+/* Naive implementation for reference. */
+DUK_LOCAL duk_int_t duk__unicode_wtf8_search_forwards_reference(duk_hthread *thr,
+                                                                duk_hstring *h_input,
+                                                                duk_hstring *h_match,
+                                                                duk_uint32_t start_charoff) {
+	duk_uint32_t match_charlen;
+	duk_uint32_t input_charlen;
+	duk_uint32_t charoff;
+
+	input_charlen = duk_hstring_get_charlen(h_input);
+	match_charlen = duk_hstring_get_charlen(h_match);
+	DUK_DD(DUK_DDPRINT("input_charlen=%ld, match_charlen=%d, start_charoff=%ld",
+	                   (long) input_charlen,
+	                   (long) match_charlen,
+	                   (long) start_charoff));
+
+	for (charoff = start_charoff; charoff <= input_charlen; charoff++) {
+		/* Must scan to charoff == input_charlen for zero length input. */
+		DUK_DDD(DUK_DDDPRINT("wtf8 find, charoff=%ld", (long) charoff));
+		if (charoff + match_charlen <= input_charlen) {
+			duk_hstring *h_tmp;
+
+			h_tmp = duk_push_wtf8_substring_hstring(thr, h_input, charoff, charoff + match_charlen);
+			DUK_DDD(DUK_DDDPRINT("substring=%!O, match=%!O", h_tmp, h_match));
+
+			/* Rely on string interning! */
+			if (h_tmp == h_match) {
+				duk_pop_unsafe(thr);
+				return (duk_int_t) charoff;
+			}
+			duk_pop_unsafe(thr);
+		}
+	}
+	return -1;
+}
+
+DUK_INTERNAL duk_int_t duk_unicode_wtf8_search_forwards(duk_hthread *thr,
+                                                        duk_hstring *h_input,
+                                                        duk_hstring *h_match,
+                                                        duk_uint32_t start_charoff) {
+	return duk__unicode_wtf8_search_forwards_reference(thr, h_input, h_match, start_charoff);
+}
+
+/* Naive implementation for reference. */
+DUK_LOCAL duk_int_t duk__unicode_wtf8_search_backwards_reference(duk_hthread *thr,
+                                                                 duk_hstring *h_input,
+                                                                 duk_hstring *h_match,
+                                                                 duk_uint32_t start_charoff) {
+	duk_uint32_t match_charlen;
+	duk_uint32_t input_charlen;
+	duk_int_t i;
+	duk_uint32_t charoff;
+
+	input_charlen = duk_hstring_get_charlen(h_input);
+	match_charlen = duk_hstring_get_charlen(h_match);
+	DUK_DD(DUK_DDPRINT("input_charlen=%ld, match_charlen=%d, start_charoff=%ld",
+	                   (long) input_charlen,
+	                   (long) match_charlen,
+	                   (long) start_charoff));
+
+	for (i = (duk_int_t) start_charoff; i >= 0; i--) {
+		charoff = (duk_uint32_t) i;
+		DUK_DDD(DUK_DDDPRINT("wtf8 find, charoff=%ld", (long) charoff));
+		if (charoff + match_charlen <= input_charlen) {
+			duk_hstring *h_tmp;
+
+			h_tmp = duk_push_wtf8_substring_hstring(thr, h_input, charoff, charoff + match_charlen);
+			DUK_DDD(DUK_DDDPRINT("substring=%!O, match=%!O", h_tmp, h_match));
+
+			/* Rely on string interning! */
+			if (h_tmp == h_match) {
+				duk_pop_unsafe(thr);
+				return (duk_int_t) charoff;
+			}
+			duk_pop_unsafe(thr);
+		}
+	}
+	return -1;
+}
+
+DUK_INTERNAL duk_int_t duk_unicode_wtf8_search_backwards(duk_hthread *thr,
+                                                         duk_hstring *h_input,
+                                                         duk_hstring *h_match,
+                                                         duk_uint32_t start_charoff) {
+	return duk__unicode_wtf8_search_backwards_reference(thr, h_input, h_match, start_charoff);
 }
 
 /* Convert a valid WTF-8 string to CESU-8 representation.  This allows some
@@ -693,4 +730,87 @@ DUK_INTERNAL void duk_unicode_wtf8_to_cesu8(duk_hthread *thr, const duk_uint8_t 
 	DUK_ASSERT(q == buf + alloc_size);
 
 	/* [ ... cesu8_buf ] */
+}
+
+DUK_INTERNAL duk_ucodepoint_t duk_unicode_wtf8_decode_known(const duk_uint8_t *p) {
+	duk_uint8_t t;
+	duk_ucodepoint_t cp;
+
+	t = *p;
+	if (DUK_LIKELY(t <= 0x7fU)) {
+		return t;
+	}
+
+	DUK_ASSERT(t >= 0x80U);
+	DUK_ASSERT(!(t <= 0xbfU)); /* Continuation byte, assume valid WTF-8. */
+	DUK_ASSERT(t != 0xc0U);
+	DUK_ASSERT(t != 0xc1U);
+	DUK_ASSERT(t <= 0xf4U);
+
+	/* High bit patterns here:
+	 * 10xxxxxx  Continuation byte (cannot happen for valid WTF-8)
+	 * 110xxxxx  2-byte codepoint
+	 * 1110xxxx  3-byte codepoint, may contain unpaired surrogates (but not paired)
+	 * 11110xxx  4-byte codepoint, always non-BMP (U+10000 or higher), counts as two ES chars
+	 */
+	if (t <= 0xdfU) {
+		DUK_ASSERT(t >= 0xc0U && t <= 0xdfU);
+		cp = (t & 0x1fU);
+		cp = (cp << 6) + (p[1] & 0x3fU);
+		return cp;
+	} else if (t <= 0xefU) {
+		DUK_ASSERT(t >= 0xe0U && t <= 0xefU);
+		cp = (t & 0x0fU);
+		cp = (cp << 12) + ((p[1] & 0x3fU) << 6) + (p[2] & 0x3fU);
+		return cp;
+	} else {
+		DUK_ASSERT(t >= 0xf0U && t <= 0xf4U);
+		cp = (t & 0x07U);
+		cp = (cp << 18) + ((p[1] & 0x3fU) << 12) + ((p[2] & 0x3fU) << 6) + (p[3] & 0x3fU);
+		return cp;
+	}
+}
+
+DUK_INTERNAL duk_ucodepoint_t duk_unicode_wtf8_charcodeat_helper(duk_hthread *thr,
+                                                                 duk_hstring *h,
+                                                                 duk_uint_t pos,
+                                                                 duk_bool_t surrogate_aware) {
+	duk_uint32_t byteoff;
+	duk_uint32_t charoff;
+	duk_ucodepoint_t cp;
+
+	/* Caller must check character offset to be inside the string. */
+	DUK_ASSERT(thr != NULL);
+	DUK_ASSERT(h != NULL);
+	DUK_ASSERT_DISABLE(pos >= 0); /* unsigned */
+	DUK_ASSERT(pos < (duk_uint_t) duk_hstring_get_charlen(h));
+	DUK_HSTRING_ASSERT_VALID(h);
+
+	if (duk_hstring_get_charlen(h) == duk_hstring_get_bytelen(h)) {
+		const duk_uint8_t *p = duk_hstring_get_data(h);
+		return (duk_ucodepoint_t) p[pos];
+	}
+
+	duk_strcache_scan_char2byte_wtf8(thr, h, pos, &byteoff, &charoff);
+	cp = duk_unicode_wtf8_decode_known(duk_hstring_get_data(h) + byteoff);
+
+	if (DUK_LIKELY(cp < 0x10000UL)) {
+		DUK_ASSERT(charoff == pos);
+		return cp;
+	}
+
+	DUK_ASSERT(charoff == pos || charoff + 1 == pos);
+	if (charoff == pos) {
+		if (surrogate_aware) {
+			return cp;
+		} else {
+			/* High surrogate. */
+			duk_ucodepoint_t hi = 0xd800UL + ((cp - 0x10000UL) >> 10);
+			return hi;
+		}
+	} else {
+		/* Low surrogate. */
+		duk_ucodepoint_t lo = 0xdc00UL + ((cp - 0x10000UL) & 0x3ffUL);
+		return lo;
+	}
 }

@@ -38,77 +38,14 @@ DUK_LOCAL duk_hstring *duk__str_tostring_notregexp(duk_hthread *thr, duk_idx_t i
 
 DUK_LOCAL duk_int_t
 duk__str_search_shared(duk_hthread *thr, duk_hstring *h_this, duk_hstring *h_search, duk_int_t start_cpos, duk_bool_t backwards) {
-	duk_int_t cpos;
-	duk_int_t bpos;
-	const duk_uint8_t *p_start, *p_end, *p;
-	const duk_uint8_t *q_start;
-	duk_int_t q_blen;
-	duk_uint8_t firstbyte;
-	duk_uint8_t t;
+	duk_int_t search_res;
 
-	cpos = start_cpos;
-
-	/* Empty searchstring always matches; cpos must be clamped here.
-	 * (If q_blen were < 0 due to clamped coercion, it would also be
-	 * caught here.)
-	 */
-	q_start = duk_hstring_get_data(h_search);
-	q_blen = (duk_int_t) duk_hstring_get_bytelen(h_search);
-	if (q_blen <= 0) {
-		return cpos;
-	}
-	DUK_ASSERT(q_blen > 0);
-
-	bpos = (duk_int_t) duk_heap_strcache_offset_char2byte(thr, h_this, (duk_uint32_t) cpos);
-
-	p_start = duk_hstring_get_data(h_this);
-	p_end = p_start + duk_hstring_get_bytelen(h_this);
-	p = p_start + bpos;
-
-	/* This loop is optimized for size.  For speed, there should be
-	 * two separate loops, and we should ensure that memcmp() can be
-	 * used without an extra "will searchstring fit" check.  Doing
-	 * the preconditioning for 'p' and 'p_end' is easy but cpos
-	 * must be updated if 'p' is wound back (backward scanning).
-	 */
-
-	firstbyte = q_start[0]; /* leading byte of match string */
-	while (p <= p_end && p >= p_start) {
-		t = *p;
-
-		/* For ECMAScript strings, this check can only match for
-		 * initial UTF-8 bytes (not continuation bytes).  For other
-		 * strings all bets are off.
-		 */
-
-		if ((t == firstbyte) && ((duk_size_t) (p_end - p) >= (duk_size_t) q_blen)) {
-			DUK_ASSERT(q_blen > 0);
-			if (duk_memcmp((const void *) p, (const void *) q_start, (size_t) q_blen) == 0) {
-				return cpos;
-			}
-		}
-
-		/* track cpos while scanning */
-		if (backwards) {
-			/* when going backwards, we decrement cpos 'early';
-			 * 'p' may point to a continuation byte of the char
-			 * at offset 'cpos', but that's OK because we'll
-			 * backtrack all the way to the initial byte.
-			 */
-			if ((t & 0xc0) != 0x80) {
-				cpos--;
-			}
-			p--;
-		} else {
-			if ((t & 0xc0) != 0x80) {
-				cpos++;
-			}
-			p++;
-		}
-	}
-
-	/* Not found.  Empty string case is handled specially above. */
-	return -1;
+	/* Empty search string always matches, handled by helper. */
+	DUK_ASSERT(start_cpos >= 0);
+	search_res = (backwards ? duk_unicode_wtf8_search_backwards :
+                                  duk_unicode_wtf8_search_forwards) (thr, h_this, h_search, (duk_uint32_t) start_cpos);
+	DUK_ASSERT(search_res >= 0 || search_res == -1);
+	return search_res;
 }
 
 /*
@@ -191,19 +128,11 @@ DUK_LOCAL duk_ret_t duk__construct_from_codepoints(duk_hthread *thr, duk_bool_t 
 			cp = (duk_ucodepoint_t) i32;
 			DUK_BW_WRITE_ENSURE_CESU8(thr, bw, cp);
 		} else {
-#if defined(DUK_USE_NONSTD_STRING_FROMCHARCODE_32BIT)
-			/* ToUint16() coercion is mandatory in the E5.1 specification, but
-			 * this non-compliant behavior makes more sense because we support
-			 * non-BMP codepoints.  Don't use CESU-8 because that'd create
-			 * surrogate pairs.
-			 */
-			cp = (duk_ucodepoint_t) duk_to_uint32(thr, i);
-			DUK_BW_WRITE_ENSURE_XUTF8(thr, bw, cp);
-#else
+			/* Non-standard ToUint32() coercion option removed in Duktape 3.x. */
 			cp = (duk_ucodepoint_t) duk_to_uint16(thr, i);
-			DUK_ASSERT(cp >= 0 && cp <= 0x10ffffL);
+			DUK_ASSERT(cp <= 0x10ffffL);
+			DUK_ASSERT_DISABLE(cp >= 0L);
 			DUK_BW_WRITE_ENSURE_CESU8(thr, bw, cp);
-#endif
 		}
 	}
 
@@ -522,7 +451,6 @@ DUK_INTERNAL duk_ret_t duk_bi_string_prototype_indexof_shared(duk_hthread *thr) 
 
 DUK_INTERNAL duk_ret_t duk_bi_string_prototype_replace(duk_hthread *thr) {
 	duk_hstring *h_input;
-	duk_hstring *h_match;
 	duk_hstring *h_search;
 	duk_hobject *h_re;
 	duk_bufwriter_ctx bw_alloc;
@@ -532,17 +460,15 @@ DUK_INTERNAL duk_ret_t duk_bi_string_prototype_replace(duk_hthread *thr) {
 	duk_bool_t is_global;
 #endif
 	duk_bool_t is_repl_func;
-	duk_uint32_t match_start_coff, match_start_boff;
-#if defined(DUK_USE_REGEXP_SUPPORT)
-	duk_int_t match_caps;
-#endif
-	duk_uint32_t prev_match_end_boff;
+	duk_uint32_t end_of_last_match_coff;
+	duk_hstring *h_trailer;
 	const duk_uint8_t *r_start, *r_end, *r; /* repl string scan */
-	duk_size_t tmp_sz;
 
 	DUK_ASSERT_TOP(thr, 2);
+
 	h_input = duk_push_this_coercible_to_string(thr);
 	DUK_ASSERT(h_input != NULL);
+	DUK_ASSERT(!DUK_HSTRING_HAS_SYMBOL(h_input));
 
 	bw = &bw_alloc;
 	DUK_BW_INIT_PUSHBUF(thr, bw, duk_hstring_get_bytelen(h_input)); /* input size is good output starting point */
@@ -550,7 +476,7 @@ DUK_INTERNAL duk_ret_t duk_bi_string_prototype_replace(duk_hthread *thr) {
 	DUK_ASSERT_TOP(thr, 4);
 
 	/* stack[0] = search value
-	 * stack[1] = replace value
+	 * stack[1] = replace value (or function)
 	 * stack[2] = input string
 	 * stack[3] = result buffer
 	 */
@@ -566,11 +492,13 @@ DUK_INTERNAL duk_ret_t duk_bi_string_prototype_replace(duk_hthread *thr) {
 			duk_push_int(thr, 0);
 			duk_put_prop_stridx_short(thr, 0, DUK_STRIDX_LAST_INDEX);
 		}
+		h_search = NULL;
 #else /* DUK_USE_REGEXP_SUPPORT */
 		DUK_DCERROR_UNSUPPORTED(thr);
 #endif /* DUK_USE_REGEXP_SUPPORT */
 	} else {
-		duk_to_string(thr, 0); /* rejects symbols */
+		h_search = duk_to_hstring(thr, 0); /* rejects symbols */
+		DUK_ASSERT(!duk_is_symbol(thr, 0));
 #if defined(DUK_USE_REGEXP_SUPPORT)
 		is_regexp = 0;
 		is_global = 0;
@@ -587,11 +515,12 @@ DUK_INTERNAL duk_ret_t duk_bi_string_prototype_replace(duk_hthread *thr) {
 		is_repl_func = 0;
 		h_repl = duk_to_hstring(thr, 1); /* reject symbols */
 		DUK_ASSERT(h_repl != NULL);
+		DUK_ASSERT(!DUK_HSTRING_HAS_SYMBOL(h_repl));
 		r_start = duk_hstring_get_data(h_repl);
 		r_end = r_start + duk_hstring_get_bytelen(h_repl);
 	}
 
-	prev_match_end_boff = 0;
+	end_of_last_match_coff = 0;
 
 	for (;;) {
 		/*
@@ -617,6 +546,13 @@ DUK_INTERNAL duk_ret_t duk_bi_string_prototype_replace(duk_hthread *thr) {
 		 *  are made?  See: test-bi-string-proto-replace.js for discussion.
 		 */
 
+		duk_uint32_t match_start_coff;
+#if defined(DUK_USE_REGEXP_SUPPORT)
+		duk_int_t match_num_caps;
+#endif
+		duk_hstring *h_match;
+		duk_hstring *h_preserve;
+
 		DUK_ASSERT_TOP(thr, 4);
 
 #if defined(DUK_USE_REGEXP_SUPPORT)
@@ -636,10 +572,10 @@ DUK_INTERNAL duk_ret_t duk_bi_string_prototype_replace(duk_hthread *thr) {
 
 			duk_get_prop_index(thr, -1, 0);
 			DUK_ASSERT(duk_is_string(thr, -1));
-			h_match = duk_known_hstring(thr, -1);
-			duk_pop(thr); /* h_match is borrowed, remains reachable through match_obj */
+			h_match = duk_known_hstring_m1(thr);
+			duk_pop(thr); /* h_match is borrowed, remains reachable through res_obj */
 
-			if (duk_hstring_get_bytelen(h_match) == 0) {
+			if (duk_hstring_get_charlen(h_match) == 0) {
 				/* This should be equivalent to match() algorithm step 8.f.iii.2:
 				 * detect an empty match and allow it, but don't allow it twice.
 				 */
@@ -656,72 +592,53 @@ DUK_INTERNAL duk_ret_t duk_bi_string_prototype_replace(duk_hthread *thr) {
 			}
 
 			DUK_ASSERT(duk_get_length(thr, -1) <= DUK_INT_MAX); /* string limits */
-			match_caps = (duk_int_t) duk_get_length(thr, -1);
+			match_num_caps = (duk_int_t) duk_get_length(thr, -1);
 		} else {
 #else /* DUK_USE_REGEXP_SUPPORT */
 		{ /* unconditionally */
 #endif /* DUK_USE_REGEXP_SUPPORT */
-			const duk_uint8_t *p_start, *p_end, *p; /* input string scan */
-			const duk_uint8_t *q_start; /* match string */
-			duk_size_t p_blen;
-			duk_size_t q_blen;
+			duk_int_t match_res;
 
 #if defined(DUK_USE_REGEXP_SUPPORT)
 			DUK_ASSERT(!is_global); /* single match always */
 #endif
 
-			p_start = duk_hstring_get_data_and_bytelen(h_input, &p_blen);
-			p_end = p_start + p_blen;
-			p = p_start;
-
-			h_search = duk_known_hstring(thr, 0);
-			q_start = duk_hstring_get_data_and_bytelen(h_search, &q_blen);
-
-			if (q_blen > p_blen) {
-				break; /* no match */
+			/* Use WTF-8 helper to find match.  In most cases the match is
+			 * a simple memcmp() but surrogate codepoints need special handling.
+			 * For example, an unpaired surrogate may match a paired one.
+			 */
+			match_res = duk_unicode_wtf8_search_forwards(thr, h_input, h_search, 0);
+			if (match_res < 0) {
+				break; /* No match. */
 			}
+			match_start_coff = (duk_uint32_t) match_res;
 
-			p_end -= q_blen; /* ensure full memcmp() fits in while */
-			DUK_ASSERT(p_end >= p);
-
-			match_start_coff = 0;
-
-			while (p <= p_end) {
-				DUK_ASSERT(p + q_blen <= duk_hstring_get_data(h_input) + duk_hstring_get_bytelen(h_input));
-				if (duk_memcmp((const void *) p, (const void *) q_start, (size_t) q_blen) == 0) {
-					duk_dup_0(thr);
-					h_match = duk_known_hstring(thr, -1);
+			duk_dup_0(thr);
+			h_match = duk_known_hstring_m1(thr);
 #if defined(DUK_USE_REGEXP_SUPPORT)
-					match_caps = 0;
+			match_num_caps = 0;
 #endif
-					goto found;
-				}
-
-				/* track utf-8 non-continuation bytes */
-				if ((p[0] & 0xc0) != 0x80) {
-					match_start_coff++;
-				}
-				p++;
-			}
-
-			/* not found */
-			break;
+			goto found;
 		}
 	found:
+		DUK_DD(DUK_DDPRINT("match found, match_start_coff=%ld, match=%!T", (long) match_start_coff, duk_get_tval(thr, -1)));
 
 		/* stack[0] = search value
 		 * stack[1] = replace value
 		 * stack[2] = input string
 		 * stack[3] = result buffer
-		 * stack[4] = regexp match OR match string
+		 * stack[4] = regexp match OR match string (= search value)
 		 */
 
-		match_start_boff = (duk_uint32_t) duk_heap_strcache_offset_char2byte(thr, h_input, match_start_coff);
+		/* Append input[end_of_last_match_coff,match_start_coff[ as WTF-8.
+		 * We rely on WTF-8 sanitization to deal with newly created surrogate
+		 * pairs.
+		 */
+		h_preserve = duk_push_wtf8_substring_hstring(thr, h_input, end_of_last_match_coff, match_start_coff);
+		DUK_BW_WRITE_ENSURE_HSTRING(thr, bw, h_preserve);
+		duk_pop_unsafe(thr);
 
-		tmp_sz = (duk_size_t) (match_start_boff - prev_match_end_boff);
-		DUK_BW_WRITE_ENSURE_BYTES(thr, bw, duk_hstring_get_data(h_input) + prev_match_end_boff, tmp_sz);
-
-		prev_match_end_boff = match_start_boff + duk_hstring_get_bytelen(h_match);
+		end_of_last_match_coff = match_start_coff + duk_hstring_get_charlen(h_match);
 
 		if (is_repl_func) {
 			duk_idx_t idx_args;
@@ -735,8 +652,8 @@ DUK_INTERNAL duk_ret_t duk_bi_string_prototype_replace(duk_hthread *thr) {
 #if defined(DUK_USE_REGEXP_SUPPORT)
 			if (is_regexp) {
 				duk_int_t idx;
-				duk_require_stack(thr, match_caps + 2);
-				for (idx = 0; idx < match_caps; idx++) {
+				duk_require_stack(thr, match_num_caps + 2);
+				for (idx = 0; idx < match_num_caps; idx++) {
 					/* match followed by capture(s) */
 					duk_get_prop_index(thr, 4, (duk_uarridx_t) idx);
 				}
@@ -755,10 +672,8 @@ DUK_INTERNAL duk_ret_t duk_bi_string_prototype_replace(duk_hthread *thr) {
 			duk_call(thr, duk_get_top(thr) - idx_args);
 			h_repl = duk_to_hstring_m1(thr); /* -> [ ... repl_value ] */
 			DUK_ASSERT(h_repl != NULL);
-
 			DUK_BW_WRITE_ENSURE_HSTRING(thr, bw, h_repl);
-
-			duk_pop(thr); /* repl_value */
+			duk_pop_unsafe(thr); /* repl_value */
 		} else {
 			r = r_start;
 
@@ -793,32 +708,38 @@ DUK_INTERNAL duk_ret_t duk_bi_string_prototype_replace(duk_hthread *thr) {
 					continue;
 				}
 				case DUK_ASC_GRAVE: {
-					tmp_sz = (duk_size_t) match_start_boff;
-					DUK_BW_WRITE_ENSURE_BYTES(thr, bw, duk_hstring_get_data(h_input), tmp_sz);
+					duk_hstring *h_part;
+
+					h_part = duk_push_wtf8_substring_hstring(thr, h_input, 0, match_start_coff);
+					DUK_BW_WRITE_ENSURE_HSTRING(thr, bw, h_part);
+					duk_pop_unsafe(thr);
 					r++;
 					continue;
 				}
 				case DUK_ASC_SINGLEQUOTE: {
-					duk_uint32_t match_end_boff;
+					duk_hstring *h_part;
+					duk_uint32_t match_end_coff;
+					duk_uint32_t part_start_coff;
 
-					/* Use match charlen instead of bytelen, just in case the input and
-					 * match codepoint encodings would have different lengths.
-					 */
-					/* XXX: charlen computed here, and also in char2byte helper. */
-					match_end_boff = (duk_uint32_t) duk_heap_strcache_offset_char2byte(
-					    thr,
-					    h_input,
-					    match_start_coff + (duk_uint_fast32_t) duk_hstring_get_charlen(h_match));
+					match_end_coff = match_start_coff + duk_hstring_get_charlen(h_match);
+					part_start_coff = match_end_coff;
+					if (part_start_coff > duk_hstring_get_charlen(h_input)) {
+						part_start_coff = duk_hstring_get_charlen(h_input);
+					}
 
-					tmp_sz = (duk_size_t) (duk_hstring_get_bytelen(h_input) - match_end_boff);
-					DUK_BW_WRITE_ENSURE_BYTES(thr, bw, duk_hstring_get_data(h_input) + match_end_boff, tmp_sz);
+					h_part = duk_push_wtf8_substring_hstring(thr,
+					                                         h_input,
+					                                         part_start_coff,
+					                                         duk_hstring_get_charlen(h_input));
+					DUK_BW_WRITE_ENSURE_HSTRING(thr, bw, h_part);
+					duk_pop_unsafe(thr);
 					r++;
 					continue;
 				}
 				default: {
 #if defined(DUK_USE_REGEXP_SUPPORT)
 					duk_int_t capnum, captmp, capadv;
-					/* XXX: optional check, match_caps is zero if no regexp,
+					/* XXX: optional check, match_num_caps is zero if no regexp,
 					 * so dollar will be interpreted literally anyway.
 					 */
 
@@ -836,23 +757,22 @@ DUK_INTERNAL duk_ret_t duk_bi_string_prototype_replace(duk_hthread *thr) {
 						ch3 = r[1];
 						if (ch3 >= DUK_ASC_0 && ch3 <= DUK_ASC_9) {
 							captmp = capnum * 10 + (ch3 - DUK_ASC_0);
-							if (captmp < match_caps) {
+							if (captmp < match_num_caps) {
 								capnum = captmp;
 								capadv = 2;
 							}
 						}
 					}
 
-					if (capnum > 0 && capnum < match_caps) {
-						DUK_ASSERT(is_regexp != 0); /* match_caps == 0 without regexps */
+					if (capnum > 0 && capnum < match_num_caps) {
+						DUK_ASSERT(is_regexp != 0); /* match_num_caps == 0 without regexps */
 
 						/* regexp res_obj is at offset 4 */
 						duk_get_prop_index(thr, 4, (duk_uarridx_t) capnum);
 						if (duk_is_string(thr, -1)) {
 							duk_hstring *h_tmp_str;
 
-							h_tmp_str = duk_known_hstring(thr, -1);
-
+							h_tmp_str = duk_known_hstring_m1(thr);
 							DUK_BW_WRITE_ENSURE_HSTRING(thr, bw, h_tmp_str);
 						} else {
 							/* undefined -> skip (replaced with empty) */
@@ -889,12 +809,14 @@ DUK_INTERNAL duk_ret_t duk_bi_string_prototype_replace(duk_hthread *thr) {
 	}
 
 	/* trailer */
-	tmp_sz = (duk_size_t) (duk_hstring_get_bytelen(h_input) - prev_match_end_boff);
-	DUK_BW_WRITE_ENSURE_BYTES(thr, bw, duk_hstring_get_data(h_input) + prev_match_end_boff, tmp_sz);
+
+	h_trailer = duk_push_wtf8_substring_hstring(thr, h_input, end_of_last_match_coff, duk_hstring_get_charlen(h_input));
+	DUK_BW_WRITE_ENSURE_HSTRING(thr, bw, h_trailer);
+	duk_pop_unsafe(thr);
 
 	DUK_ASSERT_TOP(thr, 4);
 	DUK_BW_COMPACT(thr, bw);
-	(void) duk_buffer_to_string(thr, -1); /* Safe if inputs are safe. */
+	(void) duk_buffer_to_string(thr, -1); /* Safe if inputs are safe, remaining unpaired surrogates paired here. */
 	return 1;
 }
 
@@ -915,9 +837,9 @@ DUK_INTERNAL duk_ret_t duk_bi_string_prototype_split(duk_hthread *thr) {
 	duk_bool_t is_regexp;
 #endif
 	duk_bool_t matched; /* set to 1 if any match exists (needed for empty input special case) */
-	duk_uint32_t prev_match_end_coff, prev_match_end_boff;
-	duk_uint32_t match_start_boff, match_start_coff;
-	duk_uint32_t match_end_boff, match_end_coff;
+	duk_uint32_t prev_match_end_coff;
+	duk_uint32_t match_start_coff;
+	duk_uint32_t match_end_coff;
 
 	h_input = duk_push_this_coercible_to_string(thr);
 	DUK_ASSERT(h_input != NULL);
@@ -960,7 +882,7 @@ DUK_INTERNAL duk_ret_t duk_bi_string_prototype_split(duk_hthread *thr) {
 		DUK_DCERROR_UNSUPPORTED(thr);
 #endif
 	} else {
-		duk_to_string(thr, 0);
+		h_sep = duk_to_hstring(thr, 0);
 #if defined(DUK_USE_REGEXP_SUPPORT)
 		is_regexp = 0;
 #endif
@@ -972,7 +894,6 @@ DUK_INTERNAL duk_ret_t duk_bi_string_prototype_split(duk_hthread *thr) {
 	 * stack[3] = result array
 	 */
 
-	prev_match_end_boff = 0;
 	prev_match_end_coff = 0;
 	arr_idx = 0;
 	matched = 0;
@@ -1001,7 +922,6 @@ DUK_INTERNAL duk_ret_t duk_bi_string_prototype_split(duk_hthread *thr) {
 			duk_get_prop_stridx_short(thr, -1, DUK_STRIDX_INDEX);
 			DUK_ASSERT(duk_is_number(thr, -1));
 			match_start_coff = duk_get_uint(thr, -1);
-			match_start_boff = (duk_uint32_t) duk_heap_strcache_offset_char2byte(thr, h_input, match_start_coff);
 			duk_pop(thr);
 
 			if (match_start_coff == duk_hstring_get_charlen(h_input)) {
@@ -1013,11 +933,10 @@ DUK_INTERNAL duk_ret_t duk_bi_string_prototype_split(duk_hthread *thr) {
 			duk_get_prop_stridx_short(thr, 0, DUK_STRIDX_LAST_INDEX);
 			DUK_ASSERT(duk_is_number(thr, -1));
 			match_end_coff = duk_get_uint(thr, -1);
-			match_end_boff = (duk_uint32_t) duk_heap_strcache_offset_char2byte(thr, h_input, match_end_coff);
 			duk_pop(thr);
 
 			/* empty match -> bump and continue */
-			if (prev_match_end_boff == match_end_boff) {
+			if (prev_match_end_coff == match_end_coff) {
 				duk_push_uint(thr, (duk_uint_t) (match_end_coff + 1));
 				duk_put_prop_stridx_short(thr, 0, DUK_STRIDX_LAST_INDEX);
 				duk_pop(thr);
@@ -1027,23 +946,11 @@ DUK_INTERNAL duk_ret_t duk_bi_string_prototype_split(duk_hthread *thr) {
 #else /* DUK_USE_REGEXP_SUPPORT */
 		{ /* unconditionally */
 #endif /* DUK_USE_REGEXP_SUPPORT */
-			const duk_uint8_t *p_start, *p_end, *p; /* input string scan */
-			const duk_uint8_t *q_start; /* match string */
-			duk_size_t p_blen, q_blen, q_clen;
-
-			p_start = duk_hstring_get_data_and_bytelen(h_input, &p_blen);
-			p_end = p_start + p_blen;
-			p = p_start + prev_match_end_boff;
-
-			h_sep = duk_known_hstring(thr, 0); /* symbol already rejected above */
-			q_start = duk_hstring_get_data_and_bytelen(h_sep, &q_blen);
-			q_clen = (duk_size_t) duk_hstring_get_charlen(h_sep);
-
-			p_end -= q_blen; /* ensure full memcmp() fits in while */
+			duk_int_t search_res;
 
 			match_start_coff = prev_match_end_coff;
 
-			if (q_blen == 0) {
+			if (duk_hstring_get_charlen(h_sep) == 0) {
 				/* Handle empty separator case: it will always match, and always
 				 * triggers the check in step 13.c.iii initially.  Note that we
 				 * must skip to either end of string or start of first codepoint,
@@ -1055,31 +962,18 @@ DUK_INTERNAL duk_ret_t duk_bi_string_prototype_split(duk_hthread *thr) {
 				matched = 1; /* empty separator can always match */
 
 				match_start_coff++;
-				p++;
-				while (p < p_end) {
-					if ((p[0] & 0xc0) != 0x80) {
-						goto found;
-					}
-					p++;
+				if (match_start_coff >= duk_hstring_get_charlen(h_input)) {
+					goto not_found;
 				}
+				goto found;
+			}
+
+			search_res = duk_unicode_wtf8_search_forwards(thr, h_input, h_sep, match_start_coff);
+			if (search_res < 0) {
 				goto not_found;
 			}
-
-			DUK_ASSERT(q_blen > 0 && q_clen > 0);
-			while (p <= p_end) {
-				DUK_ASSERT(p + q_blen <= duk_hstring_get_data(h_input) + duk_hstring_get_bytelen(h_input));
-				DUK_ASSERT(q_blen > 0); /* no issues with empty memcmp() */
-				if (duk_memcmp((const void *) p, (const void *) q_start, (size_t) q_blen) == 0) {
-					/* never an empty match, so step 13.c.iii can't be triggered */
-					goto found;
-				}
-
-				/* track utf-8 non-continuation bytes */
-				if ((p[0] & 0xc0) != 0x80) {
-					match_start_coff++;
-				}
-				p++;
-			}
+			match_start_coff = (duk_uint32_t) search_res;
+			goto found;
 
 		not_found:
 			/* not found */
@@ -1087,13 +981,11 @@ DUK_INTERNAL duk_ret_t duk_bi_string_prototype_split(duk_hthread *thr) {
 
 		found:
 			matched = 1;
-			match_start_boff = (duk_uint32_t) (p - p_start);
-			match_end_coff = (duk_uint32_t) (match_start_coff + q_clen); /* constrained by string length */
-			match_end_boff = (duk_uint32_t) (match_start_boff + q_blen); /* ditto */
+			match_end_coff =
+			    (duk_uint32_t) (match_start_coff + duk_hstring_get_charlen(h_sep)); /* constrained by string length */
 
 			/* empty match (may happen with empty separator) -> bump and continue */
-			if (prev_match_end_boff == match_end_boff) {
-				prev_match_end_boff++;
+			if (prev_match_end_coff == match_end_coff) {
 				prev_match_end_coff++;
 				continue;
 			}
@@ -1106,17 +998,12 @@ DUK_INTERNAL duk_ret_t duk_bi_string_prototype_split(duk_hthread *thr) {
 		 * stack[4] = regexp res_obj (if is_regexp)
 		 */
 
-		DUK_DDD(DUK_DDDPRINT("split; match_start b=%ld,c=%ld, match_end b=%ld,c=%ld, prev_end b=%ld,c=%ld",
-		                     (long) match_start_boff,
+		DUK_DDD(DUK_DDDPRINT("split; match_start c=%ld, match_end c=%ld, prev_end c=%ld",
 		                     (long) match_start_coff,
-		                     (long) match_end_boff,
 		                     (long) match_end_coff,
-		                     (long) prev_match_end_boff,
 		                     (long) prev_match_end_coff));
 
-		duk_push_lstring(thr,
-		                 (const char *) (duk_hstring_get_data(h_input) + prev_match_end_boff),
-		                 (duk_size_t) (match_start_boff - prev_match_end_boff));
+		(void) duk_push_wtf8_substring_hstring(thr, h_input, prev_match_end_coff, match_start_coff);
 		duk_put_prop_index(thr, 3, arr_idx);
 		arr_idx++;
 		if (arr_idx >= limit) {
@@ -1148,24 +1035,21 @@ DUK_INTERNAL duk_ret_t duk_bi_string_prototype_split(duk_hthread *thr) {
 			/* no action */
 		}
 
-		prev_match_end_boff = match_end_boff;
 		prev_match_end_coff = match_end_coff;
 		continue;
 	} /* for */
 
 	/* Combined step 11 (empty string special case) and 14-15. */
 
-	DUK_DDD(DUK_DDDPRINT("split trailer; prev_end b=%ld,c=%ld", (long) prev_match_end_boff, (long) prev_match_end_coff));
+	DUK_DDD(DUK_DDDPRINT("split trailer; prev_end c=%ld", (long) prev_match_end_coff));
 
-	if (duk_hstring_get_bytelen(h_input) > 0 || !matched) {
+	if (duk_hstring_get_charlen(h_input) > 0 || !matched) {
 		/* Add trailer if:
-		 *   a) non-empty input
+		 *   a) non-empty input; or
 		 *   b) empty input and no (zero size) match found (step 11)
 		 */
 
-		duk_push_lstring(thr,
-		                 (const char *) duk_hstring_get_data(h_input) + prev_match_end_boff,
-		                 (duk_size_t) (duk_hstring_get_bytelen(h_input) - prev_match_end_boff));
+		(void) duk_push_wtf8_substring_hstring(thr, h_input, prev_match_end_coff, duk_hstring_get_charlen(h_input));
 		duk_put_prop_index(thr, 3, arr_idx);
 		/* No arr_idx update or limit check */
 	}
@@ -1503,12 +1387,18 @@ done:
 DUK_INTERNAL duk_ret_t duk_bi_string_prototype_startswith_endswith(duk_hthread *thr) {
 	duk_int_t magic;
 	duk_hstring *h_target;
-	duk_size_t blen_target;
+	duk_size_t clen_target;
 	duk_hstring *h_search;
-	duk_size_t blen_search;
+	duk_size_t clen_search;
 	duk_int_t off;
 	duk_bool_t result = 0;
-	duk_size_t blen_left;
+	duk_hstring *h_sub;
+
+	/* Prior to WTF-8 we could do byte compare at the start or end of the
+	 * string.  With WTF-8 this no longer works when non-BMP characters
+	 * and surrogates are involved.  Initial WTF-8 implementation is just
+	 * take a substring and compare it.
+	 */
 
 	/* Because string byte lengths are in [0,DUK_INT_MAX] it's safe to
 	 * subtract two string lengths without overflow.
@@ -1525,15 +1415,15 @@ DUK_INTERNAL duk_ret_t duk_bi_string_prototype_startswith_endswith(duk_hthread *
 
 	/* Careful to avoid pointer overflows in the matching logic. */
 
-	blen_target = duk_hstring_get_bytelen(h_target);
-	blen_search = duk_hstring_get_bytelen(h_search);
+	clen_target = duk_hstring_get_charlen(h_target);
+	clen_search = duk_hstring_get_charlen(h_search);
 
 #if 0
 	/* If search string is longer than the target string, we can
 	 * never match.  Could check explicitly, but should be handled
 	 * correctly below.
 	 */
-	if (blen_search > blen_target) {
+	if (clen_search > clen_target) {
 		goto finish;
 	}
 #endif
@@ -1541,49 +1431,35 @@ DUK_INTERNAL duk_ret_t duk_bi_string_prototype_startswith_endswith(duk_hthread *
 	off = 0;
 	if (duk_is_undefined(thr, 1)) {
 		if (magic) {
-			off = (duk_int_t) blen_target - (duk_int_t) blen_search;
+			off = (duk_int_t) clen_target - (duk_int_t) clen_search;
 		} else {
 			DUK_ASSERT(off == 0);
 		}
 	} else {
-		duk_int_t len;
-		duk_int_t pos;
+		DUK_ASSERT(DUK_HSTRING_MAX_CHARLEN <= DUK_INT_MAX);
+		off = duk_to_int_clamped(thr, 1, 0, clen_target);
+		DUK_ASSERT(off >= 0 && off <= (duk_int_t) clen_target);
 
-		DUK_ASSERT(DUK_HSTRING_MAX_BYTELEN <= DUK_INT_MAX);
-		len = (duk_int_t) duk_hstring_get_charlen(h_target);
-		pos = duk_to_int_clamped(thr, 1, 0, len);
-		DUK_ASSERT(pos >= 0 && pos <= len);
-
-		off = (duk_int_t) duk_heap_strcache_offset_char2byte(thr, h_target, (duk_uint_fast32_t) pos);
 		if (magic) {
-			off -= (duk_int_t) blen_search;
+			off -= (duk_int_t) clen_search;
 		}
 	}
-	if (off < 0 || off > (duk_int_t) blen_target) {
+	DUK_DD(DUK_DDPRINT("clen_target=%ld, clen_search=%ld, off=%ld", (long) clen_target, (long) clen_search, (long) off));
+	if (off < 0 || off > (duk_int_t) clen_target) {
+		goto finish;
+	}
+	if (off + (duk_int_t) clen_search > (duk_int_t) clen_target) {
 		goto finish;
 	}
 
-	/* The main comparison can be done using a memcmp() rather than
-	 * doing codepoint comparisons: for CESU-8 strings there is a
-	 * canonical representation for every codepoint.  But we do need
-	 * to deal with the char/byte offset translation to find the
-	 * comparison range.
-	 */
+	h_sub = duk_push_wtf8_substring_hstring(thr, h_target, (duk_size_t) off, (duk_size_t) (off + (duk_int_t) clen_search));
+	result = (h_sub == h_search); /* Rely on interning. */
+	DUK_DD(DUK_DDPRINT("h_search=%!O, h_sub=%!O => result %ld", h_search, h_sub, (long) result));
+	/* Leave substring on stack, cleanup by call handling. */
 
-	DUK_ASSERT(off >= 0);
-	DUK_ASSERT((duk_size_t) off <= blen_target);
-	blen_left = blen_target - (duk_size_t) off;
-	if (blen_left >= blen_search) {
-		const duk_uint8_t *p_cmp_start = (const duk_uint8_t *) duk_hstring_get_data(h_target) + off;
-		const duk_uint8_t *p_search = (const duk_uint8_t *) duk_hstring_get_data(h_search);
-		if (duk_memcmp_unsafe((const void *) p_cmp_start, (const void *) p_search, (size_t) blen_search) == 0) {
-			result = 1;
-		}
-	}
-
+	/* Fall through. */
 finish:
-	duk_push_boolean(thr, result);
-	return 1;
+	return duk_push_boolean_return1(thr, result);
 }
 #endif /* DUK_USE_ES6 */
 
@@ -1605,8 +1481,7 @@ DUK_INTERNAL duk_ret_t duk_bi_string_prototype_includes(duk_hthread *thr) {
 	DUK_ASSERT(pos >= 0 && pos <= len);
 
 	pos = duk__str_search_shared(thr, h, h_search, pos, 0 /*backwards*/);
-	duk_push_boolean(thr, pos >= 0);
-	return 1;
+	return duk_push_boolean_return1(thr, pos >= 0);
 }
 #endif /* DUK_USE_ES6 */
 #endif /* DUK_USE_STRING_BUILTIN */

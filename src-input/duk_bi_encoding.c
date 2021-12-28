@@ -87,6 +87,20 @@ DUK_LOCAL duk_codepoint_t duk__utf8_decode_next(duk__decode_context *dec_ctx, du
 				dec_ctx->lower = 0xa0;
 				DUK_ASSERT(dec_ctx->upper == 0xbf);
 			} else if (x == 0xed) {
+				/* This restricts away U+D800 to U+DFFF:
+				 * >>> u'\ud7ff'.encode('utf-8').encode('hex')
+				 * 'ed9fbf'
+				 * >>> u'\ud800'.encode('utf-8').encode('hex')
+				 * 'eda080'
+				 * >>> u'\udbff'.encode('utf-8').encode('hex')
+				 * 'edafbf'
+				 * >>> u'\udc00'.encode('utf-8').encode('hex')
+				 * 'edb080'
+				 * >>> u'\udfff'.encode('utf-8').encode('hex')
+				 * 'edbfbf'
+				 * >>> u'\ue000'.encode('utf-8').encode('hex')
+				 * 'ee8080'
+				 */
 				DUK_ASSERT(dec_ctx->lower == 0x80);
 				dec_ctx->upper = 0x9f;
 			}

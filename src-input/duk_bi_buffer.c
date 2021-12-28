@@ -1109,8 +1109,7 @@ DUK_INTERNAL duk_ret_t duk_bi_arraybuffer_isview(duk_hthread *thr) {
 			      (DUK_HOBJECT_GET_CLASS_NUMBER(h_obj) == DUK_HOBJECT_CLASS_DATAVIEW);
 		}
 	}
-	duk_push_boolean(thr, ret);
-	return 1;
+	return duk_push_boolean_return1(thr, ret);
 }
 #endif /* DUK_USE_BUFFEROBJECT_SUPPORT */
 
@@ -2052,8 +2051,7 @@ DUK_INTERNAL duk_ret_t duk_bi_nodejs_buffer_is_encoding(duk_hthread *thr) {
 
 	encoding = duk_to_string(thr, 0);
 	DUK_ASSERT(duk_is_string(thr, 0)); /* guaranteed by duk_to_string() */
-	duk_push_boolean(thr, DUK_STRCMP(encoding, "utf8") == 0);
-	return 1;
+	return duk_push_boolean_return1(thr, DUK_STRCMP(encoding, "utf8") == 0);
 }
 #endif /* DUK_USE_BUFFEROBJECT_SUPPORT */
 
@@ -2079,8 +2077,7 @@ DUK_INTERNAL duk_ret_t duk_bi_nodejs_buffer_is_buffer(duk_hthread *thr) {
 		}
 	}
 
-	duk_push_boolean(thr, ret);
-	return 1;
+	return duk_push_boolean_return1(thr, ret);
 }
 #endif /* DUK_USE_BUFFEROBJECT_SUPPORT */
 

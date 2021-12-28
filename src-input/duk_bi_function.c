@@ -447,7 +447,6 @@ DUK_INTERNAL duk_ret_t duk_bi_function_prototype_hasinstance(duk_hthread *thr) {
 	duk_bool_t ret;
 
 	ret = duk_js_instanceof_ordinary(thr, DUK_GET_TVAL_POSIDX(thr, 0), DUK_GET_THIS_TVAL_PTR(thr));
-	duk_push_boolean(thr, ret);
-	return 1;
+	return duk_push_boolean_return1(thr, ret);
 }
 #endif /* DUK_USE_SYMBOL_BUILTIN */

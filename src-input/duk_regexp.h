@@ -40,15 +40,19 @@
 #define DUK_RE_FLAG_IGNORE_CASE (1U << 1)
 #define DUK_RE_FLAG_MULTILINE   (1U << 2)
 
+typedef duk_int_t duk_re_sp_t; /* RegExp executor string pointer. */
+
 struct duk_re_matcher_ctx {
 	duk_hthread *thr;
 
 	duk_uint32_t re_flags;
+	duk_hstring *h_input;
 	const duk_uint8_t *input;
 	const duk_uint8_t *input_end;
 	const duk_uint8_t *bytecode;
 	const duk_uint8_t *bytecode_end;
-	const duk_uint8_t **saved; /* allocated from valstack (fixed buffer) */
+	duk_re_sp_t *saved; /* allocated from valstack (fixed buffer) */
+	duk_re_sp_t sp_end;
 	duk_uint32_t nsaved;
 	duk_uint32_t recursion_depth;
 	duk_uint32_t recursion_limit;
