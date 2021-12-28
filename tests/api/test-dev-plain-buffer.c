@@ -56,14 +56,16 @@ static duk_ret_t test_buffer_to_string(duk_context *ctx, void *udata) {
 
 /*===
 *** test_to_buffer (duk_safe_call)
-length: 7
+length: 9
 [0] = 102
 [1] = 111
 [2] = 111
-[3] = 255
-[4] = 98
-[5] = 97
-[6] = 114
+[3] = 239
+[4] = 191
+[5] = 189
+[6] = 98
+[7] = 97
+[8] = 114
 final top: 1
 ==> rc=0, result='undefined'
 ===*/
