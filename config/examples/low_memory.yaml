@@ -75,7 +75,6 @@ DUK_USE_STRTAB_RESIZE_CHECK_MASK: 255  # -""-
 DUK_USE_LITCACHE_SIZE: false
 
 DUK_USE_HSTRING_ARRIDX: false
-DUK_USE_HSTRING_LAZY_CLEN: false  # non-lazy charlen is smaller
 
 # Only add a hash table for quite large objects to conserve memory.  Even
 # lower memory targets usually drop hash part support entirely.
@@ -95,7 +94,6 @@ DUK_USE_CACHE_CATCHER: false
 #DUK_USE_BUFLEN16: true
 #DUK_USE_OBJSIZES16: true
 #DUK_USE_HSTRING_CLEN: false
-#DUK_USE_HSTRING_LAZY_CLEN: false
 #DUK_USE_HOBJECT_HASH_PART: false
 #DUK_USE_HEAPPTR16
 #DUK_USE_HEAPPTR_DEC16

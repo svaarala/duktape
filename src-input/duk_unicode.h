@@ -256,9 +256,18 @@ DUK_INTERNAL_DECL duk_codepoint_t duk_unicode_re_canonicalize_char(duk_hthread *
 DUK_INTERNAL_DECL duk_small_int_t duk_unicode_re_is_wordchar(duk_codepoint_t cp);
 #endif
 DUK_INTERNAL_DECL duk_ucodepoint_t duk_unicode_wtf8_decode_known(const duk_uint8_t *p);
-DUK_INTERNAL_DECL duk_uint32_t duk_unicode_wtf8_sanitize_string(const duk_uint8_t *str, duk_uint32_t blen, duk_uint8_t *out);
-DUK_INTERNAL_DECL duk_uint32_t duk_unicode_wtf8_sanitize_symbol(const duk_uint8_t *str, duk_uint32_t blen, duk_uint8_t *out);
-DUK_INTERNAL_DECL duk_uint32_t duk_unicode_wtf8_sanitize_detect(const duk_uint8_t *str, duk_uint32_t blen, duk_uint8_t *out);
+DUK_INTERNAL_DECL duk_uint32_t duk_unicode_wtf8_sanitize_string(const duk_uint8_t *str,
+                                                                duk_uint32_t blen,
+                                                                duk_uint8_t *out,
+                                                                duk_uint32_t *out_charlen);
+DUK_INTERNAL_DECL duk_uint32_t duk_unicode_wtf8_sanitize_symbol(const duk_uint8_t *str,
+                                                                duk_uint32_t blen,
+                                                                duk_uint8_t *out,
+                                                                duk_uint32_t *out_charlen);
+DUK_INTERNAL_DECL duk_uint32_t duk_unicode_wtf8_sanitize_detect(const duk_uint8_t *str,
+                                                                duk_uint32_t blen,
+                                                                duk_uint8_t *out,
+                                                                duk_uint32_t *out_charlen);
 DUK_INTERNAL_DECL duk_uint32_t duk_unicode_wtf8_sanitize_keepcheck(const duk_uint8_t *str, duk_uint32_t blen);
 DUK_INTERNAL_DECL duk_size_t duk_unicode_wtf8_charlength(const duk_uint8_t *data, duk_size_t blen);
 DUK_INTERNAL_DECL duk_hstring *duk_push_wtf8_substring_hstring(duk_hthread *thr,
@@ -266,6 +275,7 @@ DUK_INTERNAL_DECL duk_hstring *duk_push_wtf8_substring_hstring(duk_hthread *thr,
                                                                duk_size_t start_offset,
                                                                duk_size_t end_offset);
 DUK_INTERNAL_DECL duk_bool_t duk_unicode_is_valid_wtf8(const duk_uint8_t *data, duk_size_t blen);
+DUK_INTERNAL_DECL duk_bool_t duk_unicode_is_valid_utf8(const duk_uint8_t *data, duk_size_t blen);
 DUK_INTERNAL_DECL void duk_unicode_wtf8_to_cesu8(duk_hthread *thr, const duk_uint8_t *data, duk_size_t blen);
 DUK_INTERNAL_DECL duk_ucodepoint_t duk_unicode_wtf8_charcodeat_helper(duk_hthread *thr,
                                                                       duk_hstring *h,
@@ -273,11 +283,11 @@ DUK_INTERNAL_DECL duk_ucodepoint_t duk_unicode_wtf8_charcodeat_helper(duk_hthrea
                                                                       duk_bool_t surrogate_aware);
 DUK_INTERNAL_DECL duk_int_t duk_unicode_wtf8_search_forwards(duk_hthread *thr,
                                                              duk_hstring *h_input,
-                                                             duk_hstring *h_match,
+                                                             duk_hstring *h_search,
                                                              duk_uint32_t start_charoff);
 DUK_INTERNAL_DECL duk_int_t duk_unicode_wtf8_search_backwards(duk_hthread *thr,
                                                               duk_hstring *h_input,
-                                                              duk_hstring *h_match,
+                                                              duk_hstring *h_search,
                                                               duk_uint32_t start_charoff);
 
 #endif /* DUK_UNICODE_H_INCLUDED */

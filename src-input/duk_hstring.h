@@ -36,12 +36,6 @@
 /* Maximum string charlen equals maximum bytelen for the ASCII case. */
 #define DUK_HSTRING_MAX_CHARLEN DUK_HSTRING_MAX_BYTELEN
 
-/* XXX: could add flags for "is valid CESU-8" (ECMAScript compatible strings),
- * "is valid UTF-8", "is valid extended UTF-8" (internal strings are not,
- * regexp bytecode is), and "contains non-BMP characters".  These are not
- * needed right now.
- */
-
 /* With lowmem builds the high 16 bits of duk_heaphdr are used for other
  * purposes, so this leaves 7 duk_heaphdr flags and 9 duk_hstring flags.
  */
@@ -173,15 +167,13 @@ struct duk_hstring_external {
 
 DUK_INTERNAL_DECL duk_bool_t duk_hstring_is_ascii(duk_hstring *h);
 DUK_INTERNAL_DECL duk_bool_t duk_hstring_is_empty(duk_hstring *h);
+DUK_INTERNAL_DECL duk_bool_t duk_hstring_is_symbol_initial_byte(duk_uint8_t t);
 DUK_INTERNAL_DECL duk_uint32_t duk_hstring_get_hash(duk_hstring *h);
 DUK_INTERNAL_DECL void duk_hstring_set_hash(duk_hstring *h, duk_uint32_t hash);
 DUK_INTERNAL_DECL duk_size_t duk_hstring_get_bytelen(duk_hstring *h);
 DUK_INTERNAL_DECL void duk_hstring_set_bytelen(duk_hstring *h, duk_size_t len);
 DUK_INTERNAL_DECL duk_size_t duk_hstring_get_charlen(duk_hstring *h);
-#if !defined(DUK_USE_HSTRING_LAZY_CLEN)
-DUK_INTERNAL_DECL void duk_hstring_init_charlen(duk_hstring *h);
-#endif
-/* No duk_hstring_set_charlen(), set via duk_hstring_init_charlen(). */
+DUK_INTERNAL_DECL void duk_hstring_set_charlen(duk_hstring *h, duk_size_t len);
 DUK_INTERNAL_DECL duk_uarridx_t duk_hstring_get_arridx_fast(duk_hstring *h);
 DUK_INTERNAL_DECL duk_uarridx_t duk_hstring_get_arridx_fast_known(duk_hstring *h);
 DUK_INTERNAL_DECL duk_uarridx_t duk_hstring_get_arridx_slow(duk_hstring *h);

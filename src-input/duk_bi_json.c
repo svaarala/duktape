@@ -1417,22 +1417,12 @@ DUK_LOCAL void duk__json_enc_quote_string(duk_json_enc_ctx *js_ctx, duk_hstring 
 				if (need_esc) {
 					q = duk__emit_esc_auto_fast(js_ctx, cp, q);
 				} else {
-					/* Emit without escaping, but split codepoints in
-					 * [U+10000,U+10FFFF] into surrogates for output.
+					/* Conceptually we should split the non-BMP codepoint
+					 * into a surrogate pair for output.  But since the
+					 * surrogate pair would be combined in WTF-8 sanitization
+					 * we can just emit the UTF-8 codepoint as is.
 					 */
 					DUK_RAW_WRITEINC_XUTF8(q, cp);
-#if 0
-					if (cp >= 0x10000UL) {
-						duk_ucodepoint_t hi, lo;
-						cp -= 0x10000UL;
-						hi = 0xd800UL + (cp >> 10);
-						lo = 0xdc00UL + (cp & 0x3ffUL);
-						DUK_RAW_WRITEINC_XUTF8(q, hi);
-						DUK_RAW_WRITEINC_XUTF8(q, lo);
-					} else {
-						DUK_RAW_WRITEINC_XUTF8(q, cp);
-					}
-#endif
 				}
 			}
 		}

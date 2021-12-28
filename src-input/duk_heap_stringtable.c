@@ -145,13 +145,12 @@ DUK_LOCAL void duk__strtable_assert_checks(duk_heap *heap) {
 DUK_LOCAL duk_hstring *duk__strtable_alloc_hstring(duk_heap *heap,
                                                    const duk_uint8_t *str,
                                                    duk_uint32_t blen,
+                                                   duk_uint32_t clen,
                                                    duk_uint32_t strhash,
                                                    const duk_uint8_t *extdata) {
 	duk_hstring *res;
 	const duk_uint8_t *data;
-#if !defined(DUK_USE_HSTRING_ARRIDX)
-	duk_uarridx_t dummy;
-#endif
+	duk_uarridx_t arridx;
 
 	DUK_ASSERT(heap != NULL);
 	DUK_UNREF(extdata);
@@ -162,6 +161,7 @@ DUK_LOCAL duk_hstring *duk__strtable_alloc_hstring(duk_heap *heap,
 		DUK_D(DUK_DPRINT("16-bit string blen/clen active and blen over 16 bits, reject intern"));
 		goto alloc_error;
 	}
+	DUK_ASSERT(clen <= 0xffffUL);
 #endif
 
 	/* XXX: Memzeroing the allocated structure is not really necessary
@@ -209,52 +209,54 @@ DUK_LOCAL duk_hstring *duk__strtable_alloc_hstring(duk_heap *heap,
 	duk_hstring_set_bytelen(res, blen);
 	duk_hstring_set_hash(res, strhash);
 
-	DUK_ASSERT(!DUK_HSTRING_HAS_ARRIDX(res));
-#if defined(DUK_USE_HSTRING_ARRIDX)
-	res->arridx = duk_js_to_arrayindex_string(data, blen);
-	if (res->arridx != DUK_HSTRING_NO_ARRAY_INDEX) {
-#else
-	dummy = duk_js_to_arrayindex_string(data, blen);
-	if (dummy != DUK_HSTRING_NO_ARRAY_INDEX) {
-#endif
-		/* Array index strings cannot be symbol strings,
-		 * and they're always pure ASCII so blen == clen.
-		 */
-		DUK_HSTRING_SET_ARRIDX(res);
-		DUK_HSTRING_SET_ASCII(res);
+	if (blen == clen) {
+		DUK_ASSERT(!duk_hstring_is_symbol_initial_byte(data[0])); /* blen > 0, clen = 0 for symbols */
 		DUK_ASSERT(duk_unicode_wtf8_charlength(data, (duk_size_t) blen) == blen);
+
+		DUK_HSTRING_SET_ASCII(res);
+		duk_hstring_set_charlen(res, blen);
+
+		arridx = duk_js_to_arrayindex_string(data, blen);
+#if defined(DUK_USE_HSTRING_ARRIDX)
+		res->arridx = arridx;
+#endif
+		if (arridx != DUK_HSTRING_NO_ARRAY_INDEX) {
+			/* Array index strings cannot be symbol strings,
+			 * and they're always pure ASCII so blen == clen.
+			 */
+			DUK_HSTRING_SET_ARRIDX(res);
+		} else {
+			DUK_ASSERT(!DUK_HSTRING_HAS_ARRIDX(res));
+		}
 	} else {
+		DUK_ASSERT(!DUK_HSTRING_HAS_ASCII(res));
+		DUK_ASSERT(!DUK_HSTRING_HAS_ARRIDX(res));
+		DUK_ASSERT(duk_js_to_arrayindex_string(data, blen) == DUK_HSTRING_NO_ARRAY_INDEX);
+#if defined(DUK_USE_HSTRING_ARRIDX)
+		res->arridx = DUK_HSTRING_NO_ARRAY_INDEX;
+#endif
+
 		/* Because 'data' is NUL-terminated, we don't need a
 		 * blen > 0 check here.  For NUL (0x00) the symbol
 		 * checks will be false.
 		 */
+		duk_hstring_set_charlen(res, clen);
 		if (DUK_UNLIKELY(data[0] >= 0x80U)) {
 			if (data[0] <= 0x81) {
 				DUK_HSTRING_SET_SYMBOL(res);
+				DUK_ASSERT(clen == 0); /* Caller ensures */
 			} else if (data[0] == 0x82U || data[0] == 0xffU) {
 				DUK_HSTRING_SET_HIDDEN(res);
 				DUK_HSTRING_SET_SYMBOL(res);
+				DUK_ASSERT(clen == 0); /* Caller ensures */
 			}
 		}
-
-		/* Using an explicit 'ASCII' flag has larger footprint (one call site
-		 * only) but is quite useful for the case when there's no explicit
-		 * 'clen' in duk_hstring.
-		 *
-		 * The flag is set lazily for RAM strings.
-		 */
-		DUK_ASSERT(!DUK_HSTRING_HAS_ASCII(res));
-
-#if defined(DUK_USE_HSTRING_LAZY_CLEN)
-		/* Charlen initialized to 0, updated on-the-fly. */
-#else
-		duk_hstring_init_charlen(res); /* Also sets ASCII flag. */
-#endif
 	}
 
-	DUK_DDD(DUK_DDDPRINT("interned string, hash=0x%08lx, blen=%ld, has_arridx=%ld, has_extdata=%ld",
+	DUK_DDD(DUK_DDDPRINT("interned string, hash=0x%08lx, blen=%ld, clen=%ld, has_arridx=%ld, has_extdata=%ld",
 	                     (unsigned long) duk_hstring_get_hash(res),
 	                     (long) duk_hstring_get_bytelen(res),
+	                     (long) duk_hstring_get_charlen(res),
 	                     (long) (DUK_HSTRING_HAS_ARRIDX(res) ? 1 : 0),
 	                     (long) (DUK_HSTRING_HAS_EXTDATA(res) ? 1 : 0)));
 
@@ -564,7 +566,11 @@ DUK_LOCAL void duk__strtable_resize_torture(duk_heap *heap) {
  *  Raw intern; string already checked not to be present.
  */
 
-DUK_LOCAL duk_hstring *duk__strtable_do_intern(duk_heap *heap, const duk_uint8_t *str, duk_uint32_t blen, duk_uint32_t strhash) {
+DUK_LOCAL duk_hstring *duk__strtable_do_intern(duk_heap *heap,
+                                               const duk_uint8_t *str,
+                                               duk_uint32_t blen,
+                                               duk_uint32_t clen,
+                                               duk_uint32_t strhash) {
 	duk_hstring *res;
 	const duk_uint8_t *extdata;
 #if defined(DUK_USE_STRTAB_PTRCOMP)
@@ -573,10 +579,11 @@ DUK_LOCAL duk_hstring *duk__strtable_do_intern(duk_heap *heap, const duk_uint8_t
 	duk_hstring **slot;
 #endif
 
-	DUK_DDD(DUK_DDDPRINT("do_intern: heap=%p, str=%p, blen=%lu, strhash=%lx, st_size=%lu, st_count=%lu, load=%lf",
+	DUK_DDD(DUK_DDDPRINT("do_intern: heap=%p, str=%p, blen=%lu, clen=%lu, strhash=%lx, st_size=%lu, st_count=%lu, load=%lf",
 	                     (void *) heap,
 	                     (const void *) str,
 	                     (unsigned long) blen,
+	                     (unsigned long) clen,
 	                     (unsigned long) strhash,
 	                     (unsigned long) heap->st_size,
 	                     (unsigned long) heap->st_count,
@@ -635,7 +642,7 @@ DUK_LOCAL duk_hstring *duk__strtable_do_intern(duk_heap *heap, const duk_uint8_t
 	 * a buffer used as a data area for 'str'.
 	 */
 
-	res = duk__strtable_alloc_hstring(heap, str, blen, strhash, extdata);
+	res = duk__strtable_alloc_hstring(heap, str, blen, clen, strhash, extdata);
 
 	/* Allow side effects again: GC must be avoided until duk_hstring
 	 * result (if successful) has been INCREF'd.
@@ -731,6 +738,7 @@ DUK_INTERNAL duk_hstring *duk_heap_strtable_intern(duk_heap *heap, const duk_uin
 	duk_uint8_t tmp[DUK__WTF8_INTERN_SHORT_LIMIT * 3];
 	duk_uint8_t *tmp_alloc = NULL;
 	duk_uint32_t blen_keep;
+	duk_uint32_t clen;
 
 	DUK_DDD(DUK_DDDPRINT("intern check: heap=%p, str=%p, blen=%lu", (void *) heap, (const void *) str, (unsigned long) blen));
 
@@ -745,7 +753,7 @@ DUK_INTERNAL duk_hstring *duk_heap_strtable_intern(duk_heap *heap, const duk_uin
 	 * with U+FFFD replacements and combining valid surrogate pairs.  Optimize
 	 * for not needing to do so, i.e. input string is already valid WTF-8.
 	 */
-
+	clen = 0;
 	blen_keep = duk_unicode_wtf8_sanitize_keepcheck(str, blen);
 	DUK_ASSERT(blen_keep <= blen);
 	if (DUK_LIKELY(blen_keep == blen)) {
@@ -756,24 +764,28 @@ DUK_INTERNAL duk_hstring *duk_heap_strtable_intern(duk_heap *heap, const duk_uin
 		 * Also Symbol strings are handled here now: keepcheck must
 		 * return blen_keep == blen for them.
 		 */
+		DUK_STATS_INC(heap, stats_strtab_intern_notemp);
 	} else {
 		/* 'blen_keep' bytes can be kept, but the rest may need
 		 * some rewrites.
-		 *
-		 * Symbols are handled above (keep without rewrite).
 		 */
-		duk_uint32_t blen_remain = blen - blen_keep;
+		duk_uint32_t blen_remain;
+
+		DUK_STATS_INC(heap, stats_strtab_intern_temp);
+		blen_remain = blen - blen_keep;
 
 		if (DUK_LIKELY(blen <= DUK__WTF8_INTERN_SHORT_LIMIT)) {
 			duk_uint32_t new_blen;
+			duk_uint32_t new_clen;
 
 			duk_memcpy((void *) tmp, (const void *) str, blen_keep);
-			new_blen = duk_unicode_wtf8_sanitize_string(str + blen_keep, blen_remain, tmp + blen_keep);
+			new_blen = duk_unicode_wtf8_sanitize_string(str + blen_keep, blen_remain, tmp + blen_keep, &new_clen);
 			str = tmp;
 			blen = blen_keep + new_blen;
 		} else {
 			duk_uint32_t blen_alloc;
 			duk_uint32_t new_blen;
+			duk_uint32_t new_clen;
 
 			heap->pf_prevent_count++;
 			DUK_ASSERT(heap->pf_prevent_count != 0); /* Wrap. */
@@ -797,7 +809,7 @@ DUK_INTERNAL duk_hstring *duk_heap_strtable_intern(duk_heap *heap, const duk_uin
 			}
 
 			duk_memcpy((void *) tmp_alloc, (const void *) str, blen_keep);
-			new_blen = duk_unicode_wtf8_sanitize_string(str + blen_keep, blen_remain, tmp_alloc + blen_keep);
+			new_blen = duk_unicode_wtf8_sanitize_string(str + blen_keep, blen_remain, tmp_alloc + blen_keep, &new_clen);
 			str = tmp_alloc;
 			blen = blen_keep + new_blen;
 		}
@@ -841,7 +853,10 @@ DUK_INTERNAL duk_hstring *duk_heap_strtable_intern(duk_heap *heap, const duk_uin
 	/* Not found in string table; insert. */
 
 	DUK_STATS_INC(heap, stats_strtab_intern_miss);
-	h = duk__strtable_do_intern(heap, str, blen, strhash);
+
+	/* For now compute final charlen here, should be done inline in WTF-8 sanitize. */
+	clen = duk_hstring_is_symbol_initial_byte(str[0]) ? 0 : duk_unicode_wtf8_charlength(str, blen);
+	h = duk__strtable_do_intern(heap, str, blen, clen, strhash);
 	goto done;
 
 done:

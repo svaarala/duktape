@@ -618,6 +618,8 @@ struct duk_heap {
 	duk_int_t stats_ms_try_count;
 	duk_int_t stats_ms_skip_count;
 	duk_int_t stats_ms_emergency_count;
+	duk_int_t stats_strtab_intern_notemp;
+	duk_int_t stats_strtab_intern_temp;
 	duk_int_t stats_strtab_intern_hit;
 	duk_int_t stats_strtab_intern_miss;
 	duk_int_t stats_strtab_resize_check;

@@ -1155,9 +1155,12 @@ DUK_LOCAL void duk__dump_stats(duk_heap *heap) {
 	                 (long) heap->stats_ms_try_count,
 	                 (long) heap->stats_ms_skip_count,
 	                 (long) heap->stats_ms_emergency_count));
-	DUK_D(DUK_DPRINT("stats stringtable: intern_hit=%ld, intern_miss=%ld, "
+	DUK_D(DUK_DPRINT("stats stringtable: intern_notemp=%ld, intern_temp=%ld, "
+	                 "intern_hit=%ld, intern_miss=%ld, "
 	                 "resize_check=%ld, resize_grow=%ld, resize_shrink=%ld, "
 	                 "litcache_hit=%ld, litcache_miss=%ld, litcache_pin=%ld",
+	                 (long) heap->stats_strtab_intern_notemp,
+	                 (long) heap->stats_strtab_intern_temp,
 	                 (long) heap->stats_strtab_intern_hit,
 	                 (long) heap->stats_strtab_intern_miss,
 	                 (long) heap->stats_strtab_resize_check,

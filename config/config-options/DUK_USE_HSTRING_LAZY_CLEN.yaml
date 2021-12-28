@@ -1,5 +1,6 @@
 define: DUK_USE_HSTRING_LAZY_CLEN
 introduced: 2.2.0
+removed: 3.0.0
 default: true
 tags:
   - performance
@@ -9,3 +10,6 @@ description: >
   reduces unnecessary charlen calculations.  When disabled, charlen is computed
   during interning which has smaller code footprint at slightly slower charlen
   handling.
+
+  Removed in Duktape 3.x with WTF-8 change where charlen is naturally computed
+  during WTF-8 sanitization.
