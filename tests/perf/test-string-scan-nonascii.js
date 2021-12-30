@@ -11,17 +11,17 @@ function test() {
      * to avoid string table traffic in this particular test.
      */
     var dummy = [
-        str.charCodeAt(0),
-        str.charCodeAt(1023),
-        str.charCodeAt(100),
-        str.charCodeAt(200),
-        str.charCodeAt(300),
-        str.charCodeAt(400),
-        str.charCodeAt(900),
-        str.charCodeAt(800),
-        str.charCodeAt(700),
-        str.charCodeAt(600),
-        str.charCodeAt(500)
+        str.charAt(0),
+        str.charAt(1023),
+        str.charAt(100),
+        str.charAt(200),
+        str.charAt(300),
+        str.charAt(400),
+        str.charAt(900),
+        str.charAt(800),
+        str.charAt(700),
+        str.charAt(600),
+        str.charAt(500)
     ];
 
     for (i = 0; i < 1e6; i++) {
