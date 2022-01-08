@@ -555,7 +555,7 @@ DUK_INTERNAL void duk_hthread_create_builtin_objects(duk_hthread *thr) {
 			duk_small_uint_t defprop_flags;
 
 			duk__push_stridx_or_string(thr, bd);
-			h_key = duk_known_hstring(thr, -1);
+			h_key = duk_known_hstring_m1(thr);
 			DUK_UNREF(h_key);
 			natidx = (duk_small_uint_t) duk_bd_decode_varuint(bd);
 

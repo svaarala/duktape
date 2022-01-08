@@ -1,25 +1,21 @@
 /*
  *  https://github.com/svaarala/duktape/issues/120
  *
- *  E5.1 requires a ToUint16() coercion but Duktape uses ToUint32() by
- *  default to better support non-BMP strings.
+ *  E5.1 requires a ToUint16() coercion.  Duktape 2.x uses ToUint32() by
+ *  default to better support non-BMP strings.  Duktape 3.x has WTF-8
+ *  support for more convenient C API access to string, and uses the
+ *  standard ToUint16() coercion.
  */
-
-/*---
-{
-    "custom": true
-}
----*/
 
 /*===
 1
-65601
-"\U00010041"
+65
+"A"
 3
-4294967295
-3735928559
-591751049
-"\Uffffffff\Udeadbeef\U23456789"
+65535
+48879
+26505
+"\uffff\ubeef\u6789"
 ===*/
 
 function test() {

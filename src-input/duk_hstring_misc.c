@@ -1,11 +1,11 @@
 /*
- *  Misc support functions
+ *  Misc duk_hstring support functions.
  */
 
 #include "duk_internal.h"
 
 /*
- *  Simple getters and setters
+ *  Simple getters and setters.
  */
 
 DUK_INTERNAL duk_bool_t duk_hstring_is_ascii(duk_hstring *h) {
@@ -69,7 +69,7 @@ DUK_INTERNAL const duk_uint8_t *duk_hstring_get_data_end(duk_hstring *h) {
 }
 
 /*
- *  duk_hstring charlen, when lazy charlen disabled
+ *  duk_hstring charlen, when lazy charlen disabled.
  */
 
 #if !defined(DUK_USE_HSTRING_LAZY_CLEN)
@@ -83,7 +83,11 @@ DUK_INTERNAL void duk_hstring_init_charlen(duk_hstring *h) {
 	DUK_ASSERT(!DUK_HSTRING_HAS_ASCII(h));
 	DUK_ASSERT(!DUK_HEAPHDR_HAS_READONLY((duk_heaphdr *) h));
 
-	clen = duk_unicode_unvalidated_utf8_length(duk_hstring_get_data(h), duk_hstring_get_bytelen(h));
+	if (DUK_HSTRING_HAS_SYMBOL(h)) {
+		clen = 0;
+	} else {
+		clen = (duk_uint32_t) duk_unicode_wtf8_charlength(duk_hstring_get_data(h), duk_hstring_get_bytelen(h));
+	}
 #if defined(DUK_USE_STRLEN16)
 	DUK_ASSERT(clen <= 0xffffUL); /* Bytelength checked during interning. */
 	h->clen16 = (duk_uint16_t) clen;
@@ -105,7 +109,7 @@ DUK_INTERNAL DUK_HOT duk_size_t duk_hstring_get_charlen(duk_hstring *h) {
 #endif /* !DUK_USE_HSTRING_LAZY_CLEN */
 
 /*
- *  duk_hstring charlen, when lazy charlen enabled
+ *  duk_hstring charlen, when lazy charlen enabled.
  */
 
 #if defined(DUK_USE_HSTRING_LAZY_CLEN)
@@ -124,7 +128,10 @@ DUK_LOCAL DUK_COLD duk_size_t duk__hstring_get_charlen_slowpath(duk_hstring *h) 
 	}
 #endif
 
-	res = duk_unicode_unvalidated_utf8_length(duk_hstring_get_data(h), duk_hstring_get_bytelen(h));
+	if (DUK_HSTRING_HAS_SYMBOL(h)) {
+		return 0;
+	}
+	res = duk_unicode_wtf8_charlength(duk_hstring_get_data(h), duk_hstring_get_bytelen(h));
 #if defined(DUK_USE_STRLEN16)
 	DUK_ASSERT(res <= 0xffffUL); /* Bytelength checked during interning. */
 	h->clen16 = (duk_uint16_t) res;
@@ -149,7 +156,10 @@ DUK_LOCAL duk_size_t duk__hstring_get_charlen_slowpath(duk_hstring *h) {
 		 * computation (matters for 'i < str.length' loops).
 		 */
 
-		res = duk_unicode_unvalidated_utf8_length(duk_hstring_get_data(h), duk_hstring_get_bytelen(h));
+		if (DUK_HSTRING_HAS_SYMBOL(h)) {
+			return 0;
+		}
+		res = duk_unicode_wtf8_charlength(duk_hstring_get_data(h), duk_hstring_get_bytelen(h));
 
 #if defined(DUK_USE_ROM_STRINGS)
 		if (DUK_HEAPHDR_HAS_READONLY((duk_heaphdr *) h)) {
@@ -189,54 +199,14 @@ DUK_INTERNAL DUK_HOT duk_size_t duk_hstring_get_charlen(duk_hstring *h) {
 #endif /* DUK_USE_HSTRING_LAZY_CLEN */
 
 /*
- *  duk_hstring charCodeAt, with and without surrogate awareness
+ *  duk_hstring charCodeAt, with and without surrogate awareness.
  */
 
 DUK_INTERNAL duk_ucodepoint_t duk_hstring_char_code_at_raw(duk_hthread *thr,
                                                            duk_hstring *h,
                                                            duk_uint_t pos,
                                                            duk_bool_t surrogate_aware) {
-	duk_uint32_t boff;
-	const duk_uint8_t *p, *p_start, *p_end;
-	duk_ucodepoint_t cp1;
-	duk_ucodepoint_t cp2;
-
-	/* Caller must check character offset to be inside the string. */
-	DUK_ASSERT(thr != NULL);
-	DUK_ASSERT(h != NULL);
-	DUK_ASSERT_DISABLE(pos >= 0); /* unsigned */
-	DUK_ASSERT(pos < (duk_uint_t) duk_hstring_get_charlen(h));
-
-	boff = (duk_uint32_t) duk_heap_strcache_offset_char2byte(thr, h, (duk_uint32_t) pos);
-	DUK_DDD(DUK_DDDPRINT("charCodeAt: pos=%ld -> boff=%ld, str=%!O", (long) pos, (long) boff, (duk_heaphdr *) h));
-	DUK_ASSERT_DISABLE(boff >= 0);
-	DUK_ASSERT(boff < duk_hstring_get_bytelen(h));
-
-	p_start = duk_hstring_get_data(h);
-	p_end = p_start + duk_hstring_get_bytelen(h);
-	p = p_start + boff;
-	DUK_DDD(DUK_DDDPRINT("p_start=%p, p_end=%p, p=%p", (const void *) p_start, (const void *) p_end, (const void *) p));
-
-	/* For invalid UTF-8 (never happens for standard ECMAScript strings)
-	 * return U+FFFD replacement character.
-	 */
-	if (duk_unicode_decode_xutf8(thr, &p, p_start, p_end, &cp1)) {
-		if (surrogate_aware && cp1 >= 0xd800UL && cp1 <= 0xdbffUL) {
-			/* The decode helper is memory safe even if 'cp1' was
-			 * decoded at the end of the string and 'p' is no longer
-			 * within string memory range.
-			 */
-			cp2 = 0; /* If call fails, this is left untouched and won't match cp2 check. */
-			(void) duk_unicode_decode_xutf8(thr, &p, p_start, p_end, &cp2);
-			if (cp2 >= 0xdc00UL && cp2 <= 0xdfffUL) {
-				cp1 = (duk_ucodepoint_t) (((cp1 - 0xd800UL) << 10) + (cp2 - 0xdc00UL) + 0x10000UL);
-			}
-		}
-	} else {
-		cp1 = DUK_UNICODE_CP_REPLACEMENT_CHARACTER;
-	}
-
-	return cp1;
+	return duk_unicode_wtf8_charcodeat_helper(thr, h, pos, surrogate_aware);
 }
 
 /*
@@ -262,7 +232,7 @@ DUK_INTERNAL void duk_hstring_set_bytelen(duk_hstring *h, duk_size_t len) {
 }
 
 /*
- *  Arridx
+ *  Arridx.
  */
 
 DUK_INTERNAL duk_uarridx_t duk_hstring_get_arridx_fast(duk_hstring *h) {

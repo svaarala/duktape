@@ -85,8 +85,7 @@ DUK_INTERNAL duk_ret_t duk_bi_object_constructor_assign(duk_hthread *thr) {
 #if defined(DUK_USE_OBJECT_BUILTIN) && defined(DUK_USE_ES6)
 DUK_INTERNAL duk_ret_t duk_bi_object_constructor_is(duk_hthread *thr) {
 	DUK_ASSERT_TOP(thr, 2);
-	duk_push_boolean(thr, duk_samevalue(thr, 0, 1));
-	return 1;
+	return duk_push_boolean_return1(thr, duk_samevalue(thr, 0, 1));
 }
 #endif
 
@@ -219,17 +218,19 @@ DUK_INTERNAL duk_ret_t duk_bi_object_constructor_is_sealed_frozen_shared(duk_hth
 	mask = duk_get_type_mask(thr, 0);
 	if (mask & (DUK_TYPE_MASK_LIGHTFUNC | DUK_TYPE_MASK_BUFFER)) {
 		DUK_ASSERT(is_frozen == 0 || is_frozen == 1);
-		duk_push_boolean(thr,
-		                 (mask & DUK_TYPE_MASK_LIGHTFUNC) ? 1 : /* lightfunc always frozen and sealed */
-                                     (is_frozen ^ 1)); /* buffer sealed but not frozen (index props writable) */
+		return duk_push_boolean_return1(thr,
+		                                (mask & DUK_TYPE_MASK_LIGHTFUNC) ? 1 : /* lightfunc always frozen and sealed */
+                                                    (is_frozen ^ 1)); /* buffer sealed but not frozen (index props writable) */
 	} else {
 		/* ES2015 Sections 19.1.2.12, 19.1.2.13: anything other than an object
 		 * is considered to be already sealed and frozen.
 		 */
 		h = duk_get_hobject(thr, 0);
-		duk_push_boolean(thr, (h == NULL) || duk_hobject_object_is_sealed_frozen_helper(thr, h, is_frozen /*is_frozen*/));
+		return duk_push_boolean_return1(thr,
+		                                (h == NULL) ||
+		                                    duk_hobject_object_is_sealed_frozen_helper(thr, h, is_frozen /*is_frozen*/));
 	}
-	return 1;
+	/* never here */
 }
 #endif /* DUK_USE_OBJECT_BUILTIN */
 
@@ -274,22 +275,21 @@ DUK_INTERNAL duk_ret_t duk_bi_object_prototype_is_prototype_of(duk_hthread *thr)
 	/* E5.1 Section 15.2.4.6, step 3.a, lookup proto once before compare.
 	 * Prototype loops should cause an error to be thrown.
 	 */
-	duk_push_boolean(
+	return duk_push_boolean_return1(
 	    thr,
 	    duk_hobject_prototype_chain_contains(thr, DUK_HOBJECT_GET_PROTOTYPE(thr->heap, h_v), h_obj, 0 /*ignore_loop*/));
-	return 1;
 }
 #endif /* DUK_USE_OBJECT_BUILTIN */
 
 #if defined(DUK_USE_OBJECT_BUILTIN)
 DUK_INTERNAL duk_ret_t duk_bi_object_prototype_has_own_property(duk_hthread *thr) {
-	return (duk_ret_t) duk_hobject_object_ownprop_helper(thr, 0 /*required_desc_flags*/);
+	return duk_hobject_object_ownprop_helper(thr, 0 /*required_desc_flags*/);
 }
 #endif /* DUK_USE_OBJECT_BUILTIN */
 
 #if defined(DUK_USE_OBJECT_BUILTIN)
 DUK_INTERNAL duk_ret_t duk_bi_object_prototype_property_is_enumerable(duk_hthread *thr) {
-	return (duk_ret_t) duk_hobject_object_ownprop_helper(thr, DUK_PROPDESC_FLAG_ENUMERABLE /*required_desc_flags*/);
+	return duk_hobject_object_ownprop_helper(thr, DUK_PROPDESC_FLAG_ENUMERABLE /*required_desc_flags*/);
 }
 #endif /* DUK_USE_OBJECT_BUILTIN */
 
@@ -557,8 +557,7 @@ DUK_INTERNAL duk_ret_t duk_bi_object_constructor_is_extensible(duk_hthread *thr)
 		h = duk_require_hobject_accept_mask(thr, 0, DUK_TYPE_MASK_LIGHTFUNC | DUK_TYPE_MASK_BUFFER);
 	}
 
-	duk_push_boolean(thr, (h != NULL) && DUK_HOBJECT_HAS_EXTENSIBLE(h));
-	return 1;
+	return duk_push_boolean_return1(thr, (h != NULL) && DUK_HOBJECT_HAS_EXTENSIBLE(h));
 }
 #endif /* DUK_USE_OBJECT_BUILTIN || DUK_USE_REFLECT_BUILTIN */
 

@@ -257,8 +257,7 @@ DUK_INTERNAL duk_ret_t duk_bi_number_check_shared(duk_hthread *thr) {
 		}
 	}
 
-	duk_push_boolean(thr, ret);
-	return 1;
+	return duk_push_boolean_return1(thr, ret);
 }
 #endif /* DUK_USE_ES6 */
 

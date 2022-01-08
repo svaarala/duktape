@@ -5,8 +5,9 @@
  *  allowing values larger than the official UTF-8 range (used internally)
  *  and also allowing UTF-8 encoding of surrogate pairs (CESU-8 format).
  *  Strings may also be invalid UTF-8 altogether which is the case e.g. with
- *  strings used as internal property names and raw buffers converted to
- *  strings.  In such cases the 'clen' field contains an inaccurate value.
+ *  strings used to represent Symbols.  In such cases the 'clen' field
+ *  contains an inaccurate (but consistent) value, with all bytes except
+ *  UTF-8 continuation bytes (0x80-0xbf) counted as +1 for clen.
  *
  *  ECMAScript requires support for 32-bit long strings.  However, since each
  *  16-bit codepoint can take 3 bytes in CESU-8, this representation can only
@@ -31,6 +32,9 @@
 #else
 #define DUK_HSTRING_MAX_BYTELEN (0x7fffffffUL)
 #endif
+
+/* Maximum string charlen equals maximum bytelen for the ASCII case. */
+#define DUK_HSTRING_MAX_CHARLEN DUK_HSTRING_MAX_BYTELEN
 
 /* XXX: could add flags for "is valid CESU-8" (ECMAScript compatible strings),
  * "is valid UTF-8", "is valid extended UTF-8" (internal strings are not,
@@ -86,12 +90,6 @@
  * valid).
  */
 #define DUK_HSTRING_NO_ARRAY_INDEX (0xffffffffUL)
-
-/* XXX: these actually fit into duk_hstring */
-#define DUK_SYMBOL_TYPE_HIDDEN    0
-#define DUK_SYMBOL_TYPE_GLOBAL    1
-#define DUK_SYMBOL_TYPE_LOCAL     2
-#define DUK_SYMBOL_TYPE_WELLKNOWN 3
 
 /* Assertion for duk_hstring validity. */
 #if defined(DUK_USE_ASSERTIONS)

@@ -1232,7 +1232,6 @@ DUK_INTERNAL void duk_regexp_compile(duk_hthread *thr) {
 	/* [ ... pattern flags escaped_source buffer ] */
 
 	DUK_BW_COMPACT(thr, &re_ctx.bw);
-	(void) duk_buffer_to_string(thr, -1); /* Safe because flags is at most 7 bit. */
 
 	/* [ ... pattern flags escaped_source bytecode ] */
 

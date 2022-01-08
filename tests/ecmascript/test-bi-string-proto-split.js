@@ -43,7 +43,7 @@ function basicTest() {
     // separator string).
 
     p(new String('foo - undefined - bar').split());
-    p(new String('foo - undefined - bar').split(undefined));
+    p(new String('foo - undefined - bar').split(void 0));
 
     // Empty separator splits a string into individual characters
 

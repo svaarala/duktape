@@ -36,7 +36,7 @@ DUK_INTERNAL void duk_proxy_ownkeys_postprocess(duk_hthread *thr, duk_hobject *h
 			 * so check enumerability always from target object
 			 * descriptor.
 			 */
-			if (duk_hobject_get_own_propdesc(thr, h_proxy_target, duk_known_hstring(thr, -1), &desc, 0 /*flags*/)) {
+			if (duk_hobject_get_own_propdesc(thr, h_proxy_target, duk_known_hstring_m1(thr), &desc, 0 /*flags*/)) {
 				if ((desc.flags & DUK_PROPDESC_FLAG_ENUMERABLE) == 0) {
 					DUK_DDD(DUK_DDDPRINT("ignore non-enumerable property: %!T", duk_get_tval(thr, -1)));
 					goto skip_key;

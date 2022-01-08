@@ -2603,7 +2603,7 @@ DUK_LOCAL duk_regconst_t duk__lookup_active_register_binding(duk_compiler_ctx *c
 	 *  Special name handling
 	 */
 
-	h_varname = duk_known_hstring(thr, -1);
+	h_varname = duk_known_hstring_m1(thr);
 
 	if (h_varname == DUK_HTHREAD_STRING_LC_ARGUMENTS(thr)) {
 		DUK_DDD(DUK_DDDPRINT("flagging function as accessing 'arguments'"));
@@ -6743,8 +6743,7 @@ retry_parse:
 				 * strings like "use strict\u0000foo" as required.
 				 */
 
-				if (duk_hstring_get_bytelen(h_dir) == 10 &&
-				    DUK_STRCMP((const char *) duk_hstring_get_data(h_dir), "use strict") == 0) {
+				if (duk_hstring_equals_ascii_cstring(h_dir, "use strict")) {
 #if defined(DUK_USE_STRICT_DECL)
 					DUK_DDD(DUK_DDDPRINT("use strict directive detected: strict flag %ld -> %ld",
 					                     (long) comp_ctx->curr_func.is_strict,
@@ -6753,8 +6752,7 @@ retry_parse:
 #else
 					DUK_DDD(DUK_DDDPRINT("use strict detected but strict declarations disabled, ignoring"));
 #endif
-				} else if (duk_hstring_get_bytelen(h_dir) == 14 &&
-				           DUK_STRCMP((const char *) duk_hstring_get_data(h_dir), "use duk notail") == 0) {
+				} else if (duk_hstring_equals_ascii_cstring(h_dir, "use duk notail")) {
 					DUK_DDD(DUK_DDDPRINT("use duk notail directive detected: notail flag %ld -> %ld",
 					                     (long) comp_ctx->curr_func.is_notail,
 					                     (long) 1));
@@ -7007,7 +7005,7 @@ DUK_LOCAL void duk__init_varmap_and_prologue_for_pass2(duk_compiler_ctx *comp_ct
 
 	for (i = 0; i < num_args; i++) {
 		duk_get_prop_index(thr, comp_ctx->curr_func.argnames_idx, i);
-		h_name = duk_known_hstring(thr, -1);
+		h_name = duk_known_hstring_m1(thr);
 
 		if (comp_ctx->curr_func.is_strict) {
 			if (duk__hstring_is_eval_or_arguments(comp_ctx, h_name)) {
@@ -7190,7 +7188,7 @@ DUK_LOCAL void duk__init_varmap_and_prologue_for_pass2(duk_compiler_ctx *comp_ct
 			/* shadowed, ignore */
 		} else {
 			duk_get_prop_index(thr, comp_ctx->curr_func.decls_idx, i); /* decl name */
-			h_name = duk_known_hstring(thr, -1);
+			h_name = duk_known_hstring_m1(thr);
 
 			if (h_name == DUK_HTHREAD_STRING_LC_ARGUMENTS(thr) && !comp_ctx->curr_func.is_arguments_shadowed) {
 				/* E5 Section steps 7-8 */
@@ -7657,7 +7655,7 @@ DUK_LOCAL void duk__parse_func_like_raw(duk_compiler_ctx *comp_ctx, duk_small_ui
 			DUK_ERROR_SYNTAX(thr, DUK_STR_INVALID_GETSET_NAME);
 			DUK_WO_NORETURN(return;);
 		}
-		comp_ctx->curr_func.h_name = duk_known_hstring(thr, -1); /* borrowed reference */
+		comp_ctx->curr_func.h_name = duk_known_hstring_m1(thr); /* borrowed reference */
 	} else {
 		/* Function name is an Identifier (not IdentifierName), but we get
 		 * the raw name (not recognizing keywords) here and perform the name
@@ -7665,7 +7663,7 @@ DUK_LOCAL void duk__parse_func_like_raw(duk_compiler_ctx *comp_ctx, duk_small_ui
 		 */
 		if (tok->t_nores == DUK_TOK_IDENTIFIER) {
 			duk_push_hstring(thr, tok->str1); /* keep in valstack */
-			comp_ctx->curr_func.h_name = duk_known_hstring(thr, -1); /* borrowed reference */
+			comp_ctx->curr_func.h_name = duk_known_hstring_m1(thr); /* borrowed reference */
 		} else {
 			/* valstack will be unbalanced, which is OK */
 			DUK_ASSERT((flags & DUK__FUNC_FLAG_GETSET) == 0);

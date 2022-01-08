@@ -4,7 +4,7 @@
 
 /*===
 *** test_1 (duk_safe_call)
-{foo:1," \xffbar":3}
+{foo:1," \ufffdbar":3}
 final top: 1
 ==> rc=0, result='undefined'
 ===*/

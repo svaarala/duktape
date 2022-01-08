@@ -2692,10 +2692,22 @@ DUK_INTERNAL duk_hstring *duk_known_hstring(duk_hthread *thr, duk_idx_t idx) {
 	return (duk_hstring *) duk__known_heaphdr(thr, idx);
 }
 
+DUK_INTERNAL duk_hstring *duk_known_hstring_m1(duk_hthread *thr) {
+	DUK_ASSERT_API_ENTRY(thr);
+	DUK_ASSERT(duk_get_hstring(thr, -1) != NULL);
+	return (duk_hstring *) duk__known_heaphdr(thr, -1);
+}
+
 DUK_INTERNAL duk_hobject *duk_known_hobject(duk_hthread *thr, duk_idx_t idx) {
 	DUK_ASSERT_API_ENTRY(thr);
 	DUK_ASSERT(duk_get_hobject(thr, idx) != NULL);
 	return (duk_hobject *) duk__known_heaphdr(thr, idx);
+}
+
+DUK_INTERNAL duk_hobject *duk_known_hobject_m1(duk_hthread *thr) {
+	DUK_ASSERT_API_ENTRY(thr);
+	DUK_ASSERT(duk_get_hobject(thr, -1) != NULL);
+	return (duk_hobject *) duk__known_heaphdr(thr, -1);
 }
 
 DUK_INTERNAL duk_hbuffer *duk_known_hbuffer(duk_hthread *thr, duk_idx_t idx) {
@@ -4348,6 +4360,11 @@ DUK_EXTERNAL void duk_push_boolean(duk_hthread *thr, duk_bool_t val) {
 	DUK_TVAL_SET_BOOLEAN(tv_slot, b);
 }
 
+DUK_INTERNAL duk_ret_t duk_push_boolean_return1(duk_hthread *thr, duk_bool_t val) {
+	duk_push_boolean(thr, val);
+	return 1;
+}
+
 DUK_EXTERNAL void duk_push_true(duk_hthread *thr) {
 	duk_tval *tv_slot;
 
@@ -4774,7 +4791,7 @@ DUK_EXTERNAL const char *duk_push_vsprintf(duk_hthread *thr, const char *fmt, va
 		duk_hstring *h_str;
 
 		duk_push_hstring_empty(thr);
-		h_str = duk_known_hstring(thr, -1);
+		h_str = duk_known_hstring_m1(thr);
 		res = (const char *) duk_hstring_get_data(h_str);
 		DUK_ASSERT(res != NULL);
 		return res;

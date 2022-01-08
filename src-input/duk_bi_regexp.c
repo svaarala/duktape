@@ -108,9 +108,7 @@ DUK_INTERNAL duk_ret_t duk_bi_regexp_prototype_test(duk_hthread *thr) {
 
 	/* [ result ] */
 
-	duk_push_boolean(thr, (duk_is_null(thr, -1) ? 0 : 1));
-
-	return 1;
+	return duk_push_boolean_return1(thr, (duk_is_null(thr, -1) ? 0 : 1));
 }
 
 DUK_INTERNAL duk_ret_t duk_bi_regexp_prototype_tostring(duk_hthread *thr) {
@@ -155,7 +153,6 @@ DUK_INTERNAL duk_ret_t duk_bi_regexp_prototype_flags(duk_hthread *thr) {
 
 /* Shared helper for providing .source, .global, .multiline, etc getters. */
 DUK_INTERNAL duk_ret_t duk_bi_regexp_prototype_shared_getter(duk_hthread *thr) {
-	duk_hstring *h_bc;
 	duk_small_uint_t re_flags;
 	duk_hobject *h;
 	duk_int_t magic;
@@ -167,10 +164,16 @@ DUK_INTERNAL duk_ret_t duk_bi_regexp_prototype_shared_getter(duk_hthread *thr) {
 	magic = duk_get_current_magic(thr);
 
 	if (DUK_HOBJECT_GET_CLASS_NUMBER(h) == DUK_HOBJECT_CLASS_REGEXP) {
+		const duk_uint8_t *buf;
+		duk_size_t len;
 		duk_xget_owndataprop_stridx_short(thr, 0, DUK_STRIDX_INT_SOURCE);
 		duk_xget_owndataprop_stridx_short(thr, 0, DUK_STRIDX_INT_BYTECODE);
-		h_bc = duk_require_hstring(thr, -1);
-		re_flags = (duk_small_uint_t) duk_hstring_get_data(h_bc)[0]; /* Safe even if h_bc length is 0 (= NUL) */
+		buf = (const duk_uint8_t *) duk_require_buffer(thr, -1, &len);
+		if (len > 0) {
+			re_flags = (duk_small_uint_t) buf[0];
+		} else {
+			re_flags = 0;
+		}
 		duk_pop(thr);
 	} else if (h == thr->builtins[DUK_BIDX_REGEXP_PROTOTYPE]) {
 		/* In ES2015 and ES2016 a TypeError would be thrown here.

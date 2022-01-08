@@ -296,7 +296,7 @@ struct duk_breakpoint {
  */
 
 struct duk_strcache_entry {
-	duk_hstring *h;
+	duk_hstring *h; /* weak pointer */
 	duk_uint32_t bidx;
 	duk_uint32_t cidx;
 };
@@ -709,9 +709,11 @@ DUK_INTERNAL void duk_heap_strtable_dump(duk_heap *heap);
 #endif
 
 DUK_INTERNAL_DECL void duk_heap_strcache_string_remove(duk_heap *heap, duk_hstring *h);
-DUK_INTERNAL_DECL duk_uint_fast32_t duk_heap_strcache_offset_char2byte(duk_hthread *thr,
-                                                                       duk_hstring *h,
-                                                                       duk_uint_fast32_t char_offset);
+DUK_INTERNAL_DECL void duk_strcache_scan_char2byte_wtf8(duk_hthread *thr,
+                                                        duk_hstring *h,
+                                                        duk_uint32_t target_charoff,
+                                                        duk_uint32_t *out_byteoff,
+                                                        duk_uint32_t *out_charoff);
 
 #if defined(DUK_USE_PROVIDE_DEFAULT_ALLOC_FUNCTIONS)
 DUK_INTERNAL_DECL void *duk_default_alloc_function(void *udata, duk_size_t size);

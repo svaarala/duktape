@@ -1129,6 +1129,11 @@ DUK_LOCAL void duk__cbor_decode_string(duk_cbor_decode_context *dec_ctx, duk_uin
 	 *      Symbol representation.
 	 *
 	 * Current behavior is 3.
+	 *
+	 * With WTF-8 this also means that (1) surrogate pairs encoded in
+	 * CESU-8 style are automatically combined to UTF-8, (2) unpaired
+	 * surrogate pairs are kept as is, and (3) invalid WTF-8 is replaced
+	 * with U+FFFD replacement characters.
 	 */
 
 	if (ai == 0x1fU) {

@@ -14,8 +14,8 @@
 |efbfbd616263|
 4 "\ufffdabc"
 |efbfbd616263|
-4 "\xfeabc"
-|fe616263|
+4 "\ufffdabc"
+|efbfbd616263|
 ===*/
 
 function test() {
@@ -59,7 +59,8 @@ function test() {
     print(s.length, Duktape.enc('jx', s));
     print(Duktape.enc('jx', stringToBuffer(s)));
 
-    // WHATWG Encoding API is supported in Duktape 2.x.
+    // WHATWG Encoding API is supported in Duktape 2.x.  Invalid bytes
+    // are replaced with U+FFFD.
 
     dec = new TextDecoder();
     b = new Uint8Array([ 0xff, 0x61, 0x62, 0x63 ]);
@@ -70,8 +71,8 @@ function test() {
     // In Duktape 2.x there's no default ECMAScript built-in for doing a
     // 1:1 string conversion, but "duk" command fills in String.fromBufferRaw().
     // The active slice of any buffer or buffer object argumented is
-    // interpreted as bytes (even for e.g. Uint32Array) and copied 1:1 into
-    // the internal string representation.
+    // interpreted as bytes (even for e.g. Uint32Array) and WTF-8 sanitized
+    // into the internal string representation.
     //
     // Note that specific initial bytes are reserved for symbols; e.g. if
     // initial byte is 0xff the string coercion will actually create a

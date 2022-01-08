@@ -81,9 +81,9 @@ function fromCodePointTest() {
     test([ -1 / 0 ]);
     test([ 0 / 0 ]);
 
-    // While String.fromCharCode() uses a simple ToUint16() (ToUint32() by
-    // default in Duktape) which allows modulo values, String.fromCodePoint()
-    // uses a SameValue(v, ToInteger(v)) check which is much stricter.
+    // While String.fromCharCode() uses a simple ToUint16() which allows
+    // modulo values, String.fromCodePoint() uses a SameValue(v, ToInteger(v))
+    // check which is much stricter.
     test([ 0x41, 0x10041, 0x100000041 ]);
 
     // a lot of arguments; this is now limited by Duktape stack so we can't

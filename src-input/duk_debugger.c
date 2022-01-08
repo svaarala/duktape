@@ -1530,7 +1530,7 @@ DUK_LOCAL void duk__debug_handle_get_locals(duk_hthread *thr, duk_heap *heap) {
 			duk_push_hobject(thr, h_varmap);
 			duk_enum(thr, -1, 0 /*enum_flags*/);
 			while (duk_next(thr, -1 /*enum_index*/, 0 /*get_value*/)) {
-				varname = duk_known_hstring(thr, -1);
+				varname = duk_known_hstring_m1(thr);
 
 				duk_js_getvar_activation(thr, act, varname, 0 /*throw_flag*/);
 				/* [ ... func varmap enum key value this ] */

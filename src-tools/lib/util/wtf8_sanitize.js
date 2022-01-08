@@ -287,55 +287,49 @@ function wtf8SanitizeString(u8) {
         // - if the codepoint is a high surrogate and a valid low
         //   surrogate follows, combine the two codepoints (WTF-8).
 
-        if (cp >= 0xdc00 && cp <= 0xdfff) {
-            // Unpaired low surrogate, keep as is.
-            unpairedSurrogateCount++;
-            pushWtf8(cp);
-            continue;
+        if (cp >= 0xd800 && cp <= 0xdfff) {
+            if (cp < 0xdc00) {
+                // First codepoint is a high surrogate.  Try to decode the
+                // following codepoint.  Here we can use a CESU-8 decoder
+                // optimized for detecting low surrogates (U+DC00 to U+DFFF).
+                //
+                // >>> u'\ud7ff'.encode('utf-8')
+                // '\xed\x9f\xbf'
+                // >>> u'\ud800'.encode('utf-8')
+                // '\xed\xa0\x80'
+                // >>> u'\udc00'.encode('utf-8')
+                // '\xed\xb0\x80'
+                // >>> u'\udfff'.encode('utf-8')
+                // '\xed\xbf\xbf'
+                // >>> u'\ue000'.encode('utf-8')
+                // '\xee\x80\x80'
+
+                let bytesLeft = u8.length - i;
+                let validSurrogatePair = (bytesLeft >= 3 &&
+                    u8[i] === 0xed &&
+                    u8[i + 1] >= 0xa0 && u8[i + 1] <= 0xbf &&
+                    u8[i + 2] >= 0x80 && u8[i + 2] <= 0xbf);
+                if (validSurrogatePair) {
+                    // Valid low surrogate follows.  Decode and combine.
+                    let hi = cp;
+                    let lo = (u8[i] - 0b11100000) * 64 * 64 +
+                        (u8[i + 1] - 0b10000000) * 64 +
+                        (u8[i + 2] - 0b10000000);
+                    cp = 0x10000 + (hi - 0xd800) * 0x400 + (lo - 0xdc00);
+                    i += 3;
+                    combinedSurrogateCount++;
+                } else {
+                    // Not a valid surrogate, emit 'cp' as is.
+                    unpairedSurrogateCount++;
+                }
+            } else {
+                // Unpaired low surrogate, keep as is.
+                unpairedSurrogateCount++;
+            }
         }
 
-        if (!(cp >= 0xd800 && cp <= 0xdbff)) {
-            // Not a high surrogate, keep as is.
-            pushWtf8(cp);
-            continue;
-        }
-
-        // First codepoint is a high surrogate.  Try to decode the
-        // following codepoint.  Here we can use a CESU-8 decoder
-        // optimized for detecting low surrogates (U+DC00 to U+DFFF).
-        //
-        // >>> u'\ud7ff'.encode('utf-8')
-        // '\xed\x9f\xbf'
-        // >>> u'\ud800'.encode('utf-8')
-        // '\xed\xa0\x80'
-        // >>> u'\udc00'.encode('utf-8')
-        // '\xed\xb0\x80'
-        // >>> u'\udfff'.encode('utf-8')
-        // '\xed\xbf\xbf'
-        // >>> u'\ue000'.encode('utf-8')
-        // '\xee\x80\x80'
-
-        let bytesLeft = u8.length - i;
-        let validSurrogatePair = (bytesLeft >= 3 &&
-            u8[i] === 0xed &&
-            u8[i + 1] >= 0xa0 && u8[i + 1] <= 0xbf &&
-            u8[i + 2] >= 0x80 && u8[i + 2] <= 0xbf);
-        if (validSurrogatePair) {
-            // Valid low surrogate follows.  Decode and combine.
-            let hi = cp;
-            let lo = (u8[i] - 0b11100000) * 64 * 64 +
-                (u8[i + 1] - 0b10000000) * 64 +
-                (u8[i + 2] - 0b10000000);
-            cp = 0x10000 + (hi - 0xd800) * 0x400 + (lo - 0xdc00);
-            i += 3;
-            combinedSurrogateCount++;
-            pushWtf8(cp);
-        } else {
-            // Not a valid surrogate, emit 'cp' as is.
-            unpairedSurrogateCount++;
-            pushWtf8(cp);
-            continue;
-        }
+        // Emit original or combined surrogate pair codepoint.
+        pushWtf8(cp);
     }
 
     // WTF-8 result, matches Duktape 3.x runtime.

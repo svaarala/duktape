@@ -669,16 +669,14 @@ DUK_INTERNAL duk_ret_t duk_bi_global_object_parse_float(duk_hthread *thr) {
 #if defined(DUK_USE_GLOBAL_BUILTIN)
 DUK_INTERNAL duk_ret_t duk_bi_global_object_is_nan(duk_hthread *thr) {
 	duk_double_t d = duk_to_number(thr, 0);
-	duk_push_boolean(thr, (duk_bool_t) DUK_ISNAN(d));
-	return 1;
+	return duk_push_boolean_return1(thr, (duk_bool_t) DUK_ISNAN(d));
 }
 #endif /* DUK_USE_GLOBAL_BUILTIN */
 
 #if defined(DUK_USE_GLOBAL_BUILTIN)
 DUK_INTERNAL duk_ret_t duk_bi_global_object_is_finite(duk_hthread *thr) {
 	duk_double_t d = duk_to_number(thr, 0);
-	duk_push_boolean(thr, (duk_bool_t) DUK_ISFINITE(d));
-	return 1;
+	return duk_push_boolean_return1(thr, (duk_bool_t) DUK_ISFINITE(d));
 }
 #endif /* DUK_USE_GLOBAL_BUILTIN */
 

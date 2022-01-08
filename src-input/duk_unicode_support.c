@@ -356,9 +356,9 @@ DUK_INTERNAL duk_size_t duk_unicode_unvalidated_utf8_length(const duk_uint8_t *d
 	}
 
 	/* Full, aligned 4-byte reads. */
-	p32_end = (const duk_uint32_t *) (const void *) (p + ((duk_size_t) (p_end - p) & (duk_size_t) (~0x03)));
+	p32_end = (const duk_uint32_t *) (const void *) (p + ((duk_size_t) (p_end - p) & (duk_size_t) (~0x03U)));
 	p32 = (const duk_uint32_t *) (const void *) p;
-	while (p32 != (const duk_uint32_t *) p32_end) {
+	while (p32 != p32_end) {
 		duk_uint32_t x;
 		x = *p32++;
 		if (DUK_LIKELY((x & 0x80808080UL) == 0)) {

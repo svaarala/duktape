@@ -28,6 +28,12 @@
 #define DUK_EXEC_NOINLINE_PERF      DUK_NOINLINE
 #endif
 
+/* Symbol types. */
+#define DUK_SYMBOL_TYPE_HIDDEN    0
+#define DUK_SYMBOL_TYPE_GLOBAL    1
+#define DUK_SYMBOL_TYPE_LOCAL     2
+#define DUK_SYMBOL_TYPE_WELLKNOWN 3
+
 /* duk_push_sprintf constants */
 #define DUK_PUSH_SPRINTF_INITIAL_SIZE 256L
 #define DUK_PUSH_SPRINTF_SANITY_LIMIT (1L * 1024L * 1024L * 1024L)
@@ -145,7 +151,9 @@ DUK_INTERNAL_DECL void *duk_get_voidptr(duk_hthread *thr, duk_idx_t idx);
 #endif
 
 DUK_INTERNAL_DECL duk_hstring *duk_known_hstring(duk_hthread *thr, duk_idx_t idx);
+DUK_INTERNAL_DECL duk_hstring *duk_known_hstring_m1(duk_hthread *thr);
 DUK_INTERNAL_DECL duk_hobject *duk_known_hobject(duk_hthread *thr, duk_idx_t idx);
+DUK_INTERNAL_DECL duk_hobject *duk_known_hobject_m1(duk_hthread *thr);
 DUK_INTERNAL_DECL duk_hbuffer *duk_known_hbuffer(duk_hthread *thr, duk_idx_t idx);
 DUK_INTERNAL_DECL duk_hcompfunc *duk_known_hcompfunc(duk_hthread *thr, duk_idx_t idx);
 DUK_INTERNAL_DECL duk_hnatfunc *duk_known_hnatfunc(duk_hthread *thr, duk_idx_t idx);
@@ -192,6 +200,7 @@ DUK_INTERNAL_DECL duk_hnatfunc *duk_require_hnatfunc(duk_hthread *thr, duk_idx_t
 
 DUK_INTERNAL_DECL duk_hobject *duk_require_hobject_with_class(duk_hthread *thr, duk_idx_t idx, duk_small_uint_t classnum);
 
+DUK_INTERNAL_DECL duk_ret_t duk_push_boolean_return1(duk_hthread *thr, duk_bool_t val);
 DUK_INTERNAL_DECL void duk_push_hstring(duk_hthread *thr, duk_hstring *h);
 DUK_INTERNAL_DECL void duk_push_hstring_stridx(duk_hthread *thr, duk_small_uint_t stridx);
 DUK_INTERNAL_DECL void duk_push_hstring_empty(duk_hthread *thr);
