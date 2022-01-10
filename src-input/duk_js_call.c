@@ -2147,6 +2147,15 @@ DUK_LOCAL duk_int_t duk__handle_call_raw(duk_hthread *thr, duk_idx_t idx_func, d
 	/* [ ... func this arg1 ... argN ] */
 
 	/*
+	 *  Grow value stack to required size before env setup.  This
+	 *  must happen before env setup to handle some corner cases
+	 *  correctly, e.g. test-bug-scope-segv-gh2448.js.
+	 */
+
+	duk_valstack_grow_check_throw(thr, vs_min_bytes);
+	act->reserve_byteoff = (duk_size_t) ((duk_uint8_t *) thr->valstack_end - (duk_uint8_t *) thr->valstack);
+
+	/*
 	 *  Environment record creation and 'arguments' object creation.
 	 *  Named function expression name binding is handled by the
 	 *  compiler; the compiled function's parent env will contain
@@ -2167,12 +2176,7 @@ DUK_LOCAL duk_int_t duk__handle_call_raw(duk_hthread *thr, duk_idx_t idx_func, d
 	 *  Setup value stack: clamp to 'nargs', fill up to 'nregs',
 	 *  ensure value stack size matches target requirements, and
 	 *  switch value stack bottom.  Valstack top is kept.
-	 *
-	 *  Value stack can only grow here.
 	 */
-
-	duk_valstack_grow_check_throw(thr, vs_min_bytes);
-	act->reserve_byteoff = (duk_size_t) ((duk_uint8_t *) thr->valstack_end - (duk_uint8_t *) thr->valstack);
 
 	if (use_tailcall) {
 		DUK_ASSERT(nregs >= 0);
