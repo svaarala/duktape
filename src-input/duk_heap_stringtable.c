@@ -845,11 +845,9 @@ DUK_INTERNAL duk_hstring *duk_heap_strtable_intern(duk_heap *heap, const duk_uin
 	goto done;
 
 done:
-#if defined(DUK__WTF8_EXPERIMENT)
 	if (DUK_UNLIKELY(tmp_alloc != NULL)) {
 		DUK_FREE(heap, (void *) tmp_alloc);
 	}
-#endif
 	return h; /* may be NULL */
 }
 
