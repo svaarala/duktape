@@ -2,14 +2,15 @@
 #  Example Makefile for building the eventloop example
 #
 
-CC = gcc
+CC ?= gcc
+CC := $(CC)
 
 evloop:
 	@echo "NOTE: The eventloop is an example intended to be used on Linux"
 	@echo "      or other common UNIX variants.  It is not fully portable."
 	@echo ""
 
-	$(CC) -o $@ -std=c99 -Wall -Wextra -O2 -Isrc \
+	$(CC) $(CFLAGS) $(CPPFLAGS) $(LDFLAGS) -o $@ -std=c99 -Wall -Wextra -O2 -Isrc \
 		examples/eventloop/main.c \
 		examples/eventloop/c_eventloop.c \
 		examples/eventloop/poll.c \

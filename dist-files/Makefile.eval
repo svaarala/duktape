@@ -2,8 +2,9 @@
 #  Example Makefile for building the eval example
 #
 
-CC = gcc
+CC ?= gcc
+CC := $(CC)
 
 eval:
-	$(CC) -o $@ -std=c99 -O2 -Wall -Wextra -Isrc/ \
+	$(CC) $(CFLAGS) $(CPPFLAGS) $(LDFLAGS) -o $@ -std=c99 -O2 -Wall -Wextra -Isrc/ \
 		src/duktape.c examples/eval/eval.c -lm
