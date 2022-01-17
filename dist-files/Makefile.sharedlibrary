@@ -47,6 +47,10 @@ endif
 # Change to actual path for actual distribution packaging.
 INSTALL_PREFIX ?= /usr/local
 INSTALL_PREFIX := $(INSTALL_PREFIX)
+DESTDIR ?=
+DESTDIR := $(DESTDIR)
+LIBDIR ?= /lib
+LIBDIR := $(LIBDIR)
 
 # The 'noline' variant may be more appropriate for some distributions; it
 # doesn't have #line directives in the combined source.
@@ -74,17 +78,17 @@ libduktaped.$(SO_REALNAME_SUFFIX):
 # Symlinks depend on platform conventions.
 .PHONY: install
 install: libduktape.$(SO_REALNAME_SUFFIX) libduktaped.$(SO_REALNAME_SUFFIX)
-	mkdir -p $(INSTALL_PREFIX)/lib/
-	cp $+ $(INSTALL_PREFIX)/lib/
-	rm -f $(INSTALL_PREFIX)/lib/libduktape.so $(INSTALL_PREFIX)/lib/libduktape.$(SO_SONAME_SUFFIX)
-	ln -s libduktape.$(SO_REALNAME_SUFFIX) $(INSTALL_PREFIX)/lib/libduktape.so
-	ln -s libduktape.$(SO_REALNAME_SUFFIX) $(INSTALL_PREFIX)/lib/libduktape.$(SO_SONAME_SUFFIX)
-	rm -f $(INSTALL_PREFIX)/lib/libduktaped.so $(INSTALL_PREFIX)/lib/libduktaped.$(SO_SONAME_SUFFIX)
-	ln -s libduktaped.$(SO_REALNAME_SUFFIX) $(INSTALL_PREFIX)/lib/libduktaped.so
-	ln -s libduktaped.$(SO_REALNAME_SUFFIX) $(INSTALL_PREFIX)/lib/libduktaped.$(SO_SONAME_SUFFIX)
-	mkdir -p $(INSTALL_PREFIX)/include/
-	cp $(DUKTAPE_SRCDIR)/duktape.h $(DUKTAPE_SRCDIR)/duk_config.h $(INSTALL_PREFIX)/include/
+	mkdir -p $(DESTDIR)$(INSTALL_PREFIX)$(LIBDIR)
+	cp $+ $(DESTDIR)$(INSTALL_PREFIX)$(LIBDIR)/
+	rm -f $(DESTDIR)$(INSTALL_PREFIX)$(LIBDIR)/libduktape.so $(DESTDIR)$(INSTALL_PREFIX)$(LIBDIR)/libduktape.$(SO_SONAME_SUFFIX)
+	ln -s libduktape.$(SO_REALNAME_SUFFIX) $(DESTDIR)$(INSTALL_PREFIX)$(LIBDIR)/libduktape.so
+	ln -s libduktape.$(SO_REALNAME_SUFFIX) $(DESTDIR)$(INSTALL_PREFIX)$(LIBDIR)/libduktape.$(SO_SONAME_SUFFIX)
+	rm -f $(DESTDIR)$(INSTALL_PREFIX)$(LIBDIR)/libduktaped.so $(DESTDIR)$(INSTALL_PREFIX)$(LIBDIR)/libduktaped.$(SO_SONAME_SUFFIX)
+	ln -s libduktaped.$(SO_REALNAME_SUFFIX) $(DESTDIR)$(INSTALL_PREFIX)$(LIBDIR)/libduktaped.so
+	ln -s libduktaped.$(SO_REALNAME_SUFFIX) $(DESTDIR)$(INSTALL_PREFIX)$(LIBDIR)/libduktaped.$(SO_SONAME_SUFFIX)
+	mkdir -p $(DESTDIR)$(INSTALL_PREFIX)/include/
+	cp $(DUKTAPE_SRCDIR)/duktape.h $(DUKTAPE_SRCDIR)/duk_config.h $(DESTDIR)$(INSTALL_PREFIX)/include/
 
 CCOPTS = -I./examples/cmdline
 duk:
-	$(CC) $(CCOPTS) -I$(INSTALL_PREFIX)/include -L$(INSTALL_PREFIX)/lib -Wall -Wextra -Os -o $@ ./examples/cmdline/duk_cmdline.c -lduktape -lm
+	$(CC) $(CCOPTS) -I$(INSTALL_PREFIX)/include -L$(INSTALL_PREFIX)$(LIBDIR) -Wall -Wextra -Os -o $@ ./examples/cmdline/duk_cmdline.c -lduktape -lm
