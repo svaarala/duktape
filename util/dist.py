@@ -736,6 +736,7 @@ def main():
         'Makefile.jsoncbor',
         'Makefile.sandbox',
         'Makefile.codepage',
+        'duktape.pc.in',
         'mandel.js'
     ], 'dist-files', dist)
 
