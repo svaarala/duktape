@@ -40,7 +40,7 @@ CMDLINE_SOURCES += extras/module-duktape/duk_module_duktape.c
 # http://wiki.duktape.org/Configuring.html
 
 duk: $(DUKTAPE_SOURCES) $(CMDLINE_SOURCES)
-	$(CC) -o $@ $(DEFINES) $(CCOPTS) $(DUKTAPE_SOURCES) $(CMDLINE_SOURCES) $(CCLIBS)
+	$(CC) $(CFLAGS) $(CPPFLAGS) $(LDFLAGS) -o $@ $(DEFINES) $(CCOPTS) $(DUKTAPE_SOURCES) $(CMDLINE_SOURCES) $(CCLIBS)
 
 linenoise/linenoise.c: linenoise
 linenoise:

@@ -62,11 +62,11 @@ all: libduktape.$(SO_REALNAME_SUFFIX) libduktaped.$(SO_REALNAME_SUFFIX)
 # to $INSTALL_PREFIX/include on installation.
 
 libduktape.$(SO_REALNAME_SUFFIX):
-	$(CC) -shared -fPIC -Wall -Wextra -Os -Wl,$(LD_SONAME_ARG),libduktape.$(SO_SONAME_SUFFIX) \
+	$(CC) $(CFLAGS) $(CPPFLAGS) $(LDFLAGS) -shared -fPIC -Wall -Wextra -Os -Wl,$(LD_SONAME_ARG),libduktape.$(SO_SONAME_SUFFIX) \
 		-o $@ $(DUKTAPE_SRCDIR)/duktape.c
 
 libduktaped.$(SO_REALNAME_SUFFIX):
-	$(CC) -shared -fPIC -g -Wall -Wextra -Os -Wl,$(LD_SONAME_ARG),libduktaped.$(SO_SONAME_SUFFIX) \
+	$(CC) $(CFLAGS) $(CPPFLAGS) $(LDFLAGS) -shared -fPIC -g -Wall -Wextra -Os -Wl,$(LD_SONAME_ARG),libduktaped.$(SO_SONAME_SUFFIX) \
 		-o $@ $(DUKTAPE_SRCDIR)/duktape.c
 
 # Symlinks depend on platform conventions.

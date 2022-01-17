@@ -5,6 +5,6 @@
 CC = gcc
 
 jxpretty:
-	$(CC) -o $@ -std=c99 -Wall -Wextra -O2 -Isrc \
+	$(CC) $(CFLAGS) $(CPPFLAGS) $(LDFLAGS) -o $@ -std=c99 -Wall -Wextra -O2 -Isrc \
 		src/duktape.c examples/jxpretty/jxpretty.c \
 		-lm
