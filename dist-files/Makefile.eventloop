@@ -2,7 +2,8 @@
 #  Example Makefile for building the eventloop example
 #
 
-CC = gcc
+CC ?= gcc
+CC := $(CC)
 
 evloop:
 	@echo "NOTE: The eventloop is an example intended to be used on Linux"

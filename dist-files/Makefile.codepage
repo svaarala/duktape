@@ -1,4 +1,5 @@
-CC = gcc
+CC ?= gcc
+CC := $(CC)
 
 codepage:
 	$(CC) $(CFLAGS) $(CPPFLAGS) $(LDFLAGS) -o $@ -std=c99 -O2 -Wall -Wextra -Isrc/ \
