@@ -61,7 +61,7 @@ CC ?= gcc
 CC := $(CC)
 
 .PHONY: all
-all: libduktape.$(SO_REALNAME_SUFFIX) libduktaped.$(SO_REALNAME_SUFFIX)
+all: libduktape.$(SO_REALNAME_SUFFIX) libduktaped.$(SO_REALNAME_SUFFIX) duktape.pc
 
 # If the default duk_config.h is not suitable for the distribution, modify it
 # before compiling the shared library and copy the same, edited duk_config.h
@@ -75,10 +75,17 @@ libduktaped.$(SO_REALNAME_SUFFIX):
 	$(CC) $(CFLAGS) $(CPPFLAGS) $(LDFLAGS) -shared -fPIC -g -Wall -Wextra -Os -Wl,$(LD_SONAME_ARG),libduktaped.$(SO_SONAME_SUFFIX) \
 		-o $@ $(DUKTAPE_SRCDIR)/duktape.c
 
+duktape.pc:
+	sed -e "s|@PREFIX@|$(INSTALL_PREFIX)|" \
+		-e "s|@LIBDIR@|$(LIBDIR)|" \
+		-e "s|@VERSION@|$(DUK_VERSION_PACKAGE_JSON)|" \
+		duktape.pc.in \
+		> duktape.pc
+
 # Symlinks depend on platform conventions.
 .PHONY: install
-install: libduktape.$(SO_REALNAME_SUFFIX) libduktaped.$(SO_REALNAME_SUFFIX)
-	mkdir -p $(DESTDIR)$(INSTALL_PREFIX)$(LIBDIR)
+install: libduktape.$(SO_REALNAME_SUFFIX) libduktaped.$(SO_REALNAME_SUFFIX) duktape.pc
+	mkdir -p $(DESTDIR)$(INSTALL_PREFIX)$(LIBDIR)/pkgconfig
 	cp $+ $(DESTDIR)$(INSTALL_PREFIX)$(LIBDIR)/
 	rm -f $(DESTDIR)$(INSTALL_PREFIX)$(LIBDIR)/libduktape.so $(DESTDIR)$(INSTALL_PREFIX)$(LIBDIR)/libduktape.$(SO_SONAME_SUFFIX)
 	ln -s libduktape.$(SO_REALNAME_SUFFIX) $(DESTDIR)$(INSTALL_PREFIX)$(LIBDIR)/libduktape.so
@@ -86,6 +93,7 @@ install: libduktape.$(SO_REALNAME_SUFFIX) libduktaped.$(SO_REALNAME_SUFFIX)
 	rm -f $(DESTDIR)$(INSTALL_PREFIX)$(LIBDIR)/libduktaped.so $(DESTDIR)$(INSTALL_PREFIX)$(LIBDIR)/libduktaped.$(SO_SONAME_SUFFIX)
 	ln -s libduktaped.$(SO_REALNAME_SUFFIX) $(DESTDIR)$(INSTALL_PREFIX)$(LIBDIR)/libduktaped.so
 	ln -s libduktaped.$(SO_REALNAME_SUFFIX) $(DESTDIR)$(INSTALL_PREFIX)$(LIBDIR)/libduktaped.$(SO_SONAME_SUFFIX)
+	mv $(DESTDIR)$(INSTALL_PREFIX)$(LIBDIR)/duktape.pc $(DESTDIR)$(INSTALL_PREFIX)$(LIBDIR)/pkgconfig/
 	mkdir -p $(DESTDIR)$(INSTALL_PREFIX)/include/
 	cp $(DUKTAPE_SRCDIR)/duktape.h $(DUKTAPE_SRCDIR)/duk_config.h $(DESTDIR)$(INSTALL_PREFIX)/include/
 
