@@ -45,14 +45,16 @@ else
 endif
 
 # Change to actual path for actual distribution packaging.
-INSTALL_PREFIX = /usr/local
+INSTALL_PREFIX ?= /usr/local
+INSTALL_PREFIX := $(INSTALL_PREFIX)
 
 # The 'noline' variant may be more appropriate for some distributions; it
 # doesn't have #line directives in the combined source.
 DUKTAPE_SRCDIR = ./src
 #DUKTAPE_SRCDIR = ./src-noline
 
-CC = gcc
+CC ?= gcc
+CC := $(CC)
 
 .PHONY: all
 all: libduktape.$(SO_REALNAME_SUFFIX) libduktaped.$(SO_REALNAME_SUFFIX)

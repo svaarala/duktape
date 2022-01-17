@@ -2,7 +2,8 @@
 #  Example Makefile for building the eval example
 #
 
-CC = gcc
+CC ?= gcc
+CC := $(CC)
 
 eval:
 	$(CC) $(CFLAGS) $(CPPFLAGS) $(LDFLAGS) -o $@ -std=c99 -O2 -Wall -Wextra -Isrc/ \
