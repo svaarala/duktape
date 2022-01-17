@@ -29,4 +29,4 @@ DEFINES =
 # For debugging, use -O0 -g -ggdb, and don't add -fomit-frame-pointer
 
 hello: $(DUKTAPE_SOURCES) examples/hello/hello.c
-	$(CC) -o $@ $(DEFINES) $(CCOPTS) $(DUKTAPE_SOURCES) examples/hello/hello.c $(CCLIBS)
+	$(CC) $(CFLAGS) $(CPPFLAGS) $(LDFLAGS) -o $@ $(DEFINES) $(CCOPTS) $(DUKTAPE_SOURCES) examples/hello/hello.c $(CCLIBS)

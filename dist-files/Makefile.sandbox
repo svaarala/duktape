@@ -5,5 +5,5 @@
 CC = gcc
 
 sandbox:
-	$(CC) -o $@ -std=c99 -O2 -Wall -Wextra -Isrc/ \
+	$(CC) $(CFLAGS) $(CPPFLAGS) $(LDFLAGS) -o $@ -std=c99 -O2 -Wall -Wextra -Isrc/ \
 		src/duktape.c examples/sandbox/sandbox.c -lm
