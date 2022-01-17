@@ -24,7 +24,9 @@
 # convention is to set soname version to (100*MAJOR + MINOR), e.g. 104 for
 # Duktape 1.4.x, so that it gets automatically bumped for major and minor
 # releases (potentially binary incompatible), but not for patch releases.
+# The formatted version is used for the pkg-config file.
 DUK_VERSION = @DUK_VERSION@
+DUK_VERSION_FORMATTED = @DUK_VERSION_FORMATTED@
 SONAME_VERSION = @SONAME_VERSION@
 REAL_VERSION = $(SONAME_VERSION).$(DUK_VERSION)
 
@@ -78,7 +80,7 @@ libduktaped.$(SO_REALNAME_SUFFIX):
 duktape.pc:
 	sed -e "s|@PREFIX@|$(INSTALL_PREFIX)|" \
 		-e "s|@LIBDIR@|$(LIBDIR)|" \
-		-e "s|@VERSION@|$(DUK_VERSION_PACKAGE_JSON)|" \
+		-e "s|@VERSION@|$(DUK_VERSION_FORMATTED)|" \
 		duktape.pc.in \
 		> duktape.pc
 
