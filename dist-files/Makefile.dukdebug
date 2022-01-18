@@ -10,7 +10,8 @@ CMDLINE_SOURCES = \
 	examples/cmdline/duk_cmdline.c \
 	examples/debug-trans-socket/duk_trans_socket_unix.c
 
-CC = gcc
+CC ?= gcc
+CC := $(CC)
 CCOPTS = -Os -pedantic -std=c99 -Wall -fstrict-aliasing -fomit-frame-pointer
 CCOPTS += -I./prep -I./examples/cmdline -I./examples/debug-trans-socket
 CCOPTS += -DDUK_CMDLINE_DEBUGGER_SUPPORT     # enable --debugger in ./duk
@@ -38,4 +39,4 @@ duk: $(CMDLINE_SOURCES)
 		-DDUK_USE_INTERRUPT_COUNTER \
 		-DDUK_USE_DEBUGGER_DUMPHEAP \
 		-DDUK_USE_DEBUGGER_INSPECT
-	$(CC) -o $@ $(DEFINES) $(CCOPTS) $(DUKTAPE_SOURCES) $(CMDLINE_SOURCES) $(CCLIBS)
+	$(CC) $(CFLAGS) $(CPPFLAGS) $(LDFLAGS) -o $@ $(DEFINES) $(CCOPTS) $(DUKTAPE_SOURCES) $(CMDLINE_SOURCES) $(CCLIBS)

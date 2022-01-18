@@ -8,7 +8,8 @@ DUKTAPE_SOURCES = src/duktape.c
 CMDLINE_SOURCES = \
 	examples/cmdline/duk_cmdline.c
 
-CC = gcc
+CC ?= gcc
+CC := $(CC)
 CCOPTS = -Os -pedantic -std=c99 -Wall -fstrict-aliasing -fomit-frame-pointer
 CCOPTS += -I./examples/cmdline -I./src   # duktape.h and duk_config.h must be in include path
 CCLIBS = -lm
@@ -40,7 +41,7 @@ CMDLINE_SOURCES += extras/module-duktape/duk_module_duktape.c
 # http://wiki.duktape.org/Configuring.html
 
 duk: $(DUKTAPE_SOURCES) $(CMDLINE_SOURCES)
-	$(CC) -o $@ $(DEFINES) $(CCOPTS) $(DUKTAPE_SOURCES) $(CMDLINE_SOURCES) $(CCLIBS)
+	$(CC) $(CFLAGS) $(CPPFLAGS) $(LDFLAGS) -o $@ $(DEFINES) $(CCOPTS) $(DUKTAPE_SOURCES) $(CMDLINE_SOURCES) $(CCLIBS)
 
 linenoise/linenoise.c: linenoise
 linenoise:

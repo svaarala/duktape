@@ -736,11 +736,13 @@ def main():
         'Makefile.jsoncbor',
         'Makefile.sandbox',
         'Makefile.codepage',
+        'duktape.pc.in',
         'mandel.js'
     ], 'dist-files', dist)
 
     copy_and_replace(os.path.join('dist-files', 'Makefile.sharedlibrary'), os.path.join(dist, 'Makefile.sharedlibrary'), {
         '@DUK_VERSION@': str(duk_version),
+        '@DUK_VERSION_FORMATTED@': duk_version_formatted,
         '@SONAME_VERSION@': str(int(duk_version / 100))  # 10500 -> 105
     })
 
