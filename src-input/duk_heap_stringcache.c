@@ -102,7 +102,7 @@ DUK_LOCAL void duk__strcache_scan_char2byte_wtf8_forwards_1(duk_hthread *thr,
 #endif
 
 /* Forward scan lookup. */
-const duk_uint_t duk__strcache_wtf8_pstep_lookup[256] = {
+DUK_LOCAL const duk_uint_t duk__strcache_wtf8_pstep_lookup[256] = {
 	1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1,
 	1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1,
 	1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1,
@@ -113,7 +113,7 @@ const duk_uint_t duk__strcache_wtf8_pstep_lookup[256] = {
 	2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2,
 	3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4
 };
-const duk_uint_t duk__strcache_wtf8_leftadj_lookup[256] = {
+DUK_LOCAL const duk_uint_t duk__strcache_wtf8_leftadj_lookup[256] = {
 	1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1,
 	1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1,
 	1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1,
@@ -304,7 +304,6 @@ DUK_LOCAL void duk__strcache_scan_char2byte_wtf8_uncached(duk_hthread *thr,
 	 * So prefer scanning forwards with a crude quick check.
 	 */
 	prefer_forwards = (dist_start / 2 <= dist_end);
-
 	if (prefer_forwards) {
 		duk_uint_fast32_t start_boff = 0;
 		duk_uint_fast32_t start_coff = 0;
@@ -474,16 +473,6 @@ DUK_INTERNAL void duk_strcache_scan_char2byte_wtf8(duk_hthread *thr,
 
 	char_length = (duk_uint_fast32_t) duk_hstring_get_charlen(h);
 	DUK_ASSERT(char_offset <= char_length);
-
-	if (DUK_LIKELY(duk_hstring_is_ascii(h) != 0)) {
-		/* Must recheck because the 'is ascii' flag may be set
-		 * lazily.  Alternatively, we could just compare charlen
-		 * to bytelen.
-		 */
-		*out_byteoff = char_offset;
-		*out_charoff = char_offset;
-		return;
-	}
 
 	/*
 	 *  For non-ASCII strings, we need to scan forwards or backwards

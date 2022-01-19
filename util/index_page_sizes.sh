@@ -74,7 +74,6 @@ DUK_USE_STRLEN16: true
 DUK_USE_BUFLEN16: true
 DUK_USE_OBJSIZES16: true
 DUK_USE_HSTRING_CLEN: false
-DUK_USE_HSTRING_LAZY_CLEN: true  # must be lazy when clen field dropped
 DUK_USE_HOBJECT_HASH_PART: false
 
 DUK_USE_HEAPPTR16: true

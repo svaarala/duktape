@@ -5,7 +5,7 @@ function test() {
     var x;
 
     x = 'foobarX'.repeat(1000);
-    console.log(x);
+    print(x);
 
     for (i = 0; i < 1e5; i++) {
         void x.replace('X', 'ZZ');
