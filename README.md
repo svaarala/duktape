@@ -51,7 +51,7 @@ Support
 * Duktape Wiki: [wiki.duktape.org](http://wiki.duktape.org)
 * User community Q&A: Stack Overflow [duktape](http://stackoverflow.com/questions/tagged/duktape) tag
 * Bugs and feature requests: [GitHub issues](https://github.com/svaarala/duktape/issues)
-* General discussion: IRC `#duktape` on `chat.freenode.net` ([webchat](https://webchat.freenode.net))
+* General discussion: IRC `#duktape` on `irc.libera.chat:6697` ([webchat](https://web.libera.chat))
 
 About this repository
 ---------------------
