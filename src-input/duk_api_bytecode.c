@@ -28,6 +28,7 @@ DUK_LOCAL const duk_uint8_t *duk__load_string_raw(duk_hthread *thr, const duk_ui
 	duk_uint32_t blen;
 
 	blen = DUK_RAW_READINC_U32_BE(p);
+	DUK_ASSERT(duk_hstring_is_valid_hstring_data(p, (duk_size_t) blen));
 	duk_push_lstring(thr, (const char *) p, blen);
 	p += blen;
 	return p;

@@ -4,20 +4,59 @@
 
 #include "duk_internal.h"
 
-DUK_LOCAL duk_bool_t duk__unicode_is_valid_wtf8_or_utf8(const duk_uint8_t *data, duk_size_t blen, duk_bool_t allow_wtf8) {
+DUK_LOCAL DUK_ALWAYS_INLINE duk_bool_t duk__unicode_wtf8_or_utf8_check(const duk_uint8_t *data,
+                                                                       duk_size_t blen,
+                                                                       duk_bool_t allow_wtf8,
+                                                                       duk_uint32_t *out_blen_keep,
+                                                                       duk_uint32_t *out_clen_keep) {
 	const duk_uint8_t *p;
 	const duk_uint8_t *p_end;
+#if !defined(DUK_USE_PREFER_SIZE)
+	duk_size_t blen_safe;
+	const duk_uint8_t *p_end_safe;
+#endif
+	duk_uint32_t clen_adj = 0; /* out_blen - out_clen, useful because for ASCII no change */
+	duk_uint32_t blen_keep;
+	duk_uint32_t clen_keep;
 
 	DUK_ASSERT(data != NULL || blen == 0);
 
 	p = data;
 	p_end = data + blen;
+
+	/* Many practical strings are ASCII only, so use a fast path check
+	 * to check chunks of bytes at once with minimal branch cost.
+	 */
+#if !defined(DUK_USE_PREFER_SIZE)
+	blen_safe = blen & ~0x03UL;
+	p_end_safe = p + blen_safe;
+	while (p != p_end_safe) {
+		duk_uint8_t b1 = p[0];
+		duk_uint8_t b2 = p[1];
+		duk_uint8_t b3 = p[2];
+		duk_uint8_t b4 = p[3];
+		duk_uint8_t t = b1 | b2 | b3 | b4;
+		if (DUK_UNLIKELY((t & 0x80U) != 0U)) {
+			/* At least one byte was outside 0x00-0x7f, break
+			 * out to slow path (and remain there).
+			 *
+			 * XXX: We could also deal with the problem character
+			 * and resume fast path later.
+			 */
+			break;
+		}
+		/* No change to clen_adj: 4 bytes in, 4 chars out. */
+		p += 4;
+	}
+#endif
+
 	while (p != p_end) {
 		duk_uint8_t t;
 
 		t = *p;
 		if (DUK_LIKELY(t <= 0x7fU)) {
 			p++;
+			/* No change to clen_adj. */
 			continue;
 		}
 
@@ -25,17 +64,20 @@ DUK_LOCAL duk_bool_t duk__unicode_is_valid_wtf8_or_utf8(const duk_uint8_t *data,
 			/* 0x80-0xbf: continuation byte, 0xc0 and 0xc1 invalid
 			 * initial bytes for 2-byte sequences (too low codepoint).
 			 */
-			return 0;
+			goto reject;
 		} else if (t <= 0xdfU) {
 			if (p_end - p >= 2 && p[1] >= 0x80U && p[1] <= 0xbfU) {
+				clen_adj += (2 - 1);
 				p += 2;
 			} else {
-				return 0;
+				goto reject;
 			}
 		} else if (t <= 0xefU) {
 			/* The only difference to valid UTF-8 is that in WTF-8
 			 * codepoints U+D800 to U+DFFF are allowed (encoded
-			 * forms ED A0 80 to ED BF BF).
+			 * forms ED A0 80 to ED BF BF) except if they encode
+			 * a surrogate pair (which should always be combined
+			 * in WTF-8).
 			 */
 			duk_uint8_t lower;
 			duk_uint8_t upper;
@@ -46,40 +88,88 @@ DUK_LOCAL duk_bool_t duk__unicode_is_valid_wtf8_or_utf8(const duk_uint8_t *data,
 				lower = (t == 0xe0U ? 0xa0U : 0x80U);
 				upper = (t == 0xedU ? 0x9fU : 0xbfU);
 			}
-			if (p_end - p >= 3 && p[1] >= lower && p[1] <= upper && p[2] >= 0x80U && p[2] <= 0xbfU) {
-				p += 3;
-			} else {
-				return 0;
+			if (!(p_end - p >= 3 && p[1] >= lower && p[1] <= upper && p[2] >= 0x80U && p[2] <= 0xbfU)) {
+				goto reject;
 			}
+			if (allow_wtf8) {
+				/* If we're validating for WTF-8 we must detect an uncombined
+				 * valid surrogate pair, i.e. [U+D800,U+DBFF] followed by a
+				 * [U+DC00,U+DFFF] in CESU-8 form.  First codepoint was validated
+				 * to be a valid 3-byte sequence already.
+				 *
+				 * >>> u'\ud800'.encode('utf-8').encode('hex')
+				 * 'eda080'
+				 * >>> u'\udbff'.encode('utf-8').encode('hex')
+				 * 'edafbf'
+				 * >>> u'\udc00'.encode('utf-8').encode('hex')
+				 * 'edb080'
+				 * >>> u'\udfff'.encode('utf-8').encode('hex')
+				 * 'edbfbf'
+				 */
+				DUK_ASSERT(p_end - p >= 3);
+				DUK_ASSERT(p[1] >= 0x80U && p[1] <= 0xbfU); /* Valid continuation byte. */
+				if (t == 0xedU && p[1] >= 0xa0U && p[1] <= 0xafU) {
+					/* 1st codepoint is [U+D800,U+DBFF]. */
+					if (p_end - p >= 6 && p[3] == 0xedU && p[4] >= 0xb0U && p[4] <= 0xbfU && p[5] >= 0x80U &&
+					    p[5] <= 0xbfU) {
+						/* 2nd codepoint is [U+DC00,U+DFFF], so found a high-low
+						 * surrogate pair which is not combined as required by WTF-8.
+						 */
+						goto reject;
+					}
+				}
+			}
+			clen_adj += (3 - 1);
+			p += 3;
 		} else if (t <= 0xf4U) {
 			duk_uint8_t lower = (t == 0xf0U ? 0x90U : 0x80U);
 			duk_uint8_t upper = (t == 0xf4U ? 0x8fU : 0xbfU);
 
 			if (p_end - p >= 4 && p[1] >= lower && p[1] <= upper && p[2] >= 0x80U && p[2] <= 0xbfU && p[3] >= 0x80U &&
 			    p[3] <= 0xbfU) {
+				clen_adj += (4 - 2); /* 4 bytes in, 2 (ES) chars out */
 				p += 4;
 			} else {
-				return 0;
+				goto reject;
 			}
 		} else {
 			/* 0xf5-0xf7 are invalid 4-byte sequences, 0xf8-0xff are invalid
 			 * initial bytes.
 			 */
-			return 0;
+			goto reject;
 		}
 	}
 
+	blen_keep = (duk_uint32_t) (p - data);
+	clen_keep = blen_keep - clen_adj;
+	if (out_blen_keep) {
+		*out_blen_keep = blen_keep;
+	}
+	if (out_clen_keep) {
+		*out_clen_keep = clen_keep;
+	}
 	return 1;
+
+reject:
+	blen_keep = (duk_uint32_t) (p - data);
+	clen_keep = blen_keep - clen_adj;
+	if (out_blen_keep) {
+		*out_blen_keep = (duk_uint32_t) (p - data);
+	}
+	if (out_clen_keep) {
+		*out_clen_keep = clen_keep;
+	}
+	return 0;
 }
 
 /* Check whether a byte sequence is valid WTF-8. */
 DUK_INTERNAL duk_bool_t duk_unicode_is_valid_wtf8(const duk_uint8_t *data, duk_size_t blen) {
-	return duk__unicode_is_valid_wtf8_or_utf8(data, blen, 1 /*allow_wtf8*/);
+	return duk__unicode_wtf8_or_utf8_check(data, blen, 1 /*allow_wtf8*/, NULL /*out_blen_keep*/, NULL /*out_clen_keep*/);
 }
 
 /* Check whether a byte sequence is valid UTF-8. */
 DUK_INTERNAL duk_bool_t duk_unicode_is_valid_utf8(const duk_uint8_t *data, duk_size_t blen) {
-	return duk__unicode_is_valid_wtf8_or_utf8(data, blen, 0 /*allow_wtf8*/);
+	return duk__unicode_wtf8_or_utf8_check(data, blen, 0 /*allow_wtf8*/, NULL /*out_blen_keep*/, NULL /*out_clen_keep*/);
 }
 
 /* Straightforward reference implementation for the WTF-8 sanitization algorithm.
@@ -309,82 +399,6 @@ DUK_INTERNAL duk_uint32_t duk_unicode_wtf8_sanitize_detect(const duk_uint8_t *st
 	}
 }
 
-#if 0
-DUK_LOCAL duk_uint32_t duk__unicode_wtf8_sanitize_asciicheck_reference(const duk_uint8_t *str, duk_uint32_t blen) {
-	duk_uint32_t i;
-
-	DUK_ASSERT(blen == 0 || str != NULL);
-
-	/* For now, just fast path ASCII. */
-	for (i = 0; i < blen; i++) {
-		if (DUK_UNLIKELY(str[i] >= 0x80U)) {
-			return i;
-		}
-	}
-
-	return blen;
-}
-#endif
-
-DUK_LOCAL duk_uint32_t duk__unicode_wtf8_sanitize_asciicheck_optimized(const duk_uint8_t *str, duk_uint32_t blen) {
-	const duk_uint8_t *p;
-	const duk_uint8_t *p_end;
-	const duk_uint32_t *p32;
-	const duk_uint32_t *p32_end;
-
-	DUK_ASSERT(blen == 0 || str != NULL);
-
-	/* Simplify handling by skipping short strings, avoids the need for e.g.
-	 * end-of-input check in the alignment setup loop.
-	 */
-	p = str;
-	p_end = p + blen;
-	if (blen < 8U) {
-		goto skip_fastpath;
-	}
-
-	/* Step to 4-byte alignment. */
-	while (((duk_size_t) (const void *) p) & 0x03UL) {
-		DUK_ASSERT(p < p_end);
-		if (DUK_UNLIKELY(*p >= 0x80U)) {
-			goto skip_fastpath; /* Handle with shared code below. */
-		}
-		p++;
-	}
-
-	p32_end = (const duk_uint32_t *) (const void *) (p + ((duk_size_t) (p_end - p) & (duk_size_t) (~0x03U)));
-	p32 = (const duk_uint32_t *) (const void *) p;
-	DUK_ASSERT(p32_end > p32); /* At least one full block, guaranteed by minimum size check. */
-	do {
-		duk_uint32_t x;
-
-		DUK_ASSERT(((const duk_uint8_t *) p32 + 4U) <= (const duk_uint8_t *) p_end);
-		x = *p32;
-		if (DUK_LIKELY((x & 0x80808080UL) == 0UL)) {
-			; /* All 4 bytes are ASCII. */
-		} else {
-			/* One or more bytes are not ASCII, handle in slow path. */
-			break;
-		}
-		p32++;
-	} while (p32 != p32_end);
-
-	p = (const duk_uint8_t *) p32;
-	/* Fall through to handle the rest. */
-
-skip_fastpath:
-	while (p != p_end) {
-		DUK_ASSERT(p < p_end);
-		if (DUK_UNLIKELY(*p >= 0x80U)) {
-			return (duk_uint32_t) (p - str);
-		}
-		p++;
-	}
-
-	DUK_ASSERT(p == str + blen);
-	return blen;
-}
-
 /* Check how many valid WTF-8 bytes we can keep from the beginning of the
  * input data.  The check can be conservative, i.e. reject some valid
  * sequences if that makes common cases faster.  Return value indicates
@@ -393,13 +407,17 @@ skip_fastpath:
  * However, for Symbol values MUST return 'blen', i.e. keep entire string
  * as is (call site expects this).
  */
-DUK_INTERNAL duk_uint32_t duk_unicode_wtf8_sanitize_keepcheck(const duk_uint8_t *str, duk_uint32_t blen) {
+DUK_INTERNAL duk_uint32_t duk_unicode_wtf8_sanitize_keepcheck(const duk_uint8_t *str,
+                                                              duk_uint32_t blen,
+                                                              duk_uint32_t *out_charlen) {
 	duk_uint32_t blen_keep;
+	duk_uint32_t clen_keep;
+	duk_bool_t valid_wtf8;
 
-	blen_keep = duk__unicode_wtf8_sanitize_asciicheck_optimized(str, blen);
-#if 0
-	blen_keep = duk__unicode_wtf8_sanitize_asciicheck_reference(str, blen);
-#endif
+	DUK_ASSERT(str != NULL || blen == 0);
+	DUK_ASSERT(out_charlen != NULL);
+
+	valid_wtf8 = duk__unicode_wtf8_or_utf8_check(str, blen, 1 /*allow_wtf8*/, &blen_keep, &clen_keep);
 
 	if (DUK_UNLIKELY(blen_keep == 0U)) {
 		/* Symbols begin with an invalid WTF-8 byte so we can detect
@@ -408,11 +426,14 @@ DUK_INTERNAL duk_uint32_t duk_unicode_wtf8_sanitize_keepcheck(const duk_uint8_t 
 		if (blen > 0U) {
 			duk_uint8_t ib = str[0];
 			if (DUK_UNLIKELY(ib == 0x80U || ib == 0x81U || ib == 0x82U || ib == 0xffU)) {
+				*out_charlen = clen_keep;
+				DUK_ASSERT(*out_charlen == 0);
 				return blen;
 			}
 		}
 	}
 
+	*out_charlen = clen_keep;
 	return blen_keep;
 }
 

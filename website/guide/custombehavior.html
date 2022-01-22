@@ -154,13 +154,6 @@ error (unterminated string).  Duktape escapes U+2028 and U+2029 by default
 to avoid this issue; you can turn on the compliant behavior by disabling the
 config option <code>DUK_USE_NONSTD_JSON_ESC_U2028_U2029</code>.</p>
 
-<h2>String.fromCharCode() accepts 32-bit codepoints</h2>
-
-<p><code>String.fromCharCode()</code> standard behavior is to use ToUInt16()
-coercion for codepoint values.  Duktape uses ToUint32() by default to better
-support non-BMP strings.  You can force the compliant behavior by disabling
-the config optipn <code>DUK_USE_NONSTD_STRING_FROMCHARCODE_32BIT</code>.</p>
-
 <h2>Array instance numeric index writes</h2>
 
 <p>By default Duktape provides a fast path for writing to Array instances.

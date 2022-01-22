@@ -243,6 +243,10 @@ DUK_EXTERNAL void duk_map_string(duk_hthread *thr, duk_idx_t idx, duk_map_char_f
 		cp = (duk_codepoint_t) duk_unicode_decode_xutf8_checked(thr, &p, p_start, p_end);
 		cp = callback(udata, cp);
 
+		/* We could handle WTF-8 normalization here already by pairing to a
+		 * previous surrogate here.  We don't now, and surrogate pairs get
+		 * WTF-8 converted in the buffer-to-string conversion.
+		 */
 		DUK_BW_WRITE_ENSURE_XUTF8(thr, bw, cp);
 	}
 

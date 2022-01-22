@@ -213,3 +213,17 @@ DUK_INTERNAL duk_bool_t duk_hstring_equals_ascii_cstring(duk_hstring *h, const c
 DUK_INTERNAL duk_bool_t duk_hstring_is_symbol_initial_byte(duk_uint8_t t) {
 	return (t >= 0x80) && (t <= 0x82U || t == 0xffU);
 }
+
+DUK_INTERNAL duk_bool_t duk_hstring_is_valid_hstring_data(const duk_uint8_t *p, duk_size_t blen) {
+	DUK_ASSERT(p != NULL || blen == 0);
+	if (blen > 0) {
+		duk_uint8_t ib = p[0];
+		if (duk_hstring_is_symbol_initial_byte(ib)) {
+			/* Should validate Symbol, no validation now. */
+			return 1;
+		} else {
+			return duk_unicode_is_valid_wtf8(p, blen);
+		}
+	}
+	return 1;
+}
