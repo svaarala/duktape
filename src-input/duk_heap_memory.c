@@ -192,13 +192,7 @@ DUK_LOCAL DUK_NOINLINE_PERF DUK_COLD void *duk__heap_mem_realloc_slowpath(duk_he
 	/* ptr may be NULL */
 	DUK_ASSERT_DISABLE(newsize >= 0);
 
-	/* Newsize was 0 and realloc() returned NULL, this has the semantics
-	 * of free(oldptr), i.e. memory was successfully freed.
-	 */
-	if (newsize == 0) {
-		DUK_DD(DUK_DDPRINT("zero size realloc in slow path, return NULL"));
-		return NULL;
-	}
+	/* Unlike for malloc(), zero size NULL result check happens at the call site. */
 
 	if (!duk__heap_suppress_debuglog(heap)) {
 		DUK_D(DUK_DPRINT("first realloc attempt failed or voluntary GC limit reached, attempt to gc and retry"));
@@ -233,7 +227,7 @@ DUK_LOCAL DUK_NOINLINE_PERF DUK_COLD void *duk__heap_mem_realloc_slowpath(duk_he
 
 		DUK_ASSERT(newsize > 0);
 		res = heap->realloc_func(heap->heap_udata, ptr, newsize);
-		if (res || newsize == 0) {
+		if (res != NULL || newsize == 0) {
 			if (!duk__heap_suppress_debuglog(heap)) {
 				DUK_D(DUK_DPRINT("duk_heap_mem_realloc() succeeded after gc (pass %ld), alloc size %ld",
 				                 (long) (i + 1),
@@ -258,7 +252,7 @@ DUK_INTERNAL DUK_INLINE_PERF DUK_HOT void *duk_heap_mem_realloc(duk_heap *heap, 
 #if defined(DUK_USE_VOLUNTARY_GC)
 	/* Voluntary periodic GC (if enabled). */
 	if (DUK_UNLIKELY(--(heap)->ms_trigger_counter < 0)) {
-		goto slowpath;
+		goto gc_retry;
 	}
 #endif
 
@@ -270,24 +264,22 @@ DUK_INTERNAL DUK_INLINE_PERF DUK_HOT void *duk_heap_mem_realloc(duk_heap *heap, 
 		DUK_DDD(DUK_DDDPRINT("gc torture enabled, pretend that first realloc attempt fails"));
 		res = NULL;
 		DUK_UNREF(res);
-		goto slowpath;
+		goto gc_retry;
 	}
 #endif
 
 	res = heap->realloc_func(heap->heap_udata, ptr, newsize);
-	if (DUK_LIKELY(res != NULL)) {
-		return res;
-	}
-
-slowpath:
-
-	if (newsize == 0) {
-		DUK_DD(DUK_DDPRINT("first realloc attempt returned NULL for zero size realloc, use slow path to deal with it"));
-	} else {
-		if (!duk__heap_suppress_debuglog(heap)) {
-			DUK_D(DUK_DPRINT("first realloc attempt failed, attempt to gc and retry"));
+	if (DUK_LIKELY(res != NULL) || newsize == 0) {
+		if (res != NULL && newsize == 0) {
+			DUK_DD(DUK_DDPRINT("first realloc attempt returned NULL for zero size realloc, accept and return NULL"));
 		}
+		return res;
+	} else {
+		goto gc_retry;
 	}
+	/* Never here. */
+
+gc_retry:
 	return duk__heap_mem_realloc_slowpath(heap, ptr, newsize);
 }
 
@@ -309,10 +301,7 @@ DUK_LOCAL DUK_NOINLINE_PERF DUK_COLD void *duk__heap_mem_realloc_indirect_slowpa
 	DUK_ASSERT(heap->realloc_func != NULL);
 	DUK_ASSERT_DISABLE(newsize >= 0);
 
-	if (newsize == 0) {
-		DUK_DD(DUK_DDPRINT("zero size indirect realloc in slow path, return NULL"));
-		return NULL;
-	}
+	/* Unlike for malloc(), zero size NULL result check happens at the call site. */
 
 	if (!duk__heap_suppress_debuglog(heap)) {
 		DUK_D(DUK_DPRINT("first indirect realloc attempt failed, attempt to gc and retry"));
@@ -365,9 +354,8 @@ DUK_LOCAL DUK_NOINLINE_PERF DUK_COLD void *duk__heap_mem_realloc_indirect_slowpa
 		 * The pointer being reallocated may change after every mark-and-sweep.
 		 */
 
-		DUK_ASSERT(newsize > 0);
 		res = heap->realloc_func(heap->heap_udata, cb(heap, ud), newsize);
-		if (res || newsize == 0) {
+		if (res != NULL || newsize == 0) {
 			if (!duk__heap_suppress_debuglog(heap)) {
 				DUK_D(DUK_DPRINT("duk_heap_mem_realloc_indirect() succeeded after gc (pass %ld), alloc size %ld",
 				                 (long) (i + 1),
@@ -394,7 +382,7 @@ DUK_INTERNAL DUK_INLINE_PERF DUK_HOT void *duk_heap_mem_realloc_indirect(duk_hea
 #if defined(DUK_USE_VOLUNTARY_GC)
 	/* Voluntary periodic GC (if enabled). */
 	if (DUK_UNLIKELY(--(heap)->ms_trigger_counter < 0)) {
-		goto slowpath;
+		goto gc_retry;
 	}
 #endif
 
@@ -406,25 +394,23 @@ DUK_INTERNAL DUK_INLINE_PERF DUK_HOT void *duk_heap_mem_realloc_indirect(duk_hea
 		DUK_DDD(DUK_DDDPRINT("gc torture enabled, pretend that first indirect realloc attempt fails"));
 		res = NULL;
 		DUK_UNREF(res);
-		goto slowpath;
+		goto gc_retry;
 	}
 #endif
 
 	res = heap->realloc_func(heap->heap_udata, cb(heap, ud), newsize);
-	if (DUK_LIKELY(res != NULL)) {
-		return res;
-	}
-
-slowpath:
-
-	if (newsize == 0) {
-		DUK_DD(DUK_DDPRINT(
-		    "first indirect realloc attempt returned NULL for zero size realloc, use slow path to deal with it"));
-	} else {
-		if (!duk__heap_suppress_debuglog(heap)) {
-			DUK_D(DUK_DPRINT("first indirect realloc attempt failed, attempt to gc and retry"));
+	if (DUK_LIKELY(res != NULL) || newsize == 0) {
+		if (res != NULL && newsize == 0) {
+			DUK_DD(DUK_DDPRINT(
+			    "first indirect realloc attempt returned NULL for zero size realloc, accept and return NULL"));
 		}
+		return res;
+	} else {
+		goto gc_retry;
 	}
+	/* Never here. */
+
+gc_retry:
 	return duk__heap_mem_realloc_indirect_slowpath(heap, cb, ud, newsize);
 }
 
