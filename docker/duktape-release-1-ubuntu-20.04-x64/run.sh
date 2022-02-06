@@ -64,7 +64,7 @@ test_releasetest() {
 test_checklist_compile_test() {
 	make clean dist/source
 	cd dist/source
-	bash ../util/checklist_compile_test.sh
+	bash ../tests/shell/release-checklist/checklist_compile_test.sh
 }
 
 echo ""
