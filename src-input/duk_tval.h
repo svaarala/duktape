@@ -332,6 +332,7 @@ struct duk_tval_struct {
 	duk_small_uint_t t;
 	duk_small_uint_t v_extra;
 	union {
+		duk_uint8_t bytes[8];
 		duk_double_t d;
 		duk_small_int_t i;
 #if defined(DUK_USE_FASTINT)
