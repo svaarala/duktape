@@ -78,12 +78,12 @@ Checklist for ordinary releases
 
   - Check compile warnings when DUK_NORETURN() is not defined
 
-* duk-sanitize-clang:
+* duk-clang-ubsan:
 
   - Run::
 
-        $ make duk-sanitize-clang
-        $ for i in tests/ecmascript/test-*.js; do python util/runtest.py --duk ./duk-sanitize-clang --timeout 60 $i; done
+        $ make build/duk-clang-ubsan
+        $ for i in tests/ecmascript/test-*.js; do python util/runtest.py --duk build/duk-clang-ubsan --timeout 60 $i; done
 
 * ECMAScript testcases
 
@@ -93,8 +93,8 @@ Checklist for ordinary releases
 
     - Run testcases with util/runtest.py with --valgrind option::
 
-          $ make duk
-          $ for i in tests/ecmascript/test-*.js; do python util/runtest.py --duk ./duk --valgrind --timeout 60 $i; done
+          $ make build/duk
+          $ for i in tests/ecmascript/test-*.js; do python util/runtest.py --duk build/duk --valgrind --timeout 60 $i; done
 
   - On x86-32 (exercise 8-byte duk_tval)
 
