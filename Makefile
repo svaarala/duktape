@@ -198,7 +198,8 @@ CCOPTS_DEBUG += -g -ggdb
 CLANG_CCOPTS_NONDEBUG = $(CCOPTS_NONDEBUG)
 CLANG_CCOPTS_NONDEBUG += -Wshorten-64-to-32
 CLANG_CCOPTS_NONDEBUG += -Wcomma
-#CLANG_CCOPTS_NONDEBUG += -fsanitize=undefined
+
+CLANG_CCOPTS_DEBUG = $(CCOPTS_DEBUG)
 
 GXXOPTS_SHARED = -pedantic -ansi -std=c++11 -fstrict-aliasing -Wall -Wextra -Wunused-result -Wunused-function
 GXXOPTS_SHARED += -DDUK_CMDLINE_PRINTALERT_SUPPORT
@@ -476,22 +477,22 @@ build/duk-clang: $(DUK_SOURCE_DEPS) | build prep/nondebug
 	@# Use -Wcast-align to trigger issues like: https://github.com/svaarala/duktape/issues/270
 	@# Use -Wshift-sign-overflow to trigger issues like: https://github.com/svaarala/duktape/issues/812
 	@# -Weverything
-	$(CLANG) -o $@ -Wcast-align -Wshift-sign-overflow -Iprep/nondebug $(CLANG_CCOPTS_NONDEBUG) prep/nondebug/duktape.c $(DUKTAPE_CMDLINE_SOURCES) $(LINENOISE_SOURCES) $(CCLIBS)
+	$(CLANG) -o $@ $(CLANG_CCOPTS_NONDEBUG) -Wcast-align -Wshift-sign-overflow prep/nondebug/duktape.c -Iprep/nondebug $(DUKTAPE_CMDLINE_SOURCES) $(LINENOISE_SOURCES) $(CCLIBS)
 	-@ls -l $@ && size $@
 build/duk-clang-asan: $(DUK_SOURCE_DEPS) | build prep/nondebug
 	# Binary fails to start with linenoise included, so add -UDUK_CMDLINE_FANCY to disable linenoise.
-	$(CLANG) -o $@ -Wcast-align -Wshift-sign-overflow -fsanitize=address -fno-omit-frame-pointer -Iprep/nondebug $(CLANG_CCOPTS_NONDEBUG) -UDUK_CMDLINE_FANCY prep/nondebug/duktape.c $(DUKTAPE_CMDLINE_SOURCES) $(CCLIBS)
+	$(CLANG) -o $@ $(CLANG_CCOPTS_NONDEBUG) -Wcast-align -Wshift-sign-overflow -fsanitize=address -fno-omit-frame-pointer -Iprep/nondebug $(CLANG_CCOPTS_DEBUG) -O0 -g -UDUK_CMDLINE_FANCY prep/nondebug/duktape.c $(DUKTAPE_CMDLINE_SOURCES) $(CCLIBS)
 	-@ls -l $@ && size $@
 build/duk-clang-ubsan: $(DUK_SOURCE_DEPS) | build prep/nondebug
-	$(CLANG) -o $@ -Wcast-align -Wshift-sign-overflow -fsanitize=undefined -Iprep/nondebug $(CLANG_CCOPTS_NONDEBUG) prep/nondebug/duktape.c $(DUKTAPE_CMDLINE_SOURCES) $(LINENOISE_SOURCES) $(CCLIBS)
+	$(CLANG) -o $@ $(CLANG_CCOPTS_NONDEBUG) -Wcast-align -Wshift-sign-overflow -fsanitize=undefined prep/nondebug/duktape.c -Iprep/nondebug $(DUKTAPE_CMDLINE_SOURCES) $(LINENOISE_SOURCES) $(CCLIBS)
 	-@ls -l $@ && size $@
 build/duk-perf-clang: $(DUK_SOURCE_DEPS) | build prep/nondebug-perf
-	$(CLANG) -o $@ -Wcast-align -Wshift-sign-overflow -Iprep/nondebug-perf $(CLANG_CCOPTS_NONDEBUG) prep/nondebug-perf/duktape.c $(DUKTAPE_CMDLINE_SOURCES) $(LINENOISE_SOURCES) $(CCLIBS)
+	$(CLANG) -o $@ $(CLANG_CCOPTS_NONDEBUG) -Wcast-align -Wshift-sign-overflow -Iprep/nondebug-perf prep/nondebug-perf/duktape.c $(DUKTAPE_CMDLINE_SOURCES) $(LINENOISE_SOURCES) $(CCLIBS)
 	-@ls -l $@ && size $@
 
 build/duk-fuzzilli: $(DUK_SOURCE_DEPS) | build prep/fuzz
 	# Target for fuzzilli.  Adds in the appropriate debug flags, without doing the debug prints.
-	$(CLANG) -O3 -o $@ -Wall -Wextra -Wcast-align -Wshift-sign-overflow -fsanitize=undefined -fsanitize-coverage=trace-pc-guard  -Iprep/fuzz $(CLANG_CCOPTS_DEBUG) prep/fuzz/duktape.c $(DUKTAPE_CMDLINE_SOURCES) $(LINENOISE_SOURCES) $(CCLIBS)
+	$(CLANG) -O3 -o $@ $(CLANG_CCOPTS_DEBUG) -Wall -Wextra -Wcast-align -Wshift-sign-overflow -fsanitize=undefined -fsanitize-coverage=trace-pc-guard -Iprep/fuzz prep/fuzz/duktape.c $(DUKTAPE_CMDLINE_SOURCES) $(LINENOISE_SOURCES) $(CCLIBS)
 
 build/duk-g++: $(DUK_SOURCE_DEPS) | build prep/nondebug
 	$(GXX) -o $@ -Iprep/nondebug $(GXXOPTS_NONDEBUG) prep/nondebug/duktape.c $(DUKTAPE_CMDLINE_SOURCES) $(CCLIBS)
