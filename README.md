@@ -123,7 +123,7 @@ These are also **intended for Linux only**.  For example:
     $ make docker-images
 
     # Equivalent of 'make dist', but runs inside a container.
-    $ make docker-dist-src-wd
+    $ make docker-dist-source-wd
 
     # Run a shell with /work/duktape containing a disposable master snapshot.
     $ make docker-shell-master

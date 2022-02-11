@@ -24,6 +24,9 @@ jobs:
           make cleanall
           make docker-dist-source-wd
           make docker-dist-site-wd
+          ls -l
+          rm -rf dist && mkdir dist
+          mv duktape-*.tar.xz dist/
           ls -l dist/
       - name: Upload artifacts
         uses: actions/upload-artifact@v2

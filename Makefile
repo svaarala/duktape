@@ -1185,7 +1185,7 @@ massif-arcfour: massif-test-dev-arcfour
 .PHONY: docker-prepare
 docker-prepare:
 	cd docker && for subdir in duktape-*; do \
-		if [ -f ~/.gitconfig ]; then cp ~/.gitconfig $$subdir/gitconfig; else touch docker/$$subdir/gitconfig; fi; \
+		if [ -f ~/.gitconfig ]; then cp ~/.gitconfig $$subdir/gitconfig; else touch $$subdir/gitconfig; fi; \
 		cp prepare_repo.sh $$subdir/; \
 	done
 
@@ -1226,25 +1226,25 @@ docker-clean:
 	@echo ""
 	@echo "Now run 'docker system prune' to free disk space."
 
-.PHONY: docker-dist-src-master
-docker-dist-src-master:
+.PHONY: docker-dist-source-master
+docker-dist-source-master:
 	rm -f docker-input.zip docker-output.zip
 	docker run --rm -i duktape-dist-ubuntu-18.04-x64 > docker-output.zip
-	unzip -t docker-output.zip ; true  # avoid failure due to leading garbage
+	unzip -q -o docker-output.zip ; true  # avoid failure due to leading garbage
 
-.PHONY: docker-dist-src-wd
-docker-dist-src-wd:
+.PHONY: docker-dist-source-wd
+docker-dist-source-wd:
 	rm -f docker-input.zip docker-output.zip
 	#git archive --format zip --output docker-input.zip HEAD
 	zip -1 -q -r docker-input.zip .
 	docker run --rm -i -e STDIN_ZIP=1 duktape-dist-ubuntu-18.04-x64 < docker-input.zip > docker-output.zip
-	unzip -t docker-output.zip ; true  # avoid failure due to leading garbage
+	unzip -q -o docker-output.zip ; true  # avoid failure due to leading garbage
 
 .PHONY: docker-dist-site-master
 docker-dist-site-master:
 	rm -f docker-input.zip docker-output.zip
 	docker run --rm -i duktape-site-ubuntu-18.04-x64 > docker-output.zip
-	unzip -t docker-output.zip ; true  # avoid failure due to leading garbage
+	unzip -q -o docker-output.zip ; true  # avoid failure due to leading garbage
 
 .PHONY: docker-dist-site-wd
 docker-dist-site-wd:
@@ -1252,7 +1252,7 @@ docker-dist-site-wd:
 	#git archive --format zip --output docker-input.zip HEAD
 	zip -1 -q -r docker-input.zip .
 	docker run --rm -i -e STDIN_ZIP=1 duktape-site-ubuntu-18.04-x64 < docker-input.zip > docker-output.zip
-	unzip -t docker-output.zip ; true  # avoid failure due to leading garbage
+	unzip -q -o docker-output.zip ; true  # avoid failure due to leading garbage
 
 .PHONY: docker-duk-wd
 docker-duk-wd:

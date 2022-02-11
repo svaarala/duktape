@@ -76,20 +76,21 @@ RUN echo "=== Repo snapshots ===" && \
 # image needs master.  Copy it from the repo snapshot, but leave the snapshot
 # intact.  Try to minimize network traffic by pulling in some dependencies into
 # the image.
+#
+# MINIMIZED for v2-maintenance.
 RUN echo "=== Prepare duktape-prep repo ===" && \
 	cp -r repo-snapshots/duktape duktape-prep && \
 	cp -r repo-snapshots/duktape-releases duktape-prep/duktape-releases && \
 	cd duktape-prep && \
-	make runtestsdeps linenoise UglifyJS2 && \
-	make duktape-releases lz-string jquery-1.11.2.js && \
-	make luajs underscore lodash bluebird.js closure-compiler && \
 	make clean
 
 # Initialize Emscripten cached bytecode files.
-RUN echo "=== Prepare Emscripten cached bytecode files ===" && \
-	cp -r duktape-prep /tmp/duktape-emcc-init && \
-	bash -c '. emsdk/emsdk_env.sh && cd /tmp/duktape-emcc-init && make emscriptenluatest dukweb.js' && \
-	rm -rf /tmp/duktape-emcc-init /tmp/duk-emcc*
+#
+# MINIMIZED for v2-maintenance.
+#RUN echo "=== Prepare Emscripten cached bytecode files ===" && \
+#	cp -r duktape-prep /tmp/duktape-emcc-init && \
+#	bash -c '. emsdk/emsdk_env.sh && cd /tmp/duktape-emcc-init && make build/dukweb.js' && \
+#	rm -rf /tmp/duktape-emcc-init /tmp/duk-emcc*
 
 # Dump some versions.
 RUN echo "=== Versions ===" && \
