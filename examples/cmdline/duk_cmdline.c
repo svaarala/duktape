@@ -1373,7 +1373,6 @@ void __sanitizer_cov_reset_edgeguards(void) {
 	}
 }
 
-
 void __sanitizer_cov_trace_pc_guard_init(duk_uint32_t *start, duk_uint32_t *stop) {
 	/* Avoid duplicate initialization. */
 	if (start == stop || *start) {
@@ -1394,7 +1393,11 @@ void __sanitizer_cov_trace_pc_guard_init(duk_uint32_t *start, duk_uint32_t *stop
 		puts("[COV] no shared memory bitmap available, skipping");
 		__shmem = (struct shmem_data *) malloc(SHM_SIZE);
 	} else {
+#if defined(S_IRUSR) && defined(S_IWUSR)
+		int fd = shm_open(shm_key, O_RDWR, S_IRUSR | S_IWUSR);
+#else
 		int fd = shm_open(shm_key, O_RDWR, S_IREAD | S_IWRITE);
+#endif
 		if (fd <= -1) {
 			fprintf(stderr, "Failed to open shared memory region: %s\n", strerror(errno));
 			_exit(-1);
