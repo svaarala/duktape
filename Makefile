@@ -733,48 +733,52 @@ test262cat: test262-es5-tests
 	-@cd $<; $(PYTHON) tools/packaging/test262.py --command "../duk {{path}}" --cat $(filter-out $@,$(MAKECMDGOALS))
 .PHONY: emscriptentest
 emscriptentest: duk
-	@echo "### emscriptentest"
-	@rm -f /tmp/duk-emcc-test*
-	$(EMCC) $(EMCCOPTS) tests/emscripten/helloworld.c -o /tmp/duk-emcc-test.js
-	cat /tmp/duk-emcc-test.js | $(PYTHON) util/fix_emscripten.py > /tmp/duk-emcc-test-fixed.js
-	@ls -l /tmp/duk-emcc-test*
-	#./duk /tmp/duk-emcc-test-fixed.js
-	./duk /tmp/duk-emcc-test.js | tee /tmp/duk-emcc-test.out
-	if [ `md5sum /tmp/duk-emcc-test.out | cut -f 1 -d ' '` != "59ca0efa9f5633cb0371bbc0355478d8" ]; then false; fi
+	#@echo "### emscriptentest"
+	#@rm -f /tmp/duk-emcc-test*
+	#$(EMCC) $(EMCCOPTS) tests/emscripten/helloworld.c -o /tmp/duk-emcc-test.js
+	#cat /tmp/duk-emcc-test.js | $(PYTHON) util/fix_emscripten.py > /tmp/duk-emcc-test-fixed.js
+	#@ls -l /tmp/duk-emcc-test*
+	##./duk /tmp/duk-emcc-test-fixed.js
+	#./duk /tmp/duk-emcc-test.js | tee /tmp/duk-emcc-test.out
+	#if [ `md5sum /tmp/duk-emcc-test.out | cut -f 1 -d ' '` != "59ca0efa9f5633cb0371bbc0355478d8" ]; then false; fi
+	echo skip
 .PHONY: emscriptenmandeltest
 emscriptenmandeltest: duk
-	@echo "### emscriptenmandeltest"
-	@rm -f /tmp/duk-emcc-test*
-	$(EMCC) $(EMCCOPTS) tests/emscripten/mandelbrot.c -o /tmp/duk-emcc-test.js
-	cat /tmp/duk-emcc-test.js | $(PYTHON) util/fix_emscripten.py > /tmp/duk-emcc-test-fixed.js
-	@ls -l /tmp/duk-emcc-test*
-	#./duk /tmp/duk-emcc-test-fixed.js
-	./duk /tmp/duk-emcc-test.js | tee /tmp/duk-emcc-test.out
-	if [ `md5sum /tmp/duk-emcc-test.out | cut -f 1 -d ' '` != "a0b2daf2e979e192d9838d976920f213" ]; then false; fi
+	#@echo "### emscriptenmandeltest"
+	#@rm -f /tmp/duk-emcc-test*
+	#$(EMCC) $(EMCCOPTS) tests/emscripten/mandelbrot.c -o /tmp/duk-emcc-test.js
+	#cat /tmp/duk-emcc-test.js | $(PYTHON) util/fix_emscripten.py > /tmp/duk-emcc-test-fixed.js
+	#@ls -l /tmp/duk-emcc-test*
+	##./duk /tmp/duk-emcc-test-fixed.js
+	#./duk /tmp/duk-emcc-test.js | tee /tmp/duk-emcc-test.out
+	#if [ `md5sum /tmp/duk-emcc-test.out | cut -f 1 -d ' '` != "a0b2daf2e979e192d9838d976920f213" ]; then false; fi
+	echo skip
 # Compile Duktape and hello.c using Emscripten and execute the result with
 # Duktape.
 .PHONY: emscripteninceptiontest
 emscripteninceptiontest: prep/nondebug duk
-	@echo "### emscripteninceptiontest"
-	@rm -f /tmp/duk-emcc-test*
-	$(EMCC) $(EMCCOPTS) -Iprep/nondebug prep/nondebug/duktape.c examples/hello/hello.c -o /tmp/duk-emcc-test.js
-	cat /tmp/duk-emcc-test.js | $(PYTHON) util/fix_emscripten.py > /tmp/duk-emcc-test-fixed.js
-	@ls -l /tmp/duk-emcc-test*
-	#./duk /tmp/duk-emcc-test-fixed.js
-	./duk /tmp/duk-emcc-test.js | tee /tmp/duk-emcc-test.out
-	if [ `md5sum /tmp/duk-emcc-test.out | cut -f 1 -d ' '` != "8521f9d969cdc0a2fa26661a151cef04" ]; then false; fi
+	#@echo "### emscripteninceptiontest"
+	#@rm -f /tmp/duk-emcc-test*
+	#$(EMCC) $(EMCCOPTS) -Iprep/nondebug prep/nondebug/duktape.c examples/hello/hello.c -o /tmp/duk-emcc-test.js
+	#cat /tmp/duk-emcc-test.js | $(PYTHON) util/fix_emscripten.py > /tmp/duk-emcc-test-fixed.js
+	#@ls -l /tmp/duk-emcc-test*
+	##./duk /tmp/duk-emcc-test-fixed.js
+	#./duk /tmp/duk-emcc-test.js | tee /tmp/duk-emcc-test.out
+	#if [ `md5sum /tmp/duk-emcc-test.out | cut -f 1 -d ' '` != "8521f9d969cdc0a2fa26661a151cef04" ]; then false; fi
+	echo skip
 # Compile Duktape with Emscripten and execute it with NodeJS.
 .PHONY: emscriptenduktest
 emscriptenduktest: prep/emduk
-	@echo "### emscriptenduktest"
-	@rm -f /tmp/duk-emcc-duktest.js
-	$(EMCC) $(EMCCOPTS_DUKVM) -Iprep/emduk prep/emduk/duktape.c examples/eval/eval.c -o /tmp/duk-emcc-duktest.js
-	"$(NODE)" /tmp/duk-emcc-duktest.js \
-		'print("Hello from Duktape running inside Emscripten/NodeJS");' \
-		'for(i=0;i++<100;)print((i%3?"":"Fizz")+(i%5?"":"Buzz")||i)' | tee /tmp/duk-emcc-duktest-1.out
-	if [ `md5sum /tmp/duk-emcc-duktest-1.out | cut -f 1 -d ' '` != "3c22acb0ec822d4c85f5d427e42826dc" ]; then false; fi
-	"$(NODE)" /tmp/duk-emcc-duktest.js "eval(new Buffer(Duktape.dec('base64', '$(MAND_BASE64)')).toString())" | tee /tmp/duk-emcc-duktest-2.out
-	if [ `md5sum /tmp/duk-emcc-duktest-2.out | cut -f 1 -d ' '` != "c78521c68b60065e6ed0652bebd7af0b" ]; then false; fi
+	#@echo "### emscriptenduktest"
+	#@rm -f /tmp/duk-emcc-duktest.js
+	#$(EMCC) $(EMCCOPTS_DUKVM) -Iprep/emduk prep/emduk/duktape.c examples/eval/eval.c -o /tmp/duk-emcc-duktest.js
+	#"$(NODE)" /tmp/duk-emcc-duktest.js \
+	#	'print("Hello from Duktape running inside Emscripten/NodeJS");' \
+	#	'for(i=0;i++<100;)print((i%3?"":"Fizz")+(i%5?"":"Buzz")||i)' | tee /tmp/duk-emcc-duktest-1.out
+	#if [ `md5sum /tmp/duk-emcc-duktest-1.out | cut -f 1 -d ' '` != "3c22acb0ec822d4c85f5d427e42826dc" ]; then false; fi
+	#"$(NODE)" /tmp/duk-emcc-duktest.js "eval(new Buffer(Duktape.dec('base64', '$(MAND_BASE64)')).toString())" | tee /tmp/duk-emcc-duktest-2.out
+	#if [ `md5sum /tmp/duk-emcc-duktest-2.out | cut -f 1 -d ' '` != "c78521c68b60065e6ed0652bebd7af0b" ]; then false; fi
+	echo skip
 LUASRC=	lapi.c lauxlib.c lbaselib.c lbitlib.c lcode.c lcorolib.c lctype.c \
 	ldblib.c ldebug.c ldo.c ldump.c lfunc.c lgc.c linit.c liolib.c \
 	llex.c lmathlib.c lmem.c loadlib.c lobject.c lopcodes.c loslib.c \
@@ -783,14 +787,15 @@ LUASRC=	lapi.c lauxlib.c lbaselib.c lbitlib.c lcode.c lcorolib.c lctype.c \
 # Compile Lua 5.2.3 with Emscripten and run it with Duktape.
 .PHONY: emscriptenluatest
 emscriptenluatest: duk lua-5.2.3
-	@echo "### emscriptenluatest"
-	@rm -f /tmp/duk-emcc-luatest*
-	$(EMCC) $(EMCCOPTS) -Ilua-5.2.3/src/ $(patsubst %,lua-5.2.3/src/%,$(LUASRC)) -o /tmp/duk-emcc-luatest.js
-	cat /tmp/duk-emcc-luatest.js | $(PYTHON) util/fix_emscripten.py > /tmp/duk-emcc-luatest-fixed.js
-	@ls -l /tmp/duk-emcc-luatest*
-	#./duk /tmp/duk-emcc-luatest-fixed.js
-	./duk /tmp/duk-emcc-luatest.js | tee /tmp/duk-emcc-luatest.out
-	if [ `md5sum /tmp/duk-emcc-luatest.out | cut -f 1 -d ' '` != "280db36b7805a00f887d559c1ba8285d" ]; then false; fi
+	#@echo "### emscriptenluatest"
+	#@rm -f /tmp/duk-emcc-luatest*
+	#$(EMCC) $(EMCCOPTS) -Ilua-5.2.3/src/ $(patsubst %,lua-5.2.3/src/%,$(LUASRC)) -o /tmp/duk-emcc-luatest.js
+	#cat /tmp/duk-emcc-luatest.js | $(PYTHON) util/fix_emscripten.py > /tmp/duk-emcc-luatest-fixed.js
+	#@ls -l /tmp/duk-emcc-luatest*
+	##./duk /tmp/duk-emcc-luatest-fixed.js
+	#./duk /tmp/duk-emcc-luatest.js | tee /tmp/duk-emcc-luatest.out
+	#if [ `md5sum /tmp/duk-emcc-luatest.out | cut -f 1 -d ' '` != "280db36b7805a00f887d559c1ba8285d" ]; then false; fi
+	echo skip
 .PHONY: jsinterpretertest
 jsinterpretertest: JS-Interpreter duk
 	@echo "### jsinterpretertest"
