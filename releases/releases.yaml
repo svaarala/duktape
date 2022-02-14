@@ -1385,4 +1385,4 @@ duktape_releases:
     - "Reformat source with clang-format-12 (GH-2416, GH-2421, GH-2423, GH-2424, GH-2425, GH-2426, GH-2427, GH-2428)"
     - "Fix DUK_USE_GET_RANDOM_DOUBLE() argument handling (GH-2432, GH-2435)"
     - "Fix memory unsafe behavior when valstack size limit hit in call setup (GH-2448, GH-2451)"
-    - "Fix a realloc() memory leak triggered when (1) previous allocation exists, (2) new realloc size is 0, (3) GC is triggered before first realloc() attempt (GH-2468)"
+    - "Fix a realloc() memory leak triggered when (1) previous allocation exists, (2) new realloc size is 0, (3) GC is triggered before first realloc() attempt (GH-2468, GH-2469)"

@@ -225,7 +225,6 @@ DUK_LOCAL DUK_NOINLINE_PERF DUK_COLD void *duk__heap_mem_realloc_slowpath(duk_he
 
 		duk_heap_mark_and_sweep(heap, flags);
 
-		DUK_ASSERT(newsize > 0);
 		res = heap->realloc_func(heap->heap_udata, ptr, newsize);
 		if (res != NULL || newsize == 0) {
 			if (!duk__heap_suppress_debuglog(heap)) {
