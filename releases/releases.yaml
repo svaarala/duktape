@@ -1364,8 +1364,23 @@ duktape_releases:
     - "Fix 64kb line limit for 'duk' example tool (GH-2367, GH-2368)"
     - "Improve warning for missing PyYAML in configure.py (GH-2361)"
 
+- version: '2.7.0'
+  release_date: '2022-02-19'
+  description: 'maintenance release'
+  filename: 'duktape-2.7.0.tar.xz'
+  changes:
+    - "Fix memory unsafe behavior when valstack size limit hit in call setup (GH-2448, GH-2451)"
+    - "Fix a realloc() memory leak triggered when (1) previous allocation exists, (2) new realloc size is 0, (3) GC is triggered before first realloc() attempt (GH-2468, GH-2469)"
+    - "Fix void pointer arithmetic in duk_alloc_pool.c, caused problems with MSVC (GH-2404, GH-2406)"
+    - "Fix broken bytecode dump on big endian architectures (GH-2430, GH-2431, GH-2434)"
+    - "Fix DUK_USE_GET_RANDOM_DOUBLE() argument handling (GH-2432, GH-2435)"
+    - "Use yaml.safe_load() instead of yaml.load() in Py2 tooling (GH-2384)"
+    - "Dist makefile and pkg-config improvements (GH-2457)"
+    - "Fix Makefile.jsoncbor build (GH-2458)"
+    - "Reformat source with clang-format-12 (GH-2416, GH-2421, GH-2423, GH-2424, GH-2425, GH-2426, GH-2427, GH-2428)"
+
 - version: '3.0.0'
-  #previous: '2.6.0'
+  #previous: '2.7.0'
   #release_date: 'XXXX-XX-XX'
   #state: 'planned'
   changes:
@@ -1379,10 +1394,3 @@ duktape_releases:
     - "Use wasm for dukweb.js compilation (including duktape.org site), fix async loading of emcc-compiled code in dukweb.html (GH-2244)"
     - "Improve DUK_USE_OS_STRING for macOS, iOS, watchOS, and tvOS (GH-2288)"
     - "Fix JSON.stringify() handling of Array 'replacer' duplicates (e.g. JSON.stringify({foo: 123}, [\"foo\", \"foo\"])); previously incorrectly serialized multiple times, now only once (GH-2379)"
-    - "Fix void pointer arithmetic in duk_alloc_pool.c, caused problems with MSVC (GH-2404, GH-2406)"
-    - "Fix broken bytecode dump on big endian architectures (GH-2430, GH-2431, GH-2434)"
-    - "Use yaml.safe_load() instead of yaml.load() in Py2 tooling (GH-2384)"
-    - "Reformat source with clang-format-12 (GH-2416, GH-2421, GH-2423, GH-2424, GH-2425, GH-2426, GH-2427, GH-2428)"
-    - "Fix DUK_USE_GET_RANDOM_DOUBLE() argument handling (GH-2432, GH-2435)"
-    - "Fix memory unsafe behavior when valstack size limit hit in call setup (GH-2448, GH-2451)"
-    - "Fix a realloc() memory leak triggered when (1) previous allocation exists, (2) new realloc size is 0, (3) GC is triggered before first realloc() attempt (GH-2468, GH-2469)"
