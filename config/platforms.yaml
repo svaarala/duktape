@@ -12,6 +12,10 @@ autodetect:
     check: DUK_F_ORBIS
     include: platform_orbis.h.in
   -
+    name: MS-DOS
+    check: DUK_F_MSDOS
+    include: platform_msdos.h.in
+  -
     name: OpenBSD
     check: DUK_F_OPENBSD
     include: platform_openbsd.h.in

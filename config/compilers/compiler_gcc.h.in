@@ -55,6 +55,8 @@
 #else
 #define DUK_USE_COMPILER_STRING "mingw"
 #endif
+#elif defined(DUK_F_DJGPP)
+#define DUK_USE_COMPILER_STRING "djgpp"
 #else
 #if defined(DUK_F_CPP)
 #define DUK_USE_COMPILER_STRING "g++"

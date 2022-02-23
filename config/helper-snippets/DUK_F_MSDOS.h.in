@@ -1,0 +1,3 @@
+#if defined(__MSDOS__) || defined(__MSDOS) || defined(MSDOS)
+#define DUK_F_MSDOS
+#endif
