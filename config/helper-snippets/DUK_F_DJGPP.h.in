@@ -1,0 +1,12 @@
+/* DJGPP (MSDOS), see https://sourceforge.net/p/predef/wiki/Compilers/ */
+#if defined(__DJGPP__)
+#define DUK_F_DJGPP
+#define DUK_F_DJGPP_MAJOR __DJGPP__
+#if defined(__DJGPP_MINOR__)
+#define DUK_F_DJGPP_MINOR __DJGPP_MINOR__
+#else
+#define DUK_F_DJGPP_MINOR 0
+#endif
+#define DUK_F_DJGPP_PATCH 0
+#define DUK_F_DJGPP_VERSION (DUK_F_DJGPP_MAJOR * 10000L + DUK_F_DJGPP_MINOR * 100L + DUK_F_DJGPP_PATCH)
+#endif
