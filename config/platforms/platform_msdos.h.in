@@ -1,0 +1,19 @@
+#if defined(DUK_F_DJGPP)
+/* These are for DJGPP, add #ifdefs for other MS-DOS compilers as needed. */
+#define DUK_USE_DATE_NOW_GETTIMEOFDAY
+#define DUK_USE_DATE_TZO_GMTIME_R
+#undef DUK_USE_DATE_PRS_STRPTIME  /* Not supported, see: https://github.com/svaarala/duktape/issues/2472 */
+#define DUK_USE_DATE_FMT_STRFTIME
+#include <time.h>
+#include <sys/time.h>
+#else
+/* Placeholder, unlikely to work outside of DJGPP. */
+#define DUK_USE_DATE_NOW_GETTIMEOFDAY
+#define DUK_USE_DATE_TZO_GMTIME_R
+#undef DUK_USE_DATE_PRS_STRPTIME
+#define DUK_USE_DATE_FMT_STRFTIME
+#include <time.h>
+#include <sys/time.h>
+#endif
+
+#define DUK_USE_OS_STRING "msdos"
