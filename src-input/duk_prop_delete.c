@@ -8,7 +8,8 @@
  *  be inlined into the [[Delete]] algorithms to provide good error messages.
  *
  *  Stabilization is needed for Proxies because side effects may revoke some
- *  Proxies in a Proxy chain, stranding the current target object.
+ *  Proxies in a Proxy chain, stranding the current target object, see
+ *  discussion in duk_prop_get.c.
  */
 
 #include "duk_internal.h"
@@ -44,6 +45,8 @@ DUK_LOCAL duk_bool_t duk__prop_delete_error_shared_obj(duk_hthread *thr,
                                                        duk_hobject *obj,
                                                        duk_hstring *key,
                                                        duk_small_uint_t delprop_flags) {
+	DUK_UNREF(obj);
+	DUK_UNREF(key);
 	if (delprop_flags & DUK_DELPROP_FLAG_THROW) {
 		DUK_TYPE_ERROR(thr, "cannot delete property of object");
 	}
@@ -53,6 +56,7 @@ DUK_LOCAL duk_bool_t duk__prop_delete_error_shared_objidx(duk_hthread *thr,
                                                           duk_idx_t idx_obj,
                                                           duk_hstring *key,
                                                           duk_small_uint_t delprop_flags) {
+	DUK_UNREF(key);
 	if (delprop_flags & DUK_DELPROP_FLAG_THROW) {
 		const char *str1 = duk_get_type_name(thr, idx_obj);
 		DUK_ERROR_FMT1(thr, DUK_ERR_TYPE_ERROR, "cannot delete property of %s", str1);
@@ -212,19 +216,82 @@ DUK_LOCAL void duk__prop_delete_ent_shared(duk_hthread *thr, duk_propvalue *pv_s
 	/* Slot is left as garbage. */
 }
 
-DUK_LOCAL duk_bool_t duk__prop_delete_proxy_tail(duk_hthread *thr) {
-	duk_bool_t res;
+DUK_LOCAL void duk__prop_delete_proxy_policy(duk_hthread *thr, duk_hobject *obj, duk_bool_t trap_rc) {
+	duk_hobject *target;
+	duk_small_int_t attrs;
+
+	if (trap_rc == 0) {
+		return;
+	}
+
+	/* [ ... key ] */
+
+	target = duk_proxy_get_target_autothrow(thr, (duk_hproxy *) obj);
+	DUK_ASSERT(target != NULL);
+
+	attrs = duk_prop_getowndesc_obj_tvkey(thr, target, duk_get_tval(thr, -1 /*trap key*/));
+	target = NULL; /* Potentially invalidated. */
+
+	/* [ ... key value ] OR [ ... key get set ] */
+
+	if (attrs >= 0) {
+		duk_small_uint_t uattrs = (duk_small_uint_t) attrs;
+		if ((uattrs & DUK_PROPDESC_FLAG_CONFIGURABLE) == 0) {
+			/* Non-configurable property in target: reject deletion.  Trap still
+			 * gets called (and may remove the property prior to this policy check).
+			 */
+			goto reject;
+		}
+
+		/* Re-get 'target', as previous [[GetOwnProperty]] may have invalidated it,
+		 * or even revoked the Proxy.
+		 */
+
+		target = duk_proxy_get_target_autothrow(thr, (duk_hproxy *) obj);
+		DUK_ASSERT(target != NULL);
+
+		if (!duk_js_isextensible(thr, target)) {
+			/* If property exists in target: reject delection.  Trap still
+			 * gets called.
+			 */
+			goto reject;
+		}
+	} else {
+		/* If target has no 'key', then no restrictions are applied. */
+	}
+
+	duk_prop_pop_propdesc(thr, attrs);
+	return;
+
+reject:
+	DUK_ERROR_TYPE(thr, DUK_STR_PROXY_REJECTED);
+}
+
+DUK_LOCAL duk_bool_t duk__prop_delete_proxy_tail(duk_hthread *thr, duk_hobject *obj) {
+	duk_bool_t trap_rc;
 
 	DUK_ASSERT(thr != NULL);
 
-	duk_call_method(thr, 2); /* [ ... trap handler target key ] -> [ ... result ] */
+	/* [ ... trap handler target key ] */
 
-	res = duk_to_boolean(thr, -1);
+	duk_dup_top(thr);
+	duk_insert(thr, -5); /* Stash key for policy check. */
+
+	/* [ ... key trap handler target key ] */
+
+	duk_call_method(thr, 2); /* [ ... key trap handler target key ] -> [ ... key result ] */
+
+	trap_rc = duk_to_boolean_top_pop(thr);
+
+#if defined(DUK_USE_PROXY_POLICY)
+	duk__prop_delete_proxy_policy(thr, obj, trap_rc);
+#else
+	DUK_DD(DUK_DDPRINT("proxy policy check for 'deleteProperty' trap disabled in configuration"));
+#endif
+
 	duk_pop_unsafe(thr);
 
-	/* XXX: Proxy policy */
-
-	return res;
+	return trap_rc;
 }
 
 DUK_LOCAL duk_small_int_t duk__prop_delete_obj_strkey_proxy(duk_hthread *thr, duk_hobject *obj, duk_hstring *key) {
@@ -236,7 +303,7 @@ DUK_LOCAL duk_small_int_t duk__prop_delete_obj_strkey_proxy(duk_hthread *thr, du
 
 	if (duk_proxy_trap_check_strkey(thr, (duk_hproxy *) obj, key, DUK_STRIDX_DELETE_PROPERTY)) {
 		duk_push_hstring(thr, key);
-		return duk__prop_delete_proxy_tail(thr);
+		return (duk_small_int_t) duk__prop_delete_proxy_tail(thr, obj);
 	} else {
 		return -1;
 	}
@@ -250,7 +317,7 @@ DUK_LOCAL duk_small_int_t duk__prop_delete_obj_idxkey_proxy(duk_hthread *thr, du
 
 	if (duk_proxy_trap_check_idxkey(thr, (duk_hproxy *) obj, idx, DUK_STRIDX_DELETE_PROPERTY)) {
 		(void) duk_push_u32_tostring(thr, idx);
-		return duk__prop_delete_proxy_tail(thr);
+		return (duk_small_int_t) duk__prop_delete_proxy_tail(thr, obj);
 	} else {
 		return -1;
 	}
@@ -361,31 +428,28 @@ retry_target:
 		 * Above P1 is the original 'obj'.  Suppose we've progressed
 		 * to P3, and a side effect of looking up the P3 proxy trap
 		 * revokes proxy P1, i.e. NULLs the 'target' pointer of P1.
+		 *
+		 *   P1 -X> P2 --> P3 --> target
+		 *          `------------------'
+		 *           potentially unreachable without stabilization
+		 *
 		 * This may cause P2, P3, and target to be garbage collected.
 		 */
 		if (side_effect_safe) {
 			duk_small_int_t rc = duk__prop_delete_obj_strkey_proxy(thr, target, key);
+			DUK_ASSERT(rc == 0 || rc == 1 || rc == -1);
 			if (rc >= 0) {
-				DUK_ASSERT(rc == 0 || rc == 1);
 				if (rc) {
 					goto success;
 				}
 				goto fail_proxy;
 			} else {
 				duk_hobject *next;
-				duk_tval *tv_target;
 
 				next = duk_proxy_get_target_autothrow(thr, (duk_hproxy *) target);
 				DUK_ASSERT(next != NULL);
 
-				tv_target = thr->valstack_top - 1;
-				DUK_ASSERT(DUK_TVAL_IS_OBJECT(tv_target));
-				DUK_ASSERT(DUK_TVAL_GET_OBJECT(tv_target) == target);
-				DUK_HOBJECT_INCREF(thr, next);
-				DUK_TVAL_UPDATE_OBJECT(tv_target, next);
-				DUK_HOBJECT_DECREF(thr, target);
-
-				target = next;
+				target = duk_prop_switch_stabilized_target_top(thr, target, next);
 				goto retry_target;
 			}
 		} else {
@@ -424,7 +488,7 @@ retry_target:
 				 * the CanonicalNumericIndexString is always out of
 				 * bounds, so [[GetOwnProperty]] returns undefined
 				 * (no descriptor), which causes OrdinaryDelete() to
-				 * return true (= success).
+				 * return true (= success) with no action.
 				 */
 				DUK_ASSERT(DUK_HSTRING_HAS_CANNUM(key));
 				goto success;
@@ -439,9 +503,9 @@ retry_target:
 	 * property table.
 	 */
 	if (side_effect_safe) {
-		duk_bool_t rc = duk__prop_delete_obj_strkey_ordinary(thr, target, key, delprop_flags);
+		duk_bool_t del_rc = duk__prop_delete_obj_strkey_ordinary(thr, target, key, delprop_flags);
 		duk_pop_unsafe(thr);
-		return rc;
+		return del_rc;
 	} else {
 		return duk__prop_delete_obj_strkey_ordinary(thr, target, key, delprop_flags);
 	}
@@ -545,10 +609,15 @@ DUK_LOCAL duk_bool_t duk__prop_delete_obj_idxkey_arguments(duk_hthread *thr,
 			return 0;
 		}
 	}
+	DUK_GC_TORTURE(thr->heap);
 
 	/* Ordinary delete successful, delete from map if was mapped
 	 * in the beginning.  Map delete should always succeed; its
 	 * retval is ignored.
+	 *
+	 * NOTE: 'varname' may be a dangling reference at this point
+	 * so any dereference may be invalid.  But we only check its
+	 * previous value for NULL here ("varname was non-NULL earlier").
 	 */
 	if (varname != NULL) {
 		(void) duk__prop_delete_obj_idxkey_ordinary(thr, map, idx, 0 /*delprop_flags*/);
@@ -653,27 +722,19 @@ retry_target:
 		 */
 		if (side_effect_safe) {
 			duk_small_int_t rc = duk__prop_delete_obj_idxkey_proxy(thr, target, idx);
+			DUK_ASSERT(rc == 0 || rc == 1 || rc == -1);
 			if (rc >= 0) {
-				DUK_ASSERT(rc == 0 || rc == 1);
 				if (rc) {
 					goto success;
 				}
 				goto fail_proxy;
 			} else {
 				duk_hobject *next;
-				duk_tval *tv_target;
 
 				next = duk_proxy_get_target_autothrow(thr, (duk_hproxy *) target);
 				DUK_ASSERT(next != NULL);
 
-				tv_target = thr->valstack_top - 1;
-				DUK_ASSERT(DUK_TVAL_IS_OBJECT(tv_target));
-				DUK_ASSERT(DUK_TVAL_GET_OBJECT(tv_target) == target);
-				DUK_HOBJECT_INCREF(thr, next);
-				DUK_TVAL_UPDATE_OBJECT(tv_target, next);
-				DUK_HOBJECT_DECREF(thr, target);
-
-				target = next;
+				target = duk_prop_switch_stabilized_target_top(thr, target, next);
 				goto retry_target;
 			}
 		} else {
@@ -725,9 +786,9 @@ retry_target:
 	 */
 
 	if (side_effect_safe) {
-		duk_bool_t rc = duk__prop_delete_obj_idxkey_ordinary(thr, target, idx, delprop_flags);
+		duk_bool_t del_rc = duk__prop_delete_obj_idxkey_ordinary(thr, target, idx, delprop_flags);
 		duk_pop_unsafe(thr);
-		return rc;
+		return del_rc;
 	} else {
 		return duk__prop_delete_obj_idxkey_ordinary(thr, target, idx, delprop_flags);
 	}
@@ -788,7 +849,7 @@ DUK_INTERNAL duk_bool_t duk_prop_delete_obj_idxkey(duk_hthread *thr,
 		duk_bool_t rc;
 		duk_hstring *key;
 
-		DUK_D(DUK_DPRINT("corner case, input idx 0xffffffff is not an arridx, must coerce to string"));
+		DUK_DD(DUK_DDPRINT("corner case, input idx 0xffffffff is not an arridx, must coerce to string"));
 		key = duk_push_u32_tohstring(thr, idx);
 		rc = duk__prop_delete_obj_strkey_unsafe(thr, obj, key, delprop_flags);
 		duk_pop_unsafe(thr);
@@ -931,7 +992,7 @@ DUK_INTERNAL duk_bool_t duk_prop_delete_idxkey(duk_hthread *thr,
 		duk_bool_t rc;
 		duk_hstring *key;
 
-		DUK_D(DUK_DPRINT("corner case, input idx 0xffffffff is not an arridx, must coerce to string"));
+		DUK_DD(DUK_DDPRINT("corner case, input idx 0xffffffff is not an arridx, must coerce to string"));
 		key = duk_push_u32_tohstring(thr, idx);
 		rc = duk__prop_delete_strkey(thr, idx_obj, key, delprop_flags);
 		duk_pop_unsafe(thr);
