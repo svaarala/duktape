@@ -70,6 +70,9 @@ and agreed to irrevocably license their contributions under the Duktape
 * William Parks (https://github.com/WilliamParks)
 * Sam Hellawell (https://github.com/samhellawell)
 * Vladislavs Sokurenko (https://github.com/sokurenko)
+* Luca Boccassi (https://github.com/bluca)
+* Radu Rendec (https://github.com/rrendec)
+* tinywrkb (https://github.com/tinywrkb)
 
 Other contributions
 ===================
