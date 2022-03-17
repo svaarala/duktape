@@ -71,11 +71,11 @@ all: libduktape.$(SO_REALNAME_SUFFIX) libduktaped.$(SO_REALNAME_SUFFIX) duktape.
 
 libduktape.$(SO_REALNAME_SUFFIX):
 	$(CC) $(CFLAGS) $(CPPFLAGS) $(LDFLAGS) -shared -fPIC -Wall -Wextra -Os -Wl,$(LD_SONAME_ARG),libduktape.$(SO_SONAME_SUFFIX) \
-		-o $@ $(DUKTAPE_SRCDIR)/duktape.c
+		-o $@ $(DUKTAPE_SRCDIR)/duktape.c -lm
 
 libduktaped.$(SO_REALNAME_SUFFIX):
 	$(CC) $(CFLAGS) $(CPPFLAGS) $(LDFLAGS) -shared -fPIC -g -Wall -Wextra -Os -Wl,$(LD_SONAME_ARG),libduktaped.$(SO_SONAME_SUFFIX) \
-		-o $@ $(DUKTAPE_SRCDIR)/duktape.c
+		-o $@ $(DUKTAPE_SRCDIR)/duktape.c -lm
 
 duktape.pc:
 	sed -e "s|@PREFIX@|$(INSTALL_PREFIX)|" \
