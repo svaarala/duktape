@@ -877,7 +877,33 @@ objects:
           varargs: true
         present_if: DUK_USE_FUNCTION_BUILTIN
 
-      # ES2015
+        # ES2015+: AddRestrictedFunctionProperties for Function.prototype.
+        # Getters/setters must be the same %ThrowTypeError% instance.
+        # For now handled specially in built-ins init.
+      - key: "caller"
+        value:
+          type: accessor
+          getter: duk_bi_type_error_thrower
+          setter: duk_bi_type_error_thrower
+          getter_nargs: 0
+          setter_nargs: 1
+          getter_magic: 0
+          setter_magic: 0
+        attributes: "c"
+        es6: true
+        present_if: DUK_USE_FUNCTION_BUILTIN
+      - key: "arguments"
+        value:
+          type: accessor
+          getter: duk_bi_type_error_thrower
+          setter: duk_bi_type_error_thrower
+          getter_nargs: 0
+          setter_nargs: 1
+          getter_magic: 0
+          setter_magic: 0
+        attributes: "c"
+        es6: true
+        present_if: DUK_USE_FUNCTION_BUILTIN
       - key:  # @@hasInstance
           type: symbol
           variant: wellknown
@@ -2905,7 +2931,7 @@ objects:
       # Custom name, matches V8; ES2016 describes %ThrowTypeError% as being
       # anonymous.
       - key: "name"
-        value: "ThrowTypeError"
+        value: ""
         attributes: "c"
         duktape: true
 

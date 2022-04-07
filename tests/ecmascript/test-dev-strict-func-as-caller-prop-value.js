@@ -1,51 +1,18 @@
 /*
- *  If the 'caller' property of a non-bound function (strict or not) or an
- *  Arguments object of a non-strict function with at least one formal parameter
- *  has a -value- which is a strict function, throw a TypeError in [[Get]].
- *  See E5.1 Sections 15.3.5.4 and 10.6.
- *
- *  The situation is a bit ambiguous for bound functions: Section 15.3.4.5
- *  (which describes bind()) states that [[Get]] is as for ordinary functions,
- *  specified in Section 15.3.5.4.  However, Section 15.3.5.4 states:
- *
- *      NOTE: Function objects created using Function.prototype.bind
- *      use the default [[Get]] internal method.
- *
- *  This seems to imply that bound functions do not have this special
- *  behavior.
- *
- *  These special [[Get]] behaviors are quite complicated to understand
- *  because both the base value and the property value affect the final
- *  behavior.  Also, the nature of the Arguments object depends on whether
- *  the function has formal arguments or not, which is quite nonintuitive.
- *
- *  Rhino and V8 also don't seem to match the behavior mandated by the
- *  specification.  For V8 there seem to be the following deviations:
- *
- *    - V8 doesn't apply the special [[Get]] semantics to non-strict
- *      functions while E5.1 Section 15.3.5.4 doesn't limit the behavior
- *      to strict functions only (the behavior is limited to 'caller'
- *      having a strict function as a -value-, but the base can be a
- *      non-strict function too).
- *
- *    - V8 promotes a string written to 'caller' into an object which
- *      seems non-compliant.
- *
- *    - V8 doesn't apply the special [[Get]] semantics for non-strict
- *      Arguments object even when the callee has formal arguments
- *      (which is supposed to enable the special behaviors for the
- *      [[ParameterMap]] handling and "caller").
- *
- *  ES2017 removes the arguments.caller thrower for strict argument objects,
- *  test case has been updated to reflect this.
+ *  Strict function as an arguments 'caller' property.
  */
 
 /*===
 functions
-0 0 string
-0 1 function
+0 0 fail to set "caller": TypeError
+0 0 TypeError
+0 1 fail to set "caller": TypeError
+0 1 TypeError
+0 2 fail to set "caller": TypeError
 0 2 TypeError
-0 3 function
+0 3 fail to set "caller": TypeError
+0 3 TypeError
+0 4 fail to set "caller": TypeError
 0 4 TypeError
 1 0 fail to set "caller": TypeError
 1 0 TypeError
@@ -144,9 +111,8 @@ function testFunctions() {
         for (j = 0; j < callerPropertyValues.length; j++) {
             base = baseFunctionCreators[i]();
 
-            // Note: this step fails (as expected) for bound functions and
-            // strict functions because they have a non-writable 'caller'
-            // property.
+            // Now fails for all functions because of an inherited
+            // Function.prototype.caller which throws unconditionally.
             try {
                 base.caller = callerPropertyValues[j];
             } catch (e) {

@@ -792,6 +792,8 @@ enum nonenumerable
 key: length
 key: name
 key: constructor
+key: caller
+key: arguments
 key: toString
 key: apply
 key: call

@@ -1,18 +1,5 @@
-/*
- *  The 'caller' property for functions is rather interesting: it is a
- *  thrower for strict functions and all bound functions (strict AND
- *  non-strict).  It is undefined for non-strict non-bound functions.
- *
- *  V8 behavior mostly agrees but 'caller' will be set to 'null' for
- *  non-strict functions (instead of being undefined).  Rhino behavior
- *  does not agree; bound non-strict functions don't have a 'caller'
- *  property in Rhino.
- *
- *  E5.1 Sections 15.3.5, 15.3.4.5.
- */
-
 /*===
-undefined
+TypeError
 TypeError
 TypeError
 TypeError

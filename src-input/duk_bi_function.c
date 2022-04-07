@@ -350,10 +350,11 @@ DUK_INTERNAL duk_ret_t duk_bi_function_prototype_bind(duk_hthread *thr) {
 	DUK_TVAL_SET_U32(tv_tmp, (duk_uint32_t) bound_len); /* in-place update, fastint */
 	duk_xdef_prop_stridx_short(thr, -2, DUK_STRIDX_LENGTH, DUK_PROPDESC_FLAGS_C); /* attrs in E6 Section 9.2.4 */
 
-	/* XXX: could these be virtual? */
+#if 0 /* Now inherited from Function.prototype, for both strict and non-strict functions. */
 	/* Caller and arguments must use the same thrower, [[ThrowTypeError]]. */
 	duk_xdef_prop_stridx_thrower(thr, -1, DUK_STRIDX_CALLER);
 	duk_xdef_prop_stridx_thrower(thr, -1, DUK_STRIDX_LC_ARGUMENTS);
+#endif
 
 	/* Function name and fileName (non-standard). */
 	duk_push_literal(thr, "bound "); /* ES2015 19.2.3.2. */
