@@ -18,6 +18,7 @@ jobs:
         run: |
           build/duk -e "print(Duktape.env); print('Hello world!');"
           build/duk dist-files/mandel.js
+          build/duk-g++ dist-files/mandel.js
   build_duk_macos:
     name: Duk macOS 10.15
     runs-on: macos-10.15
