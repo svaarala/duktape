@@ -100,6 +100,9 @@ DUK_LOCAL duk_uarridx_t duk__prop_ownpropkeys_bufobj_indices(duk_hthread *thr,
 
 	n = (duk_uint32_t) DUK_HBUFOBJ_GET_LOGICAL_LENGTH(h);
 	res = duk__prop_ownpropkeys_append_indices(thr, n, arr_out, idx_out);
+	/* Side effects are possible, but they cannot alter the length of a
+	 * typed array so 'n' should still be valid.
+	 */
 	DUK_ASSERT(DUK_HBUFOBJ_GET_LOGICAL_LENGTH(h) == n);
 	return res;
 }
@@ -182,16 +185,14 @@ DUK_LOCAL duk_uarridx_t duk__prop_ownpropkeys_strprops(duk_hthread *thr,
 	duk_uint8_t *attr_base;
 	duk_bool_t found_symbols = 0;
 
-	n = obj->e_next;
+	n = duk_hobject_get_enext(obj);
 	tv_out_start = duk_harray_append_reserve_items(thr, arr_out, idx_out, n);
 	tv_out = tv_out_start;
 	DUK_ASSERT(tv_out != NULL || (idx_out == 0 && n == 0));
 
-	val_base = (duk_propvalue *) (void *) obj->props;
-	key_base = (duk_hstring **) (void *) (val_base + obj->e_size);
-	attr_base = (duk_uint8_t *) (void *) (key_base + obj->e_size);
+	duk_hobject_get_props_key_attr(thr->heap, obj, &val_base, &key_base, &attr_base);
 
-	for (i = 0, n = obj->e_next; i < n; i++) {
+	for (i = 0, n = duk_hobject_get_enext(obj); i < n; i++) {
 		duk_hstring *key;
 		duk_uint8_t attrs;
 
@@ -339,6 +340,7 @@ DUK_LOCAL void duk__prop_ownpropkeys_sort_index_keys(duk_hthread *thr, duk_harra
 	}
 }
 
+#if defined(DUK_USE_PROXY_POLICY)
 /* Incorrect approximate implementation for now. */
 DUK_LOCAL void duk__prop_ownpropkeys_proxy_policy(duk_hthread *thr, duk_hobject *obj, duk_uint_t ownpropkeys_flags) {
 	duk_hobject *target;
@@ -389,6 +391,7 @@ DUK_LOCAL void duk__prop_ownpropkeys_proxy_policy(duk_hthread *thr, duk_hobject 
 			}
 		}
 
+		/* XXX: This is not correct, but approximate for now. */
 		if (ownpropkeys_flags & DUK_OWNPROPKEYS_FLAG_REQUIRE_ENUMERABLE) {
 			duk_small_int_t attrs = duk_prop_getownattr_obj_strkey(thr, target, h);
 			if (attrs >= 0) {
@@ -420,6 +423,7 @@ DUK_LOCAL void duk__prop_ownpropkeys_proxy_policy(duk_hthread *thr, duk_hobject 
 proxy_reject:
 	DUK_ERROR_TYPE(thr, DUK_STR_PROXY_REJECTED);
 }
+#endif
 
 DUK_LOCAL duk_small_int_t duk__prop_ownpropkeys_proxy(duk_hthread *thr, duk_hobject *obj, duk_uint_t ownpropkeys_flags) {
 	if (duk_proxy_trap_check_nokey(thr, (duk_hproxy *) obj, DUK_STRIDX_OWN_KEYS)) {
@@ -508,6 +512,7 @@ retry_obj:
 		}
 		break;
 	}
+#if defined(DUK_USE_BUFFEROBJECT_SUPPORT)
 	case DUK_HTYPE_ARRAYBUFFER:
 	case DUK_HTYPE_DATAVIEW:
 		break;
@@ -520,19 +525,16 @@ retry_obj:
 	case DUK_HTYPE_UINT32ARRAY:
 	case DUK_HTYPE_FLOAT32ARRAY:
 	case DUK_HTYPE_FLOAT64ARRAY:
-		/* [[OwnPropertyKeys]] for typed arrays explicitly requires
-		 * that integer-index keys (0 to 2^53-1) must not be included
-		 * in the result even if present.
-		 *
-		 * One should not be able to establish such properties, so we
-		 * don't need to explicitly check for them.  If they were
-		 * present, they could be in idxprops (<= 0xfffffffe) or
-		 * strprops (>= 0xffffffff).
-		 */
 		if (ownpropkeys_flags & DUK_OWNPROPKEYS_FLAG_INCLUDE_ARRIDX) {
-			idx_out = duk__prop_ownpropkeys_bufobj_indices(thr, obj, arr_out, idx_out);
+			duk_hbufobj *h = (duk_hbufobj *) obj;
+			if (!DUK_HBUFOBJ_IS_DETACHED(h)) {
+				idx_out = duk__prop_ownpropkeys_bufobj_indices(thr, obj, arr_out, idx_out);
+			} else {
+				/* Detached: don't enumerate at all. */
+			}
 		}
 		goto skip_index_part;
+#endif /* DUK_USE_BUFFEROBJECT_SUPPORT */
 	default:
 		break;
 	}
@@ -564,6 +566,7 @@ skip_index_part:
 		switch (htype) {
 		case DUK_HTYPE_ARRAY:
 		case DUK_HTYPE_STRING_OBJECT:
+#if defined(DUK_USE_BUFFEROBJECT_SUPPORT)
 		case DUK_HTYPE_INT8ARRAY:
 		case DUK_HTYPE_UINT8ARRAY:
 		case DUK_HTYPE_UINT8CLAMPEDARRAY:
@@ -573,6 +576,7 @@ skip_index_part:
 		case DUK_HTYPE_UINT32ARRAY:
 		case DUK_HTYPE_FLOAT32ARRAY:
 		case DUK_HTYPE_FLOAT64ARRAY:
+#endif /* DUK_USE_BUFFEROBJECT_SUPPORT */
 			idx_out = duk__prop_ownpropkeys_add_length(thr, idx_out);
 			break;
 		default:
@@ -594,7 +598,7 @@ skip_index_part:
 	 * added in the final step if desired.
 	 */
 
-	if (obj->props != NULL && obj->e_next > 0) {
+	if (duk_hobject_get_props(thr->heap, obj) != NULL && duk_hobject_get_enext(obj) > 0) {
 		duk_bool_t found_symbols = 1;
 
 		if (ownpropkeys_flags & DUK_OWNPROPKEYS_FLAG_INCLUDE_STRING) {

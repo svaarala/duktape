@@ -18,7 +18,7 @@ RUN echo "=== Timezone setup ===" && \
 # Duktape, the duktape.org website, run tests, etc.
 RUN echo "=== Node.js and package install ===" && \
 	apt-get update && apt-get install -qqy curl && \
-	curl -sL https://deb.nodesource.com/setup_14.x | bash - && \
+	curl -sL https://deb.nodesource.com/setup_16.x | bash - && \
 	dpkg --add-architecture i386 && \
 	apt-get update && \
 	apt-get install -qqy \

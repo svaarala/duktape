@@ -857,7 +857,7 @@ duk__get_own_prop_idxkey_switch(duk_hthread *thr, duk_hobject *obj, duk_uarridx_
 	case DUK_HTYPE_FLOAT32ARRAY:
 	case DUK_HTYPE_FLOAT64ARRAY:
 		/* All arridx are captured and don't reach OrdinaryGetOwnProperty(). */
-		if (DUK_LIKELY(duk_prop_bufobj_read_check(thr, (duk_hbufobj *) obj, idx))) {
+		if (DUK_LIKELY(duk_hbufobj_validate_and_read_push(thr, (duk_hbufobj *) obj, idx))) {
 			duk_replace_posidx_unsafe(thr, idx_out);
 			return DUK__GETOWN_FOUND;
 		}
@@ -926,39 +926,94 @@ duk__get_ownprop_idxkey_stringobj(duk_hthread *thr, duk_hobject *obj, duk_uarrid
 	return (duk_bool_t) str_rc;
 }
 
+#if defined(DUK_USE_BUFFEROBJECT_SUPPORT)
 DUK_LOCAL duk_bool_t
 duk__get_ownprop_idxkey_typedarray(duk_hthread *thr, duk_hobject *obj, duk_uarridx_t idx, duk_idx_t idx_out, duk_idx_t idx_recv) {
 	/* All arridx are captured and don't reach OrdinaryGetOwnProperty(). */
 	DUK_UNREF(idx_recv);
-	if (DUK_LIKELY(duk_prop_bufobj_read_check(thr, (duk_hbufobj *) obj, idx))) {
+	DUK_UNREF(idx_recv);
+	if (DUK_LIKELY(duk_hbufobj_validate_and_read_push(thr, (duk_hbufobj *) obj, idx))) {
 		duk_replace_posidx_unsafe(thr, idx_out);
 		return DUK__GETOWN_FOUND;
 	}
 	return DUK__GETOWN_DONE_NOTFOUND; /* Short circuit. */
 }
+#else
+DUK_LOCAL duk_bool_t
+duk__get_ownprop_idxkey_typedarray(duk_hthread *thr, duk_hobject *obj, duk_uarridx_t idx, duk_idx_t idx_out, duk_idx_t idx_recv) {
+	return duk__get_ownprop_idxkey_error(thr, obj, idx, idx_out, idx_recv);
+}
+#endif /* DUK_USE_BUFFEROBJECT_SUPPORT */
 
+DUK_LOCAL duk_bool_t
+duk__get_ownprop_idxkey_int8array(duk_hthread *thr, duk_hobject *obj, duk_uarridx_t idx, duk_idx_t idx_out, duk_idx_t idx_recv) {
+	return duk__get_ownprop_idxkey_typedarray(thr, obj, idx, idx_out, idx_recv);
+}
+
+#if defined(DUK_USE_BUFFEROBJECT_SUPPORT)
 DUK_LOCAL duk_bool_t
 duk__get_ownprop_idxkey_uint8array(duk_hthread *thr, duk_hobject *obj, duk_uarridx_t idx, duk_idx_t idx_out, duk_idx_t idx_recv) {
 	duk_hbufobj *h = (duk_hbufobj *) obj;
+	duk_uint8_t *data;
 
 	DUK_UNREF(idx_recv);
 
-	if (DUK_LIKELY(idx < DUK_HBUFOBJ_GET_LOGICAL_LENGTH(h))) {
-		duk_size_t byte_off = idx;
-		duk_size_t elem_size = 1;
+	data = duk_hbufobj_uint8array_get_validated_data_ptr(thr, h, idx);
+	if (DUK_LIKELY(data != NULL)) {
+		duk_tval *tv_out;
 
-		if (DUK_LIKELY(h->buf != NULL && DUK_HBUFOBJ_VALID_BYTEOFFSET_EXCL(h, byte_off + elem_size))) {
-			duk_tval *tv_out;
-			duk_uint8_t *data;
-
-			tv_out = DUK_GET_TVAL_POSIDX(thr, idx_out);
-			data = (duk_uint8_t *) DUK_HBUFFER_GET_DATA_PTR(thr->heap, h->buf) + h->offset + byte_off;
-			DUK_ASSERT(DUK_HTHREAD_TVAL_IN_VSFRAME(thr, tv_out));
-			DUK_TVAL_SET_U32(tv_out, (duk_uint32_t) *data);
-			return DUK__GETOWN_FOUND;
-		}
+		tv_out = DUK_GET_TVAL_POSIDX(thr, idx_out);
+		DUK_ASSERT(DUK_HTHREAD_TVAL_IN_VSFRAME(thr, tv_out));
+		DUK_TVAL_SET_U32(tv_out, (duk_uint32_t) *data);
+		return DUK__GETOWN_FOUND;
+	} else {
+		/* Out-of-bounds, detached, uncovered: treat as not found. */
+		return DUK__GETOWN_DONE_NOTFOUND; /* Short circuit. */
 	}
-	return DUK__GETOWN_DONE_NOTFOUND; /* Short circuit. */
+}
+#else
+DUK_LOCAL duk_bool_t
+duk__get_ownprop_idxkey_uint8array(duk_hthread *thr, duk_hobject *obj, duk_uarridx_t idx, duk_idx_t idx_out, duk_idx_t idx_recv) {
+	return duk__get_ownprop_idxkey_error(thr, obj, idx, idx_out, idx_recv);
+}
+#endif /* DUK_USE_BUFFEROBJECT_SUPPORT */
+
+DUK_LOCAL duk_bool_t duk__get_ownprop_idxkey_uint8clampedarray(duk_hthread *thr,
+                                                               duk_hobject *obj,
+                                                               duk_uarridx_t idx,
+                                                               duk_idx_t idx_out,
+                                                               duk_idx_t idx_recv) {
+	return duk__get_ownprop_idxkey_typedarray(thr, obj, idx, idx_out, idx_recv);
+}
+
+DUK_LOCAL duk_bool_t
+duk__get_ownprop_idxkey_int16array(duk_hthread *thr, duk_hobject *obj, duk_uarridx_t idx, duk_idx_t idx_out, duk_idx_t idx_recv) {
+	return duk__get_ownprop_idxkey_typedarray(thr, obj, idx, idx_out, idx_recv);
+}
+
+DUK_LOCAL duk_bool_t
+duk__get_ownprop_idxkey_uint16array(duk_hthread *thr, duk_hobject *obj, duk_uarridx_t idx, duk_idx_t idx_out, duk_idx_t idx_recv) {
+	return duk__get_ownprop_idxkey_typedarray(thr, obj, idx, idx_out, idx_recv);
+}
+
+DUK_LOCAL duk_bool_t
+duk__get_ownprop_idxkey_int32array(duk_hthread *thr, duk_hobject *obj, duk_uarridx_t idx, duk_idx_t idx_out, duk_idx_t idx_recv) {
+	return duk__get_ownprop_idxkey_typedarray(thr, obj, idx, idx_out, idx_recv);
+}
+
+DUK_LOCAL duk_bool_t
+duk__get_ownprop_idxkey_uint32array(duk_hthread *thr, duk_hobject *obj, duk_uarridx_t idx, duk_idx_t idx_out, duk_idx_t idx_recv) {
+	return duk__get_ownprop_idxkey_typedarray(thr, obj, idx, idx_out, idx_recv);
+}
+
+DUK_LOCAL duk_bool_t
+duk__get_ownprop_idxkey_float32array(duk_hthread *thr, duk_hobject *obj, duk_uarridx_t idx, duk_idx_t idx_out, duk_idx_t idx_recv) {
+	return duk__get_ownprop_idxkey_typedarray(thr, obj, idx, idx_out, idx_recv);
+}
+
+DUK_LOCAL duk_bool_t
+duk__get_ownprop_idxkey_float64array(duk_hthread *thr, duk_hobject *obj, duk_uarridx_t idx, duk_idx_t idx_out, duk_idx_t idx_recv) {
+	return duk__get_ownprop_idxkey_typedarray(thr, obj, idx, idx_out, idx_recv);
 }
 
 /* On 32-bit targets this takes 256 bytes.  There are only a few handlers so
@@ -968,42 +1023,37 @@ duk__get_ownprop_idxkey_uint8array(duk_hthread *thr, duk_hobject *obj, duk_uarri
  * On 64-bit targets this typically takes 512 bytes.
  */
 DUK_LOCAL const duk__get_ownprop_idxkey_htype duk__getown_idxkey_handlers[64] = {
-	duk__get_ownprop_idxkey_error,      duk__get_ownprop_idxkey_error,      duk__get_ownprop_idxkey_error,
-	duk__get_ownprop_idxkey_error,      duk__get_ownprop_idxkey_error,      duk__get_ownprop_idxkey_error,
-	duk__get_ownprop_idxkey_error,      duk__get_ownprop_idxkey_error,
+	duk__get_ownprop_idxkey_error,        duk__get_ownprop_idxkey_error,       duk__get_ownprop_idxkey_error,
+	duk__get_ownprop_idxkey_error,        duk__get_ownprop_idxkey_error,       duk__get_ownprop_idxkey_error,
+	duk__get_ownprop_idxkey_error,        duk__get_ownprop_idxkey_error,
 
-	duk__get_ownprop_idxkey_array,      duk__get_ownprop_idxkey_arguments,  duk__get_ownprop_idxkey_ordinary,
-	duk__get_ownprop_idxkey_error,      duk__get_ownprop_idxkey_ordinary,   duk__get_ownprop_idxkey_ordinary,
-	duk__get_ownprop_idxkey_ordinary,   duk__get_ownprop_idxkey_error,
+	duk__get_ownprop_idxkey_array,        duk__get_ownprop_idxkey_arguments,   duk__get_ownprop_idxkey_ordinary,
+	duk__get_ownprop_idxkey_error,        duk__get_ownprop_idxkey_ordinary,    duk__get_ownprop_idxkey_ordinary,
+	duk__get_ownprop_idxkey_ordinary,     duk__get_ownprop_idxkey_error,
 
-	duk__get_ownprop_idxkey_ordinary,   duk__get_ownprop_idxkey_ordinary,   duk__get_ownprop_idxkey_ordinary,
-	duk__get_ownprop_idxkey_ordinary,   duk__get_ownprop_idxkey_ordinary,   duk__get_ownprop_idxkey_ordinary,
-	duk__get_ownprop_idxkey_ordinary,   duk__get_ownprop_idxkey_stringobj,
+	duk__get_ownprop_idxkey_ordinary,     duk__get_ownprop_idxkey_ordinary,    duk__get_ownprop_idxkey_ordinary,
+	duk__get_ownprop_idxkey_ordinary,     duk__get_ownprop_idxkey_ordinary,    duk__get_ownprop_idxkey_ordinary,
+	duk__get_ownprop_idxkey_ordinary,     duk__get_ownprop_idxkey_stringobj,
 
-	duk__get_ownprop_idxkey_ordinary,   duk__get_ownprop_idxkey_ordinary,   duk__get_ownprop_idxkey_ordinary,
-	duk__get_ownprop_idxkey_ordinary,   duk__get_ownprop_idxkey_ordinary,   duk__get_ownprop_idxkey_ordinary,
-	duk__get_ownprop_idxkey_proxy,      duk__get_ownprop_idxkey_error,
+	duk__get_ownprop_idxkey_ordinary,     duk__get_ownprop_idxkey_ordinary,    duk__get_ownprop_idxkey_ordinary,
+	duk__get_ownprop_idxkey_ordinary,     duk__get_ownprop_idxkey_ordinary,    duk__get_ownprop_idxkey_ordinary,
+	duk__get_ownprop_idxkey_proxy,        duk__get_ownprop_idxkey_error,
 
-	duk__get_ownprop_idxkey_error,      duk__get_ownprop_idxkey_error,      duk__get_ownprop_idxkey_error,
-	duk__get_ownprop_idxkey_error,      duk__get_ownprop_idxkey_error,      duk__get_ownprop_idxkey_error,
-	duk__get_ownprop_idxkey_error,      duk__get_ownprop_idxkey_error,
+	duk__get_ownprop_idxkey_error,        duk__get_ownprop_idxkey_error,       duk__get_ownprop_idxkey_error,
+	duk__get_ownprop_idxkey_error,        duk__get_ownprop_idxkey_error,       duk__get_ownprop_idxkey_error,
+	duk__get_ownprop_idxkey_error,        duk__get_ownprop_idxkey_error,
 
-	duk__get_ownprop_idxkey_error,      duk__get_ownprop_idxkey_error,      duk__get_ownprop_idxkey_error,
-	duk__get_ownprop_idxkey_error,      duk__get_ownprop_idxkey_error,      duk__get_ownprop_idxkey_error,
-	duk__get_ownprop_idxkey_error,      duk__get_ownprop_idxkey_error,
+	duk__get_ownprop_idxkey_error,        duk__get_ownprop_idxkey_error,       duk__get_ownprop_idxkey_error,
+	duk__get_ownprop_idxkey_error,        duk__get_ownprop_idxkey_error,       duk__get_ownprop_idxkey_error,
+	duk__get_ownprop_idxkey_error,        duk__get_ownprop_idxkey_error,
 
-	duk__get_ownprop_idxkey_ordinary,   duk__get_ownprop_idxkey_error,      duk__get_ownprop_idxkey_ordinary,
-	duk__get_ownprop_idxkey_typedarray,
-#if 1 /* Uint8Array fast path test. */
-	duk__get_ownprop_idxkey_uint8array,
-#else
-	duk__get_ownprop_idxkey_typedarray,
-#endif
-	duk__get_ownprop_idxkey_typedarray, duk__get_ownprop_idxkey_typedarray, duk__get_ownprop_idxkey_typedarray,
+	duk__get_ownprop_idxkey_ordinary,     duk__get_ownprop_idxkey_error,       duk__get_ownprop_idxkey_ordinary,
+	duk__get_ownprop_idxkey_int8array,    duk__get_ownprop_idxkey_uint8array,  duk__get_ownprop_idxkey_uint8clampedarray,
+	duk__get_ownprop_idxkey_int16array,   duk__get_ownprop_idxkey_uint16array,
 
-	duk__get_ownprop_idxkey_typedarray, duk__get_ownprop_idxkey_typedarray, duk__get_ownprop_idxkey_typedarray,
-	duk__get_ownprop_idxkey_typedarray, duk__get_ownprop_idxkey_error,      duk__get_ownprop_idxkey_error,
-	duk__get_ownprop_idxkey_error,      duk__get_ownprop_idxkey_error
+	duk__get_ownprop_idxkey_int32array,   duk__get_ownprop_idxkey_uint32array, duk__get_ownprop_idxkey_float32array,
+	duk__get_ownprop_idxkey_float64array, duk__get_ownprop_idxkey_error,       duk__get_ownprop_idxkey_error,
+	duk__get_ownprop_idxkey_error,        duk__get_ownprop_idxkey_error
 };
 
 DUK_LOCAL duk_bool_t
@@ -1070,6 +1120,7 @@ duk__get_ownprop_strkey_proxy(duk_hthread *thr, duk_hobject *obj, duk_hstring *k
 	return DUK__GETOWN_NOTFOUND;
 }
 
+#if defined(DUK_USE_BUFFEROBJECT_SUPPORT)
 DUK_LOCAL duk_bool_t
 duk__get_ownprop_strkey_typedarray(duk_hthread *thr, duk_hobject *obj, duk_hstring *key, duk_idx_t idx_out, duk_idx_t idx_recv) {
 	if (DUK_HSTRING_HAS_LENGTH(key)) {
@@ -1090,6 +1141,12 @@ duk__get_ownprop_strkey_typedarray(duk_hthread *thr, duk_hobject *obj, duk_hstri
 	}
 	return duk__get_own_prop_strkey_ordinary(thr, obj, key, idx_out, idx_recv);
 }
+#else
+DUK_LOCAL duk_bool_t
+duk__get_ownprop_strkey_typedarray(duk_hthread *thr, duk_hobject *obj, duk_hstring *key, duk_idx_t idx_out, duk_idx_t idx_recv) {
+	return duk__get_ownprop_strkey_error(thr, obj, key, idx_out, idx_recv);
+}
+#endif /* DUK_USE_BUFFEROBJECT_SUPPORT */
 
 DUK_LOCAL const duk__get_ownprop_strkey_htype duk__getown_strkey_handlers[64] = {
 	duk__get_ownprop_strkey_error,      duk__get_ownprop_strkey_error,      duk__get_ownprop_strkey_error,
@@ -1623,6 +1680,10 @@ DUK_INTERNAL duk_bool_t duk_prop_getvalue_outidx(duk_hthread *thr, duk_idx_t idx
 	DUK_ASSERT(thr != NULL);
 	DUK_ASSERT(duk_is_valid_posidx(thr, idx_recv));
 	DUK_ASSERT(tv_key != NULL);
+	/* tv_key may not be in value stack but it must be reachable and
+	 * remain reachable despite arbitrary side effects (e.g. function
+	 * constant table).
+	 */
 	DUK_ASSERT(duk_is_valid_posidx(thr, idx_out));
 	/* Output index may overlap with receiver or key. */
 
@@ -1642,6 +1703,24 @@ DUK_INTERNAL duk_bool_t duk_prop_getvalue_outidx(duk_hthread *thr, duk_idx_t idx
 	 * Expected common key types are: string, Symbol, fastint/number.
 	 * Other keys are rare and not relevant for performance.
 	 */
+
+#if 0
+	if (DUK_TVAL_IS_STRING(tv_key)) {
+		key = DUK_TVAL_GET_STRING(tv_key);
+		if (DUK_UNLIKELY(DUK_HSTRING_HAS_ARRIDX(key))) {
+			idx = duk_hstring_get_arridx_fast_known(key);
+			goto use_idx;
+		} else {
+			goto use_str;
+		}
+	} else if (DUK_TVAL_IS_FASTINT(tv_key)) {
+		duk_int64_t fi = DUK_TVAL_GET_FASTINT(tv_key);
+		if (fi >= 0 && fi <= (duk_int64_t) DUK_ARRIDX_MAX) {
+			idx = (duk_uarridx_t) fi;
+			goto use_idx;
+		}
+	}
+#endif
 
 	switch (DUK_TVAL_GET_TAG(tv_key)) {
 	case DUK_TAG_STRING:
@@ -1684,7 +1763,9 @@ DUK_INTERNAL duk_bool_t duk_prop_getvalue_outidx(duk_hthread *thr, duk_idx_t idx
 #if defined(DUK_USE_PACKED_TVAL)
 		duk_double_t d;
 		DUK_ASSERT(DUK_TVAL_IS_NUMBER(tv_key));
+#if defined(DUK_USE_FASTINT)
 		DUK_ASSERT(!DUK_TVAL_IS_FASTINT(tv_key));
+#endif
 		d = DUK_TVAL_GET_DOUBLE(tv_key);
 		if (duk_prop_double_idx_check(d, &idx)) {
 			goto use_idx;

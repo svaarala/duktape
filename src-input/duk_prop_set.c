@@ -85,6 +85,13 @@ DUK_LOCAL_DECL duk_bool_t duk__setcheck_idxkey_ordinary(duk_hthread *thr,
                                                         duk_idx_t idx_recv,
                                                         duk_bool_t throw_flag);
 
+DUK_LOCAL_DECL duk_bool_t duk__setcheck_idxkey_error(duk_hthread *thr,
+                                                     duk_hobject *obj,
+                                                     duk_uarridx_t idx,
+                                                     duk_idx_t idx_val,
+                                                     duk_idx_t idx_recv,
+                                                     duk_bool_t throw_flag);
+
 #if defined(DUK_USE_PARANOID_ERRORS)
 DUK_LOCAL duk_bool_t duk__prop_set_error_shared(duk_hthread *thr, duk_idx_t idx_obj, duk_bool_t throw_flag) {
 	if (throw_flag) {
@@ -192,7 +199,7 @@ DUK_LOCAL void duk__prop_set_write_tval(duk_hthread *thr, duk_idx_t idx_val, duk
  * array index properties.
  */
 DUK_LOCAL duk_bool_t duk__prop_assume_no_inherited_array_indices(duk_hthread *thr, duk_hobject *obj) {
-#if defined(DUK_USE_ARRAY_FASTPATH)
+#if 0 /* Disabled for now. */
 	/* With array fast path, always make the assumption.  This is not
 	 * compliant but often very useful.
 	 */
@@ -762,6 +769,7 @@ ordinary_set_check:
 	return duk__setcheck_idxkey_ordinary(thr, obj, idx, idx_val, idx_recv, throw_flag);
 }
 
+#if defined(DUK_USE_BUFFEROBJECT_SUPPORT)
 DUK_LOCAL duk_bool_t duk__setcheck_idxkey_typedarray(duk_hthread *thr,
                                                      duk_hobject *obj,
                                                      duk_uarridx_t idx,
@@ -769,8 +777,6 @@ DUK_LOCAL duk_bool_t duk__setcheck_idxkey_typedarray(duk_hthread *thr,
                                                      duk_idx_t idx_recv,
                                                      duk_bool_t throw_flag) {
 	duk_hbufobj *h = (duk_hbufobj *) obj;
-	duk_size_t byte_off;
-	duk_small_uint_t elem_size;
 	duk_uint8_t *data;
 	duk_bool_t rc;
 
@@ -812,19 +818,22 @@ DUK_LOCAL duk_bool_t duk__setcheck_idxkey_typedarray(duk_hthread *thr,
 	 * to be read via inheritance (in ES2016+).
 	 */
 	if (DUK_UNLIKELY(!duk__prop_recv_direct(thr, idx_recv, obj))) {
-		/* Not direct receiver, use OrdinarySet() which does a
-		 * [[GetOwnProperty]].  We can assume we don't ever
-		 * establish keys for indices beyond typed array length
-		 * so we can skip a normal property table check also here.
-		 * Index properties are always writable.
+		/* Not direct receiver:
+		 * - For in-bounds case fall through to OrdinarySet()
+		 *   OrdinarySet() would determine that the property
+		 *   exists and is writable, and allows the write.
+		 * - For out-of-bounds case short circuit (= found
+		 *   and handled) without affecting the receiver.
+		 *
+		 * https://github.com/tc39/ecma262/pull/1556
 		 */
-		if (DUK_UNLIKELY(DUK_HBUFOBJ_IS_DETACHED(h))) {
-			goto fail_detached;
-		}
-		if (DUK_LIKELY(idx < DUK_HBUFOBJ_GET_LOGICAL_LENGTH(h))) {
+
+		data = duk_hbufobj_get_validated_data_ptr(thr, h, idx);
+		if (data != NULL) {
 			return DUK__SETCHECK_FOUND;
+		} else {
+			return DUK__SETCHECK_DONE_SUCCESS;
 		}
-		return DUK__SETCHECK_NOTFOUND;
 	}
 
 	/* ToNumber() coercion may have side effects that operate on 'obj'
@@ -834,41 +843,29 @@ DUK_LOCAL duk_bool_t duk__setcheck_idxkey_typedarray(duk_hthread *thr,
 	 */
 	duk_push_hobject(thr, obj);
 	duk_dup(thr, idx_val);
+
 	(void) duk_to_number_m1(thr);
 
-	/* Careful with wrapping: idx upshift may easily wrap, whereas
-	 * length downshift won't.  Here we assume that logical length
-	 * is controlled so that upshifting a valid index won't wrap.
-	 */
-	if (DUK_LIKELY(idx < DUK_HBUFOBJ_GET_LOGICAL_LENGTH(h))) {
-		byte_off = idx << h->shift; /* no wrap assuming h_bufobj->length is valid */
-		elem_size = (duk_small_uint_t) (1U << h->shift);
-
-		if (DUK_LIKELY(h->buf != NULL && DUK_HBUFOBJ_VALID_BYTEOFFSET_EXCL(h, byte_off + elem_size))) {
-			DUK_ASSERT(!DUK_HBUFOBJ_IS_DETACHED(h));
-			data = (duk_uint8_t *) DUK_HBUFFER_GET_DATA_PTR(thr->heap, h->buf) + h->offset + byte_off;
-			duk_hbufobj_validated_write(thr, h, data, elem_size);
-		} else {
-			/* Handle detached buffers here (uncovered case gets same treatment). */
-			goto fail_detached;
-		}
+	if (duk_hbufobj_validate_and_write_top(thr, h, idx)) {
 		rc = DUK__SETCHECK_DONE_SUCCESS;
 	} else {
-		/* For a direct, [[Set]], even if writing past end-of-buffer,
-		 * pretend to succeed.
-		 */
+		/* Out-of-bounds, detached, uncovered: treat as success. */
 		rc = DUK__SETCHECK_DONE_SUCCESS;
 	}
+
 	duk_pop_2_unsafe(thr);
 	return rc; /* Never continue lookup. */
-
-fail_detached:
-	/* If detached, unconditional TypeError for any canonical
-	 * numerix index string (even if out of range).
-	 */
-	DUK_ERROR_TYPE_BUFFER_DETACHED(thr);
-	DUK_WO_NORETURN(return 0;);
 }
+#else
+DUK_LOCAL duk_bool_t duk__setcheck_idxkey_typedarray(duk_hthread *thr,
+                                                     duk_hobject *obj,
+                                                     duk_uarridx_t idx,
+                                                     duk_idx_t idx_val,
+                                                     duk_idx_t idx_recv,
+                                                     duk_bool_t throw_flag) {
+	return duk__setcheck_idxkey_error(thr, obj, idx, idx_val, idx_recv, throw_flag);
+}
+#endif /* DUK_USE_BUFFEROBJECT_SUPPORT */
 
 DUK_LOCAL DUK_ALWAYS_INLINE duk_small_int_t duk__setcheck_idxkey_array_attempt(duk_hthread *thr,
                                                                                duk_hobject *obj,
@@ -908,6 +905,7 @@ DUK_LOCAL DUK_ALWAYS_INLINE duk_small_int_t duk__setcheck_idxkey_array_attempt(d
 			 * write and the setter cancels it) and failure case (i.e.
 			 * array is non-extensible but setter must still be called).
 			 */
+
 			return DUK__SETCHECK_NOTFOUND;
 #if 0
 			if (DUK_UNLIKELY(!DUK_HOBJECT_HAS_EXTENSIBLE(obj))) {
@@ -1132,22 +1130,20 @@ DUK_LOCAL duk_bool_t duk__setcheck_strkey_switch(duk_hthread *thr,
 		 * when in direct receiver case.
 		 */
 
-		duk_hbufobj *h = (duk_hbufobj *) obj;
-
 		if (DUK_HSTRING_HAS_LENGTH_OR_CANNUM(key)) {
 			if (DUK_HSTRING_HAS_CANNUM(key)) {
 				/* Specification bug, exotic [[Set]] behavior should only
 				 * trigger for direct receiver case (ES2016+ don't have a
 				 * receiver check but it is implemented in practice).
+				 *
+				 * Here it doesn't matter: for both direct and non-direct
+				 * receiver checks we return "not found" as these strings
+				 * can never be IsValidIntegerIndex().
 				 */
+#if 0
 				if (duk__prop_recv_direct(thr, idx_recv, obj)) {
-					if (DUK_HBUFOBJ_IS_DETACHED(h)) {
-						/* If detached, unconditional TypeError for any canonical
-						 * numerix index string (even if out of range).
-						 */
-						duk__prop_set_error_objidx_strkey(thr, idx_recv, key, 1 /*throw_flag*/);
-					}
-					/* Else fall through to shared error. */
+					/* Treat like out-of-bounds index, i.e. "not found". */
+					return DUK__SETCHECK_NOTFOUND;
 				} else {
 					/* Not direct receiver, no exotic behavior.
 					 * Ordinary lookup would return not found because
@@ -1157,6 +1153,8 @@ DUK_LOCAL duk_bool_t duk__setcheck_strkey_switch(duk_hthread *thr,
 					 */
 					return DUK__SETCHECK_NOTFOUND;
 				}
+#endif
+				return DUK__SETCHECK_NOTFOUND;
 			} else {
 				DUK_ASSERT(DUK_HSTRING_HAS_LENGTH(key));
 			}
@@ -1306,6 +1304,7 @@ DUK_LOCAL duk_bool_t duk__setcheck_idxkey_proxy(duk_hthread *thr,
                                                 duk_idx_t idx_val,
                                                 duk_idx_t idx_recv,
                                                 duk_bool_t throw_flag) {
+	/* Handled by the caller specially, see comments in duk_prop_get.c */
 	DUK_UNREF(thr);
 	DUK_UNREF(obj);
 	DUK_UNREF(idx);
@@ -1417,31 +1416,37 @@ DUK_LOCAL duk_bool_t duk__setcheck_strkey_typedarray(duk_hthread *thr,
 	 * Special [[Set]] behavior for CanonicalNumericIndexStrings
 	 * when in direct receiver case.
 	 */
-	duk_hbufobj *h = (duk_hbufobj *) obj;
 
 	if (DUK_HSTRING_HAS_LENGTH_OR_CANNUM(key)) {
 		if (DUK_HSTRING_HAS_CANNUM(key)) {
 			/* Specification bug, exotic [[Set]] behavior should only
 			 * trigger for direct receiver case (ES2016+ don't have a
 			 * receiver check but it is implemented in practice).
+			 *
+			 * Here we always have IsValidIntegerIndex() false (i.e.
+			 * out-of-bounds) and the proposed specification fix in
+			 * https://github.com/tc39/ecma262/pull/1556 is to short
+			 * circuit out-of-bounds non-direct [[Set]]s, i.e. fake
+			 * success and no inheritance.
+			 *
+			 * For direct receiver case out-of-bound writes are also
+			 * treated with a short circuit success.  So handling is
+			 * the same for both direct and indirect cases.
 			 */
+#if 0
 			if (duk__prop_recv_direct(thr, idx_recv, obj)) {
-				if (DUK_HBUFOBJ_IS_DETACHED(h)) {
-					/* If detached, unconditional TypeError for any canonical
-					 * numerix index string (even if out of range).
-					 */
-					duk__prop_set_error_objidx_strkey(thr, idx_recv, key, 1 /*throw_flag*/);
-				}
-				/* Else fall through to shared error. */
-			} else {
-				/* Not direct receiver, no exotic behavior.
-				 * Ordinary lookup would return not found because
-				 * we don't allow canonical numeric index string
-				 * properties to be established, so just shortcut
-				 * it here.
+				/* OrdinarySet(): property should not be found
+				 * because we won't allow an out-of-bounds
+				 * canonical numeric index property to be
+				 * established.  Could also fall back to actual
+				 * OrdinarySet() check.
 				 */
-				return DUK__SETCHECK_NOTFOUND;
+				return DUK__SETCHECK_DONE_SUCCESS
+			} else {
+				return DUK__SETCHECK_DONE_SUCCESS;
 			}
+#endif
+			return DUK__SETCHECK_DONE_SUCCESS;
 		} else {
 			DUK_ASSERT(DUK_HSTRING_HAS_LENGTH(key));
 		}
@@ -1537,8 +1542,7 @@ DUK_LOCAL duk_bool_t duk__setfinal_strkey_proxy(duk_hthread *thr, duk_hobject *o
 	duk_uint_t defprop_flags;
 	duk_bool_t rc;
 
-	attrs = duk_prop_getowndesc_obj_strkey(thr, obj, key);
-	duk_prop_pop_propdesc(thr, attrs);
+	attrs = duk_prop_getownattr_obj_strkey(thr, obj, key);
 	if (attrs >= 0) {
 		duk_small_uint_t uattrs = (duk_small_uint_t) attrs;
 
@@ -1664,8 +1668,7 @@ DUK_LOCAL duk_bool_t duk__setfinal_idxkey_proxy(duk_hthread *thr, duk_hobject *o
 	duk_uint_t defprop_flags;
 	duk_bool_t rc;
 
-	attrs = duk_prop_getowndesc_obj_idxkey(thr, obj, idx);
-	duk_prop_pop_propdesc(thr, attrs);
+	attrs = duk_prop_getownattr_obj_idxkey(thr, obj, idx);
 	if (attrs >= 0) {
 		duk_small_uint_t uattrs = (duk_small_uint_t) attrs;
 
@@ -1708,6 +1711,7 @@ DUK_LOCAL duk_bool_t duk__setfinal_idxkey_typedarray(duk_hthread *thr, duk_hobje
 
 #if 1
 	DUK_D(DUK_DPRINT("typed array setfinal for index key reached, should not happen, fail write"));
+	DUK_ASSERT(0);
 	goto fail_internal;
 
 fail_internal:
@@ -2520,6 +2524,7 @@ DUK_LOCAL DUK_ALWAYS_INLINE duk_bool_t duk__prop_set_stroridx_helper(duk_hthread
 #endif
 		}
 		DUK_GC_TORTURE(thr->heap);
+
 	recheck_rc:
 		if (rc == DUK__SETCHECK_NOTFOUND) {
 			/* Not found, continue lookup with ordinary [[Set]]. */
@@ -2596,6 +2601,7 @@ DUK_LOCAL DUK_ALWAYS_INLINE duk_bool_t duk__prop_set_stroridx_helper(duk_hthread
 					}
 				}
 			} else {
+				DUK_DPRINT("[[Set]] Proxy or arguments special handling, unsafe => switch to safe");
 				goto switch_to_safe;
 			}
 		}
@@ -2712,7 +2718,7 @@ DUK_LOCAL duk_bool_t duk__prop_set_strkey_unsafe(duk_hthread *thr,
                                                  duk_idx_t idx_recv,
                                                  duk_bool_t throw_flag) {
 #if defined(DUK_USE_PREFER_SIZE)
-	return duk__prop_set_strkey_safe(thr, target, key, 0, idx_val, idx_recv, throw_flag);
+	return duk__prop_set_strkey_safe(thr, target, key, idx_val, idx_recv, throw_flag);
 #else
 	return duk__prop_set_stroridx_helper(thr,
 	                                     target,
@@ -2750,7 +2756,7 @@ DUK_LOCAL duk_bool_t duk__prop_set_idxkey_unsafe(duk_hthread *thr,
                                                  duk_idx_t idx_recv,
                                                  duk_bool_t throw_flag) {
 #if defined(DUK_USE_PREFER_SIZE)
-	return duk__prop_set_idxkey_safe(thr, target, NULL, idx, idx_val, idx_recv, throw_flag);
+	return duk__prop_set_idxkey_safe(thr, target, idx, idx_val, idx_recv, throw_flag);
 #else
 	return duk__prop_set_stroridx_helper(thr,
 	                                     target,
@@ -2887,7 +2893,7 @@ duk__prop_putvalue_idxkey_inidx(duk_hthread *thr, duk_idx_t idx_recv, duk_uarrid
 		 * affect 'h' because it's stabilized by the idx_recv slot.
 		 */
 		tv_val = DUK_GET_TVAL_POSIDX(thr, idx_val);
-#if 1
+#if defined(DUK_USE_FASTINT)
 		if (DUK_LIKELY(DUK_TVAL_IS_FASTINT(tv_val))) {
 			coerced_val = DUK_TVAL_GET_FASTINT_U32(tv_val);
 		} else
@@ -3088,6 +3094,10 @@ duk_prop_putvalue_inidx(duk_hthread *thr, duk_idx_t idx_recv, duk_tval *tv_key, 
 	DUK_ASSERT(thr != NULL);
 	DUK_ASSERT(duk_is_valid_posidx(thr, idx_recv));
 	DUK_ASSERT(tv_key != NULL);
+	/* tv_key may not be in value stack but it must be reachable and
+	 * remain reachable despite arbitrary side effects (e.g. function
+	 * constant table).
+	 */
 	DUK_ASSERT(duk_is_valid_posidx(thr, idx_val));
 	/* 'idx_val' is in value stack but we're not allowed to mutate it
 	 * because it might be a VM register source.
@@ -3135,7 +3145,9 @@ duk_prop_putvalue_inidx(duk_hthread *thr, duk_idx_t idx_recv, duk_tval *tv_key, 
 #if defined(DUK_USE_PACKED_TVAL)
 		duk_double_t d;
 		DUK_ASSERT(DUK_TVAL_IS_NUMBER(tv_key));
+#if defined(DUK_USE_FASTINT)
 		DUK_ASSERT(!DUK_TVAL_IS_FASTINT(tv_key));
+#endif
 		d = DUK_TVAL_GET_DOUBLE(tv_key);
 		if (duk_prop_double_idx_check(d, &idx)) {
 			goto use_idx;

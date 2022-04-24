@@ -110,19 +110,19 @@ If you intend to change Duktape internals and want to rebuild the source
 distributable in Linux, macOS, or Windows:
 
     # Linux; can often install from packages or using 'pip'
-    # Install Node.js >= 14.x
+    # Install Node.js >= 16.x
     $ sudo apt-get install python python-yaml
     $ python util/dist.py
 
     # macOS
     # Install Python 2.7.x
-    # Install Node.js >= 14.x
+    # Install Node.js >= 16.x
     $ pip install PyYAML
     $ python util/dist.py
 
     # Windows
     ; Install Python 2.7.x from python.org, and add it to PATH
-    ; Install Node.js >= 14.x
+    ; Install Node.js >= 16.x
     > pip install PyYAML
     > python util\dist.py
 
