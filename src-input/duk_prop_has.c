@@ -59,8 +59,10 @@ DUK_LOCAL duk_small_int_t duk__prop_hasown_idxkey_stringobj(duk_hthread *thr, du
 	return DUK__HASOWN_NOTFOUND;
 }
 
+#if defined(DUK_USE_BUFFEROBJECT_SUPPORT)
 DUK_LOCAL duk_small_int_t duk__prop_hasown_idxkey_typedarray(duk_hthread *thr, duk_hobject *obj, duk_uarridx_t idx) {
 	duk_hbufobj *h;
+	duk_uint8_t *data;
 
 	DUK_ASSERT(thr != NULL);
 	DUK_ASSERT(obj != NULL);
@@ -69,20 +71,19 @@ DUK_LOCAL duk_small_int_t duk__prop_hasown_idxkey_typedarray(duk_hthread *thr, d
 
 	h = (duk_hbufobj *) obj;
 
-	if (DUK_UNLIKELY(DUK_HBUFOBJ_IS_DETACHED(h))) {
-		goto fail_detached;
-	}
-	if (DUK_LIKELY(idx < DUK_HBUFOBJ_GET_LOGICAL_LENGTH(h))) {
+	data = duk_hbufobj_get_validated_data_ptr(thr, h, idx);
+	if (DUK_LIKELY(data != NULL)) {
 		return DUK__HASOWN_FOUND;
+	} else {
+		/* Out-of-bounds, detached, uncovered: treat like out-of-bounds. */
+		return DUK__HASOWN_DONE_NOTFOUND;
 	}
-
-	return DUK__HASOWN_DONE_NOTFOUND;
-
-fail_detached:
-	/* Unconditional TypeError even for checking index existence. */
-	DUK_ERROR_TYPE_BUFFER_DETACHED(thr);
-	DUK_WO_NORETURN(return 0;);
 }
+#else
+DUK_LOCAL duk_small_int_t duk__prop_hasown_idxkey_typedarray(duk_hthread *thr, duk_hobject *obj, duk_uarridx_t idx) {
+	return duk__prop_hasown_idxkey_error(thr, obj, idx);
+}
+#endif /* DUK_USE_BUFFEROBJECT_SUPPORT */
 
 DUK_LOCAL duk_small_int_t duk__prop_hasown_strkey(duk_hthread *thr, duk_hobject *obj, duk_hstring *key) {
 	duk_small_uint_t htype;
@@ -117,6 +118,7 @@ DUK_LOCAL duk_small_int_t duk__prop_hasown_strkey(duk_hthread *thr, duk_hobject 
 	case DUK_HTYPE_PROXY:
 		/* Handled by caller to ensure stabilization. */
 		return DUK__HASOWN_NOTFOUND;
+#if defined(DUK_USE_BUFFEROBJECT_SUPPORT)
 	case DUK_HTYPE_ARRAYBUFFER:
 	case DUK_HTYPE_DATAVIEW:
 		/* Nothing special. */
@@ -146,6 +148,7 @@ DUK_LOCAL duk_small_int_t duk__prop_hasown_strkey(duk_hthread *thr, duk_hobject 
 			}
 		}
 		break;
+#endif /* DUK_USE_BUFFEROBJECT_SUPPORT */
 	}
 
 	return duk__prop_hasown_strkey_ordinary(thr, obj, key);
@@ -191,6 +194,7 @@ DUK_LOCAL duk_small_int_t duk__prop_hasown_idxkey(duk_hthread *thr, duk_hobject 
 		 * handler object may be a Proxy itself) so handle in caller.
 		 */
 		return DUK__HASOWN_NOTFOUND;
+#if defined(DUK_USE_BUFFEROBJECT_SUPPORT)
 	case DUK_HTYPE_ARRAYBUFFER:
 	case DUK_HTYPE_DATAVIEW:
 		/* Nothing special. */
@@ -208,6 +212,7 @@ DUK_LOCAL duk_small_int_t duk__prop_hasown_idxkey(duk_hthread *thr, duk_hobject 
 		 * CanonicalNumericIndexString properties.
 		 */
 		return duk__prop_hasown_idxkey_typedarray(thr, obj, idx);
+#endif /* DUK_USE_BUFFEROBJECT_SUPPORT */
 	}
 
 	return duk__prop_hasown_idxkey_ordinary(thr, obj, idx);
@@ -232,7 +237,9 @@ DUK_LOCAL duk_bool_t duk__prop_has_proxy_tail(duk_hthread *thr) {
 		duk_prop_pop_propdesc(thr, attrs);
 
 		if (attrs >= 0) {
-			if (!(attrs & DUK_PROPDESC_FLAG_CONFIGURABLE)) {
+			duk_small_uint_t uattrs = (duk_small_uint_t) attrs;
+
+			if (!(uattrs & DUK_PROPDESC_FLAG_CONFIGURABLE)) {
 				goto invalid_result;
 			}
 			if (!duk_js_isextensible(thr, duk_require_hobject(thr, -3))) {
@@ -257,7 +264,7 @@ DUK_LOCAL DUK_ALWAYS_INLINE duk_bool_t duk__prop_has_obj_stroridx_helper(duk_hth
                                                                          duk_uarridx_t idx,
                                                                          duk_bool_t use_key,
                                                                          duk_bool_t side_effect_safe) {
-	duk_small_int_t rc;
+	duk_bool_t rc;
 	duk_small_uint_t sanity;
 
 	/* Ordinary [[HasProperty]] uses [[GetOwnProperty]] and if property
@@ -275,19 +282,21 @@ DUK_LOCAL DUK_ALWAYS_INLINE duk_bool_t duk__prop_has_obj_stroridx_helper(duk_hth
 	sanity = DUK_HOBJECT_PROTOTYPE_CHAIN_SANITY;
 	do {
 		duk_hobject *next;
+		duk_small_int_t rc_hasown;
 
 		if (use_key) {
-			rc = duk__prop_hasown_strkey(thr, obj, key);
+			rc_hasown = duk__prop_hasown_strkey(thr, obj, key);
 		} else {
-			rc = duk__prop_hasown_idxkey(thr, obj, idx);
+			rc_hasown = duk__prop_hasown_idxkey(thr, obj, idx);
 		}
 
-		if (rc >= 1) {
+		if (rc_hasown >= 1) {
 			DUK_ASSERT(DUK__HASOWN_DONE_NOTFOUND == 2);
 			DUK_ASSERT((DUK__HASOWN_DONE_NOTFOUND & 0x01) == 0);
-			rc &= 0x01U; /* convert 'done, not found' (= 2) to 0 (not found) */
+			rc = ((duk_bool_t) rc_hasown) & 0x01U; /* convert 'done, not found' (= 2) to 0 (not found) */
 			goto done;
 		}
+		DUK_ASSERT(rc_hasown == DUK__HASOWN_NOTFOUND);
 
 		next = duk_hobject_get_proto_raw(thr->heap, obj);
 		if (next == NULL) {
@@ -318,7 +327,8 @@ DUK_LOCAL DUK_ALWAYS_INLINE duk_bool_t duk__prop_has_obj_stroridx_helper(duk_hth
 					goto switch_to_safe;
 				}
 			}
-			DUK_ASSERT(rc == 0);
+
+			rc = 0;
 			goto done;
 		}
 
@@ -460,7 +470,7 @@ DUK_INTERNAL duk_bool_t duk_prop_has_idxkey(duk_hthread *thr, duk_tval *tv_obj, 
 		duk_bool_t rc;
 		duk_hstring *key;
 
-		DUK_D(DUK_DPRINT("corner case, input idx 0xffffffff is not an arridx, must coerce to string"));
+		DUK_DD(DUK_DDPRINT("corner case, input idx 0xffffffff is not an arridx, must coerce to string"));
 		key = duk_push_u32_tohstring(thr, idx);
 		rc = duk__prop_has_strkey(thr, tv_obj, key);
 		duk_pop_unsafe(thr);

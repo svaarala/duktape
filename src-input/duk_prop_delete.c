@@ -41,22 +41,14 @@ DUK_LOCAL_DECL duk_bool_t duk__prop_delete_obj_idxkey_safe(duk_hthread *thr,
                                                            duk_small_uint_t delprop_flags);
 
 #if defined(DUK_USE_PARANOID_ERRORS)
-DUK_LOCAL duk_bool_t duk__prop_delete_error_shared_obj(duk_hthread *thr,
-                                                       duk_hobject *obj,
-                                                       duk_hstring *key,
-                                                       duk_small_uint_t delprop_flags) {
+DUK_LOCAL duk_bool_t duk__prop_delete_error_shared_obj(duk_hthread *thr, duk_hobject *obj, duk_small_uint_t delprop_flags) {
 	DUK_UNREF(obj);
-	DUK_UNREF(key);
 	if (delprop_flags & DUK_DELPROP_FLAG_THROW) {
-		DUK_TYPE_ERROR(thr, "cannot delete property of object");
+		DUK_ERROR_TYPE(thr, "cannot delete property of object");
 	}
 	return 0;
 }
-DUK_LOCAL duk_bool_t duk__prop_delete_error_shared_objidx(duk_hthread *thr,
-                                                          duk_idx_t idx_obj,
-                                                          duk_hstring *key,
-                                                          duk_small_uint_t delprop_flags) {
-	DUK_UNREF(key);
+DUK_LOCAL duk_bool_t duk__prop_delete_error_shared_objidx(duk_hthread *thr, duk_idx_t idx_obj, duk_small_uint_t delprop_flags) {
 	if (delprop_flags & DUK_DELPROP_FLAG_THROW) {
 		const char *str1 = duk_get_type_name(thr, idx_obj);
 		DUK_ERROR_FMT1(thr, DUK_ERR_TYPE_ERROR, "cannot delete property of %s", str1);
@@ -67,31 +59,31 @@ DUK_LOCAL DUK_COLD duk_bool_t duk__prop_delete_error_obj_strkey(duk_hthread *thr
                                                                 duk_hobject *obj,
                                                                 duk_hstring *key,
                                                                 duk_small_uint_t delprop_flags) {
-	return duk__prop_delete_error_shared_obj(thr, obj, key, delprop_flags);
+	return duk__prop_delete_error_shared_obj(thr, obj, delprop_flags);
 }
 DUK_LOCAL DUK_COLD duk_bool_t duk__prop_delete_error_objidx_strkey(duk_hthread *thr,
                                                                    duk_idx_t idx_obj,
                                                                    duk_hstring *key,
                                                                    duk_small_uint_t delprop_flags) {
-	return duk__prop_delete_error_shared_objidx(thr, idx_obj, key, delprop_flags);
+	return duk__prop_delete_error_shared_objidx(thr, idx_obj, delprop_flags);
 }
 DUK_LOCAL DUK_COLD duk_bool_t duk__prop_delete_error_obj_idxkey(duk_hthread *thr,
                                                                 duk_hobject *obj,
                                                                 duk_uarridx_t idx,
                                                                 duk_small_uint_t delprop_flags) {
-	return duk__prop_delete_error_shared_obj(thr, obj, key, delprop_flags);
+	return duk__prop_delete_error_shared_obj(thr, obj, delprop_flags);
 }
 DUK_LOCAL DUK_COLD duk_bool_t duk__prop_delete_error_objidx_idxkey(duk_hthread *thr,
                                                                    duk_idx_t idx_obj,
                                                                    duk_uarridx_t idx,
                                                                    duk_small_uint_t delprop_flags) {
-	return duk__prop_delete_error_shared_objidx(thr, idx_obj, key, delprop_flags);
+	return duk__prop_delete_error_shared_objidx(thr, idx_obj, delprop_flags);
 }
 DUK_LOCAL DUK_COLD duk_bool_t duk__prop_delete_error_objidx_tvkey(duk_hthread *thr,
                                                                   duk_idx_t idx_obj,
                                                                   duk_tval *tv_key,
                                                                   duk_small_uint_t delprop_flags) {
-	return duk__prop_delete_error_shared_objidx(thr, idx_obj, key, delprop_flags);
+	return duk__prop_delete_error_shared_objidx(thr, idx_obj, delprop_flags);
 }
 #elif defined(DUK_USE_VERBOSE_ERRORS)
 DUK_LOCAL DUK_COLD duk_bool_t duk__prop_delete_error_obj_strkey(duk_hthread *thr,
@@ -358,6 +350,7 @@ DUK_LOCAL duk_bool_t duk__prop_delete_obj_strkey_ordinary(duk_hthread *thr,
 		DUK_HSTRING_DECREF_NORZ(thr, key);
 		*key_slot = NULL;
 
+#if defined(DUK_USE_HOBJECT_HASH_PART)
 		if (hash_idx >= 0) {
 			hash_base = DUK_HOBJECT_GET_HASH(thr->heap, obj);
 			DUK_ASSERT(hash_base != NULL);
@@ -365,6 +358,9 @@ DUK_LOCAL duk_bool_t duk__prop_delete_obj_strkey_ordinary(duk_hthread *thr,
 			hash_slot = hash_base + 1 + hash_idx;
 			*hash_slot = DUK_HOBJECT_HASHIDX_DELETED;
 		}
+#else
+		DUK_UNREF(hash_idx);
+#endif
 
 		/* Attrs are left as garbage. */
 
@@ -461,6 +457,7 @@ retry_target:
 			goto fail_not_configurable;
 		}
 		break;
+#if defined(DUK_USE_BUFFEROBJECT_SUPPORT)
 	case DUK_HTYPE_ARRAYBUFFER:
 		break;
 	case DUK_HTYPE_DATAVIEW:
@@ -495,6 +492,7 @@ retry_target:
 			}
 		}
 		break;
+#endif /* DUK_USE_BUFFEROBJECT_SUPPORT */
 	default:
 		break;
 	}
@@ -619,6 +617,7 @@ DUK_LOCAL duk_bool_t duk__prop_delete_obj_idxkey_arguments(duk_hthread *thr,
 	 * so any dereference may be invalid.  But we only check its
 	 * previous value for NULL here ("varname was non-NULL earlier").
 	 */
+	DUK_GC_TORTURE(thr->heap);
 	if (varname != NULL) {
 		(void) duk__prop_delete_obj_idxkey_ordinary(thr, map, idx, 0 /*delprop_flags*/);
 	}
@@ -752,6 +751,7 @@ retry_target:
 		}
 		break;
 	}
+#if defined(DUK_USE_BUFFEROBJECT_SUPPORT)
 	case DUK_HTYPE_ARRAYBUFFER:
 		break;
 	case DUK_HTYPE_DATAVIEW:
@@ -766,7 +766,10 @@ retry_target:
 	case DUK_HTYPE_FLOAT32ARRAY:
 	case DUK_HTYPE_FLOAT64ARRAY: {
 		duk_hbufobj *h = (duk_hbufobj *) target;
-		if (idx < DUK_HBUFOBJ_GET_LOGICAL_LENGTH(h)) {
+		duk_uint8_t *data;
+
+		data = duk_hbufobj_get_validated_data_ptr(thr, h, idx);
+		if (data != NULL) {
 			goto fail_not_configurable;
 		} else {
 			/* Any canonical numeric index string outside of
@@ -777,6 +780,7 @@ retry_target:
 		}
 		break;
 	}
+#endif /* DUK_USE_BUFFEROBJECT_SUPPORT */
 	default:
 		break;
 	}

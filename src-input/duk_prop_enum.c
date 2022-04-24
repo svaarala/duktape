@@ -96,7 +96,7 @@ DUK_INTERNAL void duk_prop_enum_keylist(duk_hthread *thr, duk_hobject *obj, duk_
 
 		/* [ ... res visited obj keys ] */
 
-		a = duk_require_harray(thr, -1);
+		a = duk_require_harray(thr, -1); /* May not be the case if 'ownKeys' trap result is not validated. */
 		val_base = DUK_HARRAY_GET_ITEMS(thr->heap, a);
 		DUK_ASSERT(DUK_HARRAY_GET_LENGTH(a) <= DUK_HARRAY_GET_ITEMS_LENGTH(a));
 		for (i = 0, n = DUK_HARRAY_GET_LENGTH(a); i < n; i++) {
