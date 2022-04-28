@@ -182,9 +182,9 @@ DUK_EXTERNAL void duk_set_global_object(duk_hthread *thr) {
 	 *  same (initial) built-ins.
 	 */
 
-	h_env = duk_hobjenv_alloc(thr, DUK_HOBJECT_FLAG_EXTENSIBLE | DUK_HOBJECT_CLASS_AS_FLAGS(DUK_HOBJECT_CLASS_OBJENV));
+	h_env = duk_hobjenv_alloc(thr, DUK_HOBJECT_FLAG_EXTENSIBLE | DUK_HEAPHDR_HTYPE_AS_FLAGS(DUK_HTYPE_OBJENV));
 	DUK_ASSERT(h_env != NULL);
-	DUK_ASSERT(DUK_HOBJECT_GET_PROTOTYPE(thr->heap, (duk_hobject *) h_env) == NULL);
+	DUK_ASSERT(duk_hobject_get_proto_raw(thr->heap, (duk_hobject *) h_env) == NULL);
 
 	DUK_ASSERT(h_env->target == NULL);
 	DUK_ASSERT(h_glob != NULL);

@@ -74,7 +74,7 @@ DUK_INTERNAL DUK_COLD void duk_err_require_type_index(duk_hthread *thr,
 	                   DUK_ERR_TYPE_ERROR,
 	                   "%s required, found %s (stack index %ld)",
 	                   expect_name,
-	                   duk_push_string_readable(thr, idx),
+	                   duk_push_readable_idx(thr, idx),
 	                   (long) idx);
 }
 #endif
@@ -104,6 +104,15 @@ DUK_INTERNAL DUK_COLD void duk_err_type_invalid_state(duk_hthread *thr, const ch
 }
 DUK_INTERNAL DUK_COLD void duk_err_type_invalid_trap_result(duk_hthread *thr, const char *filename, duk_int_t linenumber) {
 	DUK_ERROR_RAW(thr, filename, linenumber, DUK_ERR_TYPE_ERROR, DUK_STR_INVALID_TRAP_RESULT);
+}
+DUK_INTERNAL DUK_COLD void duk_err_type_proxy_revoked(duk_hthread *thr, const char *filename, duk_int_t linenumber) {
+	DUK_ERROR_RAW(thr, filename, linenumber, DUK_ERR_TYPE_ERROR, DUK_STR_PROXY_REVOKED);
+}
+DUK_INTERNAL DUK_COLD void duk_err_type_buffer_detached(duk_hthread *thr, const char *filename, duk_int_t linenumber) {
+	DUK_ERROR_RAW(thr, filename, linenumber, DUK_ERR_TYPE_ERROR, DUK_STR_BUFFER_DETACHED);
+}
+DUK_INTERNAL DUK_COLD void duk_err_type_invalid_rvalue(duk_hthread *thr, const char *filename, duk_int_t linenumber) {
+	DUK_ERROR_RAW(thr, filename, linenumber, DUK_ERR_TYPE_ERROR, DUK_STR_INVALID_RVALUE);
 }
 #else
 /* The file/line arguments are NULL and 0, they're ignored by DUK_ERROR_RAW()

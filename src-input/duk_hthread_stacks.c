@@ -26,7 +26,7 @@ DUK_INTERNAL void duk_hthread_catcher_unwind_norz(duk_hthread *thr, duk_activati
 
 		env = act->lex_env; /* current lex_env of the activation (created for catcher) */
 		DUK_ASSERT(env != NULL); /* must be, since env was created when catcher was created */
-		act->lex_env = DUK_HOBJECT_GET_PROTOTYPE(thr->heap, env); /* prototype is lex_env before catcher created */
+		act->lex_env = duk_hobject_get_proto_raw(thr->heap, env); /* prototype is lex_env before catcher created */
 		DUK_HOBJECT_INCREF(thr, act->lex_env);
 		DUK_HOBJECT_DECREF_NORZ(thr, env);
 
@@ -168,48 +168,6 @@ DUK_LOCAL void duk__activation_unwind_nofree_norz(duk_hthread *thr) {
 	/* With duk_activation records allocated separately, 'act' is a stable
 	 * pointer and not affected by side effects.
 	 */
-
-#if defined(DUK_USE_NONSTD_FUNC_CALLER_PROPERTY)
-	/*
-	 *  Restore 'caller' property for non-strict callee functions.
-	 */
-
-	func = DUK_ACT_GET_FUNC(act);
-	if (func != NULL && !DUK_HOBJECT_HAS_STRICT(func)) {
-		duk_tval *tv_caller;
-		duk_tval tv_tmp;
-		duk_hobject *h_tmp;
-
-		tv_caller = duk_hobject_find_entry_tval_ptr_stridx(thr->heap, func, DUK_STRIDX_CALLER);
-
-		/* The act->prev_caller should only be set if the entry for 'caller'
-		 * exists (as it is only set in that case, and the property is not
-		 * configurable), but handle all the cases anyway.
-		 */
-
-		if (tv_caller) {
-			DUK_TVAL_SET_TVAL(&tv_tmp, tv_caller);
-			if (act->prev_caller) {
-				/* Just transfer the refcount from act->prev_caller to tv_caller,
-				 * so no need for a refcount update.  This is the expected case.
-				 */
-				DUK_TVAL_SET_OBJECT(tv_caller, act->prev_caller);
-				act->prev_caller = NULL;
-			} else {
-				DUK_TVAL_SET_NULL(tv_caller); /* no incref needed */
-				DUK_ASSERT(act->prev_caller == NULL);
-			}
-			DUK_TVAL_DECREF_NORZ(thr, &tv_tmp);
-		} else {
-			h_tmp = act->prev_caller;
-			if (h_tmp) {
-				act->prev_caller = NULL;
-				DUK_HOBJECT_DECREF_NORZ(thr, h_tmp);
-			}
-		}
-		DUK_ASSERT(act->prev_caller == NULL);
-	}
-#endif
 
 	/*
 	 *  Unwind debugger state.  If we unwind while stepping

@@ -304,6 +304,10 @@
 		DUK_ERROR_RANGE_INVALID_LENGTH((thr)); \
 		return 0; \
 	} while (0)
+#define DUK_ERROR_RANGE_PROTO_SANITY(thr) \
+	do { \
+		DUK_ERROR_RANGE((thr), DUK_STR_PROTOTYPE_CHAIN_LIMIT); \
+	} while (0)
 #define DUK_ERROR_RANGE(thr, msg) \
 	do { \
 		duk_err_range((thr), DUK_FILE_MACRO, (duk_int_t) DUK_LINE_MACRO, (msg)); \
@@ -345,6 +349,18 @@
 #define DUK_DCERROR_TYPE_INVALID_TRAP_RESULT(thr) \
 	do { \
 		DUK_ERROR_TYPE((thr), DUK_STR_INVALID_TRAP_RESULT); \
+	} while (0)
+#define DUK_ERROR_TYPE_PROXY_REVOKED(thr) \
+	do { \
+		duk_err_type_proxy_revoked((thr), DUK_FILE_MACRO, (duk_int_t) DUK_LINE_MACRO); \
+	} while (0)
+#define DUK_ERROR_TYPE_BUFFER_DETACHED(thr) \
+	do { \
+		duk_err_type_buffer_detached((thr), DUK_FILE_MACRO, (duk_int_t) DUK_LINE_MACRO); \
+	} while (0)
+#define DUK_ERROR_TYPE_INVALID_RVALUE(thr) \
+	do { \
+		duk_err_type_invalid_rvalue((thr), DUK_FILE_MACRO, (duk_int_t) DUK_LINE_MACRO); \
 	} while (0)
 #define DUK_ERROR_TYPE(thr, msg) \
 	do { \
@@ -423,6 +439,10 @@
 		DUK_UNREF((thr)); \
 		return DUK_RET_RANGE_ERROR; \
 	} while (0)
+#define DUK_ERROR_RANGE_PROTO_SANITY(thr) \
+	do { \
+		duk_err_range((thr)); \
+	} while (0)
 #define DUK_ERROR_RANGE(thr, msg) \
 	do { \
 		duk_err_range((thr)); \
@@ -465,7 +485,15 @@
 		DUK_UNREF((thr)); \
 		return DUK_RET_TYPE_ERROR; \
 	} while (0)
-#define DUK_ERROR_TYPE_INVALID_TRAP_RESULT(thr) \
+#define DUK_ERROR_TYPE_PROXY_REVOKED(thr) \
+	do { \
+		duk_err_type((thr)); \
+	} while (0)
+#define DUK_ERROR_TYPE_BUFFER_DETACHED(thr) \
+	do { \
+		duk_err_type((thr)); \
+	} while (0)
+#define DUK_ERROR_TYPE_INVALID_RVALUE(thr) \
 	do { \
 		duk_err_type((thr)); \
 	} while (0)
@@ -666,6 +694,9 @@ DUK_NORETURN(
 DUK_NORETURN(DUK_INTERNAL_DECL void duk_err_type_invalid_args(duk_hthread *thr, const char *filename, duk_int_t linenumber));
 DUK_NORETURN(DUK_INTERNAL_DECL void duk_err_type_invalid_state(duk_hthread *thr, const char *filename, duk_int_t linenumber));
 DUK_NORETURN(DUK_INTERNAL_DECL void duk_err_type_invalid_trap_result(duk_hthread *thr, const char *filename, duk_int_t linenumber));
+DUK_NORETURN(DUK_INTERNAL_DECL void duk_err_type_proxy_revoked(duk_hthread *thr, const char *filename, duk_int_t linenumber));
+DUK_NORETURN(DUK_INTERNAL_DECL void duk_err_type_buffer_detached(duk_hthread *thr, const char *filename, duk_int_t linenumber));
+DUK_NORETURN(DUK_INTERNAL_DECL void duk_err_type_invalid_rvalue(duk_hthread *thr, const char *filename, duk_int_t linenumber));
 #else /* DUK_VERBOSE_ERRORS */
 DUK_NORETURN(DUK_INTERNAL_DECL void duk_err_error(duk_hthread *thr));
 DUK_NORETURN(DUK_INTERNAL_DECL void duk_err_range(duk_hthread *thr));

@@ -390,6 +390,15 @@ DUK_EXTERNAL void duk_require_constructor_call(duk_hthread *thr) {
 	}
 }
 
+DUK_INTERNAL void duk_reject_constructor_call(duk_hthread *thr) {
+	DUK_ASSERT_API_ENTRY(thr);
+
+	if (duk_is_constructor_call(thr)) {
+		DUK_ERROR_TYPE(thr, DUK_STR_NONCONSTRUCT_ONLY);
+		DUK_WO_NORETURN(return;);
+	}
+}
+
 DUK_EXTERNAL duk_bool_t duk_is_strict_call(duk_hthread *thr) {
 	duk_activation *act;
 
@@ -499,8 +508,7 @@ DUK_INTERNAL void duk_resolve_nonbound_function(duk_hthread *thr) {
 			duk_push_tval(thr, &((duk_hboundfunc *) (void *) h)->target);
 			duk_replace(thr, -2);
 #if 0
-			DUK_TVAL_SET_TVAL(tv, &((duk_hboundfunc *) h)->target);
-			DUK_TVAL_INCREF(thr, tv);
+			DUK_TVAL_SET_TVAL_INCREF(thr, tv, &((duk_hboundfunc *) h)->target);
 			DUK_HOBJECT_DECREF_NORZ(thr, h);
 #endif
 			/* Rely on Function.prototype.bind() on never creating a bound

@@ -51,6 +51,16 @@ DUK_LOCAL void duk__push_tvals_incref_only(duk_hthread *thr, duk_tval *tv_src, d
 }
 #endif
 
+DUK_LOCAL DUK_COLD DUK_NOINLINE void duk__vm_getpropc_setup_error(duk_hthread *thr, duk_instr_t ins, duk_tval *tv_key) {
+	/* Target value is in register A already. */
+	duk_tval *tv_recv;
+
+	duk_dup(thr, DUK_DEC_A(ins));
+	tv_recv = thr->valstack_bottom + DUK_DEC_B(ins);
+	duk_call_setup_propcall_error(thr, tv_recv, tv_key);
+	duk_replace(thr, DUK_DEC_A(ins));
+}
+
 /*
  *  Arithmetic, binary, and logical helpers.
  *
@@ -155,8 +165,8 @@ DUK_LOCAL DUK_EXEC_ALWAYS_INLINE_PERF void duk__vm_arith_add(duk_hthread *thr,
 	 *  Slow path: potentially requires function calls for coercion
 	 */
 
-	duk_push_tval(thr, tv_x);
-	duk_push_tval(thr, tv_y);
+	duk_push_tval_unsafe(thr, tv_x);
+	duk_push_tval_unsafe(thr, tv_y);
 	duk_to_primitive(thr, -2, DUK_HINT_NONE); /* side effects -> don't use tv_x, tv_y after */
 	duk_to_primitive(thr, -1, DUK_HINT_NONE);
 
@@ -292,8 +302,8 @@ skip_fastint:
 		d1 = DUK_TVAL_GET_NUMBER(tv_x);
 		d2 = DUK_TVAL_GET_NUMBER(tv_y);
 	} else {
-		duk_push_tval(thr, tv_x);
-		duk_push_tval(thr, tv_y);
+		duk_push_tval_unsafe(thr, tv_x);
+		duk_push_tval_unsafe(thr, tv_y);
 		d1 = duk_to_number_m2(thr); /* side effects */
 		d2 = duk_to_number_m1(thr);
 		DUK_ASSERT(duk_is_number(thr, -2));
@@ -390,8 +400,8 @@ DUK_LOCAL DUK_EXEC_ALWAYS_INLINE_PERF void duk__vm_bitwise_binary_op(duk_hthread
 	} else
 #endif /* DUK_USE_FASTINT */
 	{
-		duk_push_tval(thr, tv_x);
-		duk_push_tval(thr, tv_y);
+		duk_push_tval_unsafe(thr, tv_x);
+		duk_push_tval_unsafe(thr, tv_y);
 		i1 = duk_to_int32(thr, -2);
 		i2 = duk_to_int32(thr, -1);
 		duk_pop_2_unsafe(thr);
@@ -581,7 +591,7 @@ DUK_LOCAL DUK_EXEC_ALWAYS_INLINE_PERF void duk__vm_bitwise_not(duk_hthread *thr,
 	} else
 #endif /* DUK_USE_FASTINT */
 	{
-		duk_push_tval(thr, tv);
+		duk_push_tval_unsafe(thr, tv);
 		i1 = duk_to_int32(thr, -1); /* side effects */
 		duk_pop_unsafe(thr);
 	}
@@ -968,10 +978,10 @@ DUK_LOCAL void duk__handle_catch_part2(duk_hthread *thr) {
 	DUK_ASSERT(act->var_env != NULL);
 	DUK_ASSERT(DUK_ACT_GET_FUNC(act) != NULL);
 
-	new_env = duk_hdecenv_alloc(thr, DUK_HOBJECT_FLAG_EXTENSIBLE | DUK_HOBJECT_CLASS_AS_FLAGS(DUK_HOBJECT_CLASS_DECENV));
+	new_env = duk_hdecenv_alloc(thr, DUK_HOBJECT_FLAG_EXTENSIBLE | DUK_HEAPHDR_HTYPE_AS_FLAGS(DUK_HTYPE_DECENV));
 	DUK_ASSERT(new_env != NULL);
 	duk_push_hobject(thr, (duk_hobject *) new_env);
-	DUK_ASSERT(DUK_HOBJECT_GET_PROTOTYPE(thr->heap, (duk_hobject *) new_env) == NULL);
+	DUK_ASSERT(duk_hobject_get_proto_raw(thr->heap, (duk_hobject *) new_env) == NULL);
 	DUK_DDD(DUK_DDDPRINT("new_env allocated: %!iO", (duk_heaphdr *) new_env));
 
 	/* Note: currently the catch binding is handled without a register
@@ -2368,9 +2378,9 @@ DUK_LOCAL DUK_EXEC_NOINLINE_PERF void duk__handle_op_trycatch(duk_hthread *thr, 
 		 * so avoid side effects very carefully until it is
 		 * referenced.
 		 */
-		env = duk_hobjenv_alloc(thr, DUK_HOBJECT_FLAG_EXTENSIBLE | DUK_HOBJECT_CLASS_AS_FLAGS(DUK_HOBJECT_CLASS_OBJENV));
+		env = duk_hobjenv_alloc(thr, DUK_HOBJECT_FLAG_EXTENSIBLE | DUK_HEAPHDR_HTYPE_AS_FLAGS(DUK_HTYPE_OBJENV));
 		DUK_ASSERT(env != NULL);
-		DUK_ASSERT(DUK_HOBJECT_GET_PROTOTYPE(thr->heap, (duk_hobject *) env) == NULL);
+		DUK_ASSERT(duk_hobject_get_proto_raw(thr->heap, (duk_hobject *) env) == NULL);
 		env->target = target; /* always provideThis=true */
 		DUK_HOBJECT_INCREF(thr, target);
 		env->has_this = 1;
@@ -2378,7 +2388,7 @@ DUK_LOCAL DUK_EXEC_NOINLINE_PERF void duk__handle_op_trycatch(duk_hthread *thr, 
 		DUK_DDD(DUK_DDDPRINT("environment for with binding: %!iO", env));
 
 		DUK_ASSERT(act == thr->callstack_curr);
-		DUK_ASSERT(DUK_HOBJECT_GET_PROTOTYPE(thr->heap, (duk_hobject *) env) == NULL);
+		DUK_ASSERT(duk_hobject_get_proto_raw(thr->heap, (duk_hobject *) env) == NULL);
 		DUK_ASSERT(act->lex_env != NULL);
 		DUK_HOBJECT_SET_PROTOTYPE(thr->heap, (duk_hobject *) env, act->lex_env);
 		act->lex_env = (duk_hobject *) env; /* Now reachable. */
@@ -2477,7 +2487,7 @@ DUK_LOCAL DUK_EXEC_NOINLINE_PERF duk_instr_t *duk__handle_op_endcatch(duk_hthrea
 
 		prev_env = act->lex_env;
 		DUK_ASSERT(prev_env != NULL);
-		act->lex_env = DUK_HOBJECT_GET_PROTOTYPE(thr->heap, prev_env);
+		act->lex_env = duk_hobject_get_proto_raw(thr->heap, prev_env);
 		DUK_CAT_CLEAR_LEXENV_ACTIVE(cat);
 		DUK_HOBJECT_INCREF(thr, act->lex_env);
 		DUK_HOBJECT_DECREF(thr, prev_env); /* side effects */
@@ -2638,10 +2648,14 @@ DUK_LOCAL DUK_EXEC_NOINLINE_PERF void duk__handle_op_initenum(duk_hthread *thr, 
 		duk_push_null(thr);
 		duk_replace(thr, (duk_idx_t) b);
 	} else {
+		duk_hobject *h;
+
 		duk_dup(thr, (duk_idx_t) c);
-		duk_to_object(thr, -1);
-		duk_hobject_enumerator_create(thr, 0 /*enum_flags*/); /* [ ... val ] --> [ ... enum ] */
+		h = duk_to_hobject(thr, -1);
+
+		duk_prop_enum_create_enumerator(thr, h, 0 /*enum_flags*/); /* [ ... val ] -> [ ... val enum ] */
 		duk_replace(thr, (duk_idx_t) b);
+		duk_pop_unsafe(thr);
 	}
 }
 
@@ -2670,17 +2684,18 @@ DUK_LOCAL DUK_EXEC_NOINLINE_PERF duk_small_uint_t duk__handle_op_nextenum(duk_ht
 	if (duk_is_object(thr, (duk_idx_t) c)) {
 		/* XXX: assert 'c' is an enumerator */
 		duk_dup(thr, (duk_idx_t) c);
-		if (duk_hobject_enumerator_next(thr, 0 /*get_value*/)) {
-			/* [ ... enum ] -> [ ... next_key ] */
+		if (duk_prop_enum_next(thr, duk_get_top_index(thr), 0 /*get_value*/)) {
+			/* [ ... enum ] -> [ ... enum next_key ] */
 			DUK_DDD(DUK_DDDPRINT("enum active, next key is %!T, skip jump slot ", (duk_tval *) duk_get_tval(thr, -1)));
 			pc_skip = 1;
 		} else {
-			/* [ ... enum ] -> [ ... ] */
+			/* [ ... enum ] -> [ ... enum ] */
 			DUK_DDD(DUK_DDDPRINT("enum finished, execute jump slot"));
 			DUK_ASSERT(DUK_TVAL_IS_UNDEFINED(thr->valstack_top)); /* valstack policy */
-			thr->valstack_top++;
+			thr->valstack_top++; /* = duk_push_undefined_unsafe() */
 		}
 		duk_replace(thr, (duk_idx_t) b);
+		duk_pop_unsafe(thr);
 	} else {
 		/* 'null' enumerator case -> behave as with an empty enumerator */
 		DUK_ASSERT(duk_is_null(thr, (duk_idx_t) c));
@@ -2757,7 +2772,11 @@ DUK_LOCAL duk_bool_t duk__executor_handle_call(duk_hthread *thr, duk_idx_t idx, 
 #endif
 
 /* Strict flag. */
+#if 1
+#define DUK__STRICT() is_strict
+#else
 #define DUK__STRICT() ((duk_small_uint_t) DUK_HOBJECT_HAS_STRICT((duk_hobject *) DUK__FUN()))
+#endif
 
 /* Reg/const access macros: these are very footprint and performance sensitive
  * so modify with care.  Arguments are sometimes evaluated multiple times which
@@ -3082,6 +3101,8 @@ DUK_LOCAL DUK_NOINLINE DUK_HOT void duk__js_execute_bytecode_inner(duk_hthread *
 #else
 	/* 'fun' is quite rarely used, so no local for it */
 #endif
+	/* Precomputed to avoid branch on e.g. every property write. */
+	duk_small_uint_t is_strict;
 
 #if defined(DUK_USE_INTERRUPT_COUNTER)
 	duk_int_t int_ctr;
@@ -3178,6 +3199,9 @@ restart_execution:
 		DUK_ASSERT(thr->valstack_top - thr->valstack_bottom == fun->nregs);
 		consts = DUK_HCOMPFUNC_GET_CONSTS_BASE(thr->heap, fun);
 		DUK_ASSERT(consts != NULL);
+#if 1
+		is_strict = (duk_small_uint_t) DUK_HOBJECT_HAS_STRICT((duk_hobject *) fun);
+#endif
 
 #if defined(DUK_USE_DEBUGGER_SUPPORT)
 		if (DUK_UNLIKELY(duk_debug_is_attached(thr->heap) && !thr->heap->dbg_processing)) {
@@ -3306,6 +3330,9 @@ restart_execution:
 
 		ins = *curr_pc++;
 		DUK_STATS_INC(thr->heap, stats_exec_opcodes);
+#if defined(DUK_USE_DEBUG)
+		thr->heap->stats_exec_opcode[DUK_DEC_OP(ins)]++;
+#endif
 
 		/* Typing: use duk_small_(u)int_fast_t when decoding small
 		 * opcode fields (op, A, B, C, BC) which fit into 16 bits
@@ -4172,6 +4199,7 @@ restart_execution:
 #if !defined(DUK_USE_EXEC_PREFER_SIZE)
 			duk_tval *tv_dst;
 #endif /* DUK_USE_EXEC_PREFER_SIZE */
+			duk_idx_t top_idx;
 
 			/* A -> target reg
 			 * B -> object reg/const (may be const e.g. in "'foo'[1]")
@@ -4189,7 +4217,9 @@ restart_execution:
 
 			tv_obj = DUK__REGCONSTP_B(ins);
 			tv_key = DUK__REGCONSTP_C(ins);
-			rc = duk_hobject_getprop(thr, tv_obj, tv_key); /* -> [val] */
+			top_idx = duk_get_top(thr);
+			duk_push_tval_unsafe(thr, tv_obj);
+			rc = duk_prop_getvalue_outidx(thr, top_idx, tv_key, top_idx); /* -> [val] */
 			DUK_UNREF(rc); /* ignore */
 			tv_obj = NULL; /* invalidated */
 			tv_key = NULL; /* invalidated */
@@ -4212,11 +4242,13 @@ restart_execution:
 			DUK_ASSERT(tv_val != NULL);
 			tv_obj = DUK__REGCONSTP_B(ins);
 			tv_key = DUK__REGCONSTP_C(ins);
-			rc = duk_hobject_putprop(thr, tv_obj, tv_key, tv_val, DUK__STRICT());
+			top_idx = duk_get_top(thr);
+			duk_push_tval_unsafe(thr, tv_obj);
+			rc = duk_prop_putvalue_inidx(thr, top_idx, tv_key, top_idx - 1, DUK__STRICT());
 			DUK_UNREF(rc); /* ignore */
 			tv_obj = NULL; /* invalidated */
 			tv_key = NULL; /* invalidated */
-			duk_pop_unsafe(thr);
+			duk_pop_2_unsafe(thr);
 
 			z = (ins & DUK_BC_INCDECP_FLAG_POST) ? x : y;
 #if defined(DUK_USE_EXEC_PREFER_SIZE)
@@ -4233,20 +4265,32 @@ restart_execution:
 		 * Occurs relatively often in object oriented code.
 		 */
 
-#define DUK__GETPROP_BODY(barg, carg) \
+#define DUK__GETPROP_RX_BODY(bidx, carg) \
 	{ \
 		/* A -> target reg \
-		 * B -> object reg/const (may be const e.g. in "'foo'[1]") \
+		 * B -> object reg \
 		 * C -> key reg/const \
 		 */ \
-		(void) duk_hobject_getprop(thr, (barg), (carg)); \
-		DUK__REPLACE_TOP_A_BREAK(); \
+		(void) duk_prop_getvalue_outidx(thr, (bidx), (carg), DUK_DEC_A(ins)); \
+		break; \
+	}
+#define DUK__GETPROP_CX_BODY(barg, carg) \
+	{ \
+		/* A -> target reg \
+		 * B -> object const (e.g. in "'foo'[1]") \
+		 * C -> key reg/const \
+		 */ \
+		duk_push_tval_unsafe(thr, (barg)); \
+		(void) duk_prop_getvalue_outidx(thr, thr->valstack_top - thr->valstack_bottom - 1, (carg), DUK_DEC_A(ins)); \
+		duk_pop_unsafe(thr); \
+		break; \
 	}
 #define DUK__GETPROPC_BODY(barg, carg) \
 	{ \
 		/* Same as GETPROP but callability check for property-based calls. */ \
 		duk_tval *tv__targ; \
-		(void) duk_hobject_getprop(thr, (barg), (carg)); \
+		duk_push_tval_unsafe(thr, barg); \
+		(void) duk_prop_getvalue_outidx(thr, duk_get_top(thr) - 1, (carg), duk_get_top(thr) - 1); \
 		DUK_GC_TORTURE(thr->heap); \
 		tv__targ = DUK_GET_TVAL_NEGIDX(thr, -1); \
 		if (DUK_UNLIKELY(!duk_is_callable_tval(thr, tv__targ))) { \
@@ -4258,81 +4302,132 @@ restart_execution:
 		} \
 		DUK__REPLACE_TOP_A_BREAK(); \
 	}
-#define DUK__PUTPROP_BODY(aarg, barg, carg) \
+#define DUK__GETPROPC_RX_BODY(bidx, carg) \
+	{ \
+		/* Same as GETPROP but callability check for property-based calls. */ \
+		duk_tval *tv__targ; \
+		(void) duk_prop_getvalue_outidx(thr, (bidx), (carg), DUK_DEC_A(ins)); \
+		DUK_GC_TORTURE(thr->heap); \
+		tv__targ = DUK_GET_TVAL_POSIDX(thr, DUK_DEC_A(ins)); \
+		if (DUK_UNLIKELY(!duk_is_callable_tval(thr, tv__targ))) { \
+			/* Intentionally re-evaluate (carg) macro because valstack \
+			 * may have been resized. \
+			 */ \
+			duk__vm_getpropc_setup_error(thr, ins, (carg)); \
+		} \
+		break; \
+	}
+#define DUK__PUTPROP_XR_BODY(aidx, barg, cidx) \
 	{ \
 		/* A -> object reg \
 		 * B -> key reg/const \
-		 * C -> value reg/const \
+		 * C -> value reg \
 		 * \
 		 * Note: intentional difference to register arrangement \
 		 * of e.g. GETPROP; 'A' must contain a register-only value. \
 		 */ \
-		(void) duk_hobject_putprop(thr, (aarg), (barg), (carg), DUK__STRICT()); \
+		(void) duk_prop_putvalue_inidx(thr, (aidx), (barg), (cidx), DUK__STRICT()); \
 		break; \
 	}
-#define DUK__DELPROP_BODY(barg, carg) \
+#define DUK__PUTPROP_XC_BODY(aidx, barg, carg) \
+	{ \
+		/* A -> object reg \
+		 * B -> key reg/const \
+		 * C -> value const \
+		 * \
+		 * Note: intentional difference to register arrangement \
+		 * of e.g. GETPROP; 'A' must contain a register-only value. \
+		 */ \
+		duk_push_tval_unsafe(thr, (carg)); \
+		(void) duk_prop_putvalue_inidx(thr, (aidx), (barg), duk_get_top(thr) - 1, DUK__STRICT()); \
+		duk_pop_unsafe(thr); \
+		break; \
+	}
+#define DUK__DELPROP_BODY(bidx, carg) \
 	{ \
 		/* A -> result reg \
 		 * B -> object reg \
 		 * C -> key reg/const \
 		 */ \
 		duk_bool_t rc; \
-		rc = duk_hobject_delprop(thr, (barg), (carg), DUK__STRICT()); \
+		rc = duk_prop_deleteoper(thr, (bidx), (carg), DUK__STRICT() ? DUK_DELPROP_FLAG_THROW : 0U); \
 		DUK_ASSERT(rc == 0 || rc == 1); \
 		DUK__REPLACE_BOOL_A_BREAK(rc); \
 	}
 #if defined(DUK_USE_EXEC_PREFER_SIZE)
 		case DUK_OP_GETPROP_RR:
-		case DUK_OP_GETPROP_CR:
 		case DUK_OP_GETPROP_RC:
+			DUK__GETPROP_RX_BODY(DUK_DEC_B(ins), DUK__REGCONSTP_C(ins));
+#if 0
+		case DUK_OP_GETPROP_CR:
 		case DUK_OP_GETPROP_CC:
-			DUK__GETPROP_BODY(DUK__REGCONSTP_B(ins), DUK__REGCONSTP_C(ins));
+			DUK__GETPROP_CX_BODY(DUK__CONSTP_B(ins), DUK__REGCONSTP_C(ins));
+#endif
 #if defined(DUK_USE_VERBOSE_ERRORS)
 		case DUK_OP_GETPROPC_RR:
-		case DUK_OP_GETPROPC_CR:
 		case DUK_OP_GETPROPC_RC:
+			DUK__GETPROPC_RX_BODY(DUK_DEC_B(ins), DUK__REGCONSTP_C(ins));
+#if 0
+		case DUK_OP_GETPROPC_CR:
 		case DUK_OP_GETPROPC_CC:
 			DUK__GETPROPC_BODY(DUK__REGCONSTP_B(ins), DUK__REGCONSTP_C(ins));
 #endif
+#endif
 		case DUK_OP_PUTPROP_RR:
 		case DUK_OP_PUTPROP_CR:
+			DUK__PUTPROP_XR_BODY(DUK_DEC_A(ins), DUK__REGCONSTP_B(ins), DUK_DEC_C(ins));
 		case DUK_OP_PUTPROP_RC:
 		case DUK_OP_PUTPROP_CC:
-			DUK__PUTPROP_BODY(DUK__REGP_A(ins), DUK__REGCONSTP_B(ins), DUK__REGCONSTP_C(ins));
+			DUK__PUTPROP_XC_BODY(DUK_DEC_A(ins), DUK__REGCONSTP_B(ins), DUK__CONSTP_C(ins));
 		case DUK_OP_DELPROP_RR:
 		case DUK_OP_DELPROP_RC: /* B is always reg */
-			DUK__DELPROP_BODY(DUK__REGP_B(ins), DUK__REGCONSTP_C(ins));
+			DUK__DELPROP_BODY(DUK_DEC_B(ins), DUK__REGCONSTP_C(ins));
 #else /* DUK_USE_EXEC_PREFER_SIZE */
 		case DUK_OP_GETPROP_RR:
-			DUK__GETPROP_BODY(DUK__REGP_B(ins), DUK__REGP_C(ins));
+			DUK__GETPROP_RX_BODY(DUK_DEC_B(ins), DUK__REGP_C(ins));
+		case DUK_OP_GETPROP_RC: {
+			duk_tval *tv_c = DUK__CONSTP_C(ins);
+			if (DUK_LIKELY(DUK_TVAL_IS_STRING(tv_c))) {
+				(void)
+				    duk_prop_getvalue_strkey_outidx(thr, DUK_DEC_B(ins), DUK_TVAL_GET_STRING(tv_c), DUK_DEC_A(ins));
+			} else {
+				(void) duk_prop_getvalue_outidx(thr, DUK_DEC_B(ins), tv_c, DUK_DEC_A(ins));
+			}
+			break;
+		}
+#if 0
+			DUK__GETPROP_RX_BODY(DUK_DEC_B(ins), DUK__CONSTP_C(ins));
+#endif
+#if 0
 		case DUK_OP_GETPROP_CR:
-			DUK__GETPROP_BODY(DUK__CONSTP_B(ins), DUK__REGP_C(ins));
-		case DUK_OP_GETPROP_RC:
-			DUK__GETPROP_BODY(DUK__REGP_B(ins), DUK__CONSTP_C(ins));
+			DUK__GETPROP_CX_BODY(DUK__CONSTP_B(ins), DUK__REGP_C(ins));
 		case DUK_OP_GETPROP_CC:
-			DUK__GETPROP_BODY(DUK__CONSTP_B(ins), DUK__CONSTP_C(ins));
+			DUK__GETPROP_CX_BODY(DUK__CONSTP_B(ins), DUK__CONSTP_C(ins));
+#endif
 #if defined(DUK_USE_VERBOSE_ERRORS)
 		case DUK_OP_GETPROPC_RR:
-			DUK__GETPROPC_BODY(DUK__REGP_B(ins), DUK__REGP_C(ins));
+			DUK__GETPROPC_RX_BODY(DUK_DEC_B(ins), DUK__REGP_C(ins));
+		case DUK_OP_GETPROPC_RC:
+			DUK__GETPROPC_RX_BODY(DUK_DEC_B(ins), DUK__CONSTP_C(ins));
+#if 0
 		case DUK_OP_GETPROPC_CR:
 			DUK__GETPROPC_BODY(DUK__CONSTP_B(ins), DUK__REGP_C(ins));
-		case DUK_OP_GETPROPC_RC:
-			DUK__GETPROPC_BODY(DUK__REGP_B(ins), DUK__CONSTP_C(ins));
 		case DUK_OP_GETPROPC_CC:
 			DUK__GETPROPC_BODY(DUK__CONSTP_B(ins), DUK__CONSTP_C(ins));
 #endif
+#endif
 		case DUK_OP_PUTPROP_RR:
-			DUK__PUTPROP_BODY(DUK__REGP_A(ins), DUK__REGP_B(ins), DUK__REGP_C(ins));
+			DUK__PUTPROP_XR_BODY(DUK_DEC_A(ins), DUK__REGP_B(ins), DUK_DEC_C(ins));
 		case DUK_OP_PUTPROP_CR:
-			DUK__PUTPROP_BODY(DUK__REGP_A(ins), DUK__CONSTP_B(ins), DUK__REGP_C(ins));
+			DUK__PUTPROP_XR_BODY(DUK_DEC_A(ins), DUK__CONSTP_B(ins), DUK_DEC_C(ins));
 		case DUK_OP_PUTPROP_RC:
-			DUK__PUTPROP_BODY(DUK__REGP_A(ins), DUK__REGP_B(ins), DUK__CONSTP_C(ins));
+			DUK__PUTPROP_XC_BODY(DUK_DEC_A(ins), DUK__REGP_B(ins), DUK__CONSTP_C(ins));
 		case DUK_OP_PUTPROP_CC:
-			DUK__PUTPROP_BODY(DUK__REGP_A(ins), DUK__CONSTP_B(ins), DUK__CONSTP_C(ins));
+			DUK__PUTPROP_XC_BODY(DUK_DEC_A(ins), DUK__CONSTP_B(ins), DUK__CONSTP_C(ins));
 		case DUK_OP_DELPROP_RR: /* B is always reg */
-			DUK__DELPROP_BODY(DUK__REGP_B(ins), DUK__REGP_C(ins));
+			DUK__DELPROP_BODY(DUK_DEC_B(ins), DUK__REGP_C(ins));
 		case DUK_OP_DELPROP_RC:
-			DUK__DELPROP_BODY(DUK__REGP_B(ins), DUK__CONSTP_C(ins));
+			DUK__DELPROP_BODY(DUK_DEC_B(ins), DUK__CONSTP_C(ins));
 #endif /* DUK_USE_EXEC_PREFER_SIZE */
 
 		/* No fast path for DECLVAR now, it's quite a rare instruction. */
@@ -4364,7 +4459,7 @@ restart_execution:
 			prop_flags = a & DUK_PROPDESC_FLAGS_MASK;
 
 			if (is_func_decl) {
-				duk_push_tval(thr, DUK__REGCONSTP_C(ins));
+				duk_push_tval_unsafe(thr, DUK__REGCONSTP_C(ins));
 			} else {
 				DUK_ASSERT(DUK_TVAL_IS_UNDEFINED(thr->valstack_top)); /* valstack policy */
 				thr->valstack_top++;
@@ -4401,8 +4496,8 @@ restart_execution:
 			 * C -> escaped source
 			 */
 
-			duk_push_tval(thr, DUK__REGCONSTP_C(ins));
-			duk_push_tval(thr, DUK__REGCONSTP_B(ins)); /* -> [ ... escaped_source bytecode ] */
+			duk_push_tval_unsafe(thr, DUK__REGCONSTP_C(ins));
+			duk_push_tval_unsafe(thr, DUK__REGCONSTP_B(ins)); /* -> [ ... escaped_source bytecode ] */
 			duk_regexp_create_instance(thr); /* -> [ ... regexp_instance ] */
 			DUK__REPLACE_TOP_A_BREAK();
 		}
@@ -4573,13 +4668,13 @@ restart_execution:
 			DUK__SYNC_AND_NULL_CURR_PC();
 
 			if (op == DUK_OP_RETREG) {
-				duk_push_tval(thr, DUK__REGP_BC(ins));
+				duk_push_tval_unsafe(thr, DUK__REGP_BC(ins));
 			} else if (op == DUK_OP_RETUNDEF) {
 				DUK_ASSERT(DUK_TVAL_IS_UNDEFINED(thr->valstack_top)); /* valstack policy */
 				thr->valstack_top++;
 			} else {
 				DUK_ASSERT(op == DUK_OP_RETCONST || op == DUK_OP_RETCONSTN);
-				duk_push_tval(thr, DUK__CONSTP_BC(ins));
+				duk_push_tval_unsafe(thr, DUK__CONSTP_BC(ins));
 			}
 
 			DUK__RETURN_SHARED();
@@ -4590,8 +4685,7 @@ restart_execution:
 
 			DUK__SYNC_AND_NULL_CURR_PC();
 			tv = DUK__REGP_BC(ins);
-			DUK_TVAL_SET_TVAL(thr->valstack_top, tv);
-			DUK_TVAL_INCREF(thr, tv);
+			DUK_TVAL_SET_TVAL_INCREF(thr, thr->valstack_top, tv);
 			thr->valstack_top++;
 			DUK__RETURN_SHARED();
 		}
@@ -4601,8 +4695,7 @@ restart_execution:
 
 			DUK__SYNC_AND_NULL_CURR_PC();
 			tv = DUK__CONSTP_BC(ins);
-			DUK_TVAL_SET_TVAL(thr->valstack_top, tv);
-			DUK_TVAL_INCREF(thr, tv);
+			DUK_TVAL_SET_TVAL_INCREF(thr, thr->valstack_top, tv);
 			thr->valstack_top++;
 			DUK__RETURN_SHARED();
 		}
@@ -4787,8 +4880,7 @@ restart_execution:
 			DUK_TVAL_SET_TVAL(&tv_tmp1, tv1);
 			DUK_TVAL_SET_TVAL(&tv_tmp2, tv2);
 			tv3 = DUK__REGP(a);
-			DUK_TVAL_SET_TVAL(tv1, tv3);
-			DUK_TVAL_INCREF(thr, tv1); /* no side effects */
+			DUK_TVAL_SET_TVAL_INCREF(thr, tv1, tv3); /* no side effects */
 			DUK_TVAL_SET_UNDEFINED(tv2); /* no need for incref */
 			DUK_TVAL_DECREF(thr, &tv_tmp1);
 			DUK_TVAL_DECREF(thr, &tv_tmp2);
@@ -4899,43 +4991,36 @@ restart_execution:
 			{
 				duk_hobject *h;
 				h = duk_require_hobject(thr, -1);
-				DUK_ASSERT(DUK_HOBJECT_GET_ESIZE(h) == 0);
-				DUK_ASSERT(DUK_HOBJECT_GET_ENEXT(h) == 0);
-				DUK_ASSERT(DUK_HOBJECT_GET_ASIZE(h) == 0);
-				DUK_ASSERT(DUK_HOBJECT_GET_HSIZE(h) == 0);
+				DUK_ASSERT(duk_hobject_get_esize(h) == 0);
+				DUK_ASSERT(duk_hobject_get_enext(h) == 0);
+				DUK_ASSERT(duk_hobject_get_hsize(thr->heap, h) == 0);
 			}
 #endif
 #if !defined(DUK_USE_PREFER_SIZE)
-			/* XXX: could do a direct props realloc, but need hash size */
+			/* Best guess is that properties will be string properties
+			 * (not index properties).  This could be improved if compiler
+			 * provided both counts.
+			 */
 			duk_hobject_resize_entrypart(thr, duk_known_hobject(thr, -1), DUK_DEC_A(ins));
 #endif
 			DUK__REPLACE_TOP_BC_BREAK();
 		}
 
 		case DUK_OP_NEWARR: {
-			duk_push_array(thr);
-#if defined(DUK_USE_ASSERTIONS)
-			{
-				duk_hobject *h;
-				h = duk_require_hobject(thr, -1);
-				DUK_ASSERT(DUK_HOBJECT_GET_ESIZE(h) == 0);
-				DUK_ASSERT(DUK_HOBJECT_GET_ENEXT(h) == 0);
-				DUK_ASSERT(DUK_HOBJECT_GET_ASIZE(h) == 0);
-				DUK_ASSERT(DUK_HOBJECT_GET_HSIZE(h) == 0);
-				DUK_ASSERT(DUK_HOBJECT_HAS_ARRAY_PART(h));
-			}
-#endif
-#if !defined(DUK_USE_PREFER_SIZE)
-			duk_hobject_realloc_props(thr,
-			                          duk_known_hobject(thr, -1),
-			                          0 /*new_e_size*/,
-			                          DUK_DEC_A(ins) /*new_a_size*/,
-			                          0 /*new_h_size*/,
-			                          0 /*abandon_array*/);
-#if 0
-			duk_hobject_resize_arraypart(thr, duk_known_hobject(thr, -1), DUK_DEC_A(ins));
-#endif
-#endif
+			duk_small_uint_t arrsize = DUK_DEC_A(ins);
+			duk_harray *h_arr;
+
+			/* Preallocate array part to indicated size which is
+			 * correct for small literals but may be too small for
+			 * large ones in which case we resize on the fly later.
+			 * Here we must init the items, unfortunately, because
+			 * they are exposed to GC before the literal is fully
+			 * initialized.
+			 */
+			h_arr = duk_push_harray_with_size(thr, arrsize);
+			DUK_ASSERT(h_arr != NULL);
+			DUK_UNREF(h_arr);
+			DUK_GC_TORTURE(thr->heap);
 			DUK__REPLACE_TOP_BC_BREAK();
 		}
 
@@ -4972,17 +5057,16 @@ restart_execution:
 			}
 #endif
 
-			/* Use 'force' flag to duk_def_prop() to ensure that any
-			 * inherited properties don't prevent the operation.
-			 * With ES2015 duplicate properties are allowed, so that we
-			 * must overwrite any previous data or accessor property.
+			/* Must ensure that no inheritance check is made when
+			 * defining a property.  With ES2015 duplicate property
+			 * keys are allowed, so we must overwrite any previous
+			 * data or accessor (!) property.
 			 *
 			 * With ES2015 computed property names the literal keys
 			 * may be arbitrary values and need to be ToPropertyKey()
 			 * coerced at runtime.
 			 */
 			do {
-				/* XXX: faster initialization (direct access or better primitives) */
 				duk_dup(thr, (duk_idx_t) idx);
 				duk_dup(thr, (duk_idx_t) (idx + 1));
 				duk_def_prop(thr,
@@ -5008,14 +5092,14 @@ restart_execution:
 			duk_tval *tv1;
 			duk_uint32_t arr_idx;
 
-			/* A -> register of target object
+			/* A -> register of target object (always an Array)
 			 * B -> first register of value data (start_index, value1, value2, ..., valueN)
 			 *      or register containing first register number if indirect
 			 * C -> number of key/value pairs (N)
 			 */
 
 			obj_idx = DUK_DEC_A(ins);
-			DUK_ASSERT(duk_is_object(thr, obj_idx));
+			DUK_ASSERT(duk_is_array(thr, obj_idx));
 
 			idx = (duk_uint_fast_t) DUK_DEC_B(ins);
 			if (DUK_DEC_OP(ins) == DUK_OP_MPUTARRI) {
@@ -5044,19 +5128,12 @@ restart_execution:
 #endif
 			idx++;
 
+			/* Array items must be set without Array.prototype inheritance
+			 * (e.g. an index setter in Array.prototype must not trigger).
+			 * Conceptually the indices are written one by one so that
+			 * 'length' always tracks the number of items set.
+			 */
 			do {
-				/* duk_xdef_prop() will define an own property without any array
-				 * special behaviors.  We'll need to set the array length explicitly
-				 * in the end.  For arrays with elisions, the compiler will emit an
-				 * explicit SETALEN which will update the length.
-				 */
-
-				/* XXX: because we're dealing with 'own' properties of a fresh array,
-				 * the array initializer should just ensure that the array has a large
-				 * enough array part and write the values directly into array part,
-				 * and finally set 'length' manually in the end (as already happens now).
-				 */
-
 				duk_dup(thr, (duk_idx_t) idx);
 				duk_xdef_prop_index_wec(thr, obj_idx, arr_idx);
 
@@ -5064,11 +5141,6 @@ restart_execution:
 				arr_idx++;
 			} while (idx < idx_end);
 
-			/* XXX: E5.1 Section 11.1.4 coerces the final length through
-			 * ToUint32() which is odd but happens now as a side effect of
-			 * 'arr_idx' type.
-			 */
-			duk_set_length(thr, obj_idx, (duk_size_t) (duk_uarridx_t) arr_idx);
 			break;
 		}
 
@@ -5090,7 +5162,10 @@ restart_execution:
 #else
 			len = (duk_uint32_t) DUK_TVAL_GET_NUMBER(tv1);
 #endif
-			((duk_harray *) h)->length = len;
+			DUK_HARRAY_ASSERT_VALID(thr->heap, (duk_harray *) h);
+			DUK_ASSERT(len >= DUK_HARRAY_GET_LENGTH((duk_harray *) h));
+			DUK_HARRAY_SET_LENGTH((duk_harray *) h, len);
+			DUK_HARRAY_ASSERT_VALID(thr->heap, (duk_harray *) h);
 			break;
 		}
 
@@ -5164,9 +5239,11 @@ restart_execution:
 #endif
 #if !defined(DUK_USE_VERBOSE_ERRORS)
 		case DUK_OP_GETPROPC_RR:
-		case DUK_OP_GETPROPC_CR:
 		case DUK_OP_GETPROPC_RC:
+#if 0
+		case DUK_OP_GETPROPC_CR:
 		case DUK_OP_GETPROPC_CC:
+#endif
 #endif
 		case DUK_OP_UNUSED207:
 		case DUK_OP_UNUSED212:

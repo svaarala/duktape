@@ -1268,8 +1268,8 @@ DUK_INTERNAL void duk_regexp_create_instance(duk_hthread *thr) {
 
 	/* [ ... regexp_object escaped_source bytecode ] */
 
-	DUK_HOBJECT_SET_CLASS_NUMBER(h, DUK_HOBJECT_CLASS_REGEXP);
-	DUK_HOBJECT_SET_PROTOTYPE_UPDREF(thr, h, thr->builtins[DUK_BIDX_REGEXP_PROTOTYPE]);
+	DUK_HEAPHDR_SET_HTYPE((duk_heaphdr *) h, DUK_HTYPE_REGEXP);
+	duk_hobject_set_proto_raw_updref(thr, h, thr->builtins[DUK_BIDX_REGEXP_PROTOTYPE]);
 
 	duk_xdef_prop_stridx_short(thr, -3, DUK_STRIDX_INT_BYTECODE, DUK_PROPDESC_FLAGS_NONE);
 

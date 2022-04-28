@@ -960,9 +960,9 @@
 		duk_tval *duk__dst = (tv_dst); \
 		duk_tval *duk__src = (tv_src); \
 		DUK_UNREF(duk__thr); \
-		DUK_TVAL_DECREF_NORZ(thr, duk__dst); \
+		DUK_TVAL_DECREF_NORZ(duk__thr, duk__dst); \
 		DUK_TVAL_SET_TVAL(duk__dst, duk__src); \
-		DUK_TVAL_INCREF(thr, duk__dst); \
+		DUK_TVAL_INCREF(duk__thr, duk__src); \
 	} while (0)
 
 #define DUK_TVAL_SET_U32_UPDREF_NORZ(thr, tv_dst, val) \
@@ -971,8 +971,40 @@
 		duk_tval *duk__dst = (tv_dst); \
 		duk_uint32_t duk__val = (duk_uint32_t) (val); \
 		DUK_UNREF(duk__thr); \
-		DUK_TVAL_DECREF_NORZ(thr, duk__dst); \
+		DUK_TVAL_DECREF_NORZ(duk__thr, duk__dst); \
 		DUK_TVAL_SET_U32(duk__dst, duk__val); \
+	} while (0)
+
+#define DUK_TVAL_SET_TVAL_INCREF(thr, tv_dst, tv_src) \
+	do { \
+		duk_hthread *duk__thr = (thr); \
+		duk_tval *duk__dst = (tv_dst); \
+		duk_tval *duk__src = (tv_src); \
+		DUK_UNREF(duk__thr); \
+		DUK_TVAL_SET_TVAL(duk__dst, duk__src); \
+		DUK_TVAL_INCREF(duk__thr, duk__src); \
+	} while (0)
+
+#define DUK_TVAL_SET_OBJECT_INCREF(thr, tv_dst, obj) \
+	do { \
+		duk_hthread *duk__thr = (thr); \
+		duk_tval *duk__dst = (tv_dst); \
+		duk_hobject *duk__obj = (duk_hobject *) (obj); \
+		DUK_ASSERT(duk__obj != NULL); \
+		DUK_UNREF(duk__thr); \
+		DUK_TVAL_SET_OBJECT(duk__dst, duk__obj); \
+		DUK_HOBJECT_INCREF(duk__thr, duk__obj); \
+	} while (0)
+
+#define DUK_TVAL_SET_STRING_INCREF(thr, tv_dst, str) \
+	do { \
+		duk_hthread *duk__thr = (thr); \
+		duk_tval *duk__dst = (tv_dst); \
+		duk_hstring *duk__str = (duk_hstring *) (str); \
+		DUK_ASSERT(duk__str != NULL); \
+		DUK_UNREF(duk__thr); \
+		DUK_TVAL_SET_STRING(duk__dst, duk__str); \
+		DUK_HSTRING_INCREF(duk__thr, duk__str); \
 	} while (0)
 
 /*

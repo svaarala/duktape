@@ -19,7 +19,7 @@ DUK_LOCAL duk_double_t duk__push_this_number_plain(duk_hthread *thr) {
 		goto done;
 	}
 	h = duk_get_hobject(thr, -1);
-	if (!h || (DUK_HOBJECT_GET_CLASS_NUMBER(h) != DUK_HOBJECT_CLASS_NUMBER)) {
+	if (!h || (DUK_HOBJECT_GET_HTYPE(h) != DUK_HTYPE_NUMBER_OBJECT)) {
 		DUK_DDD(DUK_DDDPRINT("unacceptable this value: %!T", (duk_tval *) duk_get_tval(thr, -1)));
 		DUK_ERROR_TYPE(thr, "number expected");
 		DUK_WO_NORETURN(return 0.0;);
@@ -74,14 +74,14 @@ DUK_INTERNAL duk_ret_t duk_bi_number_constructor(duk_hthread *thr) {
 	/* XXX: helper */
 	duk_push_this(thr);
 	h_this = duk_known_hobject(thr, -1);
-	DUK_HOBJECT_SET_CLASS_NUMBER(h_this, DUK_HOBJECT_CLASS_NUMBER);
+	DUK_HOBJECT_SET_HTYPE(h_this, DUK_HTYPE_NUMBER_OBJECT);
 
-	DUK_ASSERT(DUK_HOBJECT_GET_PROTOTYPE(thr->heap, h_this) == thr->builtins[DUK_BIDX_NUMBER_PROTOTYPE]);
-	DUK_ASSERT(DUK_HOBJECT_GET_CLASS_NUMBER(h_this) == DUK_HOBJECT_CLASS_NUMBER);
-	DUK_ASSERT(DUK_HOBJECT_HAS_EXTENSIBLE(h_this));
+	DUK_ASSERT(duk_hobject_get_proto_raw(thr->heap, h_this) == thr->builtins[DUK_BIDX_NUMBER_PROTOTYPE]);
+	DUK_ASSERT(DUK_HOBJECT_GET_HTYPE(h_this) == DUK_HTYPE_NUMBER_OBJECT);
 
 	duk_dup_0(thr); /* -> [ val obj val ] */
 	duk_xdef_prop_stridx_short(thr, -2, DUK_STRIDX_INT_VALUE, DUK_PROPDESC_FLAGS_NONE);
+
 	return 0; /* no return value -> don't replace created value */
 }
 

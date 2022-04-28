@@ -26,7 +26,7 @@
 DUK_LOCAL duk_hstring *duk__str_tostring_notregexp(duk_hthread *thr, duk_idx_t idx) {
 	duk_hstring *h;
 
-	if (duk_get_class_number(thr, idx) == DUK_HOBJECT_CLASS_REGEXP) {
+	if (duk_get_htype(thr, idx) == DUK_HTYPE_REGEXP) {
 		DUK_ERROR_TYPE_INVALID_ARGS(thr);
 		DUK_WO_NORETURN(return NULL;);
 	}
@@ -82,7 +82,7 @@ DUK_INTERNAL duk_ret_t duk_bi_string_constructor(duk_hthread *thr) {
 	if (duk_is_constructor_call(thr)) {
 		/* String object internal value is immutable */
 		flags = DUK_HOBJECT_FLAG_EXTENSIBLE | DUK_HOBJECT_FLAG_FASTREFS | DUK_HOBJECT_FLAG_EXOTIC_STRINGOBJ |
-		        DUK_HOBJECT_CLASS_AS_FLAGS(DUK_HOBJECT_CLASS_STRING);
+		        DUK_HEAPHDR_HTYPE_AS_FLAGS(DUK_HTYPE_STRING_OBJECT);
 		duk_push_object_helper(thr, flags, DUK_BIDX_STRING_PROTOTYPE);
 		duk_dup_0(thr);
 		duk_xdef_prop_stridx_short(thr, -2, DUK_STRIDX_INT_VALUE, DUK_PROPDESC_FLAGS_NONE);
@@ -169,7 +169,7 @@ DUK_INTERNAL duk_ret_t duk_bi_string_prototype_to_string(duk_hthread *thr) {
 		DUK_ASSERT(h != NULL);
 
 		/* Must be a "string object", i.e. class "String" */
-		if (DUK_HOBJECT_GET_CLASS_NUMBER(h) != DUK_HOBJECT_CLASS_STRING) {
+		if (DUK_HOBJECT_GET_HTYPE(h) != DUK_HTYPE_STRING_OBJECT) {
 			goto type_error;
 		}
 
@@ -481,7 +481,7 @@ DUK_INTERNAL duk_ret_t duk_bi_string_prototype_replace(duk_hthread *thr) {
 	 * stack[3] = result buffer
 	 */
 
-	h_re = duk_get_hobject_with_class(thr, 0, DUK_HOBJECT_CLASS_REGEXP);
+	h_re = duk_get_hobject_with_htype(thr, 0, DUK_HTYPE_REGEXP);
 	if (h_re) {
 #if defined(DUK_USE_REGEXP_SUPPORT)
 		is_regexp = 1;
@@ -870,7 +870,7 @@ DUK_INTERNAL duk_ret_t duk_bi_string_prototype_split(duk_hthread *thr) {
 		duk_dup_2(thr);
 		duk_put_prop_index(thr, 3, 0);
 		return 1;
-	} else if (duk_get_hobject_with_class(thr, 0, DUK_HOBJECT_CLASS_REGEXP) != NULL) {
+	} else if (duk_get_hobject_with_htype(thr, 0, DUK_HTYPE_REGEXP) != NULL) {
 #if defined(DUK_USE_REGEXP_SUPPORT)
 		duk_push_hobject_bidx(thr, DUK_BIDX_REGEXP_CONSTRUCTOR);
 		duk_dup_0(thr);
@@ -1082,7 +1082,7 @@ DUK_LOCAL void duk__to_regexp_helper(duk_hthread *thr, duk_idx_t idx, duk_bool_t
 		goto do_new;
 	}
 
-	h = duk_get_hobject_with_class(thr, idx, DUK_HOBJECT_CLASS_REGEXP);
+	h = duk_get_hobject_with_htype(thr, idx, DUK_HTYPE_REGEXP);
 	if (!h) {
 		goto do_new;
 	}

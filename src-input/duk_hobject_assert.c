@@ -6,29 +6,144 @@
 
 #if defined(DUK_USE_ASSERTIONS)
 
-DUK_INTERNAL void duk_hobject_assert_valid(duk_hobject *h) {
+DUK_INTERNAL void duk_hobject_assert_valid(duk_heap *heap, duk_hobject *h) {
+	duk_uint32_t i, j, n;
+	duk_hstring **keys;
+
+	DUK_UNREF(heap);
 	DUK_ASSERT(h != NULL);
-	DUK_ASSERT(!DUK_HOBJECT_IS_CALLABLE(h) || DUK_HOBJECT_GET_CLASS_NUMBER(h) == DUK_HOBJECT_CLASS_FUNCTION);
-	DUK_ASSERT(!DUK_HOBJECT_IS_BUFOBJ(h) || (DUK_HOBJECT_GET_CLASS_NUMBER(h) == DUK_HOBJECT_CLASS_ARRAYBUFFER ||
-	                                         DUK_HOBJECT_GET_CLASS_NUMBER(h) == DUK_HOBJECT_CLASS_DATAVIEW ||
-	                                         DUK_HOBJECT_GET_CLASS_NUMBER(h) == DUK_HOBJECT_CLASS_INT8ARRAY ||
-	                                         DUK_HOBJECT_GET_CLASS_NUMBER(h) == DUK_HOBJECT_CLASS_UINT8ARRAY ||
-	                                         DUK_HOBJECT_GET_CLASS_NUMBER(h) == DUK_HOBJECT_CLASS_UINT8CLAMPEDARRAY ||
-	                                         DUK_HOBJECT_GET_CLASS_NUMBER(h) == DUK_HOBJECT_CLASS_INT16ARRAY ||
-	                                         DUK_HOBJECT_GET_CLASS_NUMBER(h) == DUK_HOBJECT_CLASS_UINT16ARRAY ||
-	                                         DUK_HOBJECT_GET_CLASS_NUMBER(h) == DUK_HOBJECT_CLASS_INT32ARRAY ||
-	                                         DUK_HOBJECT_GET_CLASS_NUMBER(h) == DUK_HOBJECT_CLASS_UINT32ARRAY ||
-	                                         DUK_HOBJECT_GET_CLASS_NUMBER(h) == DUK_HOBJECT_CLASS_FLOAT32ARRAY ||
-	                                         DUK_HOBJECT_GET_CLASS_NUMBER(h) == DUK_HOBJECT_CLASS_FLOAT64ARRAY));
-	/* Object is an Array <=> object has exotic array behavior */
-	DUK_ASSERT((DUK_HOBJECT_GET_CLASS_NUMBER(h) == DUK_HOBJECT_CLASS_ARRAY && DUK_HOBJECT_HAS_EXOTIC_ARRAY(h)) ||
-	           (DUK_HOBJECT_GET_CLASS_NUMBER(h) != DUK_HOBJECT_CLASS_ARRAY && !DUK_HOBJECT_HAS_EXOTIC_ARRAY(h)));
+	DUK_ASSERT(!DUK_HOBJECT_IS_CALLABLE(h) ||
+	           (DUK_HOBJECT_GET_HTYPE(h) == DUK_HTYPE_COMPFUNC || DUK_HOBJECT_GET_HTYPE(h) == DUK_HTYPE_NATFUNC ||
+	            DUK_HOBJECT_GET_HTYPE(h) == DUK_HTYPE_BOUNDFUNC || DUK_HOBJECT_GET_HTYPE(h) == DUK_HTYPE_PROXY));
+	DUK_ASSERT(!DUK_HOBJECT_IS_BUFOBJ(h) ||
+	           (DUK_HOBJECT_GET_HTYPE(h) == DUK_HTYPE_ARRAYBUFFER || DUK_HOBJECT_GET_HTYPE(h) == DUK_HTYPE_DATAVIEW ||
+	            DUK_HOBJECT_GET_HTYPE(h) == DUK_HTYPE_INT8ARRAY || DUK_HOBJECT_GET_HTYPE(h) == DUK_HTYPE_UINT8ARRAY ||
+	            DUK_HOBJECT_GET_HTYPE(h) == DUK_HTYPE_UINT8CLAMPEDARRAY || DUK_HOBJECT_GET_HTYPE(h) == DUK_HTYPE_INT16ARRAY ||
+	            DUK_HOBJECT_GET_HTYPE(h) == DUK_HTYPE_UINT16ARRAY || DUK_HOBJECT_GET_HTYPE(h) == DUK_HTYPE_INT32ARRAY ||
+	            DUK_HOBJECT_GET_HTYPE(h) == DUK_HTYPE_UINT32ARRAY || DUK_HOBJECT_GET_HTYPE(h) == DUK_HTYPE_FLOAT32ARRAY ||
+	            DUK_HOBJECT_GET_HTYPE(h) == DUK_HTYPE_FLOAT64ARRAY));
+
+	/* Object is an Array <=> object has exotic array behavior (=> duk_harray layout) */
+	DUK_ASSERT((DUK_HOBJECT_GET_HTYPE(h) == DUK_HTYPE_ARRAY && DUK_HOBJECT_HAS_EXOTIC_ARRAY(h)) ||
+	           (DUK_HOBJECT_GET_HTYPE(h) != DUK_HTYPE_ARRAY && !DUK_HOBJECT_HAS_EXOTIC_ARRAY(h)));
+
+	/* No duplicate keys. */
+	n = DUK_HOBJECT_GET_ENEXT(h);
+	keys = DUK_HOBJECT_E_GET_KEY_BASE(heap, h);
+	for (i = 0; i < n; i++) {
+		duk_hstring *k1 = keys[i];
+		if (k1 == NULL) {
+			continue;
+		}
+		for (j = i + 1; j < n; j++) {
+			duk_hstring *k2 = keys[j];
+			if (k2 == NULL) {
+				continue;
+			}
+			DUK_ASSERT(k1 != k2);
+		}
+	}
+
+	/* Keys in string property part must never be arridx keys. */
+	n = DUK_HOBJECT_GET_ENEXT(h);
+	keys = DUK_HOBJECT_E_GET_KEY_BASE(heap, h);
+	for (i = 0; i < n; i++) {
+		duk_hstring *k1 = keys[i];
+		if (k1 == NULL) {
+			continue;
+		}
+		DUK_ASSERT(!DUK_HSTRING_HAS_ARRIDX(k1));
+	}
+
+	/* If an object has a linear array items part, it must not have an
+	 * index key part.
+	 */
+	if (DUK_HOBJECT_HAS_ARRAY_ITEMS(h)) {
+		DUK_ASSERT(h->idx_props == NULL);
+		DUK_ASSERT(h->idx_hash == NULL);
+		DUK_ASSERT(h->i_size == 0);
+		DUK_ASSERT(h->i_next == 0);
+	}
 }
 
-DUK_INTERNAL void duk_harray_assert_valid(duk_harray *h) {
+DUK_INTERNAL void duk_hobject_assert_compact(duk_heap *heap, duk_hobject *h) {
+	duk_uint32_t i, n;
+	duk_hstring **keys;
+
+	DUK_HOBJECT_ASSERT_VALID(heap, h);
+
+	n = DUK_HOBJECT_GET_ENEXT(h);
+	keys = DUK_HOBJECT_E_GET_KEY_BASE(heap, h);
+	for (i = 0; i < n; i++) {
+		duk_hstring *k1 = keys[i];
+		DUK_ASSERT(k1 != NULL);
+	}
+
+	if (DUK_HOBJECT_IS_HARRAY(h)) {
+		duk_harray *a = (duk_harray *) h;
+
+		/* Compactness for 'items' doesn't mean there are no gaps,
+		 * but that the 'items' part has no trailing unused values.
+		 */
+		if (DUK_HARRAY_GET_ITEMS(heap, a) != NULL && DUK_HARRAY_GET_ITEMS_LENGTH(a) > 0) {
+			duk_tval *tv = DUK_HARRAY_GET_ITEMS(heap, a) + DUK_HARRAY_GET_ITEMS_LENGTH(a) - 1;
+			DUK_ASSERT(!DUK_TVAL_IS_UNUSED(tv));
+		}
+	}
+}
+
+DUK_INTERNAL void duk_hobject_assert_key_absent(duk_heap *heap, duk_hobject *h, duk_hstring *key) {
+	duk_uint32_t i, n;
+	duk_hstring **keys;
+
+	DUK_HOBJECT_ASSERT_VALID(heap, h);
+
+	n = DUK_HOBJECT_GET_ENEXT(h);
+	keys = DUK_HOBJECT_E_GET_KEY_BASE(heap, h);
+	for (i = 0; i < n; i++) {
+		duk_hstring *k = keys[i];
+		if (k == NULL) {
+			continue;
+		}
+		DUK_ASSERT(k != key);
+	}
+}
+
+DUK_INTERNAL void duk_harray_assert_valid(duk_heap *heap, duk_harray *h) {
+	DUK_UNREF(heap);
 	DUK_ASSERT(h != NULL);
-	DUK_ASSERT(DUK_HOBJECT_IS_ARRAY((duk_hobject *) h));
-	DUK_ASSERT(DUK_HOBJECT_HAS_EXOTIC_ARRAY((duk_hobject *) h));
+	if (DUK_HOBJECT_IS_ARRAY((duk_hobject *) h)) {
+		DUK_ASSERT(DUK_HOBJECT_HAS_EXOTIC_ARRAY((duk_hobject *) h));
+	} else if (DUK_HOBJECT_IS_ARGUMENTS((duk_hobject *) h)) {
+		/* Not necessarily Arguments exotic. */
+	} else {
+		DUK_ASSERT(0);
+	}
+	if (DUK_HARRAY_GET_ITEMS(heap, h) != NULL) {
+		DUK_ASSERT(DUK_HOBJECT_HAS_ARRAY_ITEMS((duk_hobject *) h));
+	}
+	if (DUK_HARRAY_GET_ITEMS(heap, h) == NULL) {
+		DUK_ASSERT(DUK_HARRAY_GET_ITEMS_LENGTH(h) == 0);
+	}
+
+	/* Array length doesn't relate directly to items_length, but for
+	 * actual Arrays, any value at index >= .length must be unused.
+	 * For Arguments objects this isn't necessarily the case.
+	 */
+	if (DUK_HOBJECT_IS_ARRAY((duk_hobject *) h) && DUK_HOBJECT_HAS_ARRAY_ITEMS((duk_hobject *) h)) {
+		duk_uint32_t i;
+		for (i = DUK_HARRAY_GET_LENGTH(h); i < DUK_HARRAY_GET_ITEMS_LENGTH(h); i++) {
+			DUK_ASSERT(DUK_HARRAY_GET_ITEMS(heap, h) != NULL);
+			DUK_ASSERT(DUK_TVAL_IS_UNUSED(DUK_HARRAY_GET_ITEMS(heap, h) + i));
+		}
+	}
+
+	if (DUK_HOBJECT_HAS_ARRAY_ITEMS((duk_hobject *) h)) {
+		DUK_ASSERT(((duk_hobject *) h)->idx_props == NULL);
+		DUK_ASSERT(((duk_hobject *) h)->idx_hash == NULL);
+		DUK_ASSERT(((duk_hobject *) h)->i_size == 0);
+		DUK_ASSERT(((duk_hobject *) h)->i_next == 0);
+	}
 }
 
 DUK_INTERNAL void duk_hboundfunc_assert_valid(duk_hboundfunc *h) {
@@ -99,7 +214,7 @@ DUK_INTERNAL void duk_hproxy_assert_valid(duk_hproxy *h) {
 
 DUK_INTERNAL void duk_hthread_assert_valid(duk_hthread *thr) {
 	DUK_ASSERT(thr != NULL);
-	DUK_ASSERT(DUK_HEAPHDR_GET_TYPE((duk_heaphdr *) thr) == DUK_HTYPE_OBJECT);
+	DUK_ASSERT(DUK_HEAPHDR_GET_HTYPE((duk_heaphdr *) thr) == DUK_HTYPE_THREAD);
 	DUK_ASSERT(DUK_HOBJECT_IS_THREAD((duk_hobject *) thr));
 	DUK_ASSERT(thr->unused1 == 0);
 	DUK_ASSERT(thr->unused2 == 0);

@@ -18,7 +18,7 @@ DUK_INTERNAL duk_bool_t duk_hstring_is_empty(duk_hstring *h) {
 
 DUK_INTERNAL duk_uint32_t duk_hstring_get_hash(duk_hstring *h) {
 #if defined(DUK_USE_STRHASH16)
-	return h->hdr.h_flags >> 16U;
+	return (duk_uint32_t) h->hash;
 #else
 	return h->hash;
 #endif
@@ -27,7 +27,7 @@ DUK_INTERNAL duk_uint32_t duk_hstring_get_hash(duk_hstring *h) {
 DUK_INTERNAL void duk_hstring_set_hash(duk_hstring *h, duk_uint32_t hash) {
 #if defined(DUK_USE_STRHASH16)
 	DUK_ASSERT(hash <= 0xffffUL);
-	h->hdr.h_flags = (h->hdr.h_flags & 0x0000ffffUL) | (hash << 16U);
+	h->hash = hash;
 #else
 	h->hash = hash;
 #endif
@@ -161,13 +161,13 @@ DUK_INTERNAL duk_uarridx_t duk_hstring_get_arridx_fast(duk_hstring *h) {
 #if defined(DUK_USE_HSTRING_ARRIDX)
 	return h->arridx;
 #else
-	/* Get array index related to string (or return DUK_HSTRING_NO_ARRAY_INDEX);
+	/* Get array index related to string (or return DUK_ARRIDX_NONE);
 	 * avoids helper call if string has no array index value.
 	 */
 	if (DUK_HSTRING_HAS_ARRIDX(h)) {
 		return duk_js_to_arrayindex_hstring_fast_known(h);
 	} else {
-		return DUK_HSTRING_NO_ARRAY_INDEX;
+		return DUK_ARRIDX_NONE;
 	}
 #endif
 }

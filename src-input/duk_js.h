@@ -23,6 +23,12 @@
 #define DUK_COMPARE_FLAG_NEGATE          (1U << 0) /* negate result */
 #define DUK_COMPARE_FLAG_EVAL_LEFT_FIRST (1U << 1) /* eval left argument first */
 
+/* Marker value; in E5 2^32-1 is not a valid array index (2^32-2 is highest
+ * valid).
+ */
+#define DUK_ARRIDX_NONE (0xffffffffUL)
+#define DUK_ARRIDX_MAX  (0xfffffffeUL)
+
 /* conversions, coercions, comparison, etc */
 DUK_INTERNAL_DECL duk_bool_t duk_js_toboolean(duk_tval *tv);
 DUK_INTERNAL_DECL duk_double_t duk_js_tonumber(duk_hthread *thr, duk_tval *tv);
@@ -129,5 +135,12 @@ DUK_INTERNAL_DECL void duk_call_setup_propcall_error(duk_hthread *thr, duk_tval 
 
 /* bytecode execution */
 DUK_INTERNAL_DECL void duk_js_execute_bytecode(duk_hthread *exec_thr);
+
+/* properties */
+DUK_INTERNAL_DECL void duk_js_getprototypeof_hproxy(duk_hthread *thr, duk_hproxy *h);
+DUK_INTERNAL_DECL void duk_js_getprototypeof(duk_hthread *thr, duk_hobject *obj);
+DUK_INTERNAL_DECL duk_bool_t duk_js_setprototypeof(duk_hthread *thr, duk_hobject *obj, duk_hobject *proto);
+DUK_INTERNAL_DECL duk_bool_t duk_js_preventextensions(duk_hthread *thr, duk_hobject *obj);
+DUK_INTERNAL_DECL duk_bool_t duk_js_isextensible(duk_hthread *thr, duk_hobject *obj);
 
 #endif /* DUK_JS_H_INCLUDED */

@@ -1225,7 +1225,10 @@ DUK_LOCAL duk_bool_t duk__prop_defown_idxkey_bufobj(duk_hthread *thr,
 	if (DUK_UNLIKELY(idx >= DUK_HBUFOBJ_GET_LOGICAL_LENGTH(h))) {
 		goto fail_invalid_index;
 	}
-	if (!duk__prop_validate_immutable_data_desc(DUK_DEFPROP_WE, defprop_flags)) {
+	if (!duk__prop_validate_immutable_data_desc(DUK_DEFPROP_WEC, defprop_flags)) {
+		/* NOTE: Somewhat bizarrely, typed array indices cannot be deleted
+		 * but they are still configurable.
+		 */
 		goto fail_invalid_desc;
 	}
 	if (defprop_flags & DUK_DEFPROP_HAVE_VALUE) {

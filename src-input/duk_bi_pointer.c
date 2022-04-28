@@ -24,7 +24,7 @@ DUK_INTERNAL duk_ret_t duk_bi_pointer_constructor(duk_hthread *thr) {
 	if (duk_is_constructor_call(thr)) {
 		(void) duk_push_object_helper(thr,
 		                              DUK_HOBJECT_FLAG_EXTENSIBLE | DUK_HOBJECT_FLAG_FASTREFS |
-		                                  DUK_HOBJECT_CLASS_AS_FLAGS(DUK_HOBJECT_CLASS_POINTER),
+		                                  DUK_HEAPHDR_HTYPE_AS_FLAGS(DUK_HTYPE_POINTER_OBJECT),
 		                              DUK_BIDX_POINTER_PROTOTYPE);
 
 		/* Pointer object internal value is immutable. */
@@ -55,7 +55,7 @@ DUK_INTERNAL duk_ret_t duk_bi_pointer_prototype_tostring_shared(duk_hthread *thr
 		DUK_ASSERT(h != NULL);
 
 		/* Must be a "pointer object", i.e. class "Pointer" */
-		if (DUK_HOBJECT_GET_CLASS_NUMBER(h) != DUK_HOBJECT_CLASS_POINTER) {
+		if (DUK_HOBJECT_GET_HTYPE(h) != DUK_HTYPE_POINTER_OBJECT) {
 			goto type_error;
 		}
 

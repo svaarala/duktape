@@ -239,7 +239,7 @@ DUK_INTERNAL duk_ret_t duk_bi_function_prototype_bind(duk_hthread *thr) {
 	DUK_ASSERT(DUK_TVAL_IS_UNDEFINED(&h_bound->this_binding));
 	DUK_ASSERT(h_bound->args == NULL);
 	DUK_ASSERT(h_bound->nargs == 0);
-	DUK_ASSERT(DUK_HOBJECT_GET_PROTOTYPE(thr->heap, (duk_hobject *) h_bound) == NULL);
+	DUK_ASSERT(duk_hobject_get_proto_raw(thr->heap, (duk_hobject *) h_bound) == NULL);
 
 	/* [ thisArg arg1 ... argN func boundFunc ] */
 
@@ -266,7 +266,7 @@ DUK_INTERNAL duk_ret_t duk_bi_function_prototype_bind(duk_hthread *thr) {
 		 * For lightfuncs Function.prototype is used and is already
 		 * in place.
 		 */
-		bound_proto = DUK_HOBJECT_GET_PROTOTYPE(thr->heap, h_target);
+		bound_proto = duk_hobject_get_proto_raw(thr->heap, h_target);
 		DUK_HOBJECT_SET_PROTOTYPE_INIT_INCREF(thr, (duk_hobject *) h_bound, bound_proto);
 
 		/* The 'strict' flag is copied to get the special [[Get]] of E5.1
@@ -443,6 +443,7 @@ fail_type:
 }
 
 #if defined(DUK_USE_SYMBOL_BUILTIN)
+/* Function.prototype[@@hasInstance]. */
 DUK_INTERNAL duk_ret_t duk_bi_function_prototype_hasinstance(duk_hthread *thr) {
 	/* This binding: RHS, stack index 0: LHS. */
 	duk_bool_t ret;

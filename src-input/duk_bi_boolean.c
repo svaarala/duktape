@@ -29,7 +29,7 @@ DUK_INTERNAL duk_ret_t duk_bi_boolean_prototype_tostring_shared(duk_hthread *thr
 		h = DUK_TVAL_GET_OBJECT(tv);
 		DUK_ASSERT(h != NULL);
 
-		if (DUK_HOBJECT_GET_CLASS_NUMBER(h) == DUK_HOBJECT_CLASS_BOOLEAN) {
+		if (DUK_HOBJECT_GET_HTYPE(h) == DUK_HTYPE_BOOLEAN_OBJECT) {
 			duk_xget_owndataprop_stridx_short(thr, -1, DUK_STRIDX_INT_VALUE);
 			DUK_ASSERT(duk_is_boolean(thr, -1));
 			goto type_ok;
@@ -52,15 +52,15 @@ DUK_INTERNAL duk_ret_t duk_bi_boolean_constructor(duk_hthread *thr) {
 	duk_to_boolean(thr, 0);
 
 	if (duk_is_constructor_call(thr)) {
-		/* XXX: helper; rely on Boolean.prototype as being non-writable, non-configurable */
 		duk_push_this(thr);
 		h_this = duk_known_hobject(thr, -1);
-		DUK_ASSERT(DUK_HOBJECT_GET_PROTOTYPE(thr->heap, h_this) == thr->builtins[DUK_BIDX_BOOLEAN_PROTOTYPE]);
 
-		DUK_HOBJECT_SET_CLASS_NUMBER(h_this, DUK_HOBJECT_CLASS_BOOLEAN);
+		DUK_ASSERT(duk_hobject_get_proto_raw(thr->heap, h_this) == thr->builtins[DUK_BIDX_BOOLEAN_PROTOTYPE]);
+
+		DUK_HOBJECT_SET_HTYPE(h_this, DUK_HTYPE_BOOLEAN_OBJECT);
 
 		duk_dup_0(thr); /* -> [ val obj val ] */
-		duk_xdef_prop_stridx_short(thr, -2, DUK_STRIDX_INT_VALUE, DUK_PROPDESC_FLAGS_NONE); /* XXX: proper flags? */
+		duk_xdef_prop_stridx_short(thr, -2, DUK_STRIDX_INT_VALUE, DUK_PROPDESC_FLAGS_NONE);
 	} /* unbalanced stack */
 
 	return 1;

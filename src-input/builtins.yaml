@@ -602,6 +602,7 @@ objects:
           native: duk_bi_object_constructor_get_own_property_descriptor
           length: 2
           magic: 0
+      #- key: "getOwnPropertyDescriptors"
       - key: "getOwnPropertyNames"
         value:
           type: function
@@ -690,6 +691,9 @@ objects:
           nargs: 2
         es6: true
         present_if: DUK_USE_ES6
+      # - key: entries
+      # - key: fromEntries
+      # - key: values
 
   - id: bi_object_prototype
     class: Object
@@ -917,7 +921,6 @@ objects:
         present_if: DUK_USE_SYMBOL_BUILTIN
 
   # Duktape specific %NativeFunctionPrototype% which provides some getters.
-  #
   - id: bi_native_function_prototype
     class: Object
     internal_prototype: bi_function_prototype
@@ -2906,14 +2909,14 @@ objects:
           type: function
           native: duk_bi_json_object_stringify
           length: 3
-
-      #- key:  # @@toStringTag
-      #    type: symbol
-      #    variant: wellknown
-      #    string: "Symbol.toStringTag"
-      #  value: XXX
-      #  es6: true
-      #  present_if: DUK_USE_SYMBOL_BUILTIN
+      - key:
+          type: symbol
+          variant: wellknown
+          string: "Symbol.toStringTag"
+        value: "JSON"
+        attributes: "c"
+        es6: true
+        present_if: DUK_USE_SYMBOL_BUILTIN
 
   # E5 Section 13.2.3
   - id: bi_type_error_thrower
@@ -2942,6 +2945,7 @@ objects:
   - id: bi_duktape
     class: Object
     internal_prototype: bi_object_prototype
+    immutable_prototype: true
     duktape: true
     bidx: true
     #present_if: DUK_USE_DUKTAPE_BUILTIN  # Present even when properties disabled, error augmentation relies on it
@@ -3211,12 +3215,13 @@ objects:
         value: "Proxy"
         attributes: "c"
         es6: true
-      #- key: "revocable"
-      #  value:
-      #    type: function
-      #    native: duk_bi_proxy_constructor_revocable
-      #    length: 2
-      #  es6: true
+      - key: "revocable"
+        value:
+          type: function
+          native: duk_bi_proxy_constructor_revocable
+          length: 2
+          constructable: false
+        es6: true
 
   - id: bi_reflect
     class: Object

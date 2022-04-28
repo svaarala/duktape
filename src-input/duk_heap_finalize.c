@@ -175,7 +175,7 @@ DUK_INTERNAL void duk_heap_process_finalize_list(duk_heap *heap) {
 
 		DUK_DD(DUK_DDPRINT("processing finalize_list entry: %p -> %!iO", (void *) curr, curr));
 
-		DUK_ASSERT(DUK_HEAPHDR_GET_TYPE(curr) == DUK_HTYPE_OBJECT); /* Only objects have finalizers. */
+		DUK_ASSERT(DUK_HEAPHDR_IS_ANY_OBJECT(curr)); /* Only objects have finalizers. */
 		DUK_ASSERT(!DUK_HEAPHDR_HAS_REACHABLE(curr));
 		DUK_ASSERT(!DUK_HEAPHDR_HAS_TEMPROOT(curr));
 		DUK_ASSERT(DUK_HEAPHDR_HAS_FINALIZABLE(
@@ -283,7 +283,7 @@ DUK_INTERNAL void duk_heap_process_finalize_list(duk_heap *heap) {
 			DUK_HEAP_INSERT_INTO_HEAP_ALLOCATED(heap, curr);
 		} else {
 			/* No need to remove the refcount bump here. */
-			DUK_ASSERT(DUK_HEAPHDR_GET_TYPE(curr) == DUK_HTYPE_OBJECT); /* currently, always the case */
+			DUK_ASSERT(DUK_HEAPHDR_IS_ANY_OBJECT(curr)); /* currently, always the case */
 			DUK_DD(DUK_DDPRINT("refcount finalize after finalizer call: %!O", curr));
 			duk_hobject_refcount_finalize_norz(heap, (duk_hobject *) curr);
 			duk_free_hobject(heap, (duk_hobject *) curr);
