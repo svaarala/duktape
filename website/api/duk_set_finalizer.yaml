@@ -14,7 +14,14 @@ summary: |
   to <code>undefined</code>.</p>
 
   <div class="note">
-  Finalizer on a Proxy object is currently unsupported.
+  Finalizer on a Proxy object is currently unsupported, set the finalizer on
+  the target instead.  When trying to set a finalizer on the Proxy object an
+  internal finalizer property is written on the target object but an internal
+  "have finalizer" flag gets set only on the Proxy, and as a result the finalizer
+  won't run on either the target or the Proxy.
+  </div>
+
+  <div class="note">
   At present the finalizer is stored as a hidden Symbol; a finalizer cannot
   be set if the object is non-extensible (sealed or frozen), so set the
   finalizer before sealing/freezing the object.

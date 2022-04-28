@@ -17,6 +17,9 @@ Main changes in this release (see RELEASES.rst for full details):
   strings whenever possible (and WTF-8 otherwise), simplifying integration with
   other UTF-8 based APIs.
 
+* Switch to new internal object property table representation and new property
+  handling code.
+
 * TBD.
 
 Upgrading from Duktape 2.x

@@ -435,7 +435,7 @@ This implies that the maximum array length is 2**32-1 (0xffffffff) and
 the maximum array index is one less, 2**32-2 (0xfffffffe).  All valid
 array index and length values can be represented with unsigned 32-bit
 values.  Because 0xffffffff is not a valid array index, it is used internally
-as a convenient "no array index" marker (``DUK_HSTRING_NO_ARRAY_INDEX``).
+as a convenient "no array index" marker (``DUK_ARRIDX_NONE``).
 For instance, a coercion call can return the marker to indicate that an input
 was not a valid array index.
 
@@ -921,7 +921,7 @@ part is *comprehensive*, which means that if an object has an array part,
 any string key which is a valid array index *must* reside in the array
 part (it can never be in the entry part).  (Because 0xffffffff is not a
 valid array index, it is used internally as a convenient "no array index"
-marker, ``DUK_HSTRING_NO_ARRAY_INDEX``.)
+marker, ``DUK_ARRIDX_NONE``.)
 
 The array part does not store any property attribute flags: all entries
 are implicity assumed to be data properties with the default ``[[Put]]``
