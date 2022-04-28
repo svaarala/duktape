@@ -1,5 +1,6 @@
 define: DUK_USE_NONSTD_FUNC_CALLER_PROPERTY
 introduced: 1.0.0
+removed: 3.0.0
 default: false
 tags:
   - ecmascript

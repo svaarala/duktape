@@ -11,4 +11,4 @@ description: >
 
   The default is to summarize offending base value and key for property access
   errors such as "null.foo = 123;", invalid calls such as "undefined()", etc.
-  Base values and keys are summarized using duk_push_string_tval_readable().
+  Base values and keys are summarized using duk_push_readable_tval().

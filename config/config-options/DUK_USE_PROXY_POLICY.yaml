@@ -1,0 +1,9 @@
+define: DUK_USE_PROXY_POLICY
+introduced: 3.0.0
+default: true
+tags:
+  - ecmascript2015
+description: >
+  Enforce ES2015+ Proxy policies (invariants) on traps as required by the
+  standard.  In some applications the policy checks are unnecessary and can
+  be disabled, to reduce footprint and execution overhead.
