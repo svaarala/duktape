@@ -17,7 +17,7 @@ top before: 4
 top after: 2
 "my_key" {value:123,writable:false,enumerable:false,configurable:false} no-getter no-setter
 top before: 4
-==> rc=1, result='TypeError: not configurable'
+==> rc=1, result='TypeError: cannot (re)define property 'my_key' of [object Object]'
 *** test_value_attr_combinations (duk_safe_call)
 top before: 3
 top after: 1
@@ -92,14 +92,14 @@ final top: 1
 final top: 1
 ==> rc=0, result='undefined'
 *** test_fail_nonextensible (duk_safe_call)
-==> rc=1, result='TypeError: not extensible'
+==> rc=1, result='TypeError: cannot (re)define property 'my_key_1' of [object Object]'
 *** test_force_nonextensible (duk_safe_call)
 "my_key_1" {value:321,writable:false,enumerable:false,configurable:false} no-getter no-setter
 final top: 1
 ==> rc=0, result='undefined'
 *** test_fail_set_configurable (duk_safe_call)
 "my_key_1" {value:123,writable:false,enumerable:true,configurable:false} no-getter no-setter
-==> rc=1, result='TypeError: not configurable'
+==> rc=1, result='TypeError: cannot (re)define property 'my_key_1' of [object Object]'
 *** test_force_set_configurable (duk_safe_call)
 "my_key_1" {value:123,writable:false,enumerable:true,configurable:false} no-getter no-setter
 "my_key_1" {value:123,writable:false,enumerable:true,configurable:true} no-getter no-setter
@@ -107,7 +107,7 @@ final top: 1
 ==> rc=0, result='undefined'
 *** test_fail_set_enumerable (duk_safe_call)
 "my_key_1" {value:123,writable:false,enumerable:false,configurable:false} no-getter no-setter
-==> rc=1, result='TypeError: not configurable'
+==> rc=1, result='TypeError: cannot (re)define property 'my_key_1' of [object Object]'
 *** test_force_set_enumerable (duk_safe_call)
 "my_key_1" {value:123,writable:false,enumerable:false,configurable:false} no-getter no-setter
 "my_key_1" {value:123,writable:false,enumerable:true,configurable:false} no-getter no-setter
@@ -115,7 +115,7 @@ final top: 1
 ==> rc=0, result='undefined'
 *** test_fail_set_writable (duk_safe_call)
 "my_key_1" {value:123,writable:false,enumerable:false,configurable:false} no-getter no-setter
-==> rc=1, result='TypeError: not configurable'
+==> rc=1, result='TypeError: cannot (re)define property 'my_key_1' of [object Object]'
 *** test_force_set_writable (duk_safe_call)
 "my_key_1" {value:123,writable:false,enumerable:false,configurable:false} no-getter no-setter
 "my_key_1" {value:123,writable:true,enumerable:false,configurable:false} no-getter no-setter
@@ -123,7 +123,7 @@ final top: 1
 ==> rc=0, result='undefined'
 *** test_fail_set_value (duk_safe_call)
 "my_key_1" {value:123,writable:false,enumerable:false,configurable:false} no-getter no-setter
-==> rc=1, result='TypeError: not configurable'
+==> rc=1, result='TypeError: cannot (re)define property 'my_key_1' of [object Object]'
 *** test_force_set_value (duk_safe_call)
 "my_key_1" {value:123,writable:false,enumerable:false,configurable:false} no-getter no-setter
 "my_key_1" {value:321,writable:false,enumerable:false,configurable:false} no-getter no-setter
@@ -131,7 +131,7 @@ final top: 1
 ==> rc=0, result='undefined'
 *** test_fail_set_getter (duk_safe_call)
 "my_key_1" {get:{_func:true},set:{_func:true},enumerable:false,configurable:false} func func
-==> rc=1, result='TypeError: not configurable'
+==> rc=1, result='TypeError: cannot (re)define property 'my_key_1' of [object Object]'
 *** test_force_set_getter (duk_safe_call)
 "my_key_1" {get:{_func:true},set:{_func:true},enumerable:false,configurable:false} func func
 "my_key_1" {get:{_func:true},set:{_func:true},enumerable:false,configurable:false} getter func
@@ -139,7 +139,7 @@ final top: 1
 ==> rc=0, result='undefined'
 *** test_fail_set_setter (duk_safe_call)
 "my_key_1" {get:{_func:true},set:{_func:true},enumerable:false,configurable:false} func func
-==> rc=1, result='TypeError: not configurable'
+==> rc=1, result='TypeError: cannot (re)define property 'my_key_1' of [object Object]'
 *** test_force_set_setter (duk_safe_call)
 "my_key_1" {get:{_func:true},set:{_func:true},enumerable:false,configurable:false} func func
 "my_key_1" {get:{_func:true},set:{_func:true},enumerable:false,configurable:false} func setter
@@ -147,7 +147,7 @@ final top: 1
 ==> rc=0, result='undefined'
 *** test_fail_data2accessor (duk_safe_call)
 "my_key_1" {value:123,writable:false,enumerable:false,configurable:false} no-getter no-setter
-==> rc=1, result='TypeError: not configurable'
+==> rc=1, result='TypeError: cannot (re)define property 'my_key_1' of [object Object]'
 *** test_force_data2accessor (duk_safe_call)
 "my_key_1" {value:123,writable:false,enumerable:false,configurable:false} no-getter no-setter
 "my_key_1" {get:{_func:true},set:{_func:true},enumerable:true,configurable:false} getter setter
@@ -155,7 +155,7 @@ final top: 1
 ==> rc=0, result='undefined'
 *** test_fail_accessor2data (duk_safe_call)
 "my_key_1" {get:{_func:true},set:{_func:true},enumerable:false,configurable:false} func func
-==> rc=1, result='TypeError: not configurable'
+==> rc=1, result='TypeError: cannot (re)define property 'my_key_1' of [object Object]'
 *** test_force_accessor2data (duk_safe_call)
 "my_key_1" {get:{_func:true},set:{_func:true},enumerable:false,configurable:false} func func
 "my_key_1" {value:321,writable:true,enumerable:false,configurable:false} no-getter no-setter
@@ -167,7 +167,7 @@ final top: 1
 "2" {value:"quux",writable:true,enumerable:true,configurable:false} no-getter no-setter
 "3" {value:"baz",writable:true,enumerable:true,configurable:true} no-getter no-setter
 "length" {value:4,writable:true,enumerable:false,configurable:false} no-getter no-setter
-==> rc=1, result='TypeError: not configurable'
+==> rc=1, result='TypeError: cannot (re)define property 'length' of [object Array]'
 *** test_force_array_smaller (duk_safe_call)
 "0" {value:"foo",writable:true,enumerable:true,configurable:true} no-getter no-setter
 "1" {value:"bar",writable:true,enumerable:true,configurable:true} no-getter no-setter
@@ -185,7 +185,7 @@ final top: 1
 "2" {value:"quux",writable:true,enumerable:true,configurable:false} no-getter no-setter
 "3" {value:"baz",writable:true,enumerable:true,configurable:true} no-getter no-setter
 "length" {value:4,writable:false,enumerable:false,configurable:false} no-getter no-setter
-==> rc=1, result='TypeError: not configurable'
+==> rc=1, result='TypeError: cannot (re)define property 'length' of [object Array]'
 *** test_force_array_smaller_nonwritablelength (duk_safe_call)
 "0" {value:"foo",writable:true,enumerable:true,configurable:true} no-getter no-setter
 "1" {value:"bar",writable:true,enumerable:true,configurable:true} no-getter no-setter
@@ -200,7 +200,7 @@ final top: 1
 *** test_fail_nondeletable (duk_safe_call)
 "my_key_1" {value:123,writable:false,enumerable:false,configurable:false} no-getter no-setter
 my_key_1 present: 1
-==> rc=1, result='TypeError: not configurable'
+==> rc=1, result='TypeError: cannot delete property 'my_key_1' of [object Object]'
 *** test_force_nondeletable (duk_safe_call)
 "my_key_1" {value:123,writable:false,enumerable:false,configurable:false} no-getter no-setter
 my_key_1 present: 1

@@ -11,9 +11,8 @@
  *
  *  Not sure what E5/E5.1 specification says about this (it is somewhat vague
  *  for strict enumeration rules) but test262 requires that in the above case
- *  P must not be enumerated.
- *
- *  Neither V8 nor Rhino (some versions at least) pass this test.
+ *  P must not be enumerated.  Post ES5.1 the requirement is clear: P must
+ *  not be enumerated.
  */
 
 /*===

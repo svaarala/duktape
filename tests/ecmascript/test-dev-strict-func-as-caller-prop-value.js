@@ -1,5 +1,9 @@
 /*
  *  Strict function as an arguments 'caller' property.
+ *
+ *  In ES2015 Arguments has exotic behavior where arguments.caller cannot
+ *  evaluate to a strict function (https://262.ecma-international.org/6.0/#sec-arguments-exotic-objects)
+ *  (even if it is set to such value).  This behavior was removed in ES2017.
  */
 
 /*===
@@ -57,9 +61,9 @@ bar
 undefined
 0 string
 1 function
-2 TypeError
+2 function
 3 function
-4 TypeError
+4 function
 strict arguments, no formals
 bar
 undefined
@@ -144,7 +148,6 @@ function testArgumentsNonStrictNoFormals() {
 
     print(arguments[1]);  // just a test to see 'arguments' is proper
 
-    // Non-strict arguments has no 'caller' property so we can vary its value.
     try {
         val = arguments.caller;
         print(typeof val);
@@ -152,9 +155,6 @@ function testArgumentsNonStrictNoFormals() {
         print(e.name);
     }
 
-    // Because this function has no formal arguments, the 'arguments' object
-    // won't get a special behavior - including also getting no special
-    // behavior for "caller" (which is very unintuitive).
     for (i = 0; i < callerPropertyValues.length; i++) {
         arguments.caller = callerPropertyValues[i];
         try {
@@ -172,7 +172,6 @@ function testArgumentsNonStrictWithFormals(whatever) {
 
     print(arguments[1]);  // just a test to see 'arguments' is proper
 
-    // Non-strict arguments has no 'caller' property so we can vary its value.
     try {
         val = arguments.caller;
         print(typeof val);
@@ -180,10 +179,6 @@ function testArgumentsNonStrictWithFormals(whatever) {
         print(e.name);
     }
 
-    // Non-strict arguments has special [[Get]] behavior which throws an error
-    // if the value (!) of 'caller' is a strict mode function.  However, this
-    // only applies if the function referring to 'arguments' has at least one
-    // formal parameter.
     for (i = 0; i < callerPropertyValues.length; i++) {
         arguments.caller = callerPropertyValues[i];
         try {
@@ -202,10 +197,6 @@ function testArgumentsStrictNoFormals() {
 
     print(arguments[1]);  // just a test to see 'arguments' is proper
 
-    // This test fails with a TypeError because the 'caller' property of a
-    // strict arguments object is a non-writable Thrower, so we can't vary
-    // the 'caller' value.  This is probably why a strict Arguments object
-    // does not have (or need) the special [[Get]] behavior.
     try {
         val = arguments.caller;
         print(typeof val);
@@ -221,7 +212,6 @@ function testArgumentsStrictWithFormals(whatever) {
 
     print(arguments[1]);  // just a test to see 'arguments' is proper
 
-    // Same results as above.
     try {
         val = arguments.caller;
         print(typeof val);

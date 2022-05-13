@@ -1,22 +1,10 @@
 /*
- *  When deleteCount is not given, the specification treats it like
+ *  When deleteCount is not given, the ES5.1 specification treats it like
  *  deleteCount is zero.  However, at least V8 and Rhino treat this case
  *  such that the splice continues to the end of the array.
  *
- *  Mozilla documentation agrees with the V8/Rhino behavior:
- *
- *    https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Array/splice
- *
- *    If no howMany parameter is specified (second syntax above, which is a
- *    SpiderMonkey extension), all elements after index are removed.
+ *  This specification "bug" was fixed in ES2015.
  */
-
-/*---
-{
-    "nonstandard": true,
-    "comment": "requires DUK_USE_NONSTD_ARRAY_SPLICE_DELCOUNT"
-}
----*/
 
 /*===
 ["foo","bar","quux"] ["baz","quuux"]
@@ -33,8 +21,8 @@ function test() {
     res = arr.splice(3, 2);
     print(JSON.stringify(arr), JSON.stringify(res));
 
-    // Non-standard: same behavior if second argument omitted.
-    // Standard behavior seems to mandate same behavior as
+    // ES2015+: same behavior if second argument omitted.
+    // ES5.1 behavior seems to mandate same behavior as
     // arr.splice(3, 0);
     arr = [ 'foo', 'bar', 'quux', 'baz', 'quuux' ];
     res = arr.splice(3);

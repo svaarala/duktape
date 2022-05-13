@@ -30,7 +30,7 @@ final top: 0
 top: 0
 top: 1
 handle_set: key=_setTest, val=testValue
-==> rc=1, result='TypeError: proxy rejected'
+==> rc=1, result='TypeError: cannot write property '_setTest' of [object Object]'
 *** test_delete1 (duk_safe_call)
 top: 0
 top: 1
@@ -42,7 +42,7 @@ final top: 0
 top: 0
 top: 1
 handle_delete: key=_deleteTest
-==> rc=1, result='TypeError: proxy rejected'
+==> rc=1, result='TypeError: cannot delete property '_deleteTest' of [object Object]'
 ===*/
 
 static duk_ret_t handle_get(duk_context *ctx) {

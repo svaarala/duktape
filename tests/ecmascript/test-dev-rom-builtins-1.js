@@ -192,8 +192,6 @@ true
 ===*/
 
 function romObjectPropertyDeleteTest() {
-    // duk_hobject_delprop_raw()
-
     // Attempt to delete a non-existent property succeeds as normal.
     try {
         print(delete RegExp.prototype.nonExistent);

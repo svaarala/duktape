@@ -10,9 +10,11 @@ basic view test
 16
 00000000000000000000000000000000
 0000000000aa00005500000000000000
-undefined -86 0 0 undefined
-true true
-true true
+undefined undefined undefined -86 0 0 undefined
+true 432
+false undefined
+false undefined undefined
+false undefined undefined
 0000000000c1c2c35500000000000000
 -4
 0000000000c1c2c3fc00000000000000
@@ -38,14 +40,22 @@ function basicViewTest() {
 
     // offsetted and limited view
     v = new Int8Array(b, 5, 3);
-    print(v[-1], v[0], v[1], v[2], v[3]);  // v[-1] is not an index property, v[3] is out of view
-    v[-1] = 0x1c0;   // this becomes a '-1' string property, and is not clamped because it's not an index property
-    print('-1' in v, v[-1] === 0x1c0);
+    // '1x' is not a valid index, or even a canonical numeric index string
+    // 'Infinity' is not a valid index, but *is* a canonical numeric index string and has special [[Set]] handling
+    // '-1' is not a valid index, but is a canonical numeric index string and has special [[Set]] handling
+    // '3' is not a valid index, but is a canonical numeric index string and has special [[Set]] handling
+    print(v['1x'], v['Infinity'], v[-1], v[0], v[1], v[2], v[3]);
+    v['1x'] = 0x1b0;  // becomes a '1x' string property, not clamped because it's not an index property
+    v['Infinity'] = 0x1b1;  // silently dropped by 'Set'
+    v[-1] = 0x1c0;   // silently dropped by 'Set'
     v[0] = 0x1c1;
     v[1] = 0x1c2;
     v[2] = 0x1c3;
-    v[3] = 0x1c4;  // silently dropped, out of view (becomes a concrete property!)
-    print('3' in v, v[3] === 0x1c4);
+    v[3] = 0x1c4;  // silently dropped, out of view, does not become a concrete property
+    print('1x' in v, v['1x']);
+    print('Infinity' in v, v['Infinity']);
+    print('-1' in v, v[-1], v['-1']);
+    print('3' in v, v[3], v['3']);
     print(bufferToHex(v));
 
     // write signed from one view, read unsigned from another view, offsetted

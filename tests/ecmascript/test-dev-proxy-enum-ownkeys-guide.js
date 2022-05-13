@@ -3,9 +3,12 @@
  */
 
 /*===
+ownKeys trap
 foo
 bar
+ownKeys trap
 foo,bar
+ownKeys trap
 foo,bar
 ===*/
 
@@ -17,15 +20,18 @@ var target = {
 };
 
 var proxy = new Proxy(target, {
+    // Obsoleted trap.
     enumerate: function (targ) {
-        // this binding: handler table
-        // targ: underlying plain object (= target, above)
-
+        print('enumerate trap');
         return Object.getOwnPropertyNames(targ)
                      .filter(function (v) { return v[0] !== '_'; });
     },
 
     ownKeys: function (targ) {
+        // this binding: handler table
+        // targ: underlying plain object (= target, above)
+
+        print('ownKeys trap');
         return Object.getOwnPropertyNames(targ)
                      .filter(function (v) { return v[0] !== '_'; });
     }

@@ -35,7 +35,7 @@ finalizer called
 after forced gc
 ==> rc=0, result='undefined'
 *** test_nonextensible (duk_safe_call)
-==> rc=1, result='TypeError: not extensible'
+==> rc=1, result='TypeError: cannot write property '?Finalizer' of [object Object]'
 ===*/
 
 static duk_ret_t basic_finalizer(duk_context *ctx) {

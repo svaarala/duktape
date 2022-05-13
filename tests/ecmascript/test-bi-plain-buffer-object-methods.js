@@ -11,22 +11,22 @@ undefined
 [object Uint8Array]
 undefined
 - getOwnPropertyDescriptor
-0 {value:97,writable:true,enumerable:true,configurable:false}
-1 {value:98,writable:true,enumerable:true,configurable:false}
-2 {value:99,writable:true,enumerable:true,configurable:false}
-3 {value:100,writable:true,enumerable:true,configurable:false}
-4 {value:101,writable:true,enumerable:true,configurable:false}
-5 {value:102,writable:true,enumerable:true,configurable:false}
-6 {value:103,writable:true,enumerable:true,configurable:false}
-7 {value:104,writable:true,enumerable:true,configurable:false}
-8 {value:105,writable:true,enumerable:true,configurable:false}
-9 {value:106,writable:true,enumerable:true,configurable:false}
-10 {value:107,writable:true,enumerable:true,configurable:false}
-11 {value:108,writable:true,enumerable:true,configurable:false}
-12 {value:109,writable:true,enumerable:true,configurable:false}
-13 {value:110,writable:true,enumerable:true,configurable:false}
-14 {value:111,writable:true,enumerable:true,configurable:false}
-15 {value:112,writable:true,enumerable:true,configurable:false}
+0 {value:97,writable:true,enumerable:true,configurable:true}
+1 {value:98,writable:true,enumerable:true,configurable:true}
+2 {value:99,writable:true,enumerable:true,configurable:true}
+3 {value:100,writable:true,enumerable:true,configurable:true}
+4 {value:101,writable:true,enumerable:true,configurable:true}
+5 {value:102,writable:true,enumerable:true,configurable:true}
+6 {value:103,writable:true,enumerable:true,configurable:true}
+7 {value:104,writable:true,enumerable:true,configurable:true}
+8 {value:105,writable:true,enumerable:true,configurable:true}
+9 {value:106,writable:true,enumerable:true,configurable:true}
+10 {value:107,writable:true,enumerable:true,configurable:true}
+11 {value:108,writable:true,enumerable:true,configurable:true}
+12 {value:109,writable:true,enumerable:true,configurable:true}
+13 {value:110,writable:true,enumerable:true,configurable:true}
+14 {value:111,writable:true,enumerable:true,configurable:true}
+15 {value:112,writable:true,enumerable:true,configurable:true}
 16 undefined
 length {value:16,writable:false,enumerable:false,configurable:false}
 byteLength undefined
@@ -50,11 +50,9 @@ false
 99
 undefined
 - defineProperty index
-TypeError
-99
+abAdefghijklmnop65
 - defineProperties index
-TypeError
-99
+abAdefghijklmnop65
 - seal
 false
 [object Uint8Array]
@@ -149,14 +147,13 @@ function objectMethodTest() {
     print(pb[2]);
     print(pb.newProp);
 
-    // XXX: current limitation, attempt to write indices using
-    // Object.defineProperty() or Object.defineProperties() rejected
-    // even for typed array objects.
+    // For index properties Duktape 3.x handles them in defineProperty()
+    // and defineProperties() (Duktape 2.x would TypeError).
 
     resetValues();
     print('- defineProperty index');
     try {
-        print(Object.defineProperty(pb, '2', { value: 1234 }));
+        print(Object.defineProperty(pb, '2', { value: 0x4041 }));
     } catch (e) {
         print(e.name);
     }
@@ -166,7 +163,7 @@ function objectMethodTest() {
     print('- defineProperties index');
     try {
         print(Object.defineProperties(pb, {
-            2: { value: 1234 }
+            2: { value: 0x4041 }
         }));
     } catch (e) {
         print(e.name);

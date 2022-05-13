@@ -1,280 +1,6 @@
-/*
- *  Proxy (ES2015) 'get', 'set', and 'deleteProperty' traps
- */
-
 /*===
-proxy existence
-Proxy exists: true function
-Proxy.length: 2
-Proxy.name: Proxy
-Proxy desc: writable=true enumerable=false configurable=true
-Proxy.revocable exists: false undefined
-===*/
-
-function proxyExistenceTest() {
-    var pd;
-
-    print('Proxy exists:', 'Proxy' in this, typeof this.Proxy);
-    print('Proxy.length:', this.Proxy.length);
-    print('Proxy.name:', this.Proxy.name);
-    pd = Object.getOwnPropertyDescriptor(this, 'Proxy');
-    if (pd) {
-        print('Proxy desc:', 'writable=' + pd.writable, 'enumerable=' + pd.enumerable,
-              'configurable=' + pd.configurable);
-    }
-
-    print('Proxy.revocable exists:', 'revocable' in this.Proxy, typeof this.Proxy.revocable);
-/*
-    print('Proxy.revocable.length:', this.Proxy.revocable.length);
-    print('Proxy.revocable.name:', this.Proxy.revocable.name);
-    pd = Object.getOwnPropertyDescriptor(this.Proxy, 'revocable');
-    if (pd) {
-        print('Proxy.revocable desc:', 'writable=' + pd.writable, 'enumerable=' + pd.enumerable,
-              'configurable=' + pd.configurable);
-    }
-*/
-}
-
-print('proxy existence');
-
-try {
-    proxyExistenceTest();
-} catch (e) {
-    print(e);
-}
-
-/*===
-subset proxy
-object
-[object Object]
-get foo: 123
-get 1000: thousand
-get special: specialValue
-counts: get=0 set=0 del=0
-handler.get: true true string foo true
-get foo: fake-for-key-foo
-handler.get: true true string bar true
-get bar: fake-for-key-bar
-handler.get: true true string 1000 true
-get 1000 (string): fake-for-key-1000
-handler.get: true true number 1000 true
-get 1000 (number): 2000
-counts: get=4 set=0 del=0
-handler.get: true true string special true
-get special: specialValue
-handler.get: true true string special true
-get special: uncaughtValue
-target.special: uncaughtValue
-counts: get=6 set=0 del=0
-handler.set: true true string foo number 1001 true
-handler.set: true true string bar number 1002 true
-handler.set: true true string quux number 1003 true
-handler.set: true true number 123 string foo true
-handler.set: true true string rejectSet1 string reject true
-handler.set: true true string rejectSet2 string reject true
-handler.set: true true string rejectSet1 string throw true
-TypeError
-handler.set: true true string rejectSet2 string throw true
-TypeError
-counts: get=6 set=8 del=0
-target.foo: 123
-target.bar: 1002
-target.quux: 1003
-target[123]: foo
-target.rejectSet1: undefined
-target.rejectSet2: undefined
-counts: get=6 set=8 del=0
-true
-target.foo: undefined
-target.bar: 1002
-counts: get=6 set=8 del=0
-handler.deleteProperty: true true string rejectDel1
-false
-handler.deleteProperty: true true string rejectDel2
-false
-handler.deleteProperty: true true string rejectDel1
-TypeError
-handler.deleteProperty: true true string rejectDel2
-TypeError
-handler.deleteProperty: true true string foo
-true
-handler.deleteProperty: true true number 1234
-true
-counts: get=6 set=8 del=6
-target.rejectDel1: reject1
-target.rejectDel2: reject2
-target.foo 123
-target[1234] undefined
-===*/
-
-/* Test simple usage of the current Proxy subset.  Does not exercise the
- * hook behaviors related to checking for conflicting properties in the
- * target object.
- */
-function subsetProxyTest() {
-    var getCount = 0;
-    var setCount = 0;
-    var deleteCount = 0;
-    var target = { foo: 123, '1000': 'thousand', special: 'specialValue' };
-    var handler = {};
-    var proxy = new Proxy(target, handler);
-
-    function printCounts() {
-        print('counts:', 'get=' + getCount, 'set=' + setCount, 'del=' + deleteCount);
-    }
-
-    print(typeof proxy);
-    print(Object.prototype.toString.call(proxy));  // XXX: now class is 'Object'
-
-    // without a 'get' hook, reads go through
-    print('get foo:', proxy.foo);
-    print('get 1000:', proxy[1000]);
-    print('get special:', proxy.special);
-
-    // handler 'get' hook
-    handler.get = function(targ, key, receiver) {
-        print('handler.get:', this === handler, targ === target, typeof key, key, receiver === proxy);
-        getCount++;
-        if (typeof key === 'number') {
-            return 2 * (+key);
-        } else if (key === 'special') {
-            return targ.special;
-        } else {
-            return 'fake-for-key-' + key;
-        }
-    };
-
-    // Get tests
-    printCounts();
-    print('get foo:', proxy.foo);
-    print('get bar:', proxy.bar);
-    print('get 1000 (string):', proxy['1000']);
-    print('get 1000 (number):', proxy[1000]);
-    printCounts();
-
-    // without a 'set' hook, writes go through
-    print('get special:', proxy.special);
-    proxy.special = 'uncaughtValue';  // goes into 'target'
-    print('get special:', proxy.special);
-    print('target.special:', target.special);
-
-    // handler 'set' hook
-    handler.set = function(targ, key, val, receiver) {
-        print('handler.set:', this === handler, targ === target, typeof key, key, typeof val, val, receiver === proxy);
-        setCount++;
-        if (key === 'rejectSet1') {
-            // False: indicate that property set is rejected (TypeError in strict mode).
-            // No change happens to the target object.
-            return false;
-        }
-        if (key === 'rejectSet2') {
-            // Same for any 'falsy' value.
-            return 0;
-        }
-        if (key === 'foo') {
-             // True: indicate that property set is allowed, but no change happens
-             // to the target object if we don't do it explicitly here.
-             return true;
-        }
-
-        // Setting to target must be done explicitly.
-        targ[key] = val;
-        return true;
-    };
-
-    // Set tests
-    printCounts();
-    proxy.foo = 1001;
-    proxy.bar = 1002;
-    proxy.quux = 1003;
-    proxy[123] = 'foo';
-    proxy.rejectSet1 = 'reject';  // reject silently in non-strict mode
-    proxy.rejectSet2 = 'reject';
-    try {
-        (function () { 'use strict'; proxy.rejectSet1 = 'throw'; })();
-    } catch (e) {
-        print(e.name);
-    }
-    try {
-        (function () { 'use strict'; proxy.rejectSet2 = 'throw'; })();
-    } catch (e) {
-        print(e.name);
-    }
-    printCounts();
-    print('target.foo:', target.foo);
-    print('target.bar:', target.bar);
-    print('target.quux:', target.quux);
-    print('target[123]:', target[123]);
-    print('target.rejectSet1:', target.rejectSet1);
-    print('target.rejectSet2:', target.rejectSet2);
-
-    // without a 'deleteProperty' hook, deletes go through
-    printCounts();
-    print(delete proxy.foo);
-    print('target.foo:', target.foo);
-    print('target.bar:', target.bar);
-    printCounts();
-
-    // handler 'deleteProperty' hook
-    handler.deleteProperty = function(targ, key) {
-        print('handler.deleteProperty:', this === handler, targ === target, typeof key, key);
-        deleteCount++;
-        if (key === 'rejectDel1') {
-            // False return code indicates delete is rejected.
-            return false;
-        }
-        if (key === 'rejectDel2') {
-            // Same for any 'falsy' value.
-            return 0;
-        }
-        if (key === 'foo') {
-            // True return code indicates delete is accepted (but it has no
-            // effect on the target unless we delete the property from the
-            // target here).
-            return true;
-        }
-
-        // Deletion to target must be done explicitly.
-        delete targ[key];
-        return true;
-    };
-
-    target.rejectDel1 = 'reject1';
-    target.rejectDel2 = 'reject2';
-    target.foo = 123;
-    target[1234] = 4321;
-    print(delete proxy.rejectDel1);
-    print(delete proxy.rejectDel2);
-    try {
-        (function () { 'use strict'; print(delete proxy.rejectDel1); })();
-    } catch (e) {
-        print(e.name);
-    }
-    try {
-        (function () { 'use strict'; print(delete proxy.rejectDel2); })();
-    } catch (e) {
-        print(e.name);
-    }
-    print(delete proxy.foo);    // allowed, but no effect on target
-    print(delete proxy[1234]);  // allowed, deletes value on target
-    printCounts();
-    print('target.rejectDel1:', target.rejectDel1);
-    print('target.rejectDel2:', target.rejectDel2);
-    print('target.foo', target.foo);
-    print('target[1234]', target[1234]);
-}
-
-print('subset proxy');
-
-try {
-    subsetProxyTest();
-} catch (e) {
-    print(e);
-}
-
-/*===
-hook post-checks
-get hook
+trap post-checks
+get trap
 property1: success, value: whatever
 property2: success, value: whatever
 property3: success, value: whatever
@@ -303,7 +29,7 @@ accessor4: success, value: 123
 accessor5: TypeError
 accessor6: TypeError
 accessor7: success, value: 123
-set hook
+set trap
 property1: success, property1 set to 42
 property2: success, property2 set to 42
 property3: success, property3 set to 42
@@ -325,7 +51,7 @@ accessor4: success, accessor4 set to whatever
 accessor5: TypeError trying to set value to whatever
 accessor6: success, accessor6 set to whatever
 accessor7: TypeError trying to set value to whatever
-deleteProperty hook
+deleteProperty trap
 property1: success, result: true
 property2: success, result: true
 property3: TypeError
@@ -340,19 +66,22 @@ accessor4: success, result: true
 accessor5: TypeError
 accessor6: TypeError
 accessor7: TypeError
+getter handler
+handler.get: true true foo true
+proxy.foo: dummy-value
+non-callable handler
+TypeError
+throwing handler
+handler.get: about to throw
+URIError
+done
 ===*/
-
-/* If a hook exists and is successfully called, ES2015 specifies interesting
- * post-hook behavior where a TypeError may be raised if the hook return
- * value conflicts in some way with a property of the same name in the
- * target object.
- */
 
 function makeDataTestObject() {
     var obj = {};
 
     Object.defineProperties(obj, {
-        // Various properties whose behavior to compare against the hooks
+        // Various properties whose behavior to compare against the traps.
 
         property1: {
             writable: true, enumerable: true, configurable: true, value: 42
@@ -393,7 +122,7 @@ function makeAccessorTestObject() {
     }
 
     Object.defineProperties(obj, {
-        // Various properties whose behavior to compare against the hooks
+        // Various properties whose behavior to compare against the traps
         accessor1: {
             enumerable: true, configurable: true, set: setter, get: getter
         },
@@ -436,11 +165,11 @@ function getHookPostChecksTest() {
      * same name and the property:
      *
      *   - Is a data property, is not configurable, is not writable, and
-     *     hook provided value does not match with the current value
+     *     trap provided value does not match with the current value
      *     (as compared with SameValue).
      *
      *   - Is an accessor property, is not configurable, getter is not
-     *     defined, and hook provided value is not undefined.
+     *     defined, and trap provided value is not undefined.
      */
 
     /*
@@ -482,7 +211,7 @@ function getHookPostChecksTest() {
     handler = {};
     proxy = new Proxy(target, handler);
     handler.get = function (targ, key, receiver) {
-        // If trapResult is undefined, post-hook checks always pass
+        // If trapResult is undefined, post-trap checks always pass
         return undefined;
     }
     Object.getOwnPropertyNames(target).forEach(function (propname) {
@@ -492,7 +221,7 @@ function getHookPostChecksTest() {
     handler = {};
     proxy = new Proxy(target, handler);
     handler.get = function (targ, key, receiver) {
-        // If trapResult is not undefined, post-hook checks cause a TypeError
+        // If trapResult is not undefined, post-trap checks cause a TypeError
         // if property is non-configurable and getter is undefined.
         return 123;
     }
@@ -533,7 +262,7 @@ function setHookPostChecksTest() {
     handler = {};
     proxy = new Proxy(target, handler);
     handler.set = function (targ, key, val, receiver) {
-        // If 'false' is returned, property write is rejected and the post-hook
+        // If 'false' is returned, property write is rejected and the post-trap
         // behavior doesn't activate at all, so always return true here.
         return true;
     }
@@ -583,12 +312,12 @@ function setHookPostChecksTest() {
     handler = {};
     proxy = new Proxy(target, handler);
     handler.set = function (targ, key, val, receiver) {
-        // If 'false' is returned, property write is rejected and the post-hook
+        // If 'false' is returned, property write is rejected and the post-trap
         // behavior doesn't activate at all, so always return true here.
         return true;
     }
     Object.getOwnPropertyNames(target).forEach(function (propname) {
-        // For accessor + 'set' hook, property value does not matter.
+        // For accessor + 'set' trap, property value does not matter.
         setTest(proxy, propname, 'whatever');
     });
 }
@@ -619,7 +348,7 @@ function deleteHookPostChecksTest() {
     handler = {};
     proxy = new Proxy(target, handler);
     handler.deleteProperty = function (targ, key, val, receiver) {
-        // If 'false' is returned, property delete is rejected and the post-hook
+        // If 'false' is returned, property delete is rejected and the post-trap
         // behavior doesn't activate at all, so always return true here.
         return true;
     }
@@ -636,7 +365,7 @@ function deleteHookPostChecksTest() {
     handler = {};
     proxy = new Proxy(target, handler);
     handler.deleteProperty = function (targ, key, val, receiver) {
-        // If 'false' is returned, property delete is rejected and the post-hook
+        // If 'false' is returned, property delete is rejected and the post-trap
         // behavior doesn't activate at all, so always return true here.
         return true;
     }
@@ -645,61 +374,18 @@ function deleteHookPostChecksTest() {
     });
 }
 
-print('hook post-checks');
+print('trap post-checks');
 
 try {
-    print('get hook');
+    print('get trap');
     getHookPostChecksTest();
-    print('set hook');
+    print('set trap');
     setHookPostChecksTest();
-    print('deleteProperty hook');
+    print('deleteProperty trap');
     deleteHookPostChecksTest();
 } catch (e) {
     print(e);
 }
-
-/*===
-recursive proxies
-TypeError
-TypeError
-===*/
-
-/* Currently Duktape doesn't allow a proxy as either a handler or a target.
- * This makes it easier to implement because there is no arbitrary depth C
- * recursion when doing proxy lookups.
- */
-
-function proxyHandlerTest() {
-    var target = { foo: 123 };
-    var handler = new Proxy({}, {});
-    var proxy = new Proxy(target, handler);
-}
-
-function proxyTargetTest() {
-    var target = new Proxy({}, {});
-    var handler = {};
-    var proxy = new Proxy(target, handler);
-}
-
-print('recursive proxies');
-
-try {
-    proxyHandlerTest();
-} catch (e) {
-    print(e.name);
-}
-
-try {
-    proxyTargetTest();
-} catch (e) {
-    print(e.name);
-}
-
-/*===
-getter handler
-handler.get: true true foo true
-proxy.foo: dummy-value
-===*/
 
 /* A getter as a handler property.  No reason why this wouldn't work but
  * test just in case.
@@ -732,13 +418,9 @@ try {
     print(e);
 }
 
-/*===
-non-callable handler
-TypeError
-===*/
 
 /* A non-callable handler property.  This is not checked during proxy creation
- * and should cause a TypeError.
+ * and should cause a TypeError later.
  */
 
 function nonCallableHandlerTest() {
@@ -756,13 +438,7 @@ try {
     print(e.name);
 }
 
-/*===
-throwing handler
-handler.get: about to throw
-URIError: fake error
-===*/
-
-/* Handler function throws.  Nothing special here. */
+/* Handler function throws.  Error propagates out without being caught automatically. */
 
 function throwingHandlerTest() {
     var target = { foo: 123 };
@@ -774,7 +450,6 @@ function throwingHandlerTest() {
     };
     var proxy = new Proxy(target, handler);
     print('proxy.foo:', proxy.foo);
-
 }
 
 print('throwing handler');
@@ -782,35 +457,7 @@ print('throwing handler');
 try {
     throwingHandlerTest();
 } catch (e) {
-    print(e);
-}
-
-/*===
-proxy revocation
-handler.get: true true foo true
-proxy.foo: dummy-value
-===*/
-
-/* Revoked proxy. */
-
-function proxyRevocationTest() {
-    var target = { foo: 123 };
-    var handler = {
-        get: function(targ, key, receiver) {
-            print('handler.get:', this === handler, targ === target, key, receiver === proxy);
-            return 'dummy-value';
-        }
-    };
-    var proxy = new Proxy(target, handler);
-    print('proxy.foo:', proxy.foo);
-
-    // XXX: unimplemented
-}
-
-print('proxy revocation');
-
-try {
-    proxyRevocationTest();
-} catch (e) {
     print(e.name);
 }
+
+print('done');

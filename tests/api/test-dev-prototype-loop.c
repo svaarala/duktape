@@ -16,9 +16,9 @@
  *
  *    - duk__get_property_desc: can be exercised through duk_hobject_hasprop
  *
- *    - duk_hobject_getprop
+ *    - duk_prop_put*
  *
- *    - duk_hobject_putprop
+ *    - duk_prop_get*
  *
  *    - duk_js_instanceof
  *

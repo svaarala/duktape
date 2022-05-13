@@ -5,24 +5,24 @@
 [object Boolean]
 [object Number]
 [object String]
-[object Array]
-[object Object]
-[object Function]
-[object RegExp]
-[object Date]
-[object Error]
-[object JSON]
-[object Math]
-[object Function]
-proxied
-[object Array]
-[object Object]
-[object Function]
+[object Array] proxied: [object Array]
+[object Object] proxied: [object Object]
+[object Function] proxied: [object Function]
+[object RegExp] proxied: [object Object]
+[object Date] proxied: [object Object]
+[object Error] proxied: [object Object]
+[object JSON] proxied: [object JSON]
+[object Math] proxied: [object Math]
+[object Function] proxied: [object Function]
 ===*/
 
 function basicTest() {
     function test(v) {
-        print(Object.prototype.toString.call(v));
+        if ((typeof v === 'object' || typeof v === 'function') && v !== null) {
+            print(Object.prototype.toString.call(v), 'proxied:', Object.prototype.toString.call(new Proxy(v, {})));
+        } else {
+            print(Object.prototype.toString.call(v));
+        }
     }
 
     test(undefined);
@@ -40,11 +40,6 @@ function basicTest() {
     test(JSON);
     test(Math);
     test(function f() { var indirect = eval; return indirect('this'); });  // indirect eval -> this=global
-    print('proxied');
-    test(new Proxy([ 1, 2, 3 ], {}));
-    //test(new Proxy(new Proxy([ 1, 2, 3 ], {}), {}));
-    test(new Proxy({ foo: 'bar' }, {}));
-    test(new Proxy(Math.cos, {}));
 }
 
 try {

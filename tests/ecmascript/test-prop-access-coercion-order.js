@@ -36,7 +36,6 @@ bar
 ===*/
 
 // CheckObjectCoercible succeeds, toString() gets called
-
 try {
     var o = {};
     o[t] = 'bar';

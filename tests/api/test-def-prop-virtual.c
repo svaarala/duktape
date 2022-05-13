@@ -5,16 +5,16 @@
 /*===
 *** test_array_length_enumerable_noforce (duk_safe_call)
 set array .length enumerable
-==> rc=1, result='TypeError: not configurable'
+==> rc=1, result='TypeError: cannot (re)define property 'length' of [object Array]'
 *** test_array_length_enumerable_force (duk_safe_call)
 set array .length enumerable
-==> rc=1, result='TypeError: not configurable'
+==> rc=1, result='TypeError: cannot (re)define property 'length' of [object Array]'
 *** test_array_length_configurable_noforce (duk_safe_call)
 set array .length configurable
-==> rc=1, result='TypeError: not configurable'
+==> rc=1, result='TypeError: cannot (re)define property 'length' of [object Array]'
 *** test_array_length_configurable_force (duk_safe_call)
 set array .length configurable
-==> rc=1, result='TypeError: not configurable'
+==> rc=1, result='TypeError: cannot (re)define property 'length' of [object Array]'
 *** test_array_length_overwrite_same_noforce (duk_safe_call)
 ["foo","bar","quux"]
 final top: 0
@@ -24,13 +24,13 @@ final top: 0
 final top: 0
 ==> rc=0, result='undefined'
 *** test_array_length_overwrite_bigger_noforce (duk_safe_call)
-==> rc=1, result='TypeError: not configurable'
+==> rc=1, result='TypeError: cannot (re)define property 'length' of [object Array]'
 *** test_array_length_overwrite_bigger_force (duk_safe_call)
 ["foo","bar","quux",undefined,undefined]
 final top: 0
 ==> rc=0, result='undefined'
 *** test_array_length_overwrite_smaller_noforce (duk_safe_call)
-==> rc=1, result='TypeError: not configurable'
+==> rc=1, result='TypeError: cannot (re)define property 'length' of [object Array]'
 *** test_array_length_overwrite_smaller_force (duk_safe_call)
 ["foo"]
 final top: 0

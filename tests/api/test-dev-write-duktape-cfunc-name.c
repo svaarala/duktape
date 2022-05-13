@@ -1,6 +1,6 @@
 /*===
 *** test_basic (duk_safe_call)
-==> rc=1, result='TypeError: setter undefined'
+==> rc=1, result='TypeError: cannot write property 'name' of [object Function]'
 ===*/
 
 static duk_ret_t dummy_func(duk_context *ctx) {

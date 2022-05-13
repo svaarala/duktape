@@ -10,17 +10,17 @@ final array: ["foo","bar",null]
 final top: 3
 ==> rc=0, result='undefined'
 *** test_delprop_b_safecall (duk_safe_call)
-==> rc=1, result='TypeError: not configurable'
+==> rc=1, result='TypeError: cannot delete property 'length' of [object Array]'
 *** test_delprop_b (duk_pcall)
-==> rc=1, result='TypeError: not configurable'
+==> rc=1, result='TypeError: cannot delete property 'length' of [object Array]'
 *** test_delprop_c_safecall (duk_safe_call)
-==> rc=1, result='TypeError: not configurable'
+==> rc=1, result='TypeError: cannot delete property 5 of 'test_string''
 *** test_delprop_c (duk_pcall)
-==> rc=1, result='TypeError: not configurable'
+==> rc=1, result='TypeError: cannot delete property 5 of 'test_string''
 *** test_delprop_d_safecall (duk_safe_call)
-==> rc=1, result='TypeError: not configurable'
+==> rc=1, result='TypeError: cannot delete property 'length' of 'test_string''
 *** test_delprop_d (duk_pcall)
-==> rc=1, result='TypeError: not configurable'
+==> rc=1, result='TypeError: cannot delete property 'length' of 'test_string''
 *** test_delprop_e_safecall (duk_safe_call)
 ==> rc=1, result='RangeError: invalid stack index 234'
 *** test_delprop_e (duk_pcall)
@@ -44,17 +44,17 @@ final array: ["foo","bar",null]
 final top: 3
 ==> rc=0, result='undefined'
 *** test_delpropstring_b_safecall (duk_safe_call)
-==> rc=1, result='TypeError: not configurable'
+==> rc=1, result='TypeError: cannot delete property 'length' of [object Array]'
 *** test_delpropstring_b (duk_pcall)
-==> rc=1, result='TypeError: not configurable'
+==> rc=1, result='TypeError: cannot delete property 'length' of [object Array]'
 *** test_delpropstring_c_safecall (duk_safe_call)
-==> rc=1, result='TypeError: not configurable'
+==> rc=1, result='TypeError: cannot delete property 5 of 'test_string''
 *** test_delpropstring_c (duk_pcall)
-==> rc=1, result='TypeError: not configurable'
+==> rc=1, result='TypeError: cannot delete property 5 of 'test_string''
 *** test_delpropstring_d_safecall (duk_safe_call)
-==> rc=1, result='TypeError: not configurable'
+==> rc=1, result='TypeError: cannot delete property 'length' of 'test_string''
 *** test_delpropstring_d (duk_pcall)
-==> rc=1, result='TypeError: not configurable'
+==> rc=1, result='TypeError: cannot delete property 'length' of 'test_string''
 *** test_delpropstring_e_safecall (duk_safe_call)
 ==> rc=1, result='RangeError: invalid stack index 234'
 *** test_delpropstring_e (duk_pcall)
@@ -77,9 +77,9 @@ final array: ["foo","bar",null]
 final top: 3
 ==> rc=0, result='undefined'
 *** test_delpropindex_b_safecall (duk_safe_call)
-==> rc=1, result='TypeError: not configurable'
+==> rc=1, result='TypeError: cannot delete property 5 of 'test_string''
 *** test_delpropindex_b (duk_pcall)
-==> rc=1, result='TypeError: not configurable'
+==> rc=1, result='TypeError: cannot delete property 5 of 'test_string''
 *** test_delpropindex_c_safecall (duk_safe_call)
 ==> rc=1, result='RangeError: invalid stack index 234'
 *** test_delpropindex_c (duk_pcall)

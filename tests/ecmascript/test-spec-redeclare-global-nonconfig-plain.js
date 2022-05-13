@@ -29,7 +29,7 @@ print('never here');
 
 var desc;
 var indirectEval = eval;
-var global = indirectEval("this");  // for Node
+var global = indirectEval("this");
 
 // Note: since declarations are hoisted, the RegExp declaration below
 // will already have taken effect here.

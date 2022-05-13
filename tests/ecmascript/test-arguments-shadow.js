@@ -95,7 +95,6 @@ function f6() {
     // arguments of the same name is a SyntaxError.
 
     eval('function strict_test(a,a) { "use strict" }');
-    'use strict';  // strict -> no magic bindings
 }
 try {
     f6();
