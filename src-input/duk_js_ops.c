@@ -1154,11 +1154,11 @@ DUK_LOCAL duk_bool_t duk__js_instanceof_helper(duk_hthread *thr, duk_tval *tv_x,
 		}
 
 		DUK_ASSERT(val != NULL);
-		val = DUK_HOBJECT_GET_PROTOTYPE(thr->heap, val);
+		val = duk_hobject_get_proto_raw(thr->heap, val);
 	} while (--sanity > 0);
 
 	DUK_ASSERT(sanity == 0);
-	DUK_ERROR_RANGE(thr, DUK_STR_PROTOTYPE_CHAIN_LIMIT);
+	DUK_ERROR_RANGE_PROTO_SANITY(thr);
 	DUK_WO_NORETURN(return 0;);
 
 pop2_and_false:
@@ -1207,32 +1207,7 @@ DUK_INTERNAL duk_bool_t duk_js_instanceof(duk_hthread *thr, duk_tval *tv_x, duk_
 DUK_INTERNAL duk_bool_t duk_js_in(duk_hthread *thr, duk_tval *tv_x, duk_tval *tv_y) {
 	duk_bool_t retval;
 
-	/*
-	 *  Get the values onto the stack first.  It would be possible to cover
-	 *  some normal cases without resorting to the value stack (e.g. if
-	 *  lval is already a string).
-	 */
-
-	/* XXX: The ES5/5.1/6 specifications require that the key in 'key in obj'
-	 * must be string coerced before the internal HasProperty() algorithm is
-	 * invoked.  A fast path skipping coercion could be safely implemented for
-	 * numbers (as number-to-string coercion has no side effects).  For ES2015
-	 * proxy behavior, the trap 'key' argument must be in a string coerced
-	 * form (which is a shame).
-	 */
-
-	/* TypeError if rval is not an object or object like (e.g. lightfunc
-	 * or plain buffer).
-	 */
-	duk_push_tval(thr, tv_x);
-	duk_push_tval(thr, tv_y);
-	duk_require_type_mask(thr, -1, DUK_TYPE_MASK_OBJECT | DUK_TYPE_MASK_LIGHTFUNC | DUK_TYPE_MASK_BUFFER);
-
-	(void) duk_to_property_key_hstring(thr, -2);
-
-	retval = duk_hobject_hasprop(thr, DUK_GET_TVAL_NEGIDX(thr, -1), DUK_GET_TVAL_NEGIDX(thr, -2));
-
-	duk_pop_2_unsafe(thr);
+	retval = duk_prop_has(thr, tv_y /*tv_obj*/, tv_x /*tv_key*/);
 	return retval;
 }
 
@@ -1332,7 +1307,7 @@ DUK_INTERNAL duk_bool_t duk_js_isarray_hobject(duk_hobject *h) {
 #if defined(DUK_USE_ES6_PROXY)
 	h = duk_hobject_resolve_proxy_target(h);
 #endif
-	return (DUK_HOBJECT_GET_CLASS_NUMBER(h) == DUK_HOBJECT_CLASS_ARRAY ? 1 : 0);
+	return (DUK_HEAPHDR_IS_ARRAY((duk_heaphdr *) h) ? 1 : 0);
 }
 
 DUK_INTERNAL duk_bool_t duk_js_isarray(duk_tval *tv) {
@@ -1416,7 +1391,7 @@ DUK_INTERNAL duk_uarridx_t duk_js_to_arrayindex_string(const duk_uint8_t *str, d
 	return res;
 
 parse_fail:
-	return DUK_HSTRING_NO_ARRAY_INDEX;
+	return DUK_ARRIDX_NONE;
 }
 
 #if !defined(DUK_USE_HSTRING_ARRIDX)
@@ -1449,7 +1424,7 @@ DUK_INTERNAL duk_uarridx_t duk_js_to_arrayindex_hstring_fast_known(duk_hstring *
 DUK_INTERNAL duk_uarridx_t duk_js_to_arrayindex_hstring_fast(duk_hstring *h) {
 	DUK_ASSERT(h != NULL);
 	if (!DUK_HSTRING_HAS_ARRIDX(h)) {
-		return DUK_HSTRING_NO_ARRAY_INDEX;
+		return DUK_ARRIDX_NONE;
 	}
 	return duk_js_to_arrayindex_hstring_fast_known(h);
 }

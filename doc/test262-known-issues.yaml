@@ -18,21 +18,6 @@
   knownissue: "uses invalid RegExp format '/\\1/' (#0031)"
   regexp_leniency: true
 -
-  test: "ch09/9.7/S9.7_A2.1"
-  knownissue: "Duktape String.fromCharCode() intentionally accepts non-BMP codepoints"
--
-  test: "ch09/9.7/S9.7_A2.2"
-  knownissue: "Duktape String.fromCharCode() intentionally accepts non-BMP codepoints"
--
-  test: "ch09/9.7/S9.7_A3.1_T2"
-  knownissue: "Duktape String.fromCharCode() intentionally accepts non-BMP codepoints"
--
-  test: "ch09/9.7/S9.7_A3.1_T3"
-  knownissue: "Duktape String.fromCharCode() intentionally accepts non-BMP codepoints"
--
-  test: "ch09/9.7/S9.7_A3.2_T1"
-  knownissue: "Duktape String.fromCharCode() intentionally accepts non-BMP codepoints"
--
   test: "ch10/10.6/10.6-13-b-1-s"
   knownissue: "Revised behavior post-ES5.1: arguments.caller no longer present in strict mode"
 -

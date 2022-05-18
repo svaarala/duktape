@@ -931,7 +931,6 @@ DUK_LOCAL duk_bool_t
 duk__get_ownprop_idxkey_typedarray(duk_hthread *thr, duk_hobject *obj, duk_uarridx_t idx, duk_idx_t idx_out, duk_idx_t idx_recv) {
 	/* All arridx are captured and don't reach OrdinaryGetOwnProperty(). */
 	DUK_UNREF(idx_recv);
-	DUK_UNREF(idx_recv);
 	if (DUK_LIKELY(duk_hbufobj_validate_and_read_push(thr, (duk_hbufobj *) obj, idx))) {
 		duk_replace_posidx_unsafe(thr, idx_out);
 		return DUK__GETOWN_FOUND;
@@ -945,10 +944,17 @@ duk__get_ownprop_idxkey_typedarray(duk_hthread *thr, duk_hobject *obj, duk_uarri
 }
 #endif /* DUK_USE_BUFFEROBJECT_SUPPORT */
 
+#if defined(DUK_USE_BUFFEROBJECT_SUPPORT)
 DUK_LOCAL duk_bool_t
 duk__get_ownprop_idxkey_int8array(duk_hthread *thr, duk_hobject *obj, duk_uarridx_t idx, duk_idx_t idx_out, duk_idx_t idx_recv) {
 	return duk__get_ownprop_idxkey_typedarray(thr, obj, idx, idx_out, idx_recv);
 }
+#else
+DUK_LOCAL duk_bool_t
+duk__get_ownprop_idxkey_int8array(duk_hthread *thr, duk_hobject *obj, duk_uarridx_t idx, duk_idx_t idx_out, duk_idx_t idx_recv) {
+	return duk__get_ownprop_idxkey_error(thr, obj, idx, idx_out, idx_recv);
+}
+#endif /* DUK_USE_BUFFEROBJECT_SUPPORT */
 
 #if defined(DUK_USE_BUFFEROBJECT_SUPPORT)
 DUK_LOCAL duk_bool_t

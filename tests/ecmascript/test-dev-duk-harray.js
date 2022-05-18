@@ -1,8 +1,14 @@
 /*
- *  Dev testcases when adding duk_harray
+ *  Dev testcases when adding duk_harray.
  *
  *  https://github.com/svaarala/duktape/pull/703
  */
+
+/*
+function print() {
+    console.log(Array.prototype.map.call(arguments, String).join(' '));
+}
+*/
 
 /*===
 array literal test
@@ -128,11 +134,11 @@ array .length property descriptor test
 defineProperty
 5 [1,2,3,4,5]
 5 [1,2,3,4,5]
-TypeError: not configurable
-TypeError: not configurable
-TypeError: not configurable
-TypeError: not configurable
-TypeError: not configurable
+TypeError: cannot (re)define property 'length' of [object Array]
+TypeError: cannot (re)define property 'length' of [object Array]
+TypeError: cannot (re)define property 'length' of [object Array]
+TypeError: cannot (re)define property 'length' of [object Array]
+TypeError: cannot (re)define property 'length' of [object Array]
 2 [null,null]
 ===*/
 
@@ -222,7 +228,7 @@ try {
 /*===
 array length test
 false
-TypeError: not configurable
+TypeError: cannot delete property 'length' of [object Array]
 4
 4
 true
@@ -237,7 +243,7 @@ write succeeded
 undefined
 1,2,3,4,5,6,7,8,9,10
 1,2,3,4,5,foo,7,8,9,10
-TypeError: not writable
+TypeError: cannot write property 10 of [object Array]
 1,2,3,4,5,foo,7,8,9,10
 undefined
 ===*/

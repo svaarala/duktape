@@ -607,6 +607,7 @@ struct duk_heap {
 	/* Stats. */
 #if defined(DUK_USE_DEBUG)
 	duk_int_t stats_exec_opcodes;
+	duk_int_t stats_exec_opcode[256];
 	duk_int_t stats_exec_interrupt;
 	duk_int_t stats_exec_throw;
 	duk_int_t stats_call_all;
@@ -628,8 +629,19 @@ struct duk_heap {
 	duk_int_t stats_strtab_litcache_hit;
 	duk_int_t stats_strtab_litcache_miss;
 	duk_int_t stats_strtab_litcache_pin;
-	duk_int_t stats_object_realloc_props;
+	duk_int_t stats_object_realloc_strprops;
+	duk_int_t stats_object_realloc_idxprops;
 	duk_int_t stats_object_abandon_array;
+
+	duk_int_t stats_getvalue_strkey_count;
+	duk_int_t stats_getvalue_idxkey_count;
+	duk_int_t stats_get_strkey_count;
+	duk_int_t stats_get_idxkey_count;
+	duk_int_t stats_putvalue_strkey_count;
+	duk_int_t stats_putvalue_idxkey_count;
+	duk_int_t stats_set_strkey_count;
+	duk_int_t stats_set_idxkey_count;
+
 	duk_int_t stats_getownpropdesc_count;
 	duk_int_t stats_getownpropdesc_hit;
 	duk_int_t stats_getownpropdesc_miss;
@@ -741,5 +753,9 @@ DUK_INTERNAL_DECL void duk_heap_process_finalize_list(duk_heap *heap);
 DUK_INTERNAL_DECL void duk_heap_mark_and_sweep(duk_heap *heap, duk_small_uint_t flags);
 
 DUK_INTERNAL_DECL duk_uint32_t duk_heap_hashstring(duk_heap *heap, const duk_uint8_t *str, duk_size_t len);
+
+#if defined(DUK_USE_HEAPPTR16) && defined(DUK_USE_DEBUG)
+DUK_INTERNAL_DECL duk_heap *duk_global_dbgheap;
+#endif
 
 #endif /* DUK_HEAP_H_INCLUDED */

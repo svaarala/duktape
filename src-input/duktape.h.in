@@ -239,13 +239,20 @@ struct duk_time_components {
 #define DUK_DEFPROP_WRITABLE              (1U << 0)    /* set writable (effective if DUK_DEFPROP_HAVE_WRITABLE set) */
 #define DUK_DEFPROP_ENUMERABLE            (1U << 1)    /* set enumerable (effective if DUK_DEFPROP_HAVE_ENUMERABLE set) */
 #define DUK_DEFPROP_CONFIGURABLE          (1U << 2)    /* set configurable (effective if DUK_DEFPROP_HAVE_CONFIGURABLE set) */
-#define DUK_DEFPROP_HAVE_WRITABLE         (1U << 3)    /* set/clear writable */
-#define DUK_DEFPROP_HAVE_ENUMERABLE       (1U << 4)    /* set/clear enumerable */
-#define DUK_DEFPROP_HAVE_CONFIGURABLE     (1U << 5)    /* set/clear configurable */
-#define DUK_DEFPROP_HAVE_VALUE            (1U << 6)    /* set value (given on value stack) */
-#define DUK_DEFPROP_HAVE_GETTER           (1U << 7)    /* set getter (given on value stack) */
-#define DUK_DEFPROP_HAVE_SETTER           (1U << 8)    /* set setter (given on value stack) */
-#define DUK_DEFPROP_FORCE                 (1U << 9)    /* force change if possible, may still fail for e.g. virtual properties */
+#define DUK_DEFPROP_RESERVED3             (1U << 3)    /* INTERNAL: reserved, internally accessor flag */
+#define DUK_DEFPROP_RESERVED4             (1U << 4)    /* INTERNAL: reserved */
+#define DUK_DEFPROP_RESERVED5             (1U << 5)    /* INTERNAL: reserved */
+#define DUK_DEFPROP_RESERVED6             (1U << 6)    /* INTERNAL: reserved */
+#define DUK_DEFPROP_RESERVED7             (1U << 7)    /* INTERNAL: reserved */
+#define DUK_DEFPROP_HAVE_SHIFT_COUNT      8            /* INTERNAL */
+#define DUK_DEFPROP_HAVE_WRITABLE         (1U << 8)    /* set/clear writable */
+#define DUK_DEFPROP_HAVE_ENUMERABLE       (1U << 9)    /* set/clear enumerable */
+#define DUK_DEFPROP_HAVE_CONFIGURABLE     (1U << 10)   /* set/clear configurable */
+#define DUK_DEFPROP_HAVE_VALUE            (1U << 11)   /* set value (given on value stack) */
+#define DUK_DEFPROP_HAVE_GETTER           (1U << 12)   /* set getter (given on value stack) */
+#define DUK_DEFPROP_HAVE_SETTER           (1U << 13)   /* set setter (given on value stack) */
+#define DUK_DEFPROP_FORCE                 (1U << 14)   /* force change if possible, may still fail for e.g. virtual properties */
+#define DUK_DEFPROP_THROW                 (1U << 15)   /* INTERNAL: throw on errors */
 #define DUK_DEFPROP_SET_WRITABLE          (DUK_DEFPROP_HAVE_WRITABLE | DUK_DEFPROP_WRITABLE)
 #define DUK_DEFPROP_CLEAR_WRITABLE        DUK_DEFPROP_HAVE_WRITABLE
 #define DUK_DEFPROP_SET_ENUMERABLE        (DUK_DEFPROP_HAVE_ENUMERABLE | DUK_DEFPROP_ENUMERABLE)
@@ -674,8 +681,7 @@ DUK_EXTERNAL_DECL duk_bool_t duk_check_type_mask(duk_context *ctx, duk_idx_t idx
 
 DUK_EXTERNAL_DECL duk_bool_t duk_is_undefined(duk_context *ctx, duk_idx_t idx);
 DUK_EXTERNAL_DECL duk_bool_t duk_is_null(duk_context *ctx, duk_idx_t idx);
-#define duk_is_nullish(ctx, idx) \
-	((duk_get_type_mask((ctx), (idx)) & (DUK_TYPE_MASK_NULL | DUK_TYPE_MASK_UNDEFINED)) ? 1 : 0)
+DUK_EXTERNAL_DECL duk_bool_t duk_is_nullish(duk_context *ctx, duk_idx_t idx);
 #define duk_is_null_or_undefined(ctx, idx) duk_is_nullish((ctx), (idx))
 
 DUK_EXTERNAL_DECL duk_bool_t duk_is_boolean(duk_context *ctx, duk_idx_t idx);

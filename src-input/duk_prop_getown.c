@@ -82,6 +82,7 @@ DUK_LOCAL duk_small_int_t duk__prop_getown_proxy_policy(duk_hthread *thr, duk_ho
 	} else {
 		DUK_ASSERT(duk_is_object(thr, -1));
 		rc = (duk_small_int_t) duk_prop_topropdesc(thr);
+		/* XXX: Missing stuff here. */
 	}
 	return rc;
 
@@ -108,6 +109,7 @@ DUK_LOCAL duk_small_int_t duk__prop_getown_proxy_tail(duk_hthread *thr, duk_hobj
 		rc = duk__prop_getown_proxy_policy(thr, obj);
 #else
 		DUK_DD(DUK_DDPRINT("proxy policy check for 'getOwnPropertyDescriptor' trap disabled in configuration"));
+		/* XXX: Missing stuff here. */
 		rc = -1;
 #endif
 	} else {
@@ -403,7 +405,10 @@ retry_target:
 	case DUK_HTYPE_FLOAT64ARRAY:
 		/* All arridx are captured and don't reach OrdinaryGetOwnProperty(). */
 		if (duk_hbufobj_validate_and_read_push(thr, (duk_hbufobj *) target, idx)) {
-			rc = DUK_PROPDESC_FLAGS_WE;
+			/* NOTE: Somewhat bizarrely, typed array indices cannot be deleted
+			 * but they still must report as configurable.
+			 */
+			rc = DUK_PROPDESC_FLAGS_WEC;
 			goto return_rc;
 		}
 		rc = -1;

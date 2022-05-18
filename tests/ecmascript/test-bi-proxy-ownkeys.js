@@ -15,7 +15,7 @@ function objDump(obj) {
 
     // Enumerate on proxy object triggers 'ownKeys' trap in ES2016
     // ('enumerate' trap in ES2015).
-    print('enum keys:', keys.join(' '));
+    print('enum keys:', JSON.stringify(keys.join(' ')));
 
     // Object.keys() on proxy object triggers 'ownKeys' trap.
     // If no such trap exists, enumerable property names of the *proxy*
@@ -38,24 +38,24 @@ function objDump(obj) {
 
 /*===
 basic test
-enum keys: string:foo string:bar string:quux
+enum keys: "string:foo string:bar string:quux"
 Object.keys: ["foo","bar","quux"]
 Object.getOwnPropertyNames: ["foo","bar","quux"]
-enum keys: string:0 string:1 string:2 string:prop
+enum keys: "string:0 string:1 string:2 string:prop"
 Object.keys: ["0","1","2","prop"]
 Object.getOwnPropertyNames: ["0","1","2","length","prop"]
 proxy.foo: 1
-enum keys: string:foo string:bar string:quux
+enum keys: "string:foo string:bar string:quux"
 Object.keys: ["foo","bar","quux"]
 Object.getOwnPropertyNames: ["foo","bar","quux"]
-enum keys: string:foo string:bar string:quux
+enum keys: "string:foo string:bar string:quux"
 Object.keys: ["foo","bar","quux"]
 Object.getOwnPropertyNames: ["foo","bar","quux","nonEnum"]
-enum keys: string:foo string:bar string:quux
+enum keys: "string:foo string:bar string:quux"
 Object.keys: ["foo","bar","quux"]
 Object.getOwnPropertyNames: ["foo","bar","quux"]
 ownKeys: true true
-enum keys: string:foo string:enumProp
+enum keys: "string:foo string:enumProp"
 ownKeys: true true
 Object.keys: ["foo","enumProp"]
 ownKeys: true true
@@ -155,51 +155,51 @@ try {
 /*===
 trap result test
 fake trap result: 0
-enum keys: TypeError
+enum keys: "TypeError"
 Object.keys: TypeError
 Object.getOwnPropertyNames: TypeError
 fake trap result: 1
-enum keys: TypeError
+enum keys: "TypeError"
 Object.keys: TypeError
 Object.getOwnPropertyNames: TypeError
 fake trap result: 2
-enum keys: TypeError
+enum keys: "TypeError"
 Object.keys: TypeError
 Object.getOwnPropertyNames: TypeError
 fake trap result: 3
-enum keys: TypeError
+enum keys: "TypeError"
 Object.keys: TypeError
 Object.getOwnPropertyNames: TypeError
 fake trap result: 4
-enum keys: TypeError
+enum keys: "TypeError"
 Object.keys: TypeError
 Object.getOwnPropertyNames: TypeError
 fake trap result: 5
-enum keys: TypeError
+enum keys: "TypeError"
 Object.keys: TypeError
 Object.getOwnPropertyNames: TypeError
 fake trap result: 6
-enum keys: 
+enum keys: ""
 Object.keys: []
 Object.getOwnPropertyNames: ["foo","bar","quux"]
 fake trap result: 7
-enum keys: 
+enum keys: ""
 Object.keys: []
 Object.getOwnPropertyNames: ["foo","bar","quux"]
 fake trap result: 8
-enum keys: TypeError
+enum keys: "TypeError"
 Object.keys: TypeError
 Object.getOwnPropertyNames: TypeError
 fake trap result: 9
-enum keys: TypeError
+enum keys: "TypeError"
 Object.keys: TypeError
 Object.getOwnPropertyNames: TypeError
 fake trap result: 10
-enum keys: TypeError
+enum keys: "TypeError"
 Object.keys: TypeError
 Object.getOwnPropertyNames: TypeError
 fake trap result: 11
-enum keys: 
+enum keys: ""
 Object.keys: []
 Object.getOwnPropertyNames: []
 ===*/

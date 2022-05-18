@@ -53,7 +53,9 @@ TypeError
 Error: cannot write 18
 13 [0,1,2,3,4,5,6,7,8,9,10,11,12]
 dense, fast path active
-21 [0,1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,null,"foo","foo",null,"quux"]
+TypeError: cannot write property 17 of [object Array]
+Error: cannot write 18
+21 [0,1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,null,"ancestor-17","ancestor-getter-18",null,"quux"]
 dense, but use string key
 TypeError
 Error: cannot write 18

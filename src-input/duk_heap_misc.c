@@ -7,7 +7,7 @@
 DUK_INTERNAL void duk_heap_insert_into_heap_allocated(duk_heap *heap, duk_heaphdr *hdr) {
 	duk_heaphdr *root;
 
-	DUK_ASSERT(DUK_HEAPHDR_GET_TYPE(hdr) != DUK_HTYPE_STRING);
+	DUK_ASSERT(!DUK_HEAPHDR_IS_ANY_STRING(hdr));
 
 	root = heap->heap_allocated;
 #if defined(DUK_USE_DOUBLE_LINKED_HEAP)
@@ -30,7 +30,7 @@ DUK_INTERNAL void duk_heap_remove_from_heap_allocated(duk_heap *heap, duk_heaphd
 
 	/* Strings are in string table. */
 	DUK_ASSERT(hdr != NULL);
-	DUK_ASSERT(DUK_HEAPHDR_GET_TYPE(hdr) != DUK_HTYPE_STRING);
+	DUK_ASSERT(!DUK_HEAPHDR_IS_ANY_STRING(hdr));
 
 	/* Target 'hdr' must be in heap_allocated (not e.g. finalize_list).
 	 * If not, heap lists will become corrupted so assert early for it.

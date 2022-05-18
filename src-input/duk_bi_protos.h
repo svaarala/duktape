@@ -74,8 +74,4 @@ void duk_bi_json_stringify_helper(duk_hthread *thr,
 
 DUK_INTERNAL_DECL duk_ret_t duk_textdecoder_decode_utf8_nodejs(duk_hthread *thr);
 
-#if defined(DUK_USE_ES6_PROXY)
-DUK_INTERNAL_DECL void duk_proxy_ownkeys_postprocess(duk_hthread *thr, duk_hobject *h_proxy_target, duk_uint_t flags);
-#endif
-
 #endif /* DUK_BUILTIN_PROTOS_H_INCLUDED */

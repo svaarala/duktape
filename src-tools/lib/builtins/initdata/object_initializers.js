@@ -47,30 +47,32 @@ function emitObjectInitializersPtrComp(genc) {
     //genc.emitLine('#endif');
 
     genc.emitLine('#define DUK__ROMOBJ_INIT(heaphdr_flags,refcount,props,props_enc16,iproto,iproto_enc16,esize,enext,asize,hsize) ' +
-                  ' { { { (heaphdr_flags), DUK__REFCINIT((refcount)), 0, 0, (props_enc16) }, (iproto_enc16), (esize), (enext), (asize) } }');
+                  ' { { { (heaphdr_flags), DUK__REFCINIT((refcount)), 0, 0, (props_enc16) }, NULL, NULL, 0, 0, (iproto_enc16), (esize), (enext) } }');
 
+    // XXX: Only zero-length Array actually supported now.
     genc.emitLine('#define DUK__ROMARR_INIT(heaphdr_flags,refcount,props,props_enc16,iproto,iproto_enc16,esize,enext,asize,hsize,length) ' +
-                  ' { { { { (heaphdr_flags), DUK__REFCINIT((refcount)), 0, 0, (props_enc16) }, (iproto_enc16), (esize), (enext), (asize) }, (length), 0 /*length_nonwritable*/ } }');
+                  ' { { { { (heaphdr_flags), DUK__REFCINIT((refcount)), 0, 0, (props_enc16) }, NULL, NULL, 0, 0, (iproto_enc16), (esize), (enext) }, 0, (length), (length), 0 /*length_nonwritable*/ } }');
 
     genc.emitLine('#define DUK__ROMFUN_INIT(heaphdr_flags,refcount,props,props_enc16,iproto,iproto_enc16,esize,enext,asize,hsize,nativefunc,nargs,magic) ' +
-                  ' { { { { (heaphdr_flags), DUK__REFCINIT((refcount)), 0, 0, (props_enc16) }, (iproto_enc16), (esize), (enext), (asize) }, (nativefunc), (duk_int16_t) (nargs), (duk_int16_t) (magic) } }');
+                  ' { { { { (heaphdr_flags), DUK__REFCINIT((refcount)), 0, 0, (props_enc16) }, NULL, NULL, 0, 0, (iproto_enc16), (esize), (enext) }, (nativefunc), (duk_int16_t) (nargs), (duk_int16_t) (magic) } }');
 
     genc.emitLine('#define DUK__ROMOBJENV_INIT(heaphdr_flags,refcount,props,props_enc16,iproto,iproto_enc16,esize,enext,asize,hsize,target,has_this) ' +
-                  ' { { { { (heaphdr_flags), DUK__REFCINIT((refcount)), 0, 0, (props_enc16) }, (iproto_enc16), (esize), (enext), (asize) }, (duk_hobject *) DUK_LOSE_CONST(target), (has_this) } }');
+                  ' { { { { (heaphdr_flags), DUK__REFCINIT((refcount)), 0, 0, (props_enc16) }, NULL, NULL, 0, 0, (iproto_enc16), (esize), (enext) }, (duk_hobject *) DUK_LOSE_CONST(target), (has_this) } }');
 }
 
 function emitObjectInitializersNoPtrComp(genc) {
     genc.emitLine('#define DUK__ROMOBJ_INIT(heaphdr_flags,refcount,props,props_enc16,iproto,iproto_enc16,esize,enext,asize,hsize) ' +
-                  ' { { { (heaphdr_flags), DUK__REFCINIT((refcount)), NULL, NULL }, (duk_uint8_t *) DUK_LOSE_CONST(props), (duk_hobject *) DUK_LOSE_CONST(iproto), (esize), (enext), (asize), (hsize) } }');
+                  ' { { { (heaphdr_flags), DUK__REFCINIT((refcount)), NULL, NULL }, (duk_uint8_t *) DUK_LOSE_CONST(props), NULL, NULL, NULL, 0, 0, (duk_hobject *) DUK_LOSE_CONST(iproto), (esize), (enext) } }');
 
+    // XXX: Only zero-length Array actually supported now.
     genc.emitLine('#define DUK__ROMARR_INIT(heaphdr_flags,refcount,props,props_enc16,iproto,iproto_enc16,esize,enext,asize,hsize,length) ' +
-                  ' { { { { (heaphdr_flags), DUK__REFCINIT((refcount)), NULL, NULL }, (duk_uint8_t *) DUK_LOSE_CONST(props), (duk_hobject *) DUK_LOSE_CONST(iproto), (esize), (enext), (asize), (hsize) }, (length), 0 /*length_nonwritable*/ } }');
+                  ' { { { { (heaphdr_flags), DUK__REFCINIT((refcount)), NULL, NULL }, (duk_uint8_t *) DUK_LOSE_CONST(props), NULL, NULL, NULL, 0, 0, (duk_hobject *) DUK_LOSE_CONST(iproto), (esize), (enext) }, NULL, (length), (length), 0 /*length_nonwritable*/ } }');
 
     genc.emitLine('#define DUK__ROMFUN_INIT(heaphdr_flags,refcount,props,props_enc16,iproto,iproto_enc16,esize,enext,asize,hsize,nativefunc,nargs,magic) ' +
-                  ' { { { { (heaphdr_flags), DUK__REFCINIT((refcount)), NULL, NULL }, (duk_uint8_t *) DUK_LOSE_CONST(props), (duk_hobject *) DUK_LOSE_CONST(iproto), (esize), (enext), (asize), (hsize) }, (nativefunc), (duk_int16_t) (nargs), (duk_int16_t) (magic) } }');
+                  ' { { { { (heaphdr_flags), DUK__REFCINIT((refcount)), NULL, NULL }, (duk_uint8_t *) DUK_LOSE_CONST(props), NULL, NULL, NULL, 0, 0, (duk_hobject *) DUK_LOSE_CONST(iproto), (esize), (enext) }, (nativefunc), (duk_int16_t) (nargs), (duk_int16_t) (magic) } }');
 
     genc.emitLine('#define DUK__ROMOBJENV_INIT(heaphdr_flags,refcount,props,props_enc16,iproto,iproto_enc16,esize,enext,asize,hsize,target,has_this) ' +
-                  ' { { { { (heaphdr_flags), DUK__REFCINIT((refcount)), NULL, NULL }, (duk_uint8_t *) DUK_LOSE_CONST(props), (duk_hobject *) DUK_LOSE_CONST(iproto), (esize), (enext), (asize), (hsize) }, (duk_hobject *) DUK_LOSE_CONST(target), (has_this) } }');
+                  ' { { { { (heaphdr_flags), DUK__REFCINIT((refcount)), NULL, NULL }, (duk_uint8_t *) DUK_LOSE_CONST(props), NULL, NULL, NULL, 0, 0, (duk_hobject *) DUK_LOSE_CONST(iproto), (esize), (enext) }, (duk_hobject *) DUK_LOSE_CONST(target), (has_this) } }');
 }
 
 function emitObjectInitializers(genc) {

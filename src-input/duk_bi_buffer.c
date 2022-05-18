@@ -13,20 +13,21 @@
  * default internal prototype.
  */
 static const duk_uint8_t duk__buffer_proto_from_classnum[] = {
-	DUK_BIDX_ARRAYBUFFER_PROTOTYPE,  DUK_BIDX_DATAVIEW_PROTOTYPE,          DUK_BIDX_INT8ARRAY_PROTOTYPE,
-	DUK_BIDX_UINT8ARRAY_PROTOTYPE,   DUK_BIDX_UINT8CLAMPEDARRAY_PROTOTYPE, DUK_BIDX_INT16ARRAY_PROTOTYPE,
-	DUK_BIDX_UINT16ARRAY_PROTOTYPE,  DUK_BIDX_INT32ARRAY_PROTOTYPE,        DUK_BIDX_UINT32ARRAY_PROTOTYPE,
+	DUK_BIDX_ARRAYBUFFER_PROTOTYPE,  DUK_BIDX_ARRAYBUFFER_PROTOTYPE /*unused*/,
+	DUK_BIDX_DATAVIEW_PROTOTYPE,     DUK_BIDX_INT8ARRAY_PROTOTYPE,
+	DUK_BIDX_UINT8ARRAY_PROTOTYPE,   DUK_BIDX_UINT8CLAMPEDARRAY_PROTOTYPE,
+	DUK_BIDX_INT16ARRAY_PROTOTYPE,   DUK_BIDX_UINT16ARRAY_PROTOTYPE,
+	DUK_BIDX_INT32ARRAY_PROTOTYPE,   DUK_BIDX_UINT32ARRAY_PROTOTYPE,
 	DUK_BIDX_FLOAT32ARRAY_PROTOTYPE, DUK_BIDX_FLOAT64ARRAY_PROTOTYPE
 };
 
 /* Map DUK_HBUFOBJ_ELEM_xxx to duk_hobject class number.
  * Sync with duk_hbufobj.h and duk_hobject.h.
  */
-static const duk_uint8_t duk__buffer_class_from_elemtype[9] = { DUK_HOBJECT_CLASS_UINT8ARRAY,  DUK_HOBJECT_CLASS_UINT8CLAMPEDARRAY,
-	                                                        DUK_HOBJECT_CLASS_INT8ARRAY,   DUK_HOBJECT_CLASS_UINT16ARRAY,
-	                                                        DUK_HOBJECT_CLASS_INT16ARRAY,  DUK_HOBJECT_CLASS_UINT32ARRAY,
-	                                                        DUK_HOBJECT_CLASS_INT32ARRAY,  DUK_HOBJECT_CLASS_FLOAT32ARRAY,
-	                                                        DUK_HOBJECT_CLASS_FLOAT64ARRAY };
+static const duk_uint8_t duk__buffer_class_from_elemtype[9] = {
+	DUK_HTYPE_UINT8ARRAY,  DUK_HTYPE_UINT8CLAMPEDARRAY, DUK_HTYPE_INT8ARRAY,    DUK_HTYPE_UINT16ARRAY, DUK_HTYPE_INT16ARRAY,
+	DUK_HTYPE_UINT32ARRAY, DUK_HTYPE_INT32ARRAY,        DUK_HTYPE_FLOAT32ARRAY, DUK_HTYPE_FLOAT64ARRAY
+};
 
 /* Map DUK_HBUFOBJ_ELEM_xxx to prototype object built-in index.
  * Sync with duk_hbufobj.h.
@@ -386,7 +387,7 @@ DUK_INTERNAL void duk_hbufobj_push_uint8array_from_plain(duk_hthread *thr, duk_h
 	h_bufobj = duk_push_bufobj_raw(thr,
 	                               DUK_HOBJECT_FLAG_EXTENSIBLE |
 	                               DUK_HOBJECT_FLAG_BUFOBJ |
-	                               DUK_HOBJECT_CLASS_AS_FLAGS(DUK_HOBJECT_CLASS_UINT8ARRAY),
+	                               DUK_HEAPHDR_HTYPE_AS_FLAGS(DUK_HTYPE_UINT8ARRAY),
 	                               DUK_BIDX_UINT8ARRAY_PROTOTYPE);
 	DUK_ASSERT(h_bufobj != NULL);
 	duk__set_bufobj_buffer(thr, h_bufobj, h_buf);
@@ -396,7 +397,7 @@ DUK_INTERNAL void duk_hbufobj_push_uint8array_from_plain(duk_hthread *thr, duk_h
 	h_arrbuf = duk_push_bufobj_raw(thr,
 	                               DUK_HOBJECT_FLAG_EXTENSIBLE |
 	                               DUK_HOBJECT_FLAG_BUFOBJ |
-	                               DUK_HOBJECT_CLASS_AS_FLAGS(DUK_HOBJECT_CLASS_ARRAYBUFFER),
+	                               DUK_HEAPHDR_HTYPE_AS_FLAGS(DUK_HTYPE_ARRAYBUFFER),
 	                               DUK_BIDX_ARRAYBUFFER_PROTOTYPE);
 	DUK_ASSERT(h_arrbuf != NULL);
 	duk__set_bufobj_buffer(thr, h_arrbuf, h_buf);
@@ -532,7 +533,7 @@ DUK_LOCAL duk_hbuffer *duk__hbufobj_fixed_from_argvalue(duk_hthread *thr) {
 		 */
 
 		h = duk_known_hobject(thr, 0);
-		if (DUK_HOBJECT_GET_CLASS_NUMBER(h) == DUK_HOBJECT_CLASS_ARRAYBUFFER) {
+		if (DUK_HOBJECT_GET_HTYPE(h) == DUK_HTYPE_ARRAYBUFFER) {
 			DUK_ASSERT(DUK_HOBJECT_IS_BUFOBJ(h));
 			h_bufobj = (duk_hbufobj *) h;
 			if (DUK_UNLIKELY(h_bufobj->buf == NULL)) {
@@ -632,7 +633,7 @@ DUK_INTERNAL duk_ret_t duk_bi_arraybuffer_constructor(duk_hthread *thr) {
 
 	h_bufobj = duk_push_bufobj_raw(thr,
 	                               DUK_HOBJECT_FLAG_EXTENSIBLE | DUK_HOBJECT_FLAG_BUFOBJ |
-	                                   DUK_HOBJECT_CLASS_AS_FLAGS(DUK_HOBJECT_CLASS_ARRAYBUFFER),
+	                                   DUK_HEAPHDR_HTYPE_AS_FLAGS(DUK_HTYPE_ARRAYBUFFER),
 	                               DUK_BIDX_ARRAYBUFFER_PROTOTYPE);
 	DUK_ASSERT(h_bufobj != NULL);
 
@@ -720,7 +721,7 @@ DUK_INTERNAL duk_ret_t duk_bi_typedarray_constructor(duk_hthread *thr) {
 		h_obj = DUK_TVAL_GET_OBJECT(tv);
 		DUK_ASSERT(h_obj != NULL);
 
-		if (DUK_HOBJECT_GET_CLASS_NUMBER(h_obj) == DUK_HOBJECT_CLASS_ARRAYBUFFER) {
+		if (DUK_HOBJECT_GET_HTYPE(h_obj) == DUK_HTYPE_ARRAYBUFFER) {
 			/* ArrayBuffer: unlike any other argument variant, create
 			 * a view into the existing buffer.
 			 */
@@ -776,7 +777,7 @@ DUK_INTERNAL duk_ret_t duk_bi_typedarray_constructor(duk_hthread *thr) {
 
 			h_bufobj = duk_push_bufobj_raw(thr,
 			                               DUK_HOBJECT_FLAG_EXTENSIBLE | DUK_HOBJECT_FLAG_BUFOBJ |
-			                                   DUK_HOBJECT_CLASS_AS_FLAGS(class_num),
+			                                   DUK_HEAPHDR_HTYPE_AS_FLAGS(class_num),
 			                               (duk_small_int_t) proto_bidx);
 			h_val = h_bufarg->buf;
 			if (h_val == NULL) {
@@ -883,7 +884,7 @@ DUK_INTERNAL duk_ret_t duk_bi_typedarray_constructor(duk_hthread *thr) {
 
 	h_bufobj =
 	    duk_push_bufobj_raw(thr,
-	                        DUK_HOBJECT_FLAG_EXTENSIBLE | DUK_HOBJECT_FLAG_BUFOBJ | DUK_HOBJECT_CLASS_AS_FLAGS(class_num),
+	                        DUK_HOBJECT_FLAG_EXTENSIBLE | DUK_HOBJECT_FLAG_BUFOBJ | DUK_HEAPHDR_HTYPE_AS_FLAGS(class_num),
 	                        (duk_small_int_t) proto_bidx);
 
 	h_bufobj->buf = h_val;
@@ -1053,7 +1054,7 @@ DUK_INTERNAL duk_ret_t duk_bi_dataview_constructor(duk_hthread *thr) {
 
 	h_bufarg = duk__require_bufobj_value(thr, 0);
 	DUK_ASSERT(h_bufarg != NULL);
-	if (DUK_HOBJECT_GET_CLASS_NUMBER((duk_hobject *) h_bufarg) != DUK_HOBJECT_CLASS_ARRAYBUFFER) {
+	if (DUK_HOBJECT_GET_HTYPE((duk_hobject *) h_bufarg) != DUK_HTYPE_ARRAYBUFFER) {
 		DUK_DCERROR_TYPE_INVALID_ARGS(thr);
 	}
 
@@ -1063,7 +1064,7 @@ DUK_INTERNAL duk_ret_t duk_bi_dataview_constructor(duk_hthread *thr) {
 
 	h_bufobj = duk_push_bufobj_raw(thr,
 	                               DUK_HOBJECT_FLAG_EXTENSIBLE | DUK_HOBJECT_FLAG_BUFOBJ |
-	                                   DUK_HOBJECT_CLASS_AS_FLAGS(DUK_HOBJECT_CLASS_DATAVIEW),
+	                                   DUK_HEAPHDR_HTYPE_AS_FLAGS(DUK_HTYPE_DATAVIEW),
 	                               DUK_BIDX_DATAVIEW_PROTOTYPE);
 
 	h_val = h_bufarg->buf;
@@ -1105,8 +1106,7 @@ DUK_INTERNAL duk_ret_t duk_bi_arraybuffer_isview(duk_hthread *thr) {
 			/* DataView needs special casing: ArrayBuffer.isView() is
 			 * true, but ->is_typedarray is 0.
 			 */
-			ret = ((duk_hbufobj *) h_obj)->is_typedarray ||
-			      (DUK_HOBJECT_GET_CLASS_NUMBER(h_obj) == DUK_HOBJECT_CLASS_DATAVIEW);
+			ret = ((duk_hbufobj *) h_obj)->is_typedarray || (DUK_HOBJECT_GET_HTYPE(h_obj) == DUK_HTYPE_DATAVIEW);
 		}
 	}
 	return duk_push_boolean_return1(thr, ret);
@@ -1237,9 +1237,8 @@ DUK_INTERNAL duk_ret_t duk_bi_nodejs_buffer_tojson(duk_hthread *thr) {
 	duk_push_hstring_stridx(thr, DUK_STRIDX_UC_BUFFER);
 	duk_put_prop_stridx_short(thr, -2, DUK_STRIDX_TYPE);
 
-	/* XXX: uninitialized would be OK */
 	DUK_ASSERT_DISABLE((duk_size_t) h_this->length <= (duk_size_t) DUK_UINT32_MAX);
-	tv = duk_push_harray_with_size_outptr(thr, (duk_uint32_t) h_this->length); /* XXX: needs revision with >4G buffers */
+	tv = duk_push_harray_with_size_noinit_outptr(thr, (duk_uint32_t) h_this->length); /* XXX: needs revision with >4G buffers */
 	DUK_ASSERT(!duk_is_bare_object(thr, -1));
 
 	DUK_ASSERT(h_this->buf != NULL);
@@ -1892,7 +1891,7 @@ DUK_LOCAL void duk__arraybuffer_plain_slice(duk_hthread *thr, duk_hbuffer *h_val
  */
 DUK_INTERNAL duk_ret_t duk_bi_buffer_slice_shared(duk_hthread *thr) {
 	duk_small_int_t magic;
-	duk_small_uint_t res_class_num;
+	duk_small_uint_t res_htype;
 	duk_small_int_t res_proto_bidx;
 	duk_hbufobj *h_this;
 	duk_hbufobj *h_bufobj;
@@ -1967,16 +1966,16 @@ DUK_INTERNAL duk_ret_t duk_bi_buffer_slice_shared(duk_hthread *thr) {
 	 * as the internal class is concerned, so the new Buffer should also
 	 * be an Uint8Array but inherit from Buffer.prototype.
 	 */
-	res_class_num = DUK_HOBJECT_GET_CLASS_NUMBER((duk_hobject *) h_this);
-	DUK_ASSERT(res_class_num >= DUK_HOBJECT_CLASS_BUFOBJ_MIN); /* type check guarantees */
-	DUK_ASSERT(res_class_num <= DUK_HOBJECT_CLASS_BUFOBJ_MAX);
-	res_proto_bidx = duk__buffer_proto_from_classnum[res_class_num - DUK_HOBJECT_CLASS_BUFOBJ_MIN];
+	res_htype = DUK_HOBJECT_GET_HTYPE((duk_hobject *) h_this);
+	DUK_ASSERT(res_htype >= DUK_HTYPE_BUFOBJ_MIN); /* type check guarantees */
+	DUK_ASSERT(res_htype <= DUK_HTYPE_BUFOBJ_MAX);
+	res_proto_bidx = duk__buffer_proto_from_classnum[res_htype - DUK_HTYPE_BUFOBJ_MIN];
 	if (magic & 0x04) {
 		res_proto_bidx = DUK_BIDX_NODEJS_BUFFER_PROTOTYPE;
 	}
 	h_bufobj =
 	    duk_push_bufobj_raw(thr,
-	                        DUK_HOBJECT_FLAG_EXTENSIBLE | DUK_HOBJECT_FLAG_BUFOBJ | DUK_HOBJECT_CLASS_AS_FLAGS(res_class_num),
+	                        DUK_HOBJECT_FLAG_EXTENSIBLE | DUK_HOBJECT_FLAG_BUFOBJ | DUK_HEAPHDR_HTYPE_AS_FLAGS(res_htype),
 	                        res_proto_bidx);
 	DUK_ASSERT(h_bufobj != NULL);
 
@@ -2071,7 +2070,7 @@ DUK_INTERNAL duk_ret_t duk_bi_nodejs_buffer_is_buffer(duk_hthread *thr) {
 		h_proto = thr->builtins[DUK_BIDX_NODEJS_BUFFER_PROTOTYPE];
 		DUK_ASSERT(h_proto != NULL);
 
-		h = DUK_HOBJECT_GET_PROTOTYPE(thr->heap, h);
+		h = duk_hobject_get_proto_raw(thr->heap, h);
 		if (h != NULL) {
 			ret = duk_hobject_prototype_chain_contains(thr, h, h_proto, 0 /*ignore_loop*/);
 		}
@@ -2130,7 +2129,7 @@ DUK_INTERNAL duk_ret_t duk_bi_nodejs_buffer_concat(duk_hthread *thr) {
 
 	/* Node.js accepts only actual Arrays. */
 	h_arg = duk_require_hobject(thr, 0);
-	if (DUK_HOBJECT_GET_CLASS_NUMBER(h_arg) != DUK_HOBJECT_CLASS_ARRAY) {
+	if (DUK_HOBJECT_GET_HTYPE(h_arg) != DUK_HTYPE_ARRAY) {
 		DUK_DCERROR_TYPE_INVALID_ARGS(thr);
 	}
 
@@ -2174,7 +2173,7 @@ DUK_INTERNAL duk_ret_t duk_bi_nodejs_buffer_concat(duk_hthread *thr) {
 
 	h_bufres = duk_push_bufobj_raw(thr,
 	                               DUK_HOBJECT_FLAG_EXTENSIBLE | DUK_HOBJECT_FLAG_BUFOBJ |
-	                                   DUK_HOBJECT_CLASS_AS_FLAGS(DUK_HOBJECT_CLASS_UINT8ARRAY),
+	                                   DUK_HEAPHDR_HTYPE_AS_FLAGS(DUK_HTYPE_UINT8ARRAY),
 	                               DUK_BIDX_NODEJS_BUFFER_PROTOTYPE);
 	DUK_ASSERT(h_bufres != NULL);
 
@@ -2794,7 +2793,7 @@ DUK_LOCAL duk_hbufobj *duk__autospawn_arraybuffer(duk_hthread *thr, duk_hbuffer 
 
 	h_res = duk_push_bufobj_raw(thr,
 	                            DUK_HOBJECT_FLAG_EXTENSIBLE | DUK_HOBJECT_FLAG_BUFOBJ |
-	                                DUK_HOBJECT_CLASS_AS_FLAGS(DUK_HOBJECT_CLASS_ARRAYBUFFER),
+	                                DUK_HEAPHDR_HTYPE_AS_FLAGS(DUK_HTYPE_ARRAYBUFFER),
 	                            DUK_BIDX_ARRAYBUFFER_PROTOTYPE);
 	DUK_ASSERT(h_res != NULL);
 	DUK_UNREF(h_res);
@@ -2810,13 +2809,12 @@ DUK_INTERNAL duk_ret_t duk_bi_typedarray_buffer_getter(duk_hthread *thr) {
 
 	h_bufobj = (duk_hbufobj *) duk__getrequire_bufobj_this(thr, DUK__BUFOBJ_FLAG_THROW /*flags*/);
 	DUK_ASSERT(h_bufobj != NULL);
-	if (DUK_HEAPHDR_IS_BUFFER((duk_heaphdr *) h_bufobj)) {
+	if (DUK_HEAPHDR_IS_ANY_BUFFER((duk_heaphdr *) h_bufobj)) {
 		DUK_DD(DUK_DDPRINT("autospawn ArrayBuffer for plain buffer"));
 		(void) duk__autospawn_arraybuffer(thr, (duk_hbuffer *) h_bufobj);
 		return 1;
 	} else {
-		if (h_bufobj->buf_prop == NULL &&
-		    DUK_HOBJECT_GET_CLASS_NUMBER((duk_hobject *) h_bufobj) != DUK_HOBJECT_CLASS_ARRAYBUFFER &&
+		if (h_bufobj->buf_prop == NULL && DUK_HOBJECT_GET_HTYPE((duk_hobject *) h_bufobj) != DUK_HTYPE_ARRAYBUFFER &&
 		    h_bufobj->buf != NULL) {
 			duk_hbufobj *h_arrbuf;
 
@@ -2858,12 +2856,13 @@ DUK_INTERNAL duk_ret_t duk_bi_typedarray_byteoffset_getter(duk_hthread *thr) {
 
 	h_bufobj = (duk_hbufobj *) duk__getrequire_bufobj_this(thr, DUK__BUFOBJ_FLAG_THROW /*flags*/);
 	DUK_ASSERT(h_bufobj != NULL);
-	if (DUK_HEAPHDR_IS_BUFFER((duk_heaphdr *) h_bufobj)) {
+	if (DUK_HEAPHDR_IS_ANY_BUFFER((duk_heaphdr *) h_bufobj)) {
 		duk_push_uint(thr, 0);
 	} else {
 		/* If neutered must return 0; offset is zeroed during
 		 * neutering.
 		 */
+		DUK_ASSERT(DUK_HEAPHDR_IS_ANY_BUFOBJ((duk_heaphdr *) h_bufobj));
 		duk_push_uint(thr, h_bufobj->offset);
 	}
 	return 1;
@@ -2874,7 +2873,7 @@ DUK_INTERNAL duk_ret_t duk_bi_typedarray_bytelength_getter(duk_hthread *thr) {
 
 	h_bufobj = (duk_hbufobj *) duk__getrequire_bufobj_this(thr, DUK__BUFOBJ_FLAG_THROW /*flags*/);
 	DUK_ASSERT(h_bufobj != NULL);
-	if (DUK_HEAPHDR_IS_BUFFER((duk_heaphdr *) h_bufobj)) {
+	if (DUK_HEAPHDR_IS_ANY_BUFFER((duk_heaphdr *) h_bufobj)) {
 		duk_hbuffer *h_buf;
 
 		h_buf = (duk_hbuffer *) h_bufobj;
@@ -2884,6 +2883,7 @@ DUK_INTERNAL duk_ret_t duk_bi_typedarray_bytelength_getter(duk_hthread *thr) {
 		/* If neutered must return 0; length is zeroed during
 		 * neutering.
 		 */
+		DUK_ASSERT(DUK_HEAPHDR_IS_ANY_BUFOBJ((duk_heaphdr *) h_bufobj));
 		duk_push_uint(thr, h_bufobj->length);
 	}
 	return 1;

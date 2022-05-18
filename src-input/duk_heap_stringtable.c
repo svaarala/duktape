@@ -74,7 +74,7 @@ DUK_INTERNAL void duk_heap_strtable_dump(duk_heap *heap) {
 
 	DUK_D(DUK_DPRINT("string table, strtab=%p, count=%lu, chain min=%lu max=%lu avg=%lf: "
 	                 "counts: %lu %lu %lu %lu %lu %lu %lu %lu ...",
-	                 (void *) heap->strtable,
+	                 (void *) DUK__GET_STRTABLE(heap),
 	                 (unsigned long) count_total,
 	                 (unsigned long) count_chain_min,
 	                 (unsigned long) count_chain_max,
@@ -171,6 +171,7 @@ DUK_LOCAL duk_hstring *duk__strtable_alloc_hstring(duk_heap *heap,
 #if defined(DUK_USE_HSTRING_EXTDATA) && defined(DUK_USE_EXTSTR_INTERN_CHECK)
 	if (extdata) {
 		res = (duk_hstring *) DUK_ALLOC(heap, sizeof(duk_hstring_external));
+		DUK_GC_TORTURE(heap); /* Arbitrary side effects are possible here. */
 		if (DUK_UNLIKELY(res == NULL)) {
 			goto alloc_error;
 		}
@@ -178,7 +179,7 @@ DUK_LOCAL duk_hstring *duk__strtable_alloc_hstring(duk_heap *heap,
 #if defined(DUK_USE_EXPLICIT_NULL_INIT)
 		DUK_HEAPHDR_STRING_INIT_NULLS(&res->hdr);
 #endif
-		DUK_HEAPHDR_SET_TYPE_AND_FLAGS(&res->hdr, DUK_HTYPE_STRING, DUK_HSTRING_FLAG_EXTDATA);
+		DUK_HEAPHDR_SET_HTYPE_AND_FLAGS(&res->hdr, DUK_HTYPE_STRING_EXTERNAL, DUK_HSTRING_FLAG_EXTDATA);
 
 		DUK_ASSERT(extdata[blen] == 0); /* Application responsibility. */
 		data = extdata;
@@ -191,6 +192,7 @@ DUK_LOCAL duk_hstring *duk__strtable_alloc_hstring(duk_heap *heap,
 		/* NUL terminate for convenient C access */
 		DUK_ASSERT(sizeof(duk_hstring) + blen + 1 > blen); /* No wrap, limits ensure. */
 		res = (duk_hstring *) DUK_ALLOC(heap, sizeof(duk_hstring) + blen + 1);
+		DUK_GC_TORTURE(heap); /* Arbitrary side effects are possible here. */
 		if (DUK_UNLIKELY(res == NULL)) {
 			goto alloc_error;
 		}
@@ -198,7 +200,7 @@ DUK_LOCAL duk_hstring *duk__strtable_alloc_hstring(duk_heap *heap,
 #if defined(DUK_USE_EXPLICIT_NULL_INIT)
 		DUK_HEAPHDR_STRING_INIT_NULLS(&res->hdr);
 #endif
-		DUK_HEAPHDR_SET_TYPE_AND_FLAGS(&res->hdr, DUK_HTYPE_STRING, 0);
+		DUK_HEAPHDR_SET_HTYPE_AND_FLAGS(&res->hdr, DUK_HTYPE_STRING_INTERNAL, 0);
 
 		data_tmp = (duk_uint8_t *) (res + 1);
 		duk_memcpy(data_tmp, str, blen);
@@ -208,6 +210,7 @@ DUK_LOCAL duk_hstring *duk__strtable_alloc_hstring(duk_heap *heap,
 
 	duk_hstring_set_bytelen(res, blen);
 	duk_hstring_set_hash(res, strhash);
+	DUK_ASSERT(duk_hstring_get_hash(res) == strhash);
 
 	if (blen == clen) {
 		DUK_ASSERT(!duk_hstring_is_symbol_initial_byte(data[0])); /* blen > 0, clen = 0 for symbols */
@@ -220,20 +223,34 @@ DUK_LOCAL duk_hstring *duk__strtable_alloc_hstring(duk_heap *heap,
 #if defined(DUK_USE_HSTRING_ARRIDX)
 		res->arridx = arridx;
 #endif
-		if (arridx != DUK_HSTRING_NO_ARRAY_INDEX) {
+		if (arridx != DUK_ARRIDX_NONE) {
 			/* Array index strings cannot be symbol strings,
 			 * and they're always pure ASCII so blen == clen.
 			 */
 			DUK_HSTRING_SET_ARRIDX(res);
+			DUK_HSTRING_SET_CANNUM(res);
 		} else {
 			DUK_ASSERT(!DUK_HSTRING_HAS_ARRIDX(res));
+
+			/* XXX: Proper canonical number string detection. */
+
+			/* Temporary hacks for detecting '-0' and '-1' as canonical
+			 * number strings for testing.
+			 */
+			if (data[0] == '-' && data[1] == '0' && data[2] == 0) {
+				DUK_HSTRING_SET_CANNUM(res);
+			}
+			if (data[0] == '-' && data[1] == '1' && data[2] == 0) {
+				DUK_HSTRING_SET_CANNUM(res);
+			}
 		}
 	} else {
 		DUK_ASSERT(!DUK_HSTRING_HAS_ASCII(res));
 		DUK_ASSERT(!DUK_HSTRING_HAS_ARRIDX(res));
-		DUK_ASSERT(duk_js_to_arrayindex_string(data, blen) == DUK_HSTRING_NO_ARRAY_INDEX);
+		DUK_ASSERT(!DUK_HSTRING_HAS_CANNUM(res));
+		DUK_ASSERT(duk_js_to_arrayindex_string(data, blen) == DUK_ARRIDX_NONE);
 #if defined(DUK_USE_HSTRING_ARRIDX)
-		res->arridx = DUK_HSTRING_NO_ARRAY_INDEX;
+		res->arridx = DUK_ARRIDX_NONE;
 #endif
 
 		/* Because 'data' is NUL-terminated, we don't need a

@@ -3,17 +3,20 @@
  */
 
 /*===
-get
-set
+get true val
+set true val 4500.5
+after set: 9001
 4500.5
-get
+get true val
+9001
 9001
 ===*/
 
 function test() {
-    p = new Proxy({ val: 4499.5 }, {
-        get: function(t, prop) { print('get'); return t[prop]; },
-        set: function(t, prop, value) { print('set'); t[prop] = value * 2; }
+    var target = { val: 4499.5 };
+    var p = new Proxy(target, {
+        get: function(t, prop) { print('get', t === target, prop); return t[prop]; },
+        set: function(t, prop, value) { print('set', t === target, prop, value); t[prop] = value * 2; print('after set:', t[prop]); }
     });
 
     // Preincrement is evaluated as:
@@ -28,6 +31,7 @@ function test() {
 
     print(++p.val);  // 4500.5 (from step 2)
     print(p.val);    // 9001
+    print(target.val);
 }
 
 try {

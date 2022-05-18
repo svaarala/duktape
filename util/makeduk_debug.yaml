@@ -1,6 +1,6 @@
 # Additional options on top of makeduk_base.yaml to enable debug prints.
 
-DUK_USE_DEBUG_BUFSIZE: 512
+DUK_USE_DEBUG_BUFSIZE: 65536
 DUK_USE_DEBUG: true
 DUK_USE_DEBUG_LEVEL: 0
 #DUK_USE_DEBUG_LEVEL: 1

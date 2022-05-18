@@ -169,15 +169,11 @@ DUK_LOCAL void duk__interrupt_fixup(duk_hthread *thr, duk_hthread *entry_curr_th
  */
 
 DUK_LOCAL void duk__create_arguments_object(duk_hthread *thr, duk_hobject *func, duk_hobject *varenv, duk_idx_t idx_args) {
-	duk_hobject *arg; /* 'arguments' */
+	duk_harray *arg; /* 'arguments' */
 	duk_hobject *formals; /* formals for 'func' (may be NULL if func is a C function) */
-	duk_idx_t i_arg;
-	duk_idx_t i_map;
-	duk_idx_t i_mappednames;
-	duk_idx_t i_formals;
 	duk_idx_t i_argbase;
 	duk_idx_t n_formals;
-	duk_idx_t idx;
+	duk_idx_t i;
 	duk_idx_t num_stack_args;
 	duk_bool_t need_map;
 
@@ -197,9 +193,11 @@ DUK_LOCAL void duk__create_arguments_object(duk_hthread *thr, duk_hobject *func,
 	DUK_ASSERT(i_argbase >= 0);
 	DUK_ASSERT(num_stack_args >= 0);
 
+	/* Maximum argument count is limited by DUK_USE_VALSTACK_LIMIT. */
+
 	formals = (duk_hobject *) duk_hobject_get_formals(thr, (duk_hobject *) func);
 	if (formals) {
-		n_formals = (duk_idx_t) ((duk_harray *) formals)->length;
+		n_formals = (duk_idx_t) DUK_HARRAY_GET_LENGTH((duk_harray *) formals);
 		duk_push_hobject(thr, formals);
 	} else {
 		/* This shouldn't happen without tampering of internal
@@ -211,7 +209,6 @@ DUK_LOCAL void duk__create_arguments_object(duk_hthread *thr, duk_hobject *func,
 		n_formals = 0;
 		duk_push_undefined(thr);
 	}
-	i_formals = duk_require_top_index(thr);
 
 	DUK_ASSERT(n_formals >= 0);
 	DUK_ASSERT(formals != NULL || n_formals == 0);
@@ -219,7 +216,7 @@ DUK_LOCAL void duk__create_arguments_object(duk_hthread *thr, duk_hobject *func,
 	DUK_DDD(
 	    DUK_DDDPRINT("func=%!O, formals=%!O, n_formals=%ld", (duk_heaphdr *) func, (duk_heaphdr *) formals, (long) n_formals));
 
-	/* [ ... formals ] */
+	/* [ ... envobj formals ] */
 
 	/*
 	 *  Create required objects:
@@ -228,127 +225,32 @@ DUK_LOCAL void duk__create_arguments_object(duk_hthread *thr, duk_hobject *func,
 	 *    - 'mappedNames' object: temporary value used during construction (bare)
 	 */
 
-	arg = duk_push_object_helper(thr,
-	                             DUK_HOBJECT_FLAG_EXTENSIBLE | DUK_HOBJECT_FLAG_FASTREFS | DUK_HOBJECT_FLAG_ARRAY_PART |
-	                                 DUK_HOBJECT_CLASS_AS_FLAGS(DUK_HOBJECT_CLASS_ARGUMENTS),
-	                             DUK_BIDX_OBJECT_PROTOTYPE);
+	/* Fill in argument number indices early without side effects. */
+	DUK_ASSERT(num_stack_args >= 0);
+	arg = duk_push_arguments_array_noinit(thr, (duk_uint_t) num_stack_args);
 	DUK_ASSERT(arg != NULL);
-	(void) duk_push_object_helper(thr,
-	                              DUK_HOBJECT_FLAG_EXTENSIBLE | DUK_HOBJECT_FLAG_FASTREFS |
-	                                  DUK_HOBJECT_CLASS_AS_FLAGS(DUK_HOBJECT_CLASS_OBJECT),
-	                              -1); /* no prototype */
-	(void) duk_push_object_helper(thr,
-	                              DUK_HOBJECT_FLAG_EXTENSIBLE | DUK_HOBJECT_FLAG_FASTREFS |
-	                                  DUK_HOBJECT_CLASS_AS_FLAGS(DUK_HOBJECT_CLASS_OBJECT),
-	                              -1); /* no prototype */
-	i_arg = duk_get_top(thr) - 3;
-	i_map = i_arg + 1;
-	i_mappednames = i_arg + 2;
-	DUK_ASSERT(!duk_is_bare_object(thr, -3)); /* arguments */
-	DUK_ASSERT(duk_is_bare_object(thr, -2)); /* map */
-	DUK_ASSERT(duk_is_bare_object(thr, -1)); /* mappedNames */
+	duk_copy_tvals_incref(thr,
+	                      DUK_HARRAY_GET_ITEMS(thr->heap, arg),
+	                      thr->valstack_bottom + i_argbase,
+	                      (duk_size_t) num_stack_args);
+	DUK_ASSERT(!duk_is_bare_object(thr, -1)); /* arguments */
 
-	/* [ ... formals arguments map mappedNames ] */
-
-	DUK_DDD(DUK_DDDPRINT("created arguments related objects: "
-	                     "arguments at index %ld -> %!O "
-	                     "map at index %ld -> %!O "
-	                     "mappednames at index %ld -> %!O",
-	                     (long) i_arg,
-	                     (duk_heaphdr *) duk_get_hobject(thr, i_arg),
-	                     (long) i_map,
-	                     (duk_heaphdr *) duk_get_hobject(thr, i_map),
-	                     (long) i_mappednames,
-	                     (duk_heaphdr *) duk_get_hobject(thr, i_mappednames)));
+	/* [ ... envobj formals arguments ] */
 
 	/*
 	 *  Init arguments properties, map, etc.
 	 */
 
 	duk_push_int(thr, num_stack_args);
-	duk_xdef_prop_stridx(thr, i_arg, DUK_STRIDX_LENGTH, DUK_PROPDESC_FLAGS_WC);
+	duk_xdef_prop_stridx(thr, -2 /*arguments*/, DUK_STRIDX_LENGTH, DUK_PROPDESC_FLAGS_WC);
 
 	/*
 	 *  Init argument related properties.
 	 */
 
-	/* step 11 */
-	idx = num_stack_args - 1;
-	while (idx >= 0) {
-		DUK_DDD(
-		    DUK_DDDPRINT("arg idx %ld, argbase=%ld, argidx=%ld", (long) idx, (long) i_argbase, (long) (i_argbase + idx)));
-
-		DUK_DDD(DUK_DDDPRINT("define arguments[%ld]=arg", (long) idx));
-		duk_dup(thr, i_argbase + idx);
-		duk_xdef_prop_index_wec(thr, i_arg, (duk_uarridx_t) idx);
-		DUK_DDD(DUK_DDDPRINT("defined arguments[%ld]=arg", (long) idx));
-
-		/* step 11.c is relevant only if non-strict (checked in 11.c.ii) */
-		if (!DUK_HOBJECT_HAS_STRICT(func) && idx < n_formals) {
-			DUK_ASSERT(formals != NULL);
-
-			DUK_DDD(DUK_DDDPRINT("strict function, index within formals (%ld < %ld)", (long) idx, (long) n_formals));
-
-			duk_get_prop_index(thr, i_formals, (duk_uarridx_t) idx);
-			DUK_ASSERT(duk_is_string(thr, -1));
-
-			duk_dup_top(thr); /* [ ... name name ] */
-
-			if (!duk_has_prop(thr, i_mappednames)) {
-				/* steps 11.c.ii.1 - 11.c.ii.4, but our internal book-keeping
-				 * differs from the reference model
-				 */
-
-				/* [ ... name ] */
-
-				need_map = 1;
-
-				DUK_DDD(
-				    DUK_DDDPRINT("set mappednames[%s]=%ld", (const char *) duk_get_string(thr, -1), (long) idx));
-				duk_dup_top(thr); /* name */
-				(void) duk_push_uint_to_hstring(thr, (duk_uint_t) idx); /* index */
-				duk_xdef_prop_wec(thr, i_mappednames); /* out of spec, must be configurable */
-
-				DUK_DDD(DUK_DDDPRINT("set map[%ld]=%s", (long) idx, duk_get_string(thr, -1)));
-				duk_dup_top(thr); /* name */
-				duk_xdef_prop_index_wec(thr, i_map, (duk_uarridx_t) idx); /* out of spec, must be configurable */
-			} else {
-				/* duk_has_prop() popped the second 'name' */
-			}
-
-			/* [ ... name ] */
-			duk_pop(thr); /* pop 'name' */
-		}
-
-		idx--;
-	}
-
-	DUK_DDD(DUK_DDDPRINT("actual arguments processed"));
-
-	/* step 12 */
-	if (need_map) {
-		DUK_DDD(DUK_DDDPRINT("adding 'map' and 'varenv' to arguments object"));
-
-		/* should never happen for a strict callee */
-		DUK_ASSERT(!DUK_HOBJECT_HAS_STRICT(func));
-
-		duk_dup(thr, i_map);
-		duk_xdef_prop_stridx(thr, i_arg, DUK_STRIDX_INT_MAP, DUK_PROPDESC_FLAGS_NONE); /* out of spec, don't care */
-
-		/* The variable environment for magic variable bindings needs to be
-		 * given by the caller and recorded in the arguments object.
-		 *
-		 * See E5 Section 10.6, the creation of setters/getters.
-		 *
-		 * The variable environment also provides access to the callee, so
-		 * an explicit (internal) callee property is not needed.
-		 */
-
-		duk_push_hobject(thr, varenv);
-		duk_xdef_prop_stridx(thr, i_arg, DUK_STRIDX_INT_VARENV, DUK_PROPDESC_FLAGS_NONE); /* out of spec, don't care */
-	}
-
-	/* steps 13-14 */
+	/* Steps 11-14: index properties already handled above (without side effects),
+	 * remaining properties here.
+	 */
 	if (DUK_HOBJECT_HAS_STRICT(func)) {
 		/* Callee/caller are throwers and are not deletable etc.  They
 		 * could be implemented as virtual properties, but currently
@@ -360,54 +262,126 @@ DUK_LOCAL void duk__create_arguments_object(duk_hthread *thr, duk_hobject *func,
 		 * Note that the specification requires that the *same* thrower
 		 * built-in object is used here!  See E5 Section 10.6 main
 		 * algoritm, step 14, and Section 13.2.3 which describes the
-		 * thrower.  See test case test-arguments-throwers.js.
+		 * thrower.  Test case test-arguments-throwers.js.
 		 */
 
 		DUK_DDD(DUK_DDDPRINT("strict function, setting caller/callee to throwers"));
 
 		/* In ES2017 .caller is no longer set at all. */
-		duk_xdef_prop_stridx_thrower(thr, i_arg, DUK_STRIDX_CALLEE);
+		duk_xdef_prop_stridx_thrower(thr, -1 /*arguments*/, DUK_STRIDX_CALLEE);
 	} else {
+		duk_hobject *mappednames;
+		duk_idx_t limit;
+
+		/* XXX: could make 'map' a duk_harray, it's dense in almost
+		 * all cases, but it must not have an exotic .length property.
+		 */
+		duk_push_bare_object(thr); /* mappedNames */
+		duk_push_bare_object(thr); /* map */
+		DUK_ASSERT(duk_is_bare_object(thr, -2)); /* map */
+		DUK_ASSERT(duk_is_bare_object(thr, -1)); /* mappedNames */
+
+		/* [ ... envobj formals arguments mappedNames map ] */
+
+		limit = (num_stack_args >= n_formals ? n_formals : num_stack_args);
+		mappednames = duk_known_hobject(thr, -2);
+
+		for (i = limit - 1; i >= 0; i--) {
+			duk_hstring *name;
+			duk_tval *tv;
+
+			/* [ ... envobj formals arguments mappedNames map ] */
+
+			/* step 11.c is relevant only if non-strict (checked in 11.c.ii) */
+			DUK_ASSERT(formals != NULL);
+
+			DUK_DDD(DUK_DDDPRINT("non-strict function, index within formals (%ld < %ld)", (long) i, (long) n_formals));
+
+			duk_get_prop_index(thr, -4 /*formals*/, (duk_uarridx_t) i);
+			DUK_ASSERT(duk_is_string(thr, -1));
+			name = duk_known_hstring(thr, -1);
+
+			/* steps 11.c.ii.1 - 11.c.ii.4, but our internal book-keeping
+			 * differs from the reference model
+			 */
+
+			/* [ ... envobj formals arguments mappedNames map name ] */
+
+			tv = duk_hobject_find_entry_tval_ptr(thr->heap, mappednames, name);
+			if (tv == NULL) {
+				DUK_DDD(DUK_DDDPRINT("set mappednames[%s]=true", (const char *) duk_get_string(thr, -1)));
+				need_map = 1;
+
+				duk_dup_top_unsafe(thr);
+				duk_push_true(thr);
+				DUK_GC_TORTURE(thr->heap);
+				duk_put_prop(thr, -5 /*mappedNames*/); /* out of spec, must be configurable */
+				DUK_GC_TORTURE(thr->heap);
+
+				DUK_DDD(DUK_DDDPRINT("set map[%ld]=%s", (long) i, duk_get_string(thr, -1)));
+				DUK_GC_TORTURE(thr->heap);
+				duk_put_prop_index(thr, -2 /*map*/, (duk_uarridx_t) i); /* out of spec, must be configurable */
+				DUK_GC_TORTURE(thr->heap);
+			} else {
+				duk_pop_unsafe(thr);
+			}
+		}
+		DUK_GC_TORTURE(thr->heap);
+
+		/* [ ... envobj formals arguments mappedNames map ] */
+
 		DUK_DDD(DUK_DDDPRINT("non-strict function, setting callee to actual value"));
 		duk_push_hobject(thr, func);
-		duk_xdef_prop_stridx(thr, i_arg, DUK_STRIDX_CALLEE, DUK_PROPDESC_FLAGS_WC);
+		duk_xdef_prop_stridx(thr, -4 /*arguments*/, DUK_STRIDX_CALLEE, DUK_PROPDESC_FLAGS_WC);
+
+		if (need_map) {
+			DUK_DDD(DUK_DDDPRINT("adding 'map' and 'varenv' to arguments object"));
+
+			/* should never happen for a strict callee */
+			DUK_ASSERT(!DUK_HOBJECT_HAS_STRICT(func));
+
+			duk_dup_top_unsafe(thr);
+			duk_xdef_prop_stridx(thr,
+			                     -4 /*arguments*/,
+			                     DUK_STRIDX_INT_MAP,
+			                     DUK_PROPDESC_FLAGS_NONE); /* out of spec, don't care */
+
+			/* The variable environment for magic variable bindings needs to be
+			 * given by the caller and recorded in the arguments object.
+			 *
+			 * See E5 Section 10.6, the creation of setters/getters.
+			 *
+			 * The variable environment also provides access to the callee, so
+			 * an explicit (internal) callee property is not needed.
+			 */
+
+			duk_push_hobject(thr, varenv);
+			duk_xdef_prop_stridx(thr,
+			                     -4 /*arguments*/,
+			                     DUK_STRIDX_INT_VARENV,
+			                     DUK_PROPDESC_FLAGS_NONE); /* out of spec, don't care */
+
+			/* Exotic behaviors are only enabled for arguments objects
+			 * which have a parameter map (see E5 Section 10.6 main
+			 * algorithm, step 12).
+			 *
+			 * In particular, a non-strict arguments object with no
+			 * mapped formals does *NOT* get exotic behavior.
+			 */
+
+			DUK_ASSERT(!DUK_HOBJECT_HAS_STRICT(func));
+
+			DUK_DDD(DUK_DDDPRINT("enabling exotic behavior for arguments object"));
+			DUK_HOBJECT_SET_EXOTIC_ARGUMENTS((duk_hobject *) arg);
+		}
+
+		/* [ ... envobj formals arguments mappednames map ] */
+
+		duk_pop_2(thr);
 	}
 
-	/* set exotic behavior only after we're done */
-	if (need_map) {
-		/* Exotic behaviors are only enabled for arguments objects
-		 * which have a parameter map (see E5 Section 10.6 main
-		 * algorithm, step 12).
-		 *
-		 * In particular, a non-strict arguments object with no
-		 * mapped formals does *NOT* get exotic behavior, even
-		 * for e.g. "caller" property.  This seems counterintuitive
-		 * but seems to be the case.
-		 */
+	/* [ ... envobj formals arguments ] */
 
-		/* cannot be strict (never mapped variables) */
-		DUK_ASSERT(!DUK_HOBJECT_HAS_STRICT(func));
-
-		DUK_DDD(DUK_DDDPRINT("enabling exotic behavior for arguments object"));
-		DUK_HOBJECT_SET_EXOTIC_ARGUMENTS(arg);
-	} else {
-		DUK_DDD(DUK_DDDPRINT("not enabling exotic behavior for arguments object"));
-	}
-
-	DUK_DDD(DUK_DDDPRINT("final arguments related objects: "
-	                     "arguments at index %ld -> %!O "
-	                     "map at index %ld -> %!O "
-	                     "mappednames at index %ld -> %!O",
-	                     (long) i_arg,
-	                     (duk_heaphdr *) duk_get_hobject(thr, i_arg),
-	                     (long) i_map,
-	                     (duk_heaphdr *) duk_get_hobject(thr, i_map),
-	                     (long) i_mappednames,
-	                     (duk_heaphdr *) duk_get_hobject(thr, i_mappednames)));
-
-	/* [ args(n) envobj formals arguments map mappednames ] */
-
-	duk_pop_2(thr);
 	duk_remove_m2(thr);
 
 	/* [ args(n) envobj arguments ] */
@@ -491,7 +465,7 @@ DUK_LOCAL void duk__update_default_instance_proto(duk_hthread *thr, duk_idx_t id
 		 */
 		fallback = duk_known_hobject(thr, idx_func + 1);
 		DUK_ASSERT(fallback != NULL);
-		DUK_HOBJECT_SET_PROTOTYPE_UPDREF(thr, fallback, proto);
+		duk_hobject_set_proto_raw_updref(thr, fallback, proto);
 	}
 	duk_pop(thr);
 }
@@ -987,93 +961,6 @@ DUK_LOCAL void duk__handle_oldenv_for_call(duk_hthread *thr, duk_hobject *func, 
 }
 
 /*
- *  Helper for updating callee 'caller' property.
- */
-
-#if defined(DUK_USE_NONSTD_FUNC_CALLER_PROPERTY)
-DUK_LOCAL void duk__update_func_caller_prop(duk_hthread *thr, duk_hobject *func) {
-	duk_tval *tv_caller;
-	duk_hobject *h_tmp;
-	duk_activation *act_callee;
-	duk_activation *act_caller;
-
-	DUK_ASSERT(thr != NULL);
-	DUK_ASSERT(func != NULL);
-	DUK_ASSERT(!DUK_HOBJECT_HAS_BOUNDFUNC(func)); /* bound chain resolved */
-	DUK_ASSERT(thr->callstack_top >= 1);
-
-	if (DUK_HOBJECT_HAS_STRICT(func)) {
-		/* Strict functions don't get their 'caller' updated. */
-		return;
-	}
-
-	DUK_ASSERT(thr->callstack_top > 0);
-	act_callee = thr->callstack_curr;
-	DUK_ASSERT(act_callee != NULL);
-	act_caller = (thr->callstack_top >= 2 ? act_callee->parent : NULL);
-
-	/* XXX: check .caller writability? */
-
-	/* Backup 'caller' property and update its value. */
-	tv_caller = duk_hobject_find_entry_tval_ptr_stridx(thr->heap, func, DUK_STRIDX_CALLER);
-	if (tv_caller) {
-		/* If caller is global/eval code, 'caller' should be set to
-		 * 'null'.
-		 *
-		 * XXX: there is no exotic flag to infer this correctly now.
-		 * The NEWENV flag is used now which works as intended for
-		 * everything (global code, non-strict eval code, and functions)
-		 * except strict eval code.  Bound functions are never an issue
-		 * because 'func' has been resolved to a non-bound function.
-		 */
-
-		if (act_caller != NULL) {
-			/* act_caller->func may be NULL in some finalization cases,
-			 * just treat like we don't know the caller.
-			 */
-			if (act_caller->func && !DUK_HOBJECT_HAS_NEWENV(act_caller->func)) {
-				/* Setting to NULL causes 'caller' to be set to
-				 * 'null' as desired.
-				 */
-				act_caller = NULL;
-			}
-		}
-
-		if (DUK_TVAL_IS_OBJECT(tv_caller)) {
-			h_tmp = DUK_TVAL_GET_OBJECT(tv_caller);
-			DUK_ASSERT(h_tmp != NULL);
-			act_callee->prev_caller = h_tmp;
-
-			/* Previous value doesn't need refcount changes because its ownership
-			 * is transferred to prev_caller.
-			 */
-
-			if (act_caller != NULL) {
-				DUK_ASSERT(act_caller->func != NULL);
-				DUK_TVAL_SET_OBJECT(tv_caller, act_caller->func);
-				DUK_TVAL_INCREF(thr, tv_caller);
-			} else {
-				DUK_TVAL_SET_NULL(tv_caller); /* no incref */
-			}
-		} else {
-			/* 'caller' must only take on 'null' or function value */
-			DUK_ASSERT(!DUK_TVAL_IS_HEAP_ALLOCATED(tv_caller));
-			DUK_ASSERT(act_callee->prev_caller == NULL);
-			if (act_caller != NULL && act_caller->func) {
-				/* Tolerate act_caller->func == NULL which happens in
-				 * some finalization cases; treat like unknown caller.
-				 */
-				DUK_TVAL_SET_OBJECT(tv_caller, act_caller->func);
-				DUK_TVAL_INCREF(thr, tv_caller);
-			} else {
-				DUK_TVAL_SET_NULL(tv_caller); /* no incref */
-			}
-		}
-	}
-}
-#endif /* DUK_USE_NONSTD_FUNC_CALLER_PROPERTY */
-
-/*
  *  Shared helpers for resolving the final, non-bound target function of the
  *  call and the effective 'this' binding.  Resolves bound functions and
  *  applies .call(), .apply(), and .construct() inline.
@@ -1346,7 +1233,7 @@ not_callable:
 #if defined(DUK_USE_PARANOID_ERRORS)
 	DUK_ERROR_FMT1(thr, DUK_ERR_TYPE_ERROR, "%s not callable", duk_get_type_name(thr, idx_func));
 #else
-	DUK_ERROR_FMT1(thr, DUK_ERR_TYPE_ERROR, "%s not callable", duk_push_string_tval_readable(thr, tv_func));
+	DUK_ERROR_FMT1(thr, DUK_ERR_TYPE_ERROR, "%s not callable", duk_push_readable_tval(thr, tv_func));
 #endif
 #else
 	DUK_ERROR_TYPE(thr, DUK_STR_NOT_CALLABLE);
@@ -1359,7 +1246,7 @@ not_constructable:
 #if defined(DUK_USE_PARANOID_ERRORS)
 	DUK_ERROR_FMT1(thr, DUK_ERR_TYPE_ERROR, "%s not constructable", duk_get_type_name(thr, idx_func));
 #else
-	DUK_ERROR_FMT1(thr, DUK_ERR_TYPE_ERROR, "%s not constructable", duk_push_string_tval_readable(thr, tv_func));
+	DUK_ERROR_FMT1(thr, DUK_ERR_TYPE_ERROR, "%s not constructable", duk_push_readable_tval(thr, tv_func));
 #endif
 #else
 	DUK_ERROR_TYPE(thr, DUK_STR_NOT_CONSTRUCTABLE);
@@ -1587,9 +1474,6 @@ DUK_LOCAL duk_small_uint_t duk__call_setup_act_attempt_tailcall(duk_hthread *thr
 	DUK_ASSERT(func != NULL);
 	DUK_ASSERT(DUK_HOBJECT_HAS_COMPFUNC(func));
 	act->func = func; /* don't want an intermediate exposed state with func == NULL */
-#if defined(DUK_USE_NONSTD_FUNC_CALLER_PROPERTY)
-	act->prev_caller = NULL;
-#endif
 	/* don't want an intermediate exposed state with invalid pc */
 	act->curr_pc = DUK_HCOMPFUNC_GET_CODE_BASE(thr->heap, (duk_hcompfunc *) func);
 #if defined(DUK_USE_DEBUGGER_SUPPORT)
@@ -1656,17 +1540,6 @@ DUK_LOCAL duk_small_uint_t duk__call_setup_act_attempt_tailcall(duk_hthread *thr
 	DUK_ASSERT(*out_nregs >= *out_nargs);
 	*out_vs_min_bytes =
 	    entry_valstack_bottom_byteoff + sizeof(duk_tval) * ((duk_size_t) *out_nregs + DUK_VALSTACK_INTERNAL_EXTRA);
-
-#if defined(DUK_USE_NONSTD_FUNC_CALLER_PROPERTY)
-#if defined(DUK_USE_TAILCALL)
-#error incorrect options: tail calls enabled with function caller property
-#endif
-	/* XXX: This doesn't actually work properly for tail calls, so
-	 * tail calls are disabled when DUK_USE_NONSTD_FUNC_CALLER_PROPERTY
-	 * is in use.
-	 */
-	duk__update_func_caller_prop(thr, func);
-#endif
 
 	/* [ ... this_new | arg1 ... argN ] */
 
@@ -1796,9 +1669,6 @@ DUK_LOCAL void duk__call_setup_act_not_tailcall(duk_hthread *thr,
 
 	act->var_env = NULL;
 	act->lex_env = NULL;
-#if defined(DUK_USE_NONSTD_FUNC_CALLER_PROPERTY)
-	act->prev_caller = NULL;
-#endif
 	act->curr_pc = NULL;
 #if defined(DUK_USE_DEBUGGER_SUPPORT)
 	act->prev_line = 0;
@@ -1818,12 +1688,6 @@ DUK_LOCAL void duk__call_setup_act_not_tailcall(duk_hthread *thr,
 	 * unwind code also needs to be fixed to match.
 	 */
 	DUK_HOBJECT_INCREF_ALLOWNULL(thr, func); /* act->func */
-
-#if defined(DUK_USE_NONSTD_FUNC_CALLER_PROPERTY)
-	if (func) {
-		duk__update_func_caller_prop(thr, func);
-	}
-#endif
 }
 
 /*
@@ -2919,9 +2783,9 @@ DUK_INTERNAL DUK_NOINLINE DUK_COLD void duk_call_setup_propcall_error(duk_hthrea
 	/* [ <nargs> target base key { _Target: error } ] */
 	duk_replace(thr, entry_top - 1);
 #else
-	str_targ = duk_push_string_readable(thr, -4);
-	str_key = duk_push_string_readable(thr, -3);
-	str_base = duk_push_string_readable(thr, -5);
+	str_targ = duk_push_readable_idx(thr, -4);
+	str_key = duk_push_readable_idx(thr, -3);
+	str_base = duk_push_readable_idx(thr, -5);
 	duk_push_error_object(thr,
 	                      DUK_ERR_TYPE_ERROR | DUK_ERRCODE_FLAG_NOBLAME_FILELINE,
 	                      "%s not callable (property %s of %s)",

@@ -3,7 +3,7 @@
 const { BitEncoder } = require('../util/bitencoder');
 const { bitpack5BitBstr } = require('../formats/bitpack_5bit');
 const { walkObjectsAndProperties, findObjectById, findPropertyByKey, propDefault } = require('./metadata/util');
-const { classToNumber } = require('./classnames');
+const { classToHtypeNumber } = require('./classnames');
 const { assert } = require('../util/assert');
 const { hexDecode } = require('../util/hex');
 const { shallowCloneArray } = require('../util/clone');
@@ -192,8 +192,8 @@ function generateRamObjectInitDataForObject(meta, be, obj, stringToStridx, natfu
         be.varuint(natidx);
     }
 
-    var classNum = classToNumber(obj.class);
-    be.varuint(classNum);
+    var htype = classToHtypeNumber(obj.class);
+    be.varuint(htype);
 
     var props = shallowCloneArray(obj.properties);  // Clone so we can steal.
 

@@ -1,5 +1,6 @@
 define: DUK_USE_HOBJECT_LAYOUT_1
 introduced: 1.0.0
+removed: 3.0.0
 default: false
 tags:
   - portability

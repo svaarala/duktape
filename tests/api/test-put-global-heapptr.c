@@ -8,7 +8,7 @@ final top: 1
 ==> rc=0, result='undefined'
 *** test_nonwritable (duk_safe_call)
 top: 1
-==> rc=1, result='TypeError: not writable'
+==> rc=1, result='TypeError: cannot write property 'nonWritable' of [object global]'
 ===*/
 
 static duk_ret_t test_basic(duk_context *ctx, void *udata) {

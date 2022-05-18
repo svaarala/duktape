@@ -37,7 +37,6 @@ struct duk_hbuffer_external;
 
 struct duk_propaccessor;
 union duk_propvalue;
-struct duk_propdesc;
 
 struct duk_heap;
 struct duk_breakpoint;
@@ -98,7 +97,6 @@ typedef struct duk_hbuffer_external duk_hbuffer_external;
 
 typedef struct duk_propaccessor duk_propaccessor;
 typedef union duk_propvalue duk_propvalue;
-typedef struct duk_propdesc duk_propdesc;
 
 typedef struct duk_heap duk_heap;
 typedef struct duk_breakpoint duk_breakpoint;

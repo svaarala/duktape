@@ -41,7 +41,209 @@ DUK_LOCAL void duk__decref_tvals_norz(duk_hthread *thr, duk_tval *tv, duk_idx_t 
 	}
 }
 
-DUK_INTERNAL void duk_hobject_refcount_finalize_norz(duk_heap *heap, duk_hobject *h) {
+DUK_LOCAL void duk__refc_fin_harray(duk_heap *heap, duk_hthread *thr, duk_hobject *h) {
+	duk_harray *a = (duk_harray *) h;
+	duk_tval *p_tv;
+	duk_uint32_t n;
+
+	DUK_UNREF(heap);
+
+	p_tv = DUK_HARRAY_GET_ITEMS(thr->heap, a);
+	n = DUK_HARRAY_GET_ITEMS_LENGTH(a);
+	while (n-- > 0) {
+		duk_tval *tv_val;
+		tv_val = p_tv + n;
+		DUK_TVAL_DECREF_NORZ(thr, tv_val);
+	}
+}
+
+DUK_LOCAL void duk__refc_fin_hcompfunc(duk_heap *heap, duk_hthread *thr, duk_hobject *h) {
+	duk_hcompfunc *f = (duk_hcompfunc *) h;
+	duk_tval *tv, *tv_end;
+	duk_hobject **funcs, **funcs_end;
+
+	DUK_HCOMPFUNC_ASSERT_VALID(f);
+	DUK_UNREF(heap);
+
+	if (DUK_LIKELY(DUK_HCOMPFUNC_GET_DATA(heap, f) != NULL)) {
+		tv = DUK_HCOMPFUNC_GET_CONSTS_BASE(heap, f);
+		tv_end = DUK_HCOMPFUNC_GET_CONSTS_END(heap, f);
+		while (tv < tv_end) {
+			DUK_TVAL_DECREF_NORZ(thr, tv);
+			tv++;
+		}
+
+		funcs = DUK_HCOMPFUNC_GET_FUNCS_BASE(heap, f);
+		funcs_end = DUK_HCOMPFUNC_GET_FUNCS_END(heap, f);
+		while (funcs < funcs_end) {
+			duk_hobject *h_func;
+			h_func = *funcs;
+			DUK_ASSERT(h_func != NULL);
+			DUK_ASSERT(DUK_HEAPHDR_IS_ANY_OBJECT((duk_heaphdr *) h_func));
+			DUK_HCOMPFUNC_DECREF_NORZ(thr, (duk_hcompfunc *) h_func);
+			funcs++;
+		}
+	} else {
+		/* May happen in some out-of-memory corner cases. */
+		DUK_D(DUK_DPRINT("duk_hcompfunc 'data' is NULL, skipping decref"));
+	}
+
+	DUK_HEAPHDR_DECREF_ALLOWNULL(thr, (duk_heaphdr *) DUK_HCOMPFUNC_GET_LEXENV(heap, f));
+	DUK_HEAPHDR_DECREF_ALLOWNULL(thr, (duk_heaphdr *) DUK_HCOMPFUNC_GET_VARENV(heap, f));
+	DUK_HEAPHDR_DECREF_ALLOWNULL(thr, (duk_hbuffer *) DUK_HCOMPFUNC_GET_DATA(heap, f));
+}
+
+DUK_LOCAL void duk__refc_fin_hboundfunc(duk_heap *heap, duk_hthread *thr, duk_hobject *h) {
+	duk_hboundfunc *f = (duk_hboundfunc *) (void *) h;
+
+	DUK_HBOUNDFUNC_ASSERT_VALID(f);
+	DUK_UNREF(heap);
+
+	DUK_TVAL_DECREF_NORZ(thr, &f->target);
+	DUK_TVAL_DECREF_NORZ(thr, &f->this_binding);
+	duk__decref_tvals_norz(thr, f->args, f->nargs);
+}
+
+DUK_LOCAL void duk__refc_fin_hdecenv(duk_heap *heap, duk_hthread *thr, duk_hobject *h) {
+	duk_hdecenv *e = (duk_hdecenv *) h;
+
+	DUK_HDECENV_ASSERT_VALID(e);
+	DUK_UNREF(heap);
+
+	DUK_HTHREAD_DECREF_NORZ_ALLOWNULL(thr, e->thread);
+	DUK_HOBJECT_DECREF_NORZ_ALLOWNULL(thr, e->varmap);
+}
+
+DUK_LOCAL void duk__refc_fin_hobjenv(duk_heap *heap, duk_hthread *thr, duk_hobject *h) {
+	duk_hobjenv *e = (duk_hobjenv *) h;
+
+	DUK_HOBJENV_ASSERT_VALID(e);
+	DUK_ASSERT(e->target != NULL); /* Required for object environments. */
+	DUK_UNREF(heap);
+
+	DUK_HOBJECT_DECREF_NORZ(thr, e->target);
+}
+
+#if defined(DUK_USE_BUFFEROBJECT_SUPPORT)
+DUK_LOCAL void duk__refc_fin_hbufobj(duk_heap *heap, duk_hthread *thr, duk_hobject *h) {
+	duk_hbufobj *b = (duk_hbufobj *) h;
+
+	DUK_HBUFOBJ_ASSERT_VALID(b);
+	DUK_UNREF(heap);
+
+	DUK_HBUFFER_DECREF_NORZ_ALLOWNULL(thr, (duk_hbuffer *) b->buf);
+	DUK_HOBJECT_DECREF_NORZ_ALLOWNULL(thr, (duk_hobject *) b->buf_prop);
+}
+#endif
+
+DUK_LOCAL void duk__refc_fin_hproxy(duk_heap *heap, duk_hthread *thr, duk_hobject *h) {
+	duk_hproxy *p = (duk_hproxy *) h;
+
+	DUK_HPROXY_ASSERT_VALID(p);
+	DUK_UNREF(heap);
+
+	DUK_HOBJECT_DECREF_NORZ_ALLOWNULL(thr, p->target);
+	DUK_HOBJECT_DECREF_NORZ_ALLOWNULL(thr, p->handler);
+}
+
+DUK_LOCAL void duk__refc_fin_hthread(duk_heap *heap, duk_hthread *thr, duk_hobject *h) {
+	duk_hthread *t = (duk_hthread *) h;
+	duk_activation *act;
+	duk_tval *tv;
+	duk_small_uint_t i;
+
+	DUK_HTHREAD_ASSERT_VALID(t);
+	DUK_UNREF(heap);
+
+	tv = t->valstack;
+	while (tv < t->valstack_top) {
+		DUK_TVAL_DECREF_NORZ(thr, tv);
+		tv++;
+	}
+
+	for (act = t->callstack_curr; act != NULL; act = act->parent) {
+		DUK_HOBJECT_DECREF_NORZ_ALLOWNULL(thr, (duk_hobject *) DUK_ACT_GET_FUNC(act));
+		DUK_HOBJECT_DECREF_NORZ_ALLOWNULL(thr, (duk_hobject *) act->var_env);
+		DUK_HOBJECT_DECREF_NORZ_ALLOWNULL(thr, (duk_hobject *) act->lex_env);
+#if 0 /* nothing now */
+		for (cat = act->cat; cat != NULL; cat = cat->parent) {
+		}
+#endif
+	}
+
+	for (i = 0; i < DUK_NUM_BUILTINS; i++) {
+		DUK_HOBJECT_DECREF_NORZ_ALLOWNULL(thr, (duk_hobject *) t->builtins[i]);
+	}
+
+	DUK_HTHREAD_DECREF_NORZ_ALLOWNULL(thr, (duk_hthread *) t->resumer);
+}
+
+DUK_LOCAL void duk__refc_fin_slowrefs(duk_heap *heap, duk_hobject *h) {
+	duk_hthread *thr;
+
+	thr = heap->heap_thread;
+	DUK_ASSERT(thr != NULL);
+
+	switch (DUK_HEAPHDR_GET_HTYPE((duk_heaphdr *) h)) {
+	case DUK_HTYPE_ARRAY:
+	case DUK_HTYPE_ARGUMENTS: {
+		duk__refc_fin_harray(heap, thr, h);
+		break;
+	}
+	case DUK_HTYPE_COMPFUNC: {
+		duk__refc_fin_hcompfunc(heap, thr, h);
+		break;
+	}
+	case DUK_HTYPE_BOUNDFUNC: {
+		duk__refc_fin_hboundfunc(heap, thr, h);
+		break;
+	}
+	case DUK_HTYPE_DECENV: {
+		duk__refc_fin_hdecenv(heap, thr, h);
+		break;
+	}
+	case DUK_HTYPE_OBJENV: {
+		duk__refc_fin_hobjenv(heap, thr, h);
+		break;
+	}
+#if defined(DUK_USE_BUFFEROBJECT_SUPPORT)
+	case DUK_HTYPE_ARRAYBUFFER:
+	case DUK_HTYPE_DATAVIEW:
+	case DUK_HTYPE_INT8ARRAY:
+	case DUK_HTYPE_UINT8ARRAY:
+	case DUK_HTYPE_UINT8CLAMPEDARRAY:
+	case DUK_HTYPE_INT16ARRAY:
+	case DUK_HTYPE_UINT16ARRAY:
+	case DUK_HTYPE_INT32ARRAY:
+	case DUK_HTYPE_UINT32ARRAY:
+	case DUK_HTYPE_FLOAT32ARRAY:
+	case DUK_HTYPE_FLOAT64ARRAY: {
+		duk__refc_fin_hbufobj(heap, thr, h);
+		break;
+	}
+#endif /* DUK_USE_BUFFEROBJECT_SUPPORT */
+#if defined(DUK_USE_ES6_PROXY)
+	case DUK_HTYPE_PROXY: {
+		duk__refc_fin_hproxy(heap, thr, h);
+		break;
+	}
+#endif /* DUK_USE_ES6_PROXY */
+	case DUK_HTYPE_THREAD: {
+		duk__refc_fin_hthread(heap, thr, h);
+		break;
+	}
+	default: {
+		/* We may come here if the object should have a FASTREFS flag
+		 * but it's missing for some reason.  Assert for never getting
+		 * here; however, other than performance, this is harmless.
+		 */
+		DUK_D(DUK_DPRINT("missing FASTREFS flag for: %!iO", h));
+		DUK_ASSERT(0);
+	}
+	}
+}
+
+DUK_INTERNAL DUK_HOT void duk_hobject_refcount_finalize_norz(duk_heap *heap, duk_hobject *h) {
 	duk_hthread *thr;
 	duk_uint_fast32_t i;
 	duk_uint_fast32_t n;
@@ -54,7 +256,7 @@ DUK_INTERNAL void duk_hobject_refcount_finalize_norz(duk_heap *heap, duk_hobject
 	DUK_ASSERT(heap != NULL);
 	DUK_ASSERT(heap->heap_thread != NULL);
 	DUK_ASSERT(h);
-	DUK_ASSERT(DUK_HEAPHDR_GET_TYPE((duk_heaphdr *) h) == DUK_HTYPE_OBJECT);
+	DUK_ASSERT(DUK_HEAPHDR_IS_ANY_OBJECT((duk_heaphdr *) h));
 
 	thr = heap->heap_thread;
 	DUK_ASSERT(thr != NULL);
@@ -74,10 +276,10 @@ DUK_INTERNAL void duk_hobject_refcount_finalize_norz(duk_heap *heap, duk_hobject
 		if (DUK_UNLIKELY(p_flag[n] & DUK_PROPDESC_FLAG_ACCESSOR)) {
 			duk_hobject *h_getset;
 			h_getset = p_val[n].a.get;
-			DUK_ASSERT(h_getset == NULL || DUK_HEAPHDR_IS_OBJECT((duk_heaphdr *) h_getset));
+			DUK_ASSERT(h_getset == NULL || DUK_HEAPHDR_IS_ANY_OBJECT((duk_heaphdr *) h_getset));
 			DUK_HOBJECT_DECREF_NORZ_ALLOWNULL(thr, h_getset);
 			h_getset = p_val[n].a.set;
-			DUK_ASSERT(h_getset == NULL || DUK_HEAPHDR_IS_OBJECT((duk_heaphdr *) h_getset));
+			DUK_ASSERT(h_getset == NULL || DUK_HEAPHDR_IS_ANY_OBJECT((duk_heaphdr *) h_getset));
 			DUK_HOBJECT_DECREF_NORZ_ALLOWNULL(thr, h_getset);
 		} else {
 			duk_tval *tv_val;
@@ -86,141 +288,49 @@ DUK_INTERNAL void duk_hobject_refcount_finalize_norz(duk_heap *heap, duk_hobject
 		}
 	}
 
-	p_tv = DUK_HOBJECT_A_GET_BASE(heap, h);
-	n = DUK_HOBJECT_GET_ASIZE(h);
-	while (n-- > 0) {
-		duk_tval *tv_val;
-		tv_val = p_tv + n;
-		DUK_TVAL_DECREF_NORZ(thr, tv_val);
+	{
+		duk_propvalue *val_base = (duk_propvalue *) (void *) h->idx_props;
+		duk_uarridx_t *key_base = (duk_uarridx_t *) (void *) (val_base + h->i_size);
+		duk_uint8_t *attr_base = (duk_uint8_t *) (void *) (key_base + h->i_size);
+
+		n = h->i_next;
+		while (n-- > 0) {
+			duk_propvalue *pv = val_base + n;
+			duk_uint8_t attrs;
+			if (key_base[n] == DUK_ARRIDX_NONE) {
+				continue;
+			}
+			attrs = attr_base[n];
+			if (attrs & DUK_PROPDESC_FLAG_ACCESSOR) {
+				duk_hobject *h_getset;
+				h_getset = pv->a.get;
+				DUK_ASSERT(h_getset == NULL || DUK_HEAPHDR_IS_ANY_OBJECT((duk_heaphdr *) h_getset));
+				DUK_HOBJECT_DECREF_NORZ_ALLOWNULL(thr, h_getset);
+				h_getset = pv->a.set;
+				DUK_ASSERT(h_getset == NULL || DUK_HEAPHDR_IS_ANY_OBJECT((duk_heaphdr *) h_getset));
+				DUK_HOBJECT_DECREF_NORZ_ALLOWNULL(thr, h_getset);
+			} else {
+				duk_tval *tv_val;
+				tv_val = &pv->v;
+				DUK_TVAL_DECREF_NORZ(thr, tv_val);
+			}
+		}
 	}
 
 	/* Hash part is a 'weak reference' and doesn't contribute to refcounts. */
 
-	h_proto = (duk_hobject *) DUK_HOBJECT_GET_PROTOTYPE(heap, h);
-	DUK_ASSERT(h_proto == NULL || DUK_HEAPHDR_IS_OBJECT((duk_heaphdr *) h_proto));
+	h_proto = (duk_hobject *) duk_hobject_get_proto_raw(heap, h);
+	DUK_ASSERT(h_proto == NULL || DUK_HEAPHDR_IS_ANY_OBJECT((duk_heaphdr *) h_proto));
 	DUK_HOBJECT_DECREF_NORZ_ALLOWNULL(thr, h_proto);
 
-	/* XXX: Object subclass tests are quite awkward at present, ideally
-	 * we should be able to switch-case here with a dense index (subtype
-	 * number or something).  For now, fast path plain objects and arrays
-	 * and bit test the rest individually.
-	 */
-
-	if (DUK_HOBJECT_HAS_FASTREFS(h)) {
-		/* Plain object or array, nothing more to do.  While a
-		 * duk_harray has additional fields, none of them need
-		 * DECREF updates.
-		 */
+	if (DUK_LIKELY(DUK_HOBJECT_HAS_FASTREFS(h))) {
+		/* Plain object or extended object with no strong refs. */
 		DUK_ASSERT(DUK_HOBJECT_ALLOWS_FASTREFS(h));
 		return;
 	}
 	DUK_ASSERT(DUK_HOBJECT_PROHIBITS_FASTREFS(h));
 
-	/* Slow path: special object, start bit checks from most likely. */
-
-	/* XXX: reorg, more common first */
-	if (DUK_HOBJECT_IS_COMPFUNC(h)) {
-		duk_hcompfunc *f = (duk_hcompfunc *) h;
-		duk_tval *tv, *tv_end;
-		duk_hobject **funcs, **funcs_end;
-
-		DUK_HCOMPFUNC_ASSERT_VALID(f);
-
-		if (DUK_LIKELY(DUK_HCOMPFUNC_GET_DATA(heap, f) != NULL)) {
-			tv = DUK_HCOMPFUNC_GET_CONSTS_BASE(heap, f);
-			tv_end = DUK_HCOMPFUNC_GET_CONSTS_END(heap, f);
-			while (tv < tv_end) {
-				DUK_TVAL_DECREF_NORZ(thr, tv);
-				tv++;
-			}
-
-			funcs = DUK_HCOMPFUNC_GET_FUNCS_BASE(heap, f);
-			funcs_end = DUK_HCOMPFUNC_GET_FUNCS_END(heap, f);
-			while (funcs < funcs_end) {
-				duk_hobject *h_func;
-				h_func = *funcs;
-				DUK_ASSERT(h_func != NULL);
-				DUK_ASSERT(DUK_HEAPHDR_IS_OBJECT((duk_heaphdr *) h_func));
-				DUK_HCOMPFUNC_DECREF_NORZ(thr, (duk_hcompfunc *) h_func);
-				funcs++;
-			}
-		} else {
-			/* May happen in some out-of-memory corner cases. */
-			DUK_D(DUK_DPRINT("duk_hcompfunc 'data' is NULL, skipping decref"));
-		}
-
-		DUK_HEAPHDR_DECREF_ALLOWNULL(thr, (duk_heaphdr *) DUK_HCOMPFUNC_GET_LEXENV(heap, f));
-		DUK_HEAPHDR_DECREF_ALLOWNULL(thr, (duk_heaphdr *) DUK_HCOMPFUNC_GET_VARENV(heap, f));
-		DUK_HEAPHDR_DECREF_ALLOWNULL(thr, (duk_hbuffer *) DUK_HCOMPFUNC_GET_DATA(heap, f));
-	} else if (DUK_HOBJECT_IS_DECENV(h)) {
-		duk_hdecenv *e = (duk_hdecenv *) h;
-		DUK_HDECENV_ASSERT_VALID(e);
-		DUK_HTHREAD_DECREF_NORZ_ALLOWNULL(thr, e->thread);
-		DUK_HOBJECT_DECREF_NORZ_ALLOWNULL(thr, e->varmap);
-	} else if (DUK_HOBJECT_IS_OBJENV(h)) {
-		duk_hobjenv *e = (duk_hobjenv *) h;
-		DUK_HOBJENV_ASSERT_VALID(e);
-		DUK_ASSERT(e->target != NULL); /* Required for object environments. */
-		DUK_HOBJECT_DECREF_NORZ(thr, e->target);
-#if defined(DUK_USE_BUFFEROBJECT_SUPPORT)
-	} else if (DUK_HOBJECT_IS_BUFOBJ(h)) {
-		duk_hbufobj *b = (duk_hbufobj *) h;
-		DUK_HBUFOBJ_ASSERT_VALID(b);
-		DUK_HBUFFER_DECREF_NORZ_ALLOWNULL(thr, (duk_hbuffer *) b->buf);
-		DUK_HOBJECT_DECREF_NORZ_ALLOWNULL(thr, (duk_hobject *) b->buf_prop);
-#endif /* DUK_USE_BUFFEROBJECT_SUPPORT */
-	} else if (DUK_HOBJECT_IS_BOUNDFUNC(h)) {
-		duk_hboundfunc *f = (duk_hboundfunc *) (void *) h;
-		DUK_HBOUNDFUNC_ASSERT_VALID(f);
-		DUK_TVAL_DECREF_NORZ(thr, &f->target);
-		DUK_TVAL_DECREF_NORZ(thr, &f->this_binding);
-		duk__decref_tvals_norz(thr, f->args, f->nargs);
-#if defined(DUK_USE_ES6_PROXY)
-	} else if (DUK_HOBJECT_IS_PROXY(h)) {
-		duk_hproxy *p = (duk_hproxy *) h;
-		DUK_HPROXY_ASSERT_VALID(p);
-		DUK_HOBJECT_DECREF_NORZ(thr, p->target);
-		DUK_HOBJECT_DECREF_NORZ(thr, p->handler);
-#endif /* DUK_USE_ES6_PROXY */
-	} else if (DUK_HOBJECT_IS_THREAD(h)) {
-		duk_hthread *t = (duk_hthread *) h;
-		duk_activation *act;
-		duk_tval *tv;
-
-		DUK_HTHREAD_ASSERT_VALID(t);
-
-		tv = t->valstack;
-		while (tv < t->valstack_top) {
-			DUK_TVAL_DECREF_NORZ(thr, tv);
-			tv++;
-		}
-
-		for (act = t->callstack_curr; act != NULL; act = act->parent) {
-			DUK_HOBJECT_DECREF_NORZ_ALLOWNULL(thr, (duk_hobject *) DUK_ACT_GET_FUNC(act));
-			DUK_HOBJECT_DECREF_NORZ_ALLOWNULL(thr, (duk_hobject *) act->var_env);
-			DUK_HOBJECT_DECREF_NORZ_ALLOWNULL(thr, (duk_hobject *) act->lex_env);
-#if defined(DUK_USE_NONSTD_FUNC_CALLER_PROPERTY)
-			DUK_HOBJECT_DECREF_NORZ_ALLOWNULL(thr, (duk_hobject *) act->prev_caller);
-#endif
-#if 0 /* nothing now */
-			for (cat = act->cat; cat != NULL; cat = cat->parent) {
-			}
-#endif
-		}
-
-		for (i = 0; i < DUK_NUM_BUILTINS; i++) {
-			DUK_HOBJECT_DECREF_NORZ_ALLOWNULL(thr, (duk_hobject *) t->builtins[i]);
-		}
-
-		DUK_HTHREAD_DECREF_NORZ_ALLOWNULL(thr, (duk_hthread *) t->resumer);
-	} else {
-		/* We may come here if the object should have a FASTREFS flag
-		 * but it's missing for some reason.  Assert for never getting
-		 * here; however, other than performance, this is harmless.
-		 */
-		DUK_D(DUK_DPRINT("missing FASTREFS flag for: %!iO", h));
-		DUK_ASSERT(0);
-	}
+	duk__refc_fin_slowrefs(heap, h);
 }
 
 DUK_INTERNAL void duk_heaphdr_refcount_finalize_norz(duk_heap *heap, duk_heaphdr *hdr) {
@@ -228,7 +338,7 @@ DUK_INTERNAL void duk_heaphdr_refcount_finalize_norz(duk_heap *heap, duk_heaphdr
 	DUK_ASSERT(heap->heap_thread != NULL);
 	DUK_ASSERT(hdr != NULL);
 
-	if (DUK_HEAPHDR_IS_OBJECT(hdr)) {
+	if (DUK_HEAPHDR_IS_ANY_OBJECT(hdr)) {
 		duk_hobject_refcount_finalize_norz(heap, (duk_hobject *) hdr);
 	}
 	/* DUK_HTYPE_BUFFER: nothing to finalize */
@@ -305,7 +415,7 @@ DUK_LOCAL void duk__refcount_free_pending(duk_heap *heap) {
 #endif
 
 		DUK_ASSERT(curr != NULL);
-		DUK_ASSERT(DUK_HEAPHDR_GET_TYPE(curr) == DUK_HTYPE_OBJECT); /* currently, always the case */
+		DUK_ASSERT(DUK_HEAPHDR_IS_ANY_OBJECT(curr)); /* currently, always the case */
 		/* FINALIZED may be set; don't care about flags here. */
 
 		/* Refcount finalize 'curr'.  Refzero_list must be non-NULL
@@ -335,7 +445,7 @@ DUK_LOCAL DUK_INLINE void duk__refcount_refzero_hobject(duk_heap *heap, duk_hobj
 	DUK_ASSERT(heap != NULL);
 	DUK_ASSERT(heap->heap_thread != NULL);
 	DUK_ASSERT(obj != NULL);
-	DUK_ASSERT(DUK_HEAPHDR_GET_TYPE((duk_heaphdr *) obj) == DUK_HTYPE_OBJECT);
+	DUK_ASSERT(DUK_HEAPHDR_IS_ANY_OBJECT((duk_heaphdr *) obj));
 
 	hdr = (duk_heaphdr *) obj;
 
@@ -464,7 +574,7 @@ DUK_LOCAL DUK_INLINE void duk__refcount_refzero_hstring(duk_heap *heap, duk_hstr
 	DUK_ASSERT(heap != NULL);
 	DUK_ASSERT(heap->heap_thread != NULL);
 	DUK_ASSERT(str != NULL);
-	DUK_ASSERT(DUK_HEAPHDR_GET_TYPE((duk_heaphdr *) str) == DUK_HTYPE_STRING);
+	DUK_ASSERT(DUK_HEAPHDR_IS_ANY_STRING((duk_heaphdr *) str));
 
 	duk_heap_strcache_string_remove(heap, str);
 	duk_heap_strtable_unlink(heap, str);
@@ -479,7 +589,7 @@ DUK_LOCAL DUK_INLINE void duk__refcount_refzero_hbuffer(duk_heap *heap, duk_hbuf
 	DUK_ASSERT(heap != NULL);
 	DUK_ASSERT(heap->heap_thread != NULL);
 	DUK_ASSERT(buf != NULL);
-	DUK_ASSERT(DUK_HEAPHDR_GET_TYPE((duk_heaphdr *) buf) == DUK_HTYPE_BUFFER);
+	DUK_ASSERT(DUK_HEAPHDR_IS_ANY_BUFFER((duk_heaphdr *) buf));
 
 	DUK_HEAP_REMOVE_FROM_HEAP_ALLOCATED(heap, (duk_heaphdr *) buf);
 	duk_free_hbuffer(heap, buf);
@@ -623,37 +733,40 @@ DUK_LOCAL DUK__RZ_INLINE void duk__heaphdr_refzero_helper(duk_hthread *thr, duk_
 	DUK_ASSERT(h != NULL);
 	heap = thr->heap;
 
-	htype = (duk_small_uint_t) DUK_HEAPHDR_GET_TYPE(h);
+	htype = (duk_small_uint_t) DUK_HEAPHDR_GET_HTYPE(h);
 	DUK_DDD(DUK_DDDPRINT("ms_running=%ld, heap_thread=%p", (long) thr->heap->ms_running, thr->heap->heap_thread));
 	DUK__RZ_SUPPRESS_CHECK();
 
 	switch (htype) {
-	case DUK_HTYPE_STRING:
+	case DUK_HTYPE_STRING_INTERNAL:
+	case DUK_HTYPE_STRING_EXTERNAL:
 		/* Strings have no internal references but do have "weak"
 		 * references in the string cache.  Also note that strings
 		 * are not on the heap_allocated list like other heap
 		 * elements.
 		 */
 
+		DUK_ASSERT(DUK_HEAPHDR_IS_ANY_STRING(h));
 		DUK__RZ_STRING();
 		break;
-
-	case DUK_HTYPE_OBJECT:
-		/* Objects have internal references.  Must finalize through
-		 * the "refzero" work list.
-		 */
-
-		DUK__RZ_OBJECT();
-		break;
-
-	default:
+	case DUK_HTYPE_BUFFER_FIXED:
+	case DUK_HTYPE_BUFFER_DYNAMIC:
+	case DUK_HTYPE_BUFFER_EXTERNAL:
 		/* Buffers have no internal references.  However, a dynamic
 		 * buffer has a separate allocation for the buffer.  This is
 		 * freed by duk_heap_free_heaphdr_raw().
 		 */
 
-		DUK_ASSERT(DUK_HEAPHDR_GET_TYPE(h) == DUK_HTYPE_BUFFER);
+		DUK_ASSERT(DUK_HEAPHDR_IS_ANY_BUFFER(h));
 		DUK__RZ_BUFFER();
+		break;
+	default:
+		/* All remaining types are objects. */
+		/* Objects have internal references.  Must finalize through
+		 * the "refzero" work list.
+		 */
+		DUK_ASSERT(DUK_HEAPHDR_IS_ANY_OBJECT(h));
+		DUK__RZ_OBJECT();
 		break;
 	}
 }

@@ -9,6 +9,10 @@
 #define DUK__FIXED_HASH_SEED 0xabcd1234
 #endif
 
+#if defined(DUK_USE_DEBUG) && (defined(DUK_USE_HEAPPTR_ENC16) || defined(DUK_USE_DATAPTR_ENC16) || defined(DUK_USE_FUNCPTR_ENC16))
+DUK_INTERNAL duk_heap *duk_debug_global_heap_singleton = NULL;
+#endif
+
 /*
  *  Free a heap object.
  *
@@ -23,8 +27,16 @@ DUK_INTERNAL void duk_free_hobject(duk_heap *heap, duk_hobject *h) {
 	DUK_ASSERT(h != NULL);
 
 	DUK_FREE(heap, DUK_HOBJECT_GET_PROPS(heap, h));
+#if defined(DUK_USE_HOBJECT_HASH_PART)
+	DUK_FREE(heap, DUK_HOBJECT_GET_HASH(heap, h));
+#endif
+	DUK_FREE(heap, h->idx_props);
+	DUK_FREE(heap, h->idx_hash);
 
-	if (DUK_HOBJECT_IS_COMPFUNC(h)) {
+	if (DUK_HOBJECT_IS_HARRAY(h)) {
+		duk_harray *a = (duk_harray *) h;
+		DUK_FREE(heap, DUK_HARRAY_GET_ITEMS(heap, a));
+	} else if (DUK_HOBJECT_IS_COMPFUNC(h)) {
 		duk_hcompfunc *f = (duk_hcompfunc *) h;
 		DUK_UNREF(f);
 		/* Currently nothing to free; 'data' is a heap object */
@@ -107,18 +119,21 @@ DUK_INTERNAL void duk_heap_free_heaphdr_raw(duk_heap *heap, duk_heaphdr *hdr) {
 	DUK_ASSERT(heap);
 	DUK_ASSERT(hdr);
 
-	DUK_DDD(DUK_DDDPRINT("free heaphdr %p, htype %ld", (void *) hdr, (long) DUK_HEAPHDR_GET_TYPE(hdr)));
+	DUK_DDD(DUK_DDDPRINT("free heaphdr %p, htype %ld", (void *) hdr, (long) DUK_HEAPHDR_GET_HTYPE(hdr)));
 
-	switch (DUK_HEAPHDR_GET_TYPE(hdr)) {
-	case DUK_HTYPE_STRING:
+	switch (DUK_HEAPHDR_GET_HTYPE(hdr)) {
+	case DUK_HTYPE_STRING_INTERNAL:
+	case DUK_HTYPE_STRING_EXTERNAL:
 		duk_free_hstring(heap, (duk_hstring *) hdr);
 		break;
-	case DUK_HTYPE_OBJECT:
-		duk_free_hobject(heap, (duk_hobject *) hdr);
+	case DUK_HTYPE_BUFFER_FIXED:
+	case DUK_HTYPE_BUFFER_DYNAMIC:
+	case DUK_HTYPE_BUFFER_EXTERNAL:
+		duk_free_hbuffer(heap, (duk_hbuffer *) hdr);
 		break;
 	default:
-		DUK_ASSERT(DUK_HEAPHDR_GET_TYPE(hdr) == DUK_HTYPE_BUFFER);
-		duk_free_hbuffer(heap, (duk_hbuffer *) hdr);
+		duk_free_hobject(heap, (duk_hobject *) hdr);
+		break;
 	}
 }
 
@@ -275,7 +290,7 @@ DUK_LOCAL void duk__free_run_finalizers(duk_heap *heap) {
 		count_finalized = 0;
 		while (curr) {
 			count_all++;
-			if (DUK_HEAPHDR_IS_OBJECT(curr)) {
+			if (DUK_HEAPHDR_IS_ANY_OBJECT(curr)) {
 				/* Only objects in heap_allocated may have finalizers.  Check that
 				 * the object itself has a _Finalizer property (own or inherited)
 				 * so that we don't execute finalizers for e.g. Proxy objects.
@@ -423,6 +438,10 @@ DUK_INTERNAL void duk_heap_free(duk_heap *heap) {
 
 	DUK_D(DUK_DPRINT("freeing heap structure: %p", (void *) heap));
 	heap->free_func(heap->heap_udata, heap);
+
+#if defined(DUK_USE_HEAPPTR16) && defined(DUK_USE_DEBUG)
+	duk_global_dbgheap = NULL;
+#endif
 }
 
 /*
@@ -500,6 +519,8 @@ DUK_LOCAL duk_bool_t duk__init_heap_strings(duk_heap *heap) {
 		 */
 		if (i == DUK_STRIDX_EVAL || i == DUK_STRIDX_LC_ARGUMENTS) {
 			DUK_HSTRING_SET_EVAL_OR_ARGUMENTS(h);
+		} else if (i == DUK_STRIDX_LENGTH) {
+			DUK_HSTRING_SET_LENGTH(h);
 		}
 		if (i >= DUK_STRIDX_START_RESERVED && i < DUK_STRIDX_END_RESERVED) {
 			DUK_HSTRING_SET_RESERVED_WORD(h);
@@ -507,7 +528,18 @@ DUK_LOCAL duk_bool_t duk__init_heap_strings(duk_heap *heap) {
 				DUK_HSTRING_SET_STRICT_RESERVED_WORD(h);
 			}
 		}
-
+#if 1
+		/* Temporary hack for canonical number handling, detect the actual
+		 * forms that exist in fixed strings.
+		 */
+		if (DUK_HSTRING_HAS_ARRIDX(h) || (i == DUK_STRIDX_MINUS_ZERO)) {
+			DUK_HSTRING_SET_CANNUM(h);
+		}
+		if (duk_hstring_equals_ascii_cstring(h, "Infinity") || duk_hstring_equals_ascii_cstring(h, "-Infinity") ||
+		    duk_hstring_equals_ascii_cstring(h, "NaN")) {
+			DUK_HSTRING_SET_CANNUM(h);
+		}
+#endif
 		DUK_DDD(DUK_DDDPRINT("interned: %!O", (duk_heaphdr *) h));
 
 		/* XXX: The incref macro takes a thread pointer but doesn't
@@ -533,7 +565,7 @@ DUK_LOCAL duk_bool_t duk__init_heap_thread(duk_heap *heap) {
 	duk_hthread *thr;
 
 	DUK_D(DUK_DPRINT("heap init: alloc heap thread"));
-	thr = duk_hthread_alloc_unchecked(heap, DUK_HOBJECT_FLAG_EXTENSIBLE | DUK_HOBJECT_CLASS_AS_FLAGS(DUK_HOBJECT_CLASS_THREAD));
+	thr = duk_hthread_alloc_unchecked(heap, DUK_HOBJECT_FLAG_EXTENSIBLE | DUK_HEAPHDR_HTYPE_AS_FLAGS(DUK_HTYPE_THREAD));
 	if (thr == NULL) {
 		DUK_D(DUK_DPRINT("failed to alloc heap_thread"));
 		return 0;
@@ -687,7 +719,6 @@ DUK_LOCAL void duk__dump_type_sizes(void) {
 	DUK__DUMPSZ(duk_hbuffer_external);
 	DUK__DUMPSZ(duk_propaccessor);
 	DUK__DUMPSZ(duk_propvalue);
-	DUK__DUMPSZ(duk_propdesc);
 	DUK__DUMPSZ(duk_heap);
 	DUK__DUMPSZ(duk_activation);
 	DUK__DUMPSZ(duk_catcher);
@@ -808,9 +839,11 @@ duk_heap *duk_heap_alloc(duk_alloc_function alloc_func,
 
 	DUK_ASSERT(DUK_USE_STRTAB_MINSIZE >= 64);
 
-	DUK_ASSERT((DUK_HTYPE_STRING & 0x01U) == 0);
-	DUK_ASSERT((DUK_HTYPE_BUFFER & 0x01U) == 0);
-	DUK_ASSERT((DUK_HTYPE_OBJECT & 0x01U) == 1); /* DUK_HEAPHDR_IS_OBJECT() relies ont his. */
+	/* duk_tval.h */
+#if defined(DUK_USE_PACKED_TVAL)
+#else
+	DUK_ASSERT((DUK_TAG_UNDEFINED & (~0x01U)) == (DUK_TAG_NULL & (~0x01U))); /* Required by DUK_TVAL_IS_NULLISH(). */
+#endif
 
 	/*
 	 *  Debug dump type sizes
@@ -896,6 +929,17 @@ duk_heap *duk_heap_alloc(duk_alloc_function alloc_func,
 	if (!res) {
 		goto failed;
 	}
+
+	/*
+	 *  When debugging with compressed pointers debug code needs the heap pointer
+	 *  to decompress pointers.  We don't pass it explicitly now in DUK_DPRINT()
+	 *  et al, but when debugging is enabled with compressed pointers we store one
+	 *  global heap reference to allow single-heap compressed pointer setups to use
+	 *  debug prints.
+	 */
+#if defined(DUK_USE_DEBUG) && (defined(DUK_USE_HEAPPTR_ENC16) || defined(DUK_USE_DATAPTR_ENC16) || defined(DUK_USE_FUNCPTR_ENC16))
+	duk_debug_global_heap_singleton = res;
+#endif
 
 	/*
 	 *  Zero the struct, and start initializing roughly in order
@@ -1081,6 +1125,13 @@ duk_heap *duk_heap_alloc(duk_alloc_function alloc_func,
 #endif
 #endif /* DUK_USE_LITCACHE_SIZE */
 
+#if defined(DUK_USE_HEAPPTR16) && defined(DUK_USE_DEBUG)
+	/* Heap reference (singleton) for debug prints when pointer compression
+	 * is enabled.
+	 */
+	duk_global_dbgheap = res;
+#endif
+
 	/* XXX: error handling is incomplete.  It would be cleanest if
 	 * there was a setjmp catchpoint, so that all init code could
 	 * freely throw errors.  If that were the case, the return code
@@ -1122,7 +1173,7 @@ duk_heap *duk_heap_alloc(duk_alloc_function alloc_func,
 	DUK_ASSERT(res->heap_thread != NULL);
 	res->heap_object = duk_hobject_alloc_unchecked(res,
 	                                               DUK_HOBJECT_FLAG_EXTENSIBLE | DUK_HOBJECT_FLAG_FASTREFS |
-	                                                   DUK_HOBJECT_CLASS_AS_FLAGS(DUK_HOBJECT_CLASS_OBJECT));
+	                                                   DUK_HEAPHDR_HTYPE_AS_FLAGS(DUK_HTYPE_OBJECT));
 	if (res->heap_object == NULL) {
 		goto failed;
 	}
@@ -1214,6 +1265,10 @@ failed:
 		DUK_ASSERT(res->free_func != NULL);
 		duk_heap_free(res);
 	}
+
+#if defined(DUK_USE_HEAPPTR16) && defined(DUK_USE_DEBUG)
+	duk_global_dbgheap = NULL;
+#endif
 
 	return NULL;
 }

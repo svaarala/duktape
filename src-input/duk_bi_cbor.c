@@ -545,7 +545,7 @@ DUK_LOCAL void duk__cbor_encode_object(duk_cbor_encode_context *enc_ctx) {
 			duk__cbor_encode_value(enc_ctx);
 			duk__cbor_encode_value(enc_ctx);
 			count++;
-			if (count == 0U) {
+			if (DUK_UNLIKELY(count == 0U)) { /* Wrap check. */
 				duk__cbor_encode_error(enc_ctx);
 			}
 		}

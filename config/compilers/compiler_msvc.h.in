@@ -6,7 +6,6 @@
 #undef DUK_USE_BRANCH_HINTS
 
 /* XXX: DUK_LIKELY, DUK_UNLIKELY for msvc? */
-/* XXX: DUK_NOINLINE, DUK_INLINE, DUK_ALWAYS_INLINE for msvc? */
 
 #if defined(DUK_F_DLL_BUILD) && defined(DUK_F_WINDOWS)
 #snippet "msvc_visibility.h.in"

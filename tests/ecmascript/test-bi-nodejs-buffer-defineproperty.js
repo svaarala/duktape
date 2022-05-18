@@ -1,20 +1,13 @@
 /*
- *  Duktape Node.js Buffer virtual properties don't work in
- *  Object.defineProperty().
+ *  Duktape Node.js Buffer virtual properties are handled by
+ *  Object.defineProperty() in Duktape 3.x (didn't work in Duktape 2.x).
  */
-
-/*---
-{
-    "custom": true
-}
----*/
 
 /*===
 object 8 testdata
 100
-TypeError
-100
-object 8 testdata
+68
+object 8 testData
 ===*/
 
 function test() {

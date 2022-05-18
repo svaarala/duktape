@@ -1,28 +1,21 @@
 /*
- *  Duktape ArrayBuffer/view virtual properties don't work in
- *  Object.defineProperty().
+ *  Duktape 3+ supports typed array index properties on Object.defineProperty().
+ *  In Duktape 2.x and before a TypeError was triggered.
  */
 
 /*@include util-buffer.js@*/
 
-/*---
-{
-    "custom": true
-}
----*/
-
 /*===
 object 8 [object Uint8Array]
 0
-TypeError
-0
+68
 object 8 [object Uint8Array]
 ===*/
 
 function test() {
     var buf = new ArrayBuffer(8);
     var u8 = new Uint8Array(buf);
-    print(typeof u8, u8.length, String(u8));
+    print(typeof u8, u8.length, Object.prototype.toString.call(u8));
 
     print(u8[4]);
     try {
@@ -30,13 +23,12 @@ function test() {
             value: 68
         });
     } catch (e) {
-        // Duktape: TypeError: property is virtual
-        // Node.js: TypeError: Cannot redefine a property of an object with external array elements
-        print(e.name);
-        //print(e.stack || e);
+        // Duktape 2.x and before: TypeError: property is virtual
+        // Old Node.js: TypeError: Cannot redefine a property of an object with external array elements
+        print(e.stack || e);
     }
     print(u8[4]);
-    print(typeof u8, u8.length, String(u8));
+    print(typeof u8, u8.length, Object.prototype.toString.call(u8));
 }
 
 try {

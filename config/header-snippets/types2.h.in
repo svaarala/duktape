@@ -58,6 +58,13 @@ typedef duk_small_uint_t duk_bool_t;
 #define DUK_BOOL_MIN              DUK_SMALL_UINT_MIN
 #define DUK_BOOL_MAX              DUK_SMALL_UINT_MAX
 
+/* Signed boolean is useful in some internal use cases where negative
+ * values can e.g. indicate "not found".
+ */
+typedef duk_small_int_t duk_sbool_t;
+#define DUK_SBOOL_MIN             DUK_SMALL_INT_MIN
+#define DUK_SBOOL_MAX             DUK_SMALL_INT_MAX
+
 /* Index values must have at least 32-bit signed range. */
 typedef duk_int_t duk_idx_t;
 #define DUK_IDX_MIN               DUK_INT_MIN

@@ -82,6 +82,10 @@ DUK_INTERNAL_DECL void duk_hbufobj_assert_valid(duk_hbufobj *h);
 /* Typed arrays have virtual indices, ArrayBuffer and DataView do not. */
 #define DUK_HBUFOBJ_HAS_VIRTUAL_INDICES(h) ((h)->is_typedarray)
 
+#define DUK_HBUFOBJ_GET_LOGICAL_LENGTH(h) ((h)->length >> (h)->shift)
+
+#define DUK_HBUFOBJ_IS_DETACHED(h) ((h)->buf == NULL)
+
 struct duk_hbufobj {
 	/* Shared object part. */
 	duk_hobject obj;
@@ -128,6 +132,10 @@ DUK_INTERNAL_DECL void duk_hbufobj_validated_write(duk_hthread *thr,
                                                    duk_uint8_t *p,
                                                    duk_small_uint_t elem_size);
 DUK_INTERNAL_DECL void duk_hbufobj_promote_plain(duk_hthread *thr, duk_idx_t idx);
+DUK_INTERNAL_DECL duk_uint8_t *duk_hbufobj_get_validated_data_ptr(duk_hthread *thr, duk_hbufobj *h, duk_uarridx_t idx);
+DUK_INTERNAL_DECL duk_uint8_t *duk_hbufobj_uint8array_get_validated_data_ptr(duk_hthread *thr, duk_hbufobj *h, duk_uarridx_t idx);
+DUK_INTERNAL_DECL duk_bool_t duk_hbufobj_validate_and_write_top(duk_hthread *thr, duk_hbufobj *h, duk_uarridx_t idx);
+DUK_INTERNAL_DECL duk_bool_t duk_hbufobj_validate_and_read_push(duk_hthread *thr, duk_hbufobj *h, duk_uarridx_t idx);
 
 #else /* DUK_USE_BUFFEROBJECT_SUPPORT */
 

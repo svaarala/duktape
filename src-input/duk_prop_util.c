@@ -84,6 +84,12 @@ DUK_INTERNAL void duk_prop_frompropdesc_with_idx(duk_hthread *thr, duk_idx_t idx
 		duk_xdef_prop_stridx_short_wec(thr, -2, DUK_STRIDX_SET);
 	}
 	if (uflags & DUK_DEFPROP_HAVE_VALUE) {
+		if (uflags & (DUK_DEFPROP_HAVE_GETTER | DUK_DEFPROP_HAVE_SETTER)) {
+			/* Invalid descriptor: clarify API what happens if you do this. */
+			DUK_D(DUK_DPRINT(
+			    "invalid flags passed, both value and getter/setter: 0x%08lx -> ignoring getter/setter flag(s)",
+			    (unsigned long) uflags));
+		}
 		duk_dup(thr, idx_desc);
 		duk_xdef_prop_stridx_short_wec(thr, -2, DUK_STRIDX_VALUE);
 	}

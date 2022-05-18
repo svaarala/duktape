@@ -1,24 +1,13 @@
 /*
- *  E5.1 Section 10.5, step 5.e.
+ *  E5.1 Section 10.5, step 5.e: global redeclaration would use [[GetProperty]]
+ *  rather than [[GetOwnProperty]] to process global redeclarations.  In ES2015
+ *  this was changed to only check for own properties.
  *
- *  The global may have an implementation dependent internal prototype.
- *  For us, the prototype is now Object.prototype directly.
- *
- *  The conflicting property in step 5.e may be present in an ancestor,
- *  as is the case when do:
- *
- *    function toString() { ... }
- *
- *  The global object does not contain toString(), but Object.prototype.toString()
- *  will conflict; in other words step 5.c will yield funcAlreadyDeclared = true.
- *
- *  In this case, step 5.e will look at the existing property descriptor found in
- *  the ancestor and will declare a new property in the global object; the ancestor
- *  will never be modified.
- *
- *  Here we test for this case, declaring conflicting functions/values first in
- *  Object.prototype.
+ *  This test has been updated to ES2015+ semantics: inherited properties never
+ *  prevent global declarations.
  */
+
+var GLOBAL = globalThis || new Function('return this;')();
 
 var tmp;
 
@@ -42,8 +31,6 @@ Object.defineProperties(Object.prototype, {
         configurable: true
     },
     test_nonconfigurable_compatible_value: {
-        // non-configurable, but is not an accessor, and is writable and enumerable
-        // (steps 5.e.iii - 5.e.iv)
         value: 321,
         writable: true,
         enumerable: true,
@@ -79,8 +66,6 @@ getter
 setter
 ===*/
 
-/* Configurable plain value or accessor: allow redeclaration */
-
 try {
     eval("function test_configurable_function() { print('replacement'); }");
     test_configurable_function();
@@ -111,10 +96,6 @@ replacement
 321
 ===*/
 
-/* Non-configurable compatible value: must be a plain value, and be writable
- * and enumerable.
- */
-
 try {
     eval("function test_nonconfigurable_compatible_value() { print('replacement'); }");
     test_nonconfigurable_compatible_value();
@@ -124,47 +105,45 @@ try {
 }
 
 /*===
-TypeError
-TypeError
-TypeError
-undefined
-undefined
-undefined
+replacement
+replacement
+replacement
+true
+true
+true
 1001
 1002
 getter
 setter
 ===*/
 
-/* Non-configurable incompatible values: TypeError and no modification */
+// In ES2015+ none of these prevent redeclaring the global.
 
 try {
     eval("function test_nonconfigurable_incompatible_value1() { print('replacement'); }");
-    print('never here');
+    test_nonconfigurable_incompatible_value1();
 } catch (e) {
     print(e.name);
 }
 
 try {
     eval("function test_nonconfigurable_incompatible_value2() { print('replacement'); }");
-    print('never here');
+    test_nonconfigurable_incompatible_value2();
 } catch (e) {
     print(e.name);
 }
 
 try {
     eval("function test_nonconfigurable_accessor() { print('replacement'); }");
-    print('never here');
+    test_nonconfigurable_accessor();
 } catch (e) {
     print(e.name);
 }
 
-// verify that nothing was declared in the global object
-print(Object.getOwnPropertyDescriptor(this, 'test_nonconfigurable_incompatible_value1'));
-print(Object.getOwnPropertyDescriptor(this, 'test_nonconfigurable_incompatible_value2'));
-print(Object.getOwnPropertyDescriptor(this, 'test_nonconfigurable_accessor'));
+print(Object.getOwnPropertyDescriptor(GLOBAL, 'test_nonconfigurable_incompatible_value1') != null);
+print(Object.getOwnPropertyDescriptor(GLOBAL, 'test_nonconfigurable_incompatible_value2') != null);
+print(Object.getOwnPropertyDescriptor(GLOBAL, 'test_nonconfigurable_accessor') != null);
 
-// and that nothing changed in the ancestor
 print(Object.prototype.test_nonconfigurable_incompatible_value1);
 print(Object.prototype.test_nonconfigurable_incompatible_value2);
 tmp = Object.prototype.test_nonconfigurable_accessor;

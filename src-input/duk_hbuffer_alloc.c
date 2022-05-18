@@ -101,14 +101,17 @@ DUK_INTERNAL duk_hbuffer *duk_hbuffer_alloc(duk_heap *heap, duk_size_t size, duk
 
 	DUK_HBUFFER_SET_SIZE(res, size);
 
-	DUK_HEAPHDR_SET_TYPE(&res->hdr, DUK_HTYPE_BUFFER);
 	if (flags & DUK_BUF_FLAG_DYNAMIC) {
 		DUK_HBUFFER_SET_DYNAMIC(res);
 		if (flags & DUK_BUF_FLAG_EXTERNAL) {
+			DUK_HEAPHDR_SET_HTYPE(&res->hdr, DUK_HTYPE_BUFFER_EXTERNAL);
 			DUK_HBUFFER_SET_EXTERNAL(res);
+		} else {
+			DUK_HEAPHDR_SET_HTYPE(&res->hdr, DUK_HTYPE_BUFFER_DYNAMIC);
 		}
 	} else {
 		DUK_ASSERT(!(flags & DUK_BUF_FLAG_EXTERNAL));
+		DUK_HEAPHDR_SET_HTYPE(&res->hdr, DUK_HTYPE_BUFFER_FIXED);
 	}
 	DUK_HEAP_INSERT_INTO_HEAP_ALLOCATED(heap, &res->hdr);
 

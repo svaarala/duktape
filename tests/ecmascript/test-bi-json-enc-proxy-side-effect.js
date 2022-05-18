@@ -1,9 +1,3 @@
-/*---
-{
-    "skip": true
-}
----*/
-
 /*===
 get: toJSON
 ownKeys

@@ -1,13 +1,10 @@
 /*
  *  Tests for the 'caller' property of an arguments object created
  *  for a non-strict callee.
+ *
+ *  The original ES5.1 behavior was revised in ES2017 which removed
+ *  the .caller property entirely.
  */
-
-/*---
-{
-    "comment": "breaks with DUK_USE_NONSTD_FUNC_CALLER_PROPERTY"
-}
----*/
 
 /*===
 object foo bar
@@ -15,7 +12,7 @@ undefined undefined
 123 123
 dummy dummy
 g
-TypeError
+g
 ===*/
 
 // non-strict callee
@@ -43,25 +40,24 @@ function test() {
 
     // Setting 'caller' to a non-function value triggers no special
     // behavior.
-
     a.caller = 123;
     print(Object.getOwnPropertyDescriptor(a, "caller").value, a.caller);
 
     // Setting 'caller' to a non-strict function also triggers no
     // special behavior.
-
     a.caller = dummy;
     print(Object.getOwnPropertyDescriptor(a, "caller").value.myName, a.caller.myName);
 
     // Setting 'caller' to a strict function (any strict function, but
     // here we set it to 'g') triggers special behavior.
-
     a.caller = g;
 
-    // this is OK, the special behavior *only* happens at the [[Get]] level
+    // This is OK, the special behavior *only* happens at the [[Get]] level.
+    // (Revised in ES2017: no special behavior.)
     print(Object.getOwnPropertyDescriptor(a, "caller").value.myName);
 
-    // this fails due to special behavior in [[Get]]
+    // This fails due to special behavior in [[Get]]
+    // (Revised in ES2017: no special behavior.)
     print(a.caller.myName);
 }
 

@@ -42,17 +42,23 @@ DUK_LOCAL void duk__inspect_multiple_uint(duk_hthread *thr, const char *fmt, duk
 #define DUK__IDX_TYPE    0
 #define DUK__IDX_ITAG    1
 #define DUK__IDX_REFC    2
-#define DUK__IDX_HBYTES  3
-#define DUK__IDX_CLASS   4
-#define DUK__IDX_PBYTES  5
-#define DUK__IDX_ESIZE   6
-#define DUK__IDX_ENEXT   7
-#define DUK__IDX_ASIZE   8
-#define DUK__IDX_HSIZE   9
-#define DUK__IDX_BCBYTES 10
-#define DUK__IDX_DBYTES  11
-#define DUK__IDX_TSTATE  12
-#define DUK__IDX_VARIANT 13
+#define DUK__IDX_HBYTES  3 /* Heap object size (excluding separate allocations) */
+#define DUK__IDX_HTYPE   4
+#define DUK__IDX_EBYTES  5 /* String property entries. */
+#define DUK__IDX_IBYTES  6 /* Index property entries. */
+#define DUK__IDX_XBYTES  7 /* Hash table. */
+#define DUK__IDX_ABYTES  8 /* Array items. */
+#define DUK__IDX_ESIZE   9
+#define DUK__IDX_ENEXT   10
+#define DUK__IDX_ISIZE   11
+#define DUK__IDX_INEXT   12
+#define DUK__IDX_XSIZE   13
+#define DUK__IDX_ASIZE   14
+#define DUK__IDX_BCBYTES 15
+#define DUK__IDX_DBYTES  16
+#define DUK__IDX_TSTATE  17
+#define DUK__IDX_VARIANT 18
+#define DUK__IDX_COUNT   19
 
 DUK_EXTERNAL void duk_inspect_value(duk_hthread *thr, duk_idx_t idx) {
 	duk_tval *tv;
@@ -61,7 +67,7 @@ DUK_EXTERNAL void duk_inspect_value(duk_hthread *thr, duk_idx_t idx) {
 	 * variables which (in practice) ensures that the compiler won't map
 	 * them to registers and emit a lot of unnecessary shuffling code.
 	 */
-	duk_int_t vals[14];
+	duk_int_t vals[DUK__IDX_COUNT];
 
 	DUK_ASSERT_API_ENTRY(thr);
 
@@ -84,11 +90,11 @@ DUK_EXTERNAL void duk_inspect_value(duk_hthread *thr, duk_idx_t idx) {
 	duk_push_pointer(thr, (void *) h);
 	duk_put_prop_literal(thr, -2, "hptr");
 
-#if 0
-	/* Covers a lot of information, e.g. buffer and string variants. */
-	duk_push_uint(thr, (duk_uint_t) DUK_HEAPHDR_GET_FLAGS(h));
+	/* Covers a lot of information, e.g. HTYPE. */
+	duk_push_uint(thr, (duk_uint_t) DUK_HEAPHDR_GET_FLAGS_RAW(h));
 	duk_put_prop_literal(thr, -2, "hflags");
-#endif
+
+	vals[DUK__IDX_HTYPE] = (duk_int_t) DUK_HEAPHDR_GET_HTYPE(h);
 
 #if defined(DUK_USE_REFERENCE_COUNTING)
 	vals[DUK__IDX_REFC] = (duk_int_t) DUK_HEAPHDR_GET_REFCOUNT(h);
@@ -98,8 +104,9 @@ DUK_EXTERNAL void duk_inspect_value(duk_hthread *thr, duk_idx_t idx) {
 	/* Heaphdr size and additional allocation size, followed by
 	 * type specific stuff (with varying value count).
 	 */
-	switch ((duk_small_int_t) DUK_HEAPHDR_GET_TYPE(h)) {
-	case DUK_HTYPE_STRING: {
+	switch ((duk_small_int_t) DUK_HEAPHDR_GET_HTYPE(h)) {
+	case DUK_HTYPE_STRING_INTERNAL:
+	case DUK_HTYPE_STRING_EXTERNAL: {
 		duk_hstring *h_str = (duk_hstring *) h;
 		vals[DUK__IDX_HBYTES] = (duk_int_t) (sizeof(duk_hstring) + duk_hstring_get_bytelen(h_str) + 1);
 #if defined(DUK_USE_HSTRING_EXTDATA)
@@ -109,50 +116,9 @@ DUK_EXTERNAL void duk_inspect_value(duk_hthread *thr, duk_idx_t idx) {
 #endif
 		break;
 	}
-	case DUK_HTYPE_OBJECT: {
-		duk_hobject *h_obj = (duk_hobject *) h;
-
-		/* XXX: variants here are maybe pointless; class is enough? */
-		if (DUK_HOBJECT_IS_ARRAY(h_obj)) {
-			vals[DUK__IDX_HBYTES] = sizeof(duk_harray);
-		} else if (DUK_HOBJECT_IS_COMPFUNC(h_obj)) {
-			vals[DUK__IDX_HBYTES] = sizeof(duk_hcompfunc);
-		} else if (DUK_HOBJECT_IS_NATFUNC(h_obj)) {
-			vals[DUK__IDX_HBYTES] = sizeof(duk_hnatfunc);
-		} else if (DUK_HOBJECT_IS_THREAD(h_obj)) {
-			vals[DUK__IDX_HBYTES] = sizeof(duk_hthread);
-			vals[DUK__IDX_TSTATE] = ((duk_hthread *) h_obj)->state;
-#if defined(DUK_USE_BUFFEROBJECT_SUPPORT)
-		} else if (DUK_HOBJECT_IS_BUFOBJ(h_obj)) {
-			vals[DUK__IDX_HBYTES] = sizeof(duk_hbufobj);
-			/* XXX: some size information */
-#endif
-		} else {
-			vals[DUK__IDX_HBYTES] = (duk_small_uint_t) sizeof(duk_hobject);
-		}
-
-		vals[DUK__IDX_CLASS] = (duk_int_t) DUK_HOBJECT_GET_CLASS_NUMBER(h_obj);
-		vals[DUK__IDX_PBYTES] = (duk_int_t) DUK_HOBJECT_P_ALLOC_SIZE(h_obj);
-		vals[DUK__IDX_ESIZE] = (duk_int_t) DUK_HOBJECT_GET_ESIZE(h_obj);
-		vals[DUK__IDX_ENEXT] = (duk_int_t) DUK_HOBJECT_GET_ENEXT(h_obj);
-		vals[DUK__IDX_ASIZE] = (duk_int_t) DUK_HOBJECT_GET_ASIZE(h_obj);
-		vals[DUK__IDX_HSIZE] = (duk_int_t) DUK_HOBJECT_GET_HSIZE(h_obj);
-
-		/* Note: e_next indicates the number of gc-reachable entries
-		 * in the entry part, and also indicates the index where the
-		 * next new property would be inserted.  It does *not* indicate
-		 * the number of non-NULL keys present in the object.  That
-		 * value could be counted separately but requires a pass through
-		 * the key list.
-		 */
-
-		if (DUK_HOBJECT_IS_COMPFUNC(h_obj)) {
-			duk_hbuffer *h_data = (duk_hbuffer *) DUK_HCOMPFUNC_GET_DATA(thr->heap, (duk_hcompfunc *) h_obj);
-			vals[DUK__IDX_BCBYTES] = (duk_int_t) (h_data ? DUK_HBUFFER_GET_SIZE(h_data) : 0);
-		}
-		break;
-	}
-	case DUK_HTYPE_BUFFER: {
+	case DUK_HTYPE_BUFFER_FIXED:
+	case DUK_HTYPE_BUFFER_DYNAMIC:
+	case DUK_HTYPE_BUFFER_EXTERNAL: {
 		duk_hbuffer *h_buf = (duk_hbuffer *) h;
 
 		if (DUK_HBUFFER_HAS_DYNAMIC(h_buf)) {
@@ -173,6 +139,56 @@ DUK_EXTERNAL void duk_inspect_value(duk_hthread *thr, duk_idx_t idx) {
 		}
 		break;
 	}
+	default: {
+		/* All duk_hobject types. */
+		duk_hobject *h_obj = (duk_hobject *) h;
+
+		/* XXX: variants here are maybe pointless; class is enough? */
+		if (DUK_HOBJECT_IS_ARRAY(h_obj)) {
+			vals[DUK__IDX_HBYTES] = sizeof(duk_harray);
+		} else if (DUK_HOBJECT_IS_COMPFUNC(h_obj)) {
+			vals[DUK__IDX_HBYTES] = sizeof(duk_hcompfunc);
+		} else if (DUK_HOBJECT_IS_NATFUNC(h_obj)) {
+			vals[DUK__IDX_HBYTES] = sizeof(duk_hnatfunc);
+		} else if (DUK_HOBJECT_IS_THREAD(h_obj)) {
+			vals[DUK__IDX_HBYTES] = sizeof(duk_hthread);
+			vals[DUK__IDX_TSTATE] = ((duk_hthread *) h_obj)->state;
+#if defined(DUK_USE_BUFFEROBJECT_SUPPORT)
+		} else if (DUK_HOBJECT_IS_BUFOBJ(h_obj)) {
+			vals[DUK__IDX_HBYTES] = sizeof(duk_hbufobj);
+#endif
+		} else {
+			vals[DUK__IDX_HBYTES] = (duk_small_uint_t) sizeof(duk_hobject);
+		}
+		vals[DUK__IDX_ESIZE] = (duk_int_t) duk_hobject_get_esize(h_obj);
+		vals[DUK__IDX_ENEXT] = (duk_int_t) duk_hobject_get_enext(h_obj);
+		vals[DUK__IDX_EBYTES] = (duk_int_t) duk_hobject_get_ebytes(h_obj);
+		vals[DUK__IDX_ISIZE] = (duk_int_t) duk_hobject_get_isize(h_obj);
+		vals[DUK__IDX_INEXT] = (duk_int_t) duk_hobject_get_inext(h_obj);
+		vals[DUK__IDX_IBYTES] = (duk_int_t) duk_hobject_get_ibytes(h_obj);
+#if defined(DUK_USE_HOBJECT_HASH_PART)
+		vals[DUK__IDX_XBYTES] = (duk_int_t) duk_hobject_get_hbytes(thr->heap, h_obj);
+		vals[DUK__IDX_XSIZE] = (duk_int_t) duk_hobject_get_hsize(thr->heap, h_obj);
+#endif
+
+		/* Note: e_next indicates the number of gc-reachable entries
+		 * in the entry part, and also indicates the index where the
+		 * next new property would be inserted.  It does *not* indicate
+		 * the number of non-NULL keys present in the object.  That
+		 * value could be counted separately but requires a pass through
+		 * the key list.
+		 */
+
+		if (DUK_HOBJECT_IS_HARRAY(h_obj)) {
+			vals[DUK__IDX_ASIZE] = (duk_int_t) DUK_HARRAY_GET_ITEMS_LENGTH((duk_harray *) h_obj);
+			vals[DUK__IDX_ABYTES] = (duk_int_t) (DUK_HARRAY_GET_ITEMS_LENGTH((duk_harray *) h_obj) * sizeof(duk_tval));
+		}
+		if (DUK_HOBJECT_IS_COMPFUNC(h_obj)) {
+			duk_hbuffer *h_data = (duk_hbuffer *) DUK_HCOMPFUNC_GET_DATA(thr->heap, (duk_hcompfunc *) h_obj);
+			vals[DUK__IDX_BCBYTES] = (duk_int_t) (h_data ? DUK_HBUFFER_GET_SIZE(h_data) : 0);
+		}
+		break;
+	}
 	}
 
 finish:
@@ -185,17 +201,27 @@ finish:
 	                           "\x00"
 	                           "hbytes"
 	                           "\x00"
-	                           "class"
+	                           "htype"
 	                           "\x00"
-	                           "pbytes"
+	                           "ebytes"
+	                           "\x00"
+	                           "ibytes"
+	                           "\x00"
+	                           "xbytes"
+	                           "\x00"
+	                           "abytes"
 	                           "\x00"
 	                           "esize"
 	                           "\x00"
 	                           "enext"
 	                           "\x00"
-	                           "asize"
+	                           "isize"
 	                           "\x00"
-	                           "hsize"
+	                           "inext"
+	                           "\x00"
+	                           "xsize"
+	                           "\x00"
+	                           "asize"
 	                           "\x00"
 	                           "bcbytes"
 	                           "\x00"

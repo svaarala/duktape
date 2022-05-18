@@ -15,12 +15,12 @@ final top: 1
 strict: 1
 get Math -> rc=1
 Math.PI=3.141592653589793
-==> rc=1, result='TypeError: not writable'
+==> rc=1, result='TypeError: cannot write property 'PI' of [object Math]'
 *** test_ex_nonwritable (duk_pcall)
 strict: 1
 get Math -> rc=1
 Math.PI=3.141592653589793
-==> rc=1, result='TypeError: not writable'
+==> rc=1, result='TypeError: cannot write property 'PI' of [object Math]'
 *** test_ex_accessor_wo_setter_safecall (duk_safe_call)
 strict: 1
 eval:
@@ -35,7 +35,7 @@ eval:
     return o;
 })()
 top after eval: 1
-==> rc=1, result='TypeError: setter undefined'
+==> rc=1, result='TypeError: cannot write property 'foo' of [object Object]'
 *** test_ex_accessor_wo_setter (duk_pcall)
 strict: 1
 eval:
@@ -50,7 +50,7 @@ eval:
     return o;
 })()
 top after eval: 1
-==> rc=1, result='TypeError: setter undefined'
+==> rc=1, result='TypeError: cannot write property 'foo' of [object Object]'
 *** test_ex_setter_throws_safecall (duk_safe_call)
 strict: 1
 eval:
@@ -100,13 +100,13 @@ strict: 1
 eval:
 (function () { var o = { foo: 1 }; Object.preventExtensions(o); return o; })()
 top after eval: 1
-==> rc=1, result='TypeError: not extensible'
+==> rc=1, result='TypeError: cannot write property 'bar' of [object Object]'
 *** test_new_not_extensible (duk_pcall)
 strict: 1
 eval:
 (function () { var o = { foo: 1 }; Object.preventExtensions(o); return o; })()
 top after eval: 1
-==> rc=1, result='TypeError: not extensible'
+==> rc=1, result='TypeError: cannot write property 'bar' of [object Object]'
 *** test_putprop_shorthand_a_safecall (duk_safe_call)
 {"2001":234,"foo":123,"bar":123,"nul\u0000key":345,"heapptr":456,"stringCoerced":567,"undefined":678,"litkey":789}
 final top: 1
@@ -120,15 +120,15 @@ final top: 1
 *** test_putprop_invalid_index2 (duk_safe_call)
 ==> rc=1, result='RangeError: invalid stack index -2147483648'
 *** test_putprop_string_invalid_index1 (duk_safe_call)
-==> rc=1, result='RangeError: invalid stack index -2147483648'
+==> rc=1, result='RangeError: invalid stack index -2'
 *** test_putprop_string_invalid_index2 (duk_safe_call)
 ==> rc=1, result='RangeError: invalid stack index -2147483648'
 *** test_putprop_lstring_invalid_index1 (duk_safe_call)
-==> rc=1, result='RangeError: invalid stack index -2147483648'
+==> rc=1, result='RangeError: invalid stack index 123'
 *** test_putprop_lstring_invalid_index2 (duk_safe_call)
 ==> rc=1, result='RangeError: invalid stack index -2147483648'
 *** test_putprop_literal_invalid_index1 (duk_safe_call)
-==> rc=1, result='RangeError: invalid stack index -2147483648'
+==> rc=1, result='RangeError: invalid stack index 123'
 *** test_putprop_literal_invalid_index2 (duk_safe_call)
 ==> rc=1, result='RangeError: invalid stack index -2147483648'
 *** test_putprop_index_invalid_index1 (duk_safe_call)

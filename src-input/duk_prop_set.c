@@ -265,6 +265,9 @@ DUK_LOCAL DUK_ALWAYS_INLINE duk_bool_t duk__prop_recv_direct(duk_hthread *thr, d
  *  Setfinal helpers.
  */
 
+/* Final [[Set]] processing for an index write to an Array with no items
+ * part, in essence Array exotic [[DefineOwnProperty]] for index keys.
+ */
 DUK_LOCAL duk_bool_t duk__setfinal_write_array_abandoned_idxkey(duk_hthread *thr,
                                                                 duk_hobject *obj,
                                                                 duk_uarridx_t idx,

@@ -10,7 +10,7 @@ DUK_LOCAL void duk__get_this_regexp(duk_hthread *thr) {
 	duk_hobject *h;
 
 	duk_push_this(thr);
-	h = duk_require_hobject_with_class(thr, -1, DUK_HOBJECT_CLASS_REGEXP);
+	h = duk_require_hobject_with_htype(thr, -1, DUK_HTYPE_REGEXP);
 	DUK_ASSERT(h != NULL);
 	DUK_UNREF(h);
 	duk_insert(thr, 0); /* prepend regexp to valstack 0 index */
@@ -23,8 +23,8 @@ DUK_INTERNAL duk_ret_t duk_bi_regexp_constructor(duk_hthread *thr) {
 	DUK_ASSERT_TOP(thr, 2);
 	h_pattern = duk_get_hobject(thr, 0);
 
-	if (!duk_is_constructor_call(thr) && h_pattern != NULL &&
-	    DUK_HOBJECT_GET_CLASS_NUMBER(h_pattern) == DUK_HOBJECT_CLASS_REGEXP && duk_is_undefined(thr, 1)) {
+	if (!duk_is_constructor_call(thr) && h_pattern != NULL && DUK_HOBJECT_GET_HTYPE(h_pattern) == DUK_HTYPE_REGEXP &&
+	    duk_is_undefined(thr, 1)) {
 		/* Called as a function, pattern has [[Class]] "RegExp" and
 		 * flags is undefined -> return object as is.
 		 */
@@ -39,7 +39,7 @@ DUK_INTERNAL duk_ret_t duk_bi_regexp_constructor(duk_hthread *thr) {
 	 * call.
 	 */
 
-	if (h_pattern != NULL && DUK_HOBJECT_GET_CLASS_NUMBER(h_pattern) == DUK_HOBJECT_CLASS_REGEXP) {
+	if (h_pattern != NULL && DUK_HOBJECT_GET_HTYPE(h_pattern) == DUK_HTYPE_REGEXP) {
 		duk_get_prop_stridx_short(thr, 0, DUK_STRIDX_SOURCE);
 		if (duk_is_undefined(thr, 1)) {
 			/* In ES5 one would need to read the flags individually;
@@ -163,9 +163,10 @@ DUK_INTERNAL duk_ret_t duk_bi_regexp_prototype_shared_getter(duk_hthread *thr) {
 	h = duk_require_hobject(thr, -1);
 	magic = duk_get_current_magic(thr);
 
-	if (DUK_HOBJECT_GET_CLASS_NUMBER(h) == DUK_HOBJECT_CLASS_REGEXP) {
+	if (DUK_HOBJECT_GET_HTYPE(h) == DUK_HTYPE_REGEXP) {
 		const duk_uint8_t *buf;
 		duk_size_t len;
+
 		duk_xget_owndataprop_stridx_short(thr, 0, DUK_STRIDX_INT_SOURCE);
 		duk_xget_owndataprop_stridx_short(thr, 0, DUK_STRIDX_INT_BYTECODE);
 		buf = (const duk_uint8_t *) duk_require_buffer(thr, -1, &len);

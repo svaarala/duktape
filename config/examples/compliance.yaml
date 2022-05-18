@@ -1,7 +1,5 @@
 # Enable compliant behavior, defaults favor "real world" compatibility.
 
-DUK_USE_NONSTD_ARRAY_SPLICE_DELCOUNT: false
-DUK_USE_NONSTD_FUNC_CALLER_PROPERTY: false
 DUK_USE_NONSTD_FUNC_SOURCE_PROPERTY: false
 DUK_USE_NONSTD_FUNC_STMT: false
 DUK_USE_NONSTD_GETTER_KEY_ARGUMENT: false

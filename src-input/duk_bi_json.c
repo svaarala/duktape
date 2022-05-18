@@ -911,11 +911,7 @@ DUK_LOCAL void duk__json_dec_array(duk_json_dec_ctx *js_ctx) {
 		arr_idx++;
 	}
 
-	/* Must set 'length' explicitly when using duk_xdef_prop_xxx() to
-	 * set the values.
-	 */
-
-	duk_set_length(thr, -1, arr_idx);
+	DUK_ASSERT(duk_get_length(thr, -1) == arr_idx);
 
 	/* [ ... arr ] */
 
@@ -1014,7 +1010,7 @@ DUK_LOCAL void duk__json_dec_reviver_walk(duk_json_dec_ctx *js_ctx) {
 	                     (duk_tval *) duk_get_tval(thr, -2),
 	                     (duk_tval *) duk_get_tval(thr, -1)));
 
-	duk_dup_top(thr);
+	duk_dup_top_unsafe(thr);
 	duk_get_prop(thr, -3); /* -> [ ... holder name val ] */
 
 	h = duk_get_hobject(thr, -1);
@@ -1032,7 +1028,7 @@ DUK_LOCAL void duk__json_dec_reviver_walk(duk_json_dec_ctx *js_ctx) {
 				                     (duk_tval *) duk_get_tval(thr, -2),
 				                     (duk_tval *) duk_get_tval(thr, -1)));
 
-				duk_dup_top(thr);
+				duk_dup_top_unsafe(thr);
 				(void) duk_push_uint_to_hstring(thr,
 				                                (duk_uint_t) i); /* -> [ ... holder name val val ToString(i) ] */
 				duk__json_dec_reviver_walk(js_ctx); /* -> [ ... holder name val new_elem ] */
@@ -1859,7 +1855,7 @@ DUK_LOCAL void duk__json_enc_objarr_entry(duk_json_enc_ctx *js_ctx, duk_idx_t *e
 		js_ctx->visiting[js_ctx->recursion_depth] = h_target;
 	} else {
 		duk_push_sprintf(thr, DUK_STR_FMT_PTR, (void *) h_target);
-		duk_dup_top(thr); /* -> [ ... voidp voidp ] */
+		duk_dup_top_unsafe(thr); /* -> [ ... voidp voidp ] */
 		if (duk_has_prop(thr, js_ctx->idx_loop)) {
 			DUK_ERROR_TYPE(thr, DUK_STR_CYCLIC_INPUT);
 			DUK_WO_NORETURN(return;);
@@ -1936,11 +1932,13 @@ DUK_LOCAL void duk__json_enc_object(duk_json_enc_ctx *js_ctx) {
 	if (js_ctx->idx_proplist >= 0) {
 		idx_keys = js_ctx->idx_proplist;
 	} else {
-		/* XXX: would be nice to enumerate an object at specified index */
-		duk_dup(thr, idx_obj);
-		(void) duk_hobject_get_enumerated_keys(
-		    thr,
-		    DUK_ENUM_OWN_PROPERTIES_ONLY /*flags*/); /* [ ... target ] -> [ ... target keys ] */
+		/* Filtered [[OwnPropertyKeys]]; allow indices to be numbers
+		 * and coerce to string as needed.
+		 */
+		duk_prop_ownpropkeys(thr,
+		                     duk_known_hobject(thr, idx_obj),
+		                     DUK_OWNPROPKEYS_FLAG_INCLUDE_ARRIDX | DUK_OWNPROPKEYS_FLAG_INCLUDE_STRING |
+		                         DUK_OWNPROPKEYS_FLAG_REQUIRE_ENUMERABLE);
 		idx_keys = duk_require_normalize_index(thr, -1);
 		/* leave stack unbalanced on purpose */
 	}
@@ -1966,7 +1964,7 @@ DUK_LOCAL void duk__json_enc_object(duk_json_enc_ctx *js_ctx) {
 		                     (duk_tval *) duk_get_tval(thr, idx_obj),
 		                     (duk_tval *) duk_get_tval(thr, -1)));
 
-		h_key = duk_known_hstring_m1(thr);
+		h_key = duk_to_hstring_m1(thr);
 		DUK_ASSERT(h_key != NULL);
 		DUK_ASSERT(!DUK_HSTRING_HAS_SYMBOL(h_key)); /* proplist filtering; enum options */
 
@@ -2083,21 +2081,17 @@ DUK_LOCAL void duk__json_enc_array(duk_json_enc_ctx *js_ctx) {
 DUK_LOCAL duk_bool_t duk__json_enc_value(duk_json_enc_ctx *js_ctx, duk_idx_t idx_holder) {
 	duk_hthread *thr = js_ctx->thr;
 	duk_tval *tv;
-	duk_tval *tv_holder;
 	duk_tval *tv_key;
-	duk_small_int_t c;
 
 	DUK_DDD(DUK_DDDPRINT("duk__json_enc_value: idx_holder=%ld, holder=%!T, key=%!T",
 	                     (long) idx_holder,
 	                     (duk_tval *) duk_get_tval(thr, idx_holder),
 	                     (duk_tval *) duk_get_tval(thr, -1)));
 
-	tv_holder = DUK_GET_TVAL_POSIDX(thr, idx_holder);
-	DUK_ASSERT(DUK_TVAL_IS_OBJECT(tv_holder));
 	tv_key = DUK_GET_TVAL_NEGIDX(thr, -1);
 	DUK_ASSERT(DUK_TVAL_IS_STRING(tv_key));
 	DUK_ASSERT(!DUK_HSTRING_HAS_SYMBOL(DUK_TVAL_GET_STRING(tv_key))); /* Caller responsible. */
-	(void) duk_hobject_getprop(thr, tv_holder, tv_key);
+	(void) duk_prop_getvalue_push(thr, idx_holder, tv_key);
 
 	/* -> [ ... key val ] */
 
@@ -2144,6 +2138,7 @@ DUK_LOCAL duk_bool_t duk__json_enc_value(duk_json_enc_ctx *js_ctx, duk_idx_t idx
 	tv = DUK_GET_TVAL_NEGIDX(thr, -1);
 	if (DUK_TVAL_IS_OBJECT(tv)) {
 		duk_hobject *h;
+		duk_small_uint_t htype;
 
 		h = DUK_TVAL_GET_OBJECT(tv);
 		DUK_ASSERT(h != NULL);
@@ -2161,9 +2156,9 @@ DUK_LOCAL duk_bool_t duk__json_enc_value(duk_json_enc_ctx *js_ctx, duk_idx_t idx
 		/* Otherwise bufferobjects get serialized as normal objects. */
 #endif /* JX || JC */
 #endif /* DUK_USE_BUFFEROBJECT_SUPPORT */
-		c = (duk_small_int_t) DUK_HOBJECT_GET_CLASS_NUMBER(h);
-		switch (c) {
-		case DUK_HOBJECT_CLASS_NUMBER: {
+		htype = (duk_small_uint_t) DUK_HOBJECT_GET_HTYPE(h);
+		switch (htype) {
+		case DUK_HTYPE_NUMBER_OBJECT: {
 			DUK_DDD(DUK_DDDPRINT("value is a Number object -> coerce with ToNumber()"));
 			duk_to_number_m1(thr);
 			/* The coercion potentially invokes user .valueOf() and .toString()
@@ -2173,7 +2168,7 @@ DUK_LOCAL duk_bool_t duk__json_enc_value(duk_json_enc_ctx *js_ctx, duk_idx_t idx
 			DUK_ASSERT(!duk_is_callable(thr, -1));
 			break;
 		}
-		case DUK_HOBJECT_CLASS_STRING: {
+		case DUK_HTYPE_STRING_OBJECT: {
 			DUK_DDD(DUK_DDDPRINT("value is a String object -> coerce with ToString()"));
 			duk_to_string(thr, -1);
 			/* Same coercion behavior as for Number. */
@@ -2181,10 +2176,10 @@ DUK_LOCAL duk_bool_t duk__json_enc_value(duk_json_enc_ctx *js_ctx, duk_idx_t idx
 			break;
 		}
 #if defined(DUK_USE_JX) || defined(DUK_USE_JC)
-		case DUK_HOBJECT_CLASS_POINTER:
+		case DUK_HTYPE_POINTER_OBJECT:
 #endif
-		case DUK_HOBJECT_CLASS_BOOLEAN: {
-			DUK_DDD(DUK_DDDPRINT("value is a Boolean/Buffer/Pointer object -> get internal value"));
+		case DUK_HTYPE_BOOLEAN_OBJECT: {
+			DUK_DDD(DUK_DDDPRINT("value is a Boolean/Pointer object -> get internal value"));
 			duk_xget_owndataprop_stridx_short(thr, -1, DUK_STRIDX_INT_VALUE);
 			duk_remove_m2(thr);
 			break;
@@ -2343,8 +2338,6 @@ pop2_undef:
 
 /* E5 Section 15.12.3, main algorithm, step 4.b.ii steps 1-4. */
 DUK_LOCAL duk_bool_t duk__json_enc_allow_into_proplist(duk_tval *tv) {
-	duk_small_int_t c;
-
 	/* XXX: some kind of external internal type checker?
 	 * - type mask; symbol flag; class mask
 	 */
@@ -2361,10 +2354,12 @@ DUK_LOCAL duk_bool_t duk__json_enc_allow_into_proplist(duk_tval *tv) {
 		return 1;
 	} else if (DUK_TVAL_IS_OBJECT(tv)) {
 		duk_hobject *h;
+		duk_small_uint_t htype;
+
 		h = DUK_TVAL_GET_OBJECT(tv);
 		DUK_ASSERT(h != NULL);
-		c = (duk_small_int_t) DUK_HOBJECT_GET_CLASS_NUMBER(h);
-		if (c == DUK_HOBJECT_CLASS_STRING || c == DUK_HOBJECT_CLASS_NUMBER) {
+		htype = (duk_small_uint_t) DUK_HOBJECT_GET_HTYPE(h);
+		if (htype == DUK_HTYPE_STRING_OBJECT || htype == DUK_HTYPE_NUMBER_OBJECT) {
 			return 1;
 		}
 	}
@@ -2431,7 +2426,7 @@ DUK_LOCAL duk_bool_t duk__json_stringify_fast_value(duk_json_enc_ctx *js_ctx, du
 		duk_hobject *obj;
 		duk_tval *tv_val;
 		duk_bool_t emitted = 0;
-		duk_uint32_t c_bit, c_all, c_array, c_unbox, c_undef, c_func, c_bufobj, c_object, c_abort;
+		duk_uint64_t c_bit, c_all, c_array, c_unbox, c_undef, c_func, c_bufobj, c_object, c_abort;
 
 		/* For objects JSON.stringify() only looks for own, enumerable
 		 * properties which is nice for the fast path here.
@@ -2448,17 +2443,9 @@ DUK_LOCAL duk_bool_t duk__json_stringify_fast_value(duk_json_enc_ctx *js_ctx, du
 		 * execution time for input data with a lot of small objects!).
 		 */
 
-		/* XXX: for real world code, could just ignore array inheritance
-		 * and only look at array own properties.
-		 */
-
-		/* We rely on a few object flag / class number relationships here,
-		 * assert for them.
-		 */
-
 		obj = DUK_TVAL_GET_OBJECT(tv);
 		DUK_ASSERT(obj != NULL);
-		DUK_HOBJECT_ASSERT_VALID(obj);
+		DUK_HOBJECT_ASSERT_VALID(js_ctx->thr->heap, obj);
 
 		/* Once recursion depth is increased, exit path must decrease
 		 * it (though it's OK to abort the fast path).
@@ -2494,12 +2481,12 @@ DUK_LOCAL duk_bool_t duk__json_stringify_fast_value(duk_json_enc_ctx *js_ctx, du
 		 * If an object is a Proxy we also can't avoid side effects
 		 * so abandon.
 		 */
-		/* XXX: non-callable .toJSON() doesn't need to cause an abort
-		 * but does at the moment, probably not worth fixing.
-		 */
-		if (duk_hobject_hasprop_raw(js_ctx->thr, obj, DUK_HTHREAD_STRING_TO_JSON(js_ctx->thr)) ||
-		    DUK_HOBJECT_IS_PROXY(obj)) {
-			DUK_DD(DUK_DDPRINT("object has a .toJSON property or object is a Proxy, abort fast path"));
+		if (duk_prop_has_strkey(js_ctx->thr, tv, DUK_HTHREAD_STRING_TO_JSON(js_ctx->thr))) {
+			DUK_DD(DUK_DDPRINT("object has a .toJSON property, abort fast path"));
+			goto abort_fastpath;
+		}
+		if (DUK_HOBJECT_IS_PROXY(obj)) {
+			DUK_DD(DUK_DDPRINT("object is a proxy, abort fast path"));
 			goto abort_fastpath;
 		}
 
@@ -2511,47 +2498,48 @@ DUK_LOCAL duk_bool_t duk__json_stringify_fast_value(duk_json_enc_ctx *js_ctx, du
 		/* XXX: move masks to js_ctx? they don't change during one
 		 * fast path invocation.
 		 */
-		DUK_ASSERT(DUK_HOBJECT_CLASS_MAX <= 31);
+		DUK_ASSERT(DUK_HTYPE_MAX <= 63);
 #if defined(DUK_USE_JX) || defined(DUK_USE_JC)
 		if (js_ctx->flag_ext_custom_or_compatible) {
-			c_all = DUK_HOBJECT_CMASK_ALL;
-			c_array = DUK_HOBJECT_CMASK_ARRAY;
-			c_unbox = DUK_HOBJECT_CMASK_NUMBER | DUK_HOBJECT_CMASK_STRING | DUK_HOBJECT_CMASK_BOOLEAN |
-			          DUK_HOBJECT_CMASK_POINTER; /* Symbols are not unboxed. */
-			c_func = DUK_HOBJECT_CMASK_FUNCTION;
-			c_bufobj = DUK_HOBJECT_CMASK_ALL_BUFOBJS;
+			c_all = DUK_HMASK_ALL_OBJECTS;
+			c_array = DUK_HMASK_ARRAY;
+			c_unbox = DUK_HMASK_NUMBER_OBJECT | DUK_HMASK_STRING_OBJECT | DUK_HMASK_BOOLEAN_OBJECT |
+			          DUK_HMASK_POINTER_OBJECT; /* Symbols are not unboxed. */
+			c_func = DUK_HMASK_ALL_FUNCTIONS;
+			c_bufobj = DUK_HMASK_ALL_BUFOBJS;
 			c_undef = 0;
 			c_abort = 0;
 			c_object = c_all & ~(c_array | c_unbox | c_func | c_bufobj | c_undef | c_abort);
 		} else
 #endif
 		{
-			c_all = DUK_HOBJECT_CMASK_ALL;
-			c_array = DUK_HOBJECT_CMASK_ARRAY;
-			c_unbox = DUK_HOBJECT_CMASK_NUMBER | DUK_HOBJECT_CMASK_STRING |
-			          DUK_HOBJECT_CMASK_BOOLEAN; /* Symbols are not unboxed. */
+			c_all = DUK_HMASK_ALL_OBJECTS;
+			c_array = DUK_HMASK_ARRAY;
+			c_unbox = DUK_HMASK_NUMBER_OBJECT | DUK_HMASK_STRING_OBJECT |
+			          DUK_HMASK_BOOLEAN_OBJECT; /* Symbols are not unboxed. */
 			c_func = 0;
 			c_bufobj = 0;
-			c_undef = DUK_HOBJECT_CMASK_FUNCTION | DUK_HOBJECT_CMASK_POINTER;
+			c_undef = DUK_HMASK_ALL_FUNCTIONS | DUK_HMASK_POINTER_OBJECT;
 			/* As the fast path doesn't currently properly support
 			 * duk_hbufobj virtual properties, abort fast path if
 			 * we encounter them in plain JSON mode.
 			 */
-			c_abort = DUK_HOBJECT_CMASK_ALL_BUFOBJS;
+			c_abort = DUK_HMASK_ALL_BUFOBJS;
 			c_object = c_all & ~(c_array | c_unbox | c_func | c_bufobj | c_undef | c_abort);
 		}
 
-		c_bit = (duk_uint32_t) DUK_HOBJECT_GET_CLASS_MASK(obj);
+		c_bit = DUK_HOBJECT_GET_HMASK(obj);
 		if (c_bit & c_object) {
 			/* All other object types. */
+			duk_propvalue *idx_pv_base;
+			duk_uint32_t *idx_pk_base;
+			duk_uint8_t *idx_attr_base;
+
 			DUK__EMIT_1(js_ctx, DUK_ASC_LCURLY);
 
-			/* A non-Array object should not have an array part in practice.
-			 * But since it is supported internally (and perhaps used at some
-			 * point), check and abandon if that's the case.
-			 */
-			if (DUK_HOBJECT_HAS_ARRAY_PART(obj)) {
-				DUK_DD(DUK_DDPRINT("non-Array object has array part, abort fast path"));
+			/* XXX: Could improve, bail out for now with index part keys in a non-Array. */
+			if (DUK_UNLIKELY(obj->i_size > 0)) {
+				DUK_DD(DUK_DDPRINT("object has index part keys, abort fast path"));
 				goto abort_fastpath;
 			}
 
@@ -2607,6 +2595,15 @@ DUK_LOCAL duk_bool_t duk__json_stringify_fast_value(duk_json_enc_ctx *js_ctx, du
 				}
 			}
 
+			/* Arguments object with array items part not supported
+			 * in the fast path, so drop to slow path.
+			 */
+			if (DUK_UNLIKELY(DUK_HOBJECT_HAS_ARRAY_ITEMS(obj))) {
+				DUK_DD(DUK_DDPRINT("Arguments object with array items, abort fast path"));
+				goto abort_fastpath;
+			}
+			DUK_ASSERT(!DUK_HOBJECT_HAS_ARRAY_ITEMS(obj));
+
 			/* If any non-Array value had enumerable virtual own
 			 * properties, they should be serialized here (actually,
 			 * before the explicit properties).  Standard types don't.
@@ -2624,17 +2621,18 @@ DUK_LOCAL duk_bool_t duk__json_stringify_fast_value(duk_json_enc_ctx *js_ctx, du
 		} else if (c_bit & c_array) {
 			duk_uint_fast32_t arr_len;
 			duk_uint_fast32_t asize;
+			duk_harray *h_arr = (duk_harray *) obj;
 
 			DUK__EMIT_1(js_ctx, DUK_ASC_LBRACKET);
 
 			/* Assume arrays are dense in the fast path. */
-			if (!DUK_HOBJECT_HAS_ARRAY_PART(obj)) {
-				DUK_DD(DUK_DDPRINT("Array object is sparse, abort fast path"));
+			if (!DUK_HOBJECT_HAS_ARRAY_ITEMS(obj)) {
+				DUK_DD(DUK_DDPRINT("Array object items part abandoned, abort fast path"));
 				goto abort_fastpath;
 			}
 
-			arr_len = (duk_uint_fast32_t) ((duk_harray *) obj)->length;
-			asize = (duk_uint_fast32_t) DUK_HOBJECT_GET_ASIZE(obj);
+			arr_len = DUK_HARRAY_GET_LENGTH(h_arr);
+			asize = DUK_HARRAY_GET_ITEMS_LENGTH(h_arr);
 			/* Array part may be larger than 'length'; if so, iterate
 			 * only up to array 'length'.  Array part may also be smaller
 			 * than 'length' in some cases.
@@ -2649,7 +2647,8 @@ DUK_LOCAL duk_bool_t duk__json_stringify_fast_value(duk_json_enc_ctx *js_ctx, du
 				}
 
 				if (DUK_LIKELY(i < asize)) {
-					tv_arrval = DUK_HOBJECT_A_GET_VALUE_PTR(js_ctx->thr->heap, obj, i);
+					DUK_ASSERT(DUK_HARRAY_GET_ITEMS(thr->heap, h_arr) != NULL);
+					tv_arrval = DUK_HARRAY_GET_ITEMS(thr->heap, h_arr) + i;
 					if (DUK_LIKELY(!DUK_TVAL_IS_UNUSED(tv_arrval))) {
 						/* Expected case: element is present. */
 						if (duk__json_stringify_fast_value(js_ctx, tv_arrval) == 0) {
@@ -2665,12 +2664,10 @@ DUK_LOCAL duk_bool_t duk__json_stringify_fast_value(duk_json_enc_ctx *js_ctx, du
 				 */
 
 				h_tmp = duk_push_uint_to_hstring(js_ctx->thr, (duk_uint_t) i);
-				has_inherited = duk_hobject_hasprop_raw(js_ctx->thr, obj, h_tmp);
-				duk_pop(js_ctx->thr);
-				if (has_inherited) {
-					DUK_D(DUK_DPRINT("gap in array, conflicting inherited property, abort fast path"));
-					goto abort_fastpath;
-				}
+#if 1
+				/* XXX: For now, abort on gaps. */
+				goto abort_fastpath;
+#endif
 
 				/* Ordinary gap, undefined encodes to 'null' in
 				 * standard JSON, but JX/JC use their form for
@@ -2703,7 +2700,7 @@ DUK_LOCAL duk_bool_t duk__json_stringify_fast_value(duk_json_enc_ctx *js_ctx, du
 			 * automatic unboxing.  Rely on internal value being
 			 * sane (to avoid infinite recursion).
 			 */
-			DUK_ASSERT((c_bit & DUK_HOBJECT_CMASK_SYMBOL) == 0); /* Symbols are not unboxed. */
+			DUK_ASSERT((c_bit & DUK_HTYPE_SYMBOL_OBJECT) == 0); /* Symbols are not unboxed. */
 
 #if 1
 			/* The code below is incorrect if .toString() or .valueOf() have
@@ -2763,14 +2760,8 @@ DUK_LOCAL duk_bool_t duk__json_stringify_fast_value(duk_json_enc_ctx *js_ctx, du
 		 * a .toJSON() method (which we need to check for explicitly).
 		 */
 
-#if defined(DUK_USE_BUFFEROBJECT_SUPPORT)
-		if (duk_hobject_hasprop_raw(js_ctx->thr,
-		                            js_ctx->thr->builtins[DUK_BIDX_UINT8ARRAY_PROTOTYPE],
-		                            DUK_HTHREAD_STRING_TO_JSON(js_ctx->thr))) {
-			DUK_DD(DUK_DDPRINT("value is a plain buffer and there's an inherited .toJSON, abort fast path"));
-			goto abort_fastpath;
-		}
-#endif
+		/* XXX: Abort for now. */
+		goto abort_fastpath;
 
 #if defined(DUK_USE_JX) || defined(DUK_USE_JC)
 		if (js_ctx->flag_ext_custom_or_compatible) {
@@ -3147,10 +3138,10 @@ void duk_bi_json_stringify_helper(duk_hthread *thr,
 
 	h = duk_get_hobject(thr, idx_space);
 	if (h != NULL) {
-		duk_small_uint_t c = DUK_HOBJECT_GET_CLASS_NUMBER(h);
-		if (c == DUK_HOBJECT_CLASS_NUMBER) {
+		duk_small_uint_t htype = DUK_HOBJECT_GET_HTYPE(h);
+		if (htype == DUK_HTYPE_NUMBER_OBJECT) {
 			duk_to_number(thr, idx_space);
-		} else if (c == DUK_HOBJECT_CLASS_STRING) {
+		} else if (htype == DUK_HTYPE_STRING_OBJECT) {
 			duk_to_string(thr, idx_space);
 		}
 	}

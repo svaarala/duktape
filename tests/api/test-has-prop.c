@@ -13,9 +13,9 @@ final top: 3
 *** test_hasprop_c (duk_safe_call)
 ==> rc=1, result='RangeError: invalid stack index -2147483648'
 *** test_hasprop_d (duk_safe_call)
-==> rc=1, result='TypeError: invalid base value'
+==> rc=1, result='TypeError: invalid rvalue'
 *** test_hasprop_e (duk_safe_call)
-==> rc=1, result='TypeError: invalid base value'
+==> rc=1, result='TypeError: invalid rvalue'
 *** test_haspropstring_a (duk_safe_call)
 obj.foo -> rc=1
 obj.nonexistent -> rc=0

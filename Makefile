@@ -189,6 +189,7 @@ CCOPTS_SHARED += -I./extras/module-duktape
 CCOPTS_NONDEBUG = $(CCOPTS_SHARED) $(CCOPTS_FEATURES)
 CCOPTS_NONDEBUG += -Os -fomit-frame-pointer -fno-stack-protector
 CCOPTS_NONDEBUG += -g -ggdb
+#CCOPTS_NONDEBUG += -flto
 #CCOPTS_NONDEBUG += -malign-double
 
 CCOPTS_DEBUG = $(CCOPTS_SHARED) $(CCOPTS_FEATURES)
@@ -662,11 +663,11 @@ runtests/node_modules:
 .PHONY: ecmatest
 ecmatest: runtestsdeps build/duk | tmp
 	@echo "### ecmatest"
-	"$(NODEJS)" runtests/runtests.js $(RUNTESTSOPTS) --run-duk --cmd-duk=$(shell pwd)/build/duk --num-threads 4 --log-file=tmp/duk-test.log tests/ecmascript/
+	"$(NODEJS)" runtests/runtests.js $(RUNTESTSOPTS) --run-duk --cmd-duk=$(shell pwd)/build/duk --num-threads 16 --log-file=tmp/duk-test.log tests/ecmascript/
 .PHONY: ecmatest-comparison
 ecmatest-comparison: runtestsdeps build/duk | tmp
 	@echo "### ecmatest"
-	"$(NODEJS)" runtests/runtests.js $(RUNTESTSOPTS) --run-duk --cmd-duk=$(shell pwd)/build/duk --report-diff-to-other --run-nodejs --run-rhino --num-threads 4 --log-file=tmp/duk-test.log tests/ecmascript/
+	"$(NODEJS)" runtests/runtests.js $(RUNTESTSOPTS) --run-duk --cmd-duk=$(shell pwd)/build/duk --report-diff-to-other --run-nodejs --run-rhino --num-threads 16 --log-file=tmp/duk-test.log tests/ecmascript/
 .PHONY: apitest
 ifeq ($(DETECTED_OS),Darwin)
 apitest: runtestsdeps build/libduktape.1.0.0.so | tmp

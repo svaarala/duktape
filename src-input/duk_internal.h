@@ -73,5 +73,6 @@
 #include "duk_numconv.h"
 #include "duk_bi_protos.h"
 #include "duk_selftest.h"
+#include "duk_prop.h"
 
 #endif /* DUK_INTERNAL_H_INCLUDED */

@@ -16,7 +16,7 @@ DUK_INTERNAL duk_ret_t duk_bi_error_constructor_shared(duk_hthread *thr) {
 
 	/* same for both error and each subclass like TypeError */
 	duk_uint_t flags_and_class =
-	    DUK_HOBJECT_FLAG_EXTENSIBLE | DUK_HOBJECT_FLAG_FASTREFS | DUK_HOBJECT_CLASS_AS_FLAGS(DUK_HOBJECT_CLASS_ERROR);
+	    DUK_HOBJECT_FLAG_EXTENSIBLE | DUK_HOBJECT_FLAG_FASTREFS | DUK_HEAPHDR_HTYPE_AS_FLAGS(DUK_HTYPE_ERROR);
 
 	(void) duk_push_object_helper(thr, flags_and_class, bidx_prototype);
 

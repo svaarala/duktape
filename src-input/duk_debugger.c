@@ -44,6 +44,140 @@ typedef union {
 } duk__ptr_union;
 
 /*
+ *  Backwards-compatible helpers to keep Duktape 2.x protocol after reworking
+ *  object representation.  Will be eventually reworked away.
+ */
+
+#define DUK_FAKE_HTYPE_STRING 0
+#define DUK_FAKE_HTYPE_OBJECT 1
+#define DUK_FAKE_HTYPE_BUFFER 2
+
+DUK_LOCAL duk_uint_t duk__debug_htype_to_fake_htype(duk_uint_t htype) {
+	if (DUK_HTYPE_IS_ANY_STRING(htype)) {
+		return DUK_FAKE_HTYPE_STRING;
+	} else if (DUK_HTYPE_IS_ANY_BUFFER(htype)) {
+		return DUK_FAKE_HTYPE_BUFFER;
+	} else {
+		return DUK_FAKE_HTYPE_OBJECT;
+	}
+}
+
+#define DUK_FAKE_CLASS_NONE              0
+#define DUK_FAKE_CLASS_OBJECT            1
+#define DUK_FAKE_CLASS_ARRAY             2
+#define DUK_FAKE_CLASS_FUNCTION          3
+#define DUK_FAKE_CLASS_ARGUMENTS         4
+#define DUK_FAKE_CLASS_BOOLEAN           5
+#define DUK_FAKE_CLASS_DATE              6
+#define DUK_FAKE_CLASS_ERROR             7
+#define DUK_FAKE_CLASS_JSON              8
+#define DUK_FAKE_CLASS_MATH              9
+#define DUK_FAKE_CLASS_NUMBER            10
+#define DUK_FAKE_CLASS_REGEXP            11
+#define DUK_FAKE_CLASS_STRING            12
+#define DUK_FAKE_CLASS_GLOBAL            13
+#define DUK_FAKE_CLASS_SYMBOL            14
+#define DUK_FAKE_CLASS_OBJENV            15
+#define DUK_FAKE_CLASS_DECENV            16
+#define DUK_FAKE_CLASS_POINTER           17
+#define DUK_FAKE_CLASS_THREAD            18
+#define DUK_FAKE_CLASS_ARRAYBUFFER       19
+#define DUK_FAKE_CLASS_DATAVIEW          20
+#define DUK_FAKE_CLASS_INT8ARRAY         21
+#define DUK_FAKE_CLASS_UINT8ARRAY        22
+#define DUK_FAKE_CLASS_UINT8CLAMPEDARRAY 23
+#define DUK_FAKE_CLASS_INT16ARRAY        24
+#define DUK_FAKE_CLASS_UINT16ARRAY       25
+#define DUK_FAKE_CLASS_INT32ARRAY        26
+#define DUK_FAKE_CLASS_UINT32ARRAY       27
+#define DUK_FAKE_CLASS_FLOAT32ARRAY      28
+#define DUK_FAKE_CLASS_FLOAT64ARRAY      29
+
+DUK_LOCAL duk_uint_t duk__debug_htype_to_fake_class(duk_uint_t htype) {
+	/* Matches Duktape 2.x classes. */
+	switch (htype) {
+	case DUK_HTYPE_STRING_INTERNAL:
+		return DUK_FAKE_CLASS_NONE;
+	case DUK_HTYPE_STRING_EXTERNAL:
+		return DUK_FAKE_CLASS_NONE;
+	case DUK_HTYPE_BUFFER_FIXED:
+		return DUK_FAKE_CLASS_NONE;
+	case DUK_HTYPE_BUFFER_DYNAMIC:
+		return DUK_FAKE_CLASS_NONE;
+	case DUK_HTYPE_BUFFER_EXTERNAL:
+		return DUK_FAKE_CLASS_NONE;
+	case DUK_HTYPE_ARRAY:
+		return DUK_FAKE_CLASS_ARRAY;
+	case DUK_HTYPE_ARGUMENTS:
+		return DUK_FAKE_CLASS_ARGUMENTS;
+	case DUK_HTYPE_OBJECT:
+		return DUK_FAKE_CLASS_OBJECT;
+	case DUK_HTYPE_COMPFUNC:
+		return DUK_FAKE_CLASS_FUNCTION;
+	case DUK_HTYPE_NATFUNC:
+		return DUK_FAKE_CLASS_FUNCTION;
+	case DUK_HTYPE_BOUNDFUNC:
+		return DUK_FAKE_CLASS_FUNCTION;
+	case DUK_HTYPE_BOOLEAN_OBJECT:
+		return DUK_FAKE_CLASS_BOOLEAN;
+	case DUK_HTYPE_DATE:
+		return DUK_FAKE_CLASS_DATE;
+	case DUK_HTYPE_ERROR:
+		return DUK_FAKE_CLASS_ERROR;
+	case DUK_HTYPE_JSON:
+		return DUK_FAKE_CLASS_JSON;
+	case DUK_HTYPE_MATH:
+		return DUK_FAKE_CLASS_MATH;
+	case DUK_HTYPE_NUMBER_OBJECT:
+		return DUK_FAKE_CLASS_NUMBER;
+	case DUK_HTYPE_REGEXP:
+		return DUK_FAKE_CLASS_REGEXP;
+	case DUK_HTYPE_STRING_OBJECT:
+		return DUK_FAKE_CLASS_STRING;
+	case DUK_HTYPE_GLOBAL:
+		return DUK_FAKE_CLASS_GLOBAL;
+	case DUK_HTYPE_SYMBOL_OBJECT:
+		return DUK_FAKE_CLASS_SYMBOL;
+	case DUK_HTYPE_OBJENV:
+		return DUK_FAKE_CLASS_OBJENV;
+	case DUK_HTYPE_DECENV:
+		return DUK_FAKE_CLASS_DECENV;
+	case DUK_HTYPE_POINTER_OBJECT:
+		return DUK_FAKE_CLASS_POINTER;
+	case DUK_HTYPE_THREAD:
+		return DUK_FAKE_CLASS_THREAD;
+	case DUK_HTYPE_PROXY:
+		return DUK_FAKE_CLASS_OBJECT;
+	case DUK_HTYPE_NONE:
+		return DUK_FAKE_CLASS_NONE;
+	case DUK_HTYPE_ARRAYBUFFER:
+		return DUK_FAKE_CLASS_ARRAYBUFFER;
+	case DUK_HTYPE_DATAVIEW:
+		return DUK_FAKE_CLASS_DATAVIEW;
+	case DUK_HTYPE_INT8ARRAY:
+		return DUK_FAKE_CLASS_INT8ARRAY;
+	case DUK_HTYPE_UINT8ARRAY:
+		return DUK_FAKE_CLASS_UINT8ARRAY;
+	case DUK_HTYPE_UINT8CLAMPEDARRAY:
+		return DUK_FAKE_CLASS_UINT8CLAMPEDARRAY;
+	case DUK_HTYPE_INT16ARRAY:
+		return DUK_FAKE_CLASS_INT16ARRAY;
+	case DUK_HTYPE_UINT16ARRAY:
+		return DUK_FAKE_CLASS_UINT16ARRAY;
+	case DUK_HTYPE_INT32ARRAY:
+		return DUK_FAKE_CLASS_INT32ARRAY;
+	case DUK_HTYPE_UINT32ARRAY:
+		return DUK_FAKE_CLASS_UINT32ARRAY;
+	case DUK_HTYPE_FLOAT32ARRAY:
+		return DUK_FAKE_CLASS_FLOAT32ARRAY;
+	case DUK_HTYPE_FLOAT64ARRAY:
+		return DUK_FAKE_CLASS_FLOAT64ARRAY;
+	default:
+		return DUK_FAKE_CLASS_NONE;
+	}
+}
+
+/*
  *  Detach handling
  */
 
@@ -875,7 +1009,7 @@ DUK_INTERNAL void duk_debug_write_hobject(duk_hthread *thr, duk_hobject *obj) {
 	DUK_ASSERT(obj != NULL);
 
 	buf[0] = DUK_DBG_IB_OBJECT;
-	buf[1] = (duk_uint8_t) DUK_HOBJECT_GET_CLASS_NUMBER(obj);
+	buf[1] = (duk_uint8_t) duk__debug_htype_to_fake_class(DUK_HEAPHDR_GET_HTYPE((duk_heaphdr *) obj));
 	buf[2] = sizeof(pu);
 	duk_debug_write_bytes(thr, buf, 3);
 	pu.p = (void *) obj;
@@ -1106,7 +1240,7 @@ DUK_INTERNAL void duk_debug_send_throw(duk_hthread *thr, duk_bool_t fatal) {
 	duk_debug_write_int(thr, (duk_int32_t) fatal);
 
 	/* Report thrown value to client coerced to string */
-	duk_dup_top(thr);
+	duk_dup_top_unsafe(thr);
 	duk__debug_write_hstring_safe_top(thr);
 	duk_pop(thr);
 
@@ -1742,7 +1876,7 @@ DUK_LOCAL void duk__debug_dump_heaphdr(duk_hthread *thr, duk_heap *heap, duk_hea
 	DUK_UNREF(heap);
 
 	duk_debug_write_heapptr(thr, hdr);
-	duk_debug_write_uint(thr, (duk_uint32_t) DUK_HEAPHDR_GET_TYPE(hdr));
+	duk_debug_write_uint(thr, duk__debug_htype_to_fake_htype(DUK_HEAPHDR_GET_HTYPE(hdr)));
 	duk_debug_write_uint(thr, (duk_uint32_t) DUK_HEAPHDR_GET_FLAGS_RAW(hdr));
 #if defined(DUK_USE_REFERENCE_COUNTING)
 	duk_debug_write_uint(thr, (duk_uint32_t) DUK_HEAPHDR_GET_REFCOUNT(hdr));
@@ -1750,27 +1884,25 @@ DUK_LOCAL void duk__debug_dump_heaphdr(duk_hthread *thr, duk_heap *heap, duk_hea
 	duk_debug_write_int(thr, (duk_int32_t) -1);
 #endif
 
-	switch (DUK_HEAPHDR_GET_TYPE(hdr)) {
-	case DUK_HTYPE_STRING: {
+	/* Work with previous htype classification for now. */
+	if (DUK_HEAPHDR_IS_ANY_STRING(hdr)) {
 		duk_hstring *h = (duk_hstring *) hdr;
 
 		duk_debug_write_uint(thr, (duk_uint32_t) duk_hstring_get_bytelen(h));
 		duk_debug_write_uint(thr, (duk_uint32_t) duk_hstring_get_charlen(h));
 		duk_debug_write_uint(thr, (duk_uint32_t) duk_hstring_get_hash(h));
 		duk_debug_write_hstring(thr, h);
-		break;
-	}
-	case DUK_HTYPE_OBJECT: {
+	} else if (DUK_HEAPHDR_IS_ANY_OBJECT(hdr)) {
 		duk_hobject *h = (duk_hobject *) hdr;
 		duk_hstring *k;
 		duk_uint_fast32_t i;
 
-		duk_debug_write_uint(thr, (duk_uint32_t) DUK_HOBJECT_GET_CLASS_NUMBER(h));
-		duk_debug_write_heapptr(thr, (duk_heaphdr *) DUK_HOBJECT_GET_PROTOTYPE(heap, h));
-		duk_debug_write_uint(thr, (duk_uint32_t) DUK_HOBJECT_GET_ESIZE(h));
-		duk_debug_write_uint(thr, (duk_uint32_t) DUK_HOBJECT_GET_ENEXT(h));
-		duk_debug_write_uint(thr, (duk_uint32_t) DUK_HOBJECT_GET_ASIZE(h));
-		duk_debug_write_uint(thr, (duk_uint32_t) DUK_HOBJECT_GET_HSIZE(h));
+		duk_debug_write_uint(thr, (duk_uint32_t) DUK_HOBJECT_GET_HTYPE(h));
+		duk_debug_write_heapptr(thr, (duk_heaphdr *) duk_hobject_get_proto_raw(heap, h));
+		duk_debug_write_uint(thr, (duk_uint32_t) duk_hobject_get_esize(h));
+		duk_debug_write_uint(thr, (duk_uint32_t) duk_hobject_get_enext(h));
+		duk_debug_write_uint(thr, (duk_uint32_t) duk_hobject_get_asize(h));
+		duk_debug_write_uint(thr, (duk_uint32_t) duk_hobject_get_hsize(heap, h));
 
 		for (i = 0; i < (duk_uint_fast32_t) DUK_HOBJECT_GET_ENEXT(h); i++) {
 			duk_debug_write_uint(thr, (duk_uint32_t) DUK_HOBJECT_E_GET_FLAGS(heap, h, i));
@@ -1792,24 +1924,18 @@ DUK_LOCAL void duk__debug_dump_heaphdr(duk_hthread *thr, duk_heap *heap, duk_hea
 			}
 		}
 
-		for (i = 0; i < (duk_uint_fast32_t) DUK_HOBJECT_GET_ASIZE(h); i++) {
-			/* Note: array dump will include elements beyond
-			 * 'length'.
-			 */
-			duk__debug_write_tval_heapptr(thr, DUK_HOBJECT_A_GET_VALUE_PTR(heap, h, i));
+		for (i = 0; i < (duk_uint_fast32_t) duk_hobject_get_asize(h); i++) {
+			DUK_ASSERT(DUK_HOBJECT_IS_HARRAY(h));
+			duk__debug_write_tval_heapptr(thr, DUK_HARRAY_GET_ITEMS(heap, (duk_harray *) h) + i);
 		}
-		break;
-	}
-	case DUK_HTYPE_BUFFER: {
+
+	} else if (DUK_HEAPHDR_IS_ANY_BUFFER(hdr)) {
 		duk_hbuffer *h = (duk_hbuffer *) hdr;
 
 		duk_debug_write_uint(thr, (duk_uint32_t) DUK_HBUFFER_GET_SIZE(h));
 		duk_debug_write_buffer(thr, (const char *) DUK_HBUFFER_GET_DATA_PTR(heap, h), (duk_size_t) DUK_HBUFFER_GET_SIZE(h));
-		break;
-	}
-	default: {
-		DUK_D(DUK_DPRINT("invalid htype: %d", (int) DUK_HEAPHDR_GET_TYPE(hdr)));
-	}
+	} else {
+		DUK_D(DUK_DPRINT("invalid htype: %d", (int) DUK_HEAPHDR_GET_HTYPE(hdr)));
 	}
 }
 
@@ -1977,14 +2103,14 @@ DUK_LOCAL duk_uint_t duk__debug_getinfo_hstring_masks[] = {
 };
 DUK_LOCAL const char * const duk__debug_getinfo_hobject_keys[] = {
 	"extensible",     "constructable", "callable",         "boundfunc",        "compfunc",        "natfunc",     "bufobj",
-	"fastrefs",       "array_part",    "strict",           "notail",           "newenv",          "namebinding", "createargs",
+	"fastrefs",       "array_items",   "strict",           "notail",           "newenv",          "namebinding", "createargs",
 	"have_finalizer", "exotic_array",  "exotic_stringobj", "exotic_arguments", "exotic_proxyobj", "special_call"
 	/* NULL not needed here */
 };
 DUK_LOCAL duk_uint_t duk__debug_getinfo_hobject_masks[] = {
 	DUK_HOBJECT_FLAG_EXTENSIBLE,      DUK_HOBJECT_FLAG_CONSTRUCTABLE,    DUK_HOBJECT_FLAG_CALLABLE,
 	DUK_HOBJECT_FLAG_BOUNDFUNC,       DUK_HOBJECT_FLAG_COMPFUNC,         DUK_HOBJECT_FLAG_NATFUNC,
-	DUK_HOBJECT_FLAG_BUFOBJ,          DUK_HOBJECT_FLAG_FASTREFS,         DUK_HOBJECT_FLAG_ARRAY_PART,
+	DUK_HOBJECT_FLAG_BUFOBJ,          DUK_HOBJECT_FLAG_FASTREFS,         DUK_HOBJECT_FLAG_ARRAY_ITEMS,
 	DUK_HOBJECT_FLAG_STRICT,          DUK_HOBJECT_FLAG_NOTAIL,           DUK_HOBJECT_FLAG_NEWENV,
 	DUK_HOBJECT_FLAG_NAMEBINDING,     DUK_HOBJECT_FLAG_CREATEARGS,       DUK_HOBJECT_FLAG_HAVE_FINALIZER,
 	DUK_HOBJECT_FLAG_EXOTIC_ARRAY,    DUK_HOBJECT_FLAG_EXOTIC_STRINGOBJ, DUK_HOBJECT_FLAG_EXOTIC_ARGUMENTS,
@@ -2058,11 +2184,12 @@ DUK_LOCAL duk_bool_t duk__debug_getprop_index(duk_hthread *thr, duk_heap *heap, 
 
 	DUK_UNREF(heap);
 
-	a_size = DUK_HOBJECT_GET_ASIZE(h_obj);
+	a_size = duk_hobject_get_asize(h_obj);
 	if (idx < a_size) {
+		DUK_ASSERT(DUK_HOBJECT_IS_HARRAY(h_obj));
 		duk_debug_write_uint(thr, DUK_PROPDESC_FLAGS_WEC);
 		duk_debug_write_uint(thr, idx);
-		tv = DUK_HOBJECT_A_GET_VALUE_PTR(heap, h_obj, idx);
+		tv = DUK_HARRAY_GET_ITEMS(heap, (duk_harray *) h_obj) + idx;
 		duk_debug_write_tval(thr, tv);
 		return 1;
 	}
@@ -2140,7 +2267,7 @@ DUK_LOCAL void duk__debug_handle_get_heap_obj_info(duk_hthread *thr, duk_heap *h
 
 	/* XXX: comes out as signed now */
 	duk__debug_getinfo_prop_uint(thr, "heaphdr_flags", (duk_uint_t) DUK_HEAPHDR_GET_FLAGS(h));
-	duk__debug_getinfo_prop_uint(thr, "heaphdr_type", (duk_uint_t) DUK_HEAPHDR_GET_TYPE(h));
+	duk__debug_getinfo_prop_uint(thr, "heaphdr_htype", (duk_uint_t) DUK_HEAPHDR_GET_HTYPE(h));
 #if defined(DUK_USE_REFERENCE_COUNTING)
 	duk__debug_getinfo_prop_uint(thr, "refcount", (duk_uint_t) DUK_HEAPHDR_GET_REFCOUNT(h));
 #endif
@@ -2151,11 +2278,37 @@ DUK_LOCAL void duk__debug_handle_get_heap_obj_info(duk_hthread *thr, duk_heap *h
 	                           DUK_HEAPHDR_GET_FLAGS_RAW(h));
 #endif
 
-	switch (DUK_HEAPHDR_GET_TYPE(h)) {
-	case DUK_HTYPE_STRING: {
-		duk_hstring *h_str;
+	if (DUK_HEAPHDR_IS_ANY_OBJECT(h)) {
+		duk_hobject *h_obj;
+		duk_hobject *h_proto;
 
-		h_str = (duk_hstring *) h;
+		h_obj = (duk_hobject *) h;
+		h_proto = duk_hobject_get_proto_raw(heap, h_obj);
+
+		/* duk_hobject specific fields. */
+		duk__debug_getinfo_bitmask(thr,
+		                           duk__debug_getinfo_hobject_keys,
+		                           duk__debug_getinfo_hobject_masks,
+		                           DUK_HEAPHDR_GET_FLAGS_RAW(h));
+		duk__debug_getinfo_flags_key(thr, "prototype");
+		if (h_proto != NULL) {
+			duk_debug_write_hobject(thr, h_proto);
+		} else {
+			duk_debug_write_null(thr);
+		}
+		duk__debug_getinfo_flags_key(thr, "props");
+		duk_debug_write_pointer(thr, (void *) DUK_HOBJECT_GET_PROPS(heap, h_obj));
+		duk__debug_getinfo_prop_uint(thr, "e_size", (duk_uint_t) duk_hobject_get_esize(h_obj));
+		duk__debug_getinfo_prop_uint(thr, "e_next", (duk_uint_t) duk_hobject_get_enext(h_obj));
+		duk__debug_getinfo_prop_uint(thr, "a_size", (duk_uint_t) duk_hobject_get_asize(h_obj));
+		duk__debug_getinfo_prop_uint(thr, "h_size", (duk_uint_t) duk_hobject_get_hsize(heap, h_obj));
+	}
+
+	switch (DUK_HEAPHDR_GET_HTYPE(h)) {
+	case DUK_HTYPE_STRING_INTERNAL:
+	case DUK_HTYPE_STRING_EXTERNAL: {
+		duk_hstring *h_str = (duk_hstring *) h;
+
 		duk__debug_getinfo_bitmask(thr,
 		                           duk__debug_getinfo_hstring_keys,
 		                           duk__debug_getinfo_hstring_masks,
@@ -2167,154 +2320,11 @@ DUK_LOCAL void duk__debug_handle_get_heap_obj_info(duk_hthread *thr, duk_heap *h
 		duk_debug_write_hstring(thr, h_str);
 		break;
 	}
-	case DUK_HTYPE_OBJECT: {
-		duk_hobject *h_obj;
-		duk_hobject *h_proto;
+	case DUK_HTYPE_BUFFER_FIXED:
+	case DUK_HTYPE_BUFFER_DYNAMIC:
+	case DUK_HTYPE_BUFFER_EXTERNAL: {
+		duk_hbuffer *h_buf = (duk_hbuffer *) h;
 
-		h_obj = (duk_hobject *) h;
-		h_proto = DUK_HOBJECT_GET_PROTOTYPE(heap, h_obj);
-
-		/* duk_hobject specific fields. */
-		duk__debug_getinfo_bitmask(thr,
-		                           duk__debug_getinfo_hobject_keys,
-		                           duk__debug_getinfo_hobject_masks,
-		                           DUK_HEAPHDR_GET_FLAGS_RAW(h));
-		duk__debug_getinfo_prop_uint(thr, "class_number", DUK_HOBJECT_GET_CLASS_NUMBER(h_obj));
-		duk__debug_getinfo_flags_key(thr, "class_name");
-		duk_debug_write_hstring(thr, DUK_HOBJECT_GET_CLASS_STRING(heap, h_obj));
-		duk__debug_getinfo_flags_key(thr, "prototype");
-		if (h_proto != NULL) {
-			duk_debug_write_hobject(thr, h_proto);
-		} else {
-			duk_debug_write_null(thr);
-		}
-		duk__debug_getinfo_flags_key(thr, "props");
-		duk_debug_write_pointer(thr, (void *) DUK_HOBJECT_GET_PROPS(heap, h_obj));
-		duk__debug_getinfo_prop_uint(thr, "e_size", (duk_uint_t) DUK_HOBJECT_GET_ESIZE(h_obj));
-		duk__debug_getinfo_prop_uint(thr, "e_next", (duk_uint_t) DUK_HOBJECT_GET_ENEXT(h_obj));
-		duk__debug_getinfo_prop_uint(thr, "a_size", (duk_uint_t) DUK_HOBJECT_GET_ASIZE(h_obj));
-		duk__debug_getinfo_prop_uint(thr, "h_size", (duk_uint_t) DUK_HOBJECT_GET_HSIZE(h_obj));
-
-		if (DUK_HOBJECT_IS_ARRAY(h_obj)) {
-			duk_harray *h_arr;
-			h_arr = (duk_harray *) h_obj;
-
-			duk__debug_getinfo_prop_uint(thr, "length", (duk_uint_t) h_arr->length);
-			duk__debug_getinfo_prop_bool(thr, "length_nonwritable", h_arr->length_nonwritable);
-		}
-
-		if (DUK_HOBJECT_IS_NATFUNC(h_obj)) {
-			duk_hnatfunc *h_fun;
-			h_fun = (duk_hnatfunc *) h_obj;
-
-			duk__debug_getinfo_prop_int(thr, "nargs", h_fun->nargs);
-			duk__debug_getinfo_prop_int(thr, "magic", h_fun->magic);
-			duk__debug_getinfo_prop_bool(thr, "varargs", h_fun->magic == DUK_HNATFUNC_NARGS_VARARGS);
-			/* Native function pointer may be different from a void pointer,
-			 * and we serialize it from memory directly now (no byte swapping etc).
-			 */
-			duk__debug_getinfo_flags_key(thr, "funcptr");
-			duk_debug_write_buffer(thr, (const char *) &h_fun->func, sizeof(h_fun->func));
-		}
-
-		if (DUK_HOBJECT_IS_COMPFUNC(h_obj)) {
-			duk_hcompfunc *h_fun;
-			duk_hbuffer *h_buf;
-			duk_hobject *h_lexenv;
-			duk_hobject *h_varenv;
-			h_fun = (duk_hcompfunc *) h_obj;
-
-			duk__debug_getinfo_prop_int(thr, "nregs", h_fun->nregs);
-			duk__debug_getinfo_prop_int(thr, "nargs", h_fun->nargs);
-
-			duk__debug_getinfo_flags_key(thr, "lex_env");
-			h_lexenv = DUK_HCOMPFUNC_GET_LEXENV(thr->heap, h_fun);
-			if (h_lexenv != NULL) {
-				duk_debug_write_hobject(thr, h_lexenv);
-			} else {
-				duk_debug_write_null(thr);
-			}
-			duk__debug_getinfo_flags_key(thr, "var_env");
-			h_varenv = DUK_HCOMPFUNC_GET_VARENV(thr->heap, h_fun);
-			if (h_varenv != NULL) {
-				duk_debug_write_hobject(thr, h_varenv);
-			} else {
-				duk_debug_write_null(thr);
-			}
-
-			duk__debug_getinfo_prop_uint(thr, "start_line", h_fun->start_line);
-			duk__debug_getinfo_prop_uint(thr, "end_line", h_fun->end_line);
-			h_buf = (duk_hbuffer *) DUK_HCOMPFUNC_GET_DATA(thr->heap, h_fun);
-			if (h_buf != NULL) {
-				duk__debug_getinfo_flags_key(thr, "data");
-				duk_debug_write_heapptr(thr, (duk_heaphdr *) h_buf);
-			}
-		}
-
-		if (DUK_HOBJECT_IS_BOUNDFUNC(h_obj)) {
-			duk_hboundfunc *h_bfun;
-			h_bfun = (duk_hboundfunc *) (void *) h_obj;
-
-			duk__debug_getinfo_flags_key(thr, "target");
-			duk_debug_write_tval(thr, &h_bfun->target);
-			duk__debug_getinfo_flags_key(thr, "this_binding");
-			duk_debug_write_tval(thr, &h_bfun->this_binding);
-			duk__debug_getinfo_flags_key(thr, "nargs");
-			duk_debug_write_int(thr, h_bfun->nargs);
-			/* h_bfun->args not exposed now */
-		}
-
-		if (DUK_HOBJECT_IS_THREAD(h_obj)) {
-			/* XXX: Currently no inspection of threads, e.g. value stack, call
-			 * stack, catch stack, etc.
-			 */
-			duk_hthread *h_thr;
-			h_thr = (duk_hthread *) h_obj;
-			DUK_UNREF(h_thr);
-		}
-
-		if (DUK_HOBJECT_IS_DECENV(h_obj)) {
-			duk_hdecenv *h_env;
-			h_env = (duk_hdecenv *) h_obj;
-
-			duk__debug_getinfo_flags_key(thr, "thread");
-			duk_debug_write_heapptr(thr, (duk_heaphdr *) (h_env->thread));
-			duk__debug_getinfo_flags_key(thr, "varmap");
-			duk_debug_write_heapptr(thr, (duk_heaphdr *) (h_env->varmap));
-			duk__debug_getinfo_prop_uint(thr, "regbase", (duk_uint_t) h_env->regbase_byteoff);
-		}
-
-		if (DUK_HOBJECT_IS_OBJENV(h_obj)) {
-			duk_hobjenv *h_env;
-			h_env = (duk_hobjenv *) h_obj;
-
-			duk__debug_getinfo_flags_key(thr, "target");
-			duk_debug_write_heapptr(thr, (duk_heaphdr *) (h_env->target));
-			duk__debug_getinfo_prop_bool(thr, "has_this", h_env->has_this);
-		}
-
-#if defined(DUK_USE_BUFFEROBJECT_SUPPORT)
-		if (DUK_HOBJECT_IS_BUFOBJ(h_obj)) {
-			duk_hbufobj *h_bufobj;
-			h_bufobj = (duk_hbufobj *) h_obj;
-
-			duk__debug_getinfo_prop_uint(thr, "slice_offset", h_bufobj->offset);
-			duk__debug_getinfo_prop_uint(thr, "slice_length", h_bufobj->length);
-			duk__debug_getinfo_prop_uint(thr, "elem_shift", (duk_uint_t) h_bufobj->shift);
-			duk__debug_getinfo_prop_uint(thr, "elem_type", (duk_uint_t) h_bufobj->elem_type);
-			duk__debug_getinfo_prop_bool(thr, "is_typedarray", (duk_uint_t) h_bufobj->is_typedarray);
-			if (h_bufobj->buf != NULL) {
-				duk__debug_getinfo_flags_key(thr, "buffer");
-				duk_debug_write_heapptr(thr, (duk_heaphdr *) h_bufobj->buf);
-			}
-		}
-#endif /* DUK_USE_BUFFEROBJECT_SUPPORT */
-		break;
-	}
-	case DUK_HTYPE_BUFFER: {
-		duk_hbuffer *h_buf;
-
-		h_buf = (duk_hbuffer *) h;
 		duk__debug_getinfo_bitmask(thr,
 		                           duk__debug_getinfo_hbuffer_keys,
 		                           duk__debug_getinfo_hbuffer_masks,
@@ -2326,10 +2336,157 @@ DUK_LOCAL void duk__debug_handle_get_heap_obj_info(duk_hthread *thr, duk_heap *h
 		duk_debug_write_hbuffer(thr, h_buf); /* tolerates NULL h_buf */
 		break;
 	}
-	default: {
-		/* Since we already started writing the reply, just emit nothing. */
-		DUK_D(DUK_DPRINT("inspect target pointer has invalid heaphdr type"));
+	case DUK_HTYPE_ARRAY: {
+		duk_harray *h_arr = (duk_harray *) h;
+
+		duk__debug_getinfo_prop_uint(thr, "length", (duk_uint_t) DUK_HARRAY_GET_LENGTH(h_arr));
+		duk__debug_getinfo_prop_bool(thr, "length_nonwritable", h_arr->length_nonwritable);
+		break;
 	}
+	case DUK_HTYPE_ARGUMENTS:
+		break;
+	case DUK_HTYPE_OBJECT:
+		break;
+	case DUK_HTYPE_COMPFUNC: {
+		duk_hcompfunc *h_fun = (duk_hcompfunc *) h;
+		duk_hbuffer *h_buf;
+		duk_hobject *h_lexenv;
+		duk_hobject *h_varenv;
+
+		duk__debug_getinfo_prop_int(thr, "nregs", h_fun->nregs);
+		duk__debug_getinfo_prop_int(thr, "nargs", h_fun->nargs);
+
+		duk__debug_getinfo_flags_key(thr, "lex_env");
+		h_lexenv = DUK_HCOMPFUNC_GET_LEXENV(thr->heap, h_fun);
+		if (h_lexenv != NULL) {
+			duk_debug_write_hobject(thr, h_lexenv);
+		} else {
+			duk_debug_write_null(thr);
+		}
+		duk__debug_getinfo_flags_key(thr, "var_env");
+		h_varenv = DUK_HCOMPFUNC_GET_VARENV(thr->heap, h_fun);
+		if (h_varenv != NULL) {
+			duk_debug_write_hobject(thr, h_varenv);
+		} else {
+			duk_debug_write_null(thr);
+		}
+
+		duk__debug_getinfo_prop_uint(thr, "start_line", h_fun->start_line);
+		duk__debug_getinfo_prop_uint(thr, "end_line", h_fun->end_line);
+		h_buf = (duk_hbuffer *) DUK_HCOMPFUNC_GET_DATA(thr->heap, h_fun);
+		if (h_buf != NULL) {
+			duk__debug_getinfo_flags_key(thr, "data");
+			duk_debug_write_heapptr(thr, (duk_heaphdr *) h_buf);
+		}
+		break;
+	}
+	case DUK_HTYPE_NATFUNC: {
+		duk_hnatfunc *h_fun = (duk_hnatfunc *) h;
+
+		duk__debug_getinfo_prop_int(thr, "nargs", h_fun->nargs);
+		duk__debug_getinfo_prop_int(thr, "magic", h_fun->magic);
+		duk__debug_getinfo_prop_bool(thr, "varargs", h_fun->magic == DUK_HNATFUNC_NARGS_VARARGS);
+		/* Native function pointer may be different from a void pointer,
+		 * and we serialize it from memory directly now (no byte swapping etc).
+		 */
+		duk__debug_getinfo_flags_key(thr, "funcptr");
+		duk_debug_write_buffer(thr, (const char *) &h_fun->func, sizeof(h_fun->func));
+		break;
+	}
+	case DUK_HTYPE_BOUNDFUNC: {
+		duk_hboundfunc *h_bfun = (duk_hboundfunc *) h;
+
+		duk__debug_getinfo_flags_key(thr, "target");
+		duk_debug_write_tval(thr, &h_bfun->target);
+		duk__debug_getinfo_flags_key(thr, "this_binding");
+		duk_debug_write_tval(thr, &h_bfun->this_binding);
+		duk__debug_getinfo_flags_key(thr, "nargs");
+		duk_debug_write_int(thr, h_bfun->nargs);
+		/* h_bfun->args not exposed now */
+		break;
+	}
+	case DUK_HTYPE_BOOLEAN_OBJECT:
+		break;
+	case DUK_HTYPE_DATE:
+		break;
+	case DUK_HTYPE_ERROR:
+		break;
+	case DUK_HTYPE_JSON:
+		break;
+	case DUK_HTYPE_MATH:
+		break;
+	case DUK_HTYPE_NUMBER_OBJECT:
+		break;
+	case DUK_HTYPE_REGEXP:
+		break;
+	case DUK_HTYPE_STRING_OBJECT:
+		break;
+	case DUK_HTYPE_GLOBAL:
+		break;
+	case DUK_HTYPE_SYMBOL_OBJECT:
+		break;
+	case DUK_HTYPE_OBJENV: {
+		duk_hobjenv *h_env = (duk_hobjenv *) h;
+
+		duk__debug_getinfo_flags_key(thr, "target");
+		duk_debug_write_heapptr(thr, (duk_heaphdr *) (h_env->target));
+		duk__debug_getinfo_prop_bool(thr, "has_this", h_env->has_this);
+		break;
+	}
+	case DUK_HTYPE_DECENV: {
+		duk_hdecenv *h_env = (duk_hdecenv *) h;
+
+		duk__debug_getinfo_flags_key(thr, "thread");
+		duk_debug_write_heapptr(thr, (duk_heaphdr *) (h_env->thread));
+		duk__debug_getinfo_flags_key(thr, "varmap");
+		duk_debug_write_heapptr(thr, (duk_heaphdr *) (h_env->varmap));
+		duk__debug_getinfo_prop_uint(thr, "regbase", (duk_uint_t) h_env->regbase_byteoff);
+		break;
+	}
+	case DUK_HTYPE_POINTER_OBJECT:
+		break;
+	case DUK_HTYPE_THREAD: {
+		/* XXX: Currently no inspection of threads, e.g. value stack, call
+		 * stack, catch stack, etc.
+		 */
+		duk_hthread *h_thr = (duk_hthread *) h;
+
+		DUK_UNREF(h_thr);
+		break;
+	}
+	case DUK_HTYPE_PROXY:
+		break;
+	case DUK_HTYPE_NONE:
+		break;
+	case DUK_HTYPE_ARRAYBUFFER:
+	case DUK_HTYPE_DATAVIEW:
+	case DUK_HTYPE_INT8ARRAY:
+	case DUK_HTYPE_UINT8ARRAY:
+	case DUK_HTYPE_UINT8CLAMPEDARRAY:
+	case DUK_HTYPE_INT16ARRAY:
+	case DUK_HTYPE_UINT16ARRAY:
+	case DUK_HTYPE_INT32ARRAY:
+	case DUK_HTYPE_UINT32ARRAY:
+	case DUK_HTYPE_FLOAT32ARRAY:
+	case DUK_HTYPE_FLOAT64ARRAY: {
+#if defined(DUK_USE_BUFFEROBJECT_SUPPORT)
+		duk_hbufobj *h_bufobj = (duk_hbufobj *) h;
+
+		duk__debug_getinfo_prop_uint(thr, "slice_offset", h_bufobj->offset);
+		duk__debug_getinfo_prop_uint(thr, "slice_length", h_bufobj->length);
+		duk__debug_getinfo_prop_uint(thr, "elem_shift", (duk_uint_t) h_bufobj->shift);
+		duk__debug_getinfo_prop_uint(thr, "elem_type", (duk_uint_t) h_bufobj->elem_type);
+		duk__debug_getinfo_prop_bool(thr, "is_typedarray", (duk_uint_t) h_bufobj->is_typedarray);
+		if (h_bufobj->buf != NULL) {
+			duk__debug_getinfo_flags_key(thr, "buffer");
+			duk_debug_write_heapptr(thr, (duk_heaphdr *) h_bufobj->buf);
+		}
+#endif /* DUK_USE_BUFFEROBJECT_SUPPORT */
+		break;
+	}
+	default:
+		/* Since we already started writing the reply, just emit nothing. */
+		DUK_D(DUK_DPRINT("inspect target pointer has invalid heaphdr type %ld, ignoring", (long) DUK_HEAPHDR_GET_HTYPE(h)));
 	}
 
 	duk_debug_write_eom(thr);
@@ -2339,7 +2496,6 @@ DUK_LOCAL void duk__debug_handle_get_obj_prop_desc(duk_hthread *thr, duk_heap *h
 	duk_heaphdr *h;
 	duk_hobject *h_obj;
 	duk_hstring *h_key;
-	duk_propdesc desc;
 
 	DUK_D(DUK_DPRINT("debug command GetObjPropDesc"));
 	DUK_UNREF(heap);
@@ -2350,28 +2506,12 @@ DUK_LOCAL void duk__debug_handle_get_obj_prop_desc(duk_hthread *thr, duk_heap *h
 		return;
 	}
 	h_key = duk_debug_read_hstring(thr);
-	if (h == NULL || DUK_HEAPHDR_GET_TYPE(h) != DUK_HTYPE_OBJECT || h_key == NULL) {
+	if (h == NULL || DUK_HEAPHDR_GET_HTYPE(h) != DUK_HTYPE_OBJECT || h_key == NULL) {
 		goto fail_args;
 	}
 	h_obj = (duk_hobject *) h;
 
-	if (duk_hobject_get_own_propdesc(thr, h_obj, h_key, &desc, 0 /*flags*/)) {
-		duk_int_t virtual_idx;
-		duk_bool_t rc;
-
-		/* To use the shared helper need the virtual index. */
-		DUK_ASSERT(desc.e_idx >= 0 || desc.a_idx >= 0);
-		virtual_idx = (desc.a_idx >= 0 ? desc.a_idx : (duk_int_t) DUK_HOBJECT_GET_ASIZE(h_obj) + desc.e_idx);
-
-		duk_debug_write_reply(thr);
-		rc = duk__debug_getprop_index(thr, heap, h_obj, (duk_uint_t) virtual_idx);
-		DUK_ASSERT(rc == 1);
-		DUK_UNREF(rc);
-		duk_debug_write_eom(thr);
-	} else {
-		duk_debug_write_error_eom(thr, DUK_DBG_ERR_NOTFOUND, "not found");
-	}
-	return;
+	/* XXX: To be reimplemented. */
 
 fail_args:
 	duk_debug_write_error_eom(thr, DUK_DBG_ERR_UNKNOWN, "invalid args");
@@ -2388,7 +2528,7 @@ DUK_LOCAL void duk__debug_handle_get_obj_prop_desc_range(duk_hthread *thr, duk_h
 	h = duk_debug_read_any_ptr(thr);
 	idx_start = (duk_uint_t) duk_debug_read_int(thr);
 	idx_end = (duk_uint_t) duk_debug_read_int(thr);
-	if (h == NULL || DUK_HEAPHDR_GET_TYPE(h) != DUK_HTYPE_OBJECT) {
+	if (h == NULL || DUK_HEAPHDR_GET_HTYPE(h) != DUK_HTYPE_OBJECT) {
 		goto fail_args;
 	}
 	h_obj = (duk_hobject *) h;

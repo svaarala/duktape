@@ -199,16 +199,19 @@ DUK_LOCAL duk_uint8_t *duk__dump_formals(duk_hthread *thr, duk_uint8_t *p, duk_b
 		 * tweaked by the application (which we don't support right
 		 * now).
 		 */
+		DUK_ASSERT(DUK_HOBJECT_IS_ARRAY((duk_hobject *) h));
+		DUK_ASSERT(DUK_HOBJECT_HAS_ARRAY_ITEMS((duk_hobject *) h));
+		DUK_ASSERT(DUK_HARRAY_GET_LENGTH(h) <= DUK_HARRAY_GET_ITEMS_LENGTH(h));
 
 		p = DUK_BW_ENSURE_RAW(thr, bw_ctx, 4U, p);
-		DUK_ASSERT(h->length != DUK__NO_FORMALS); /* limits */
-		DUK_RAW_WRITEINC_U32_BE(p, h->length);
+		DUK_ASSERT(DUK_HARRAY_GET_LENGTH(h) != DUK__NO_FORMALS); /* limits */
+		DUK_RAW_WRITEINC_U32_BE(p, DUK_HARRAY_GET_LENGTH(h));
 
-		for (i = 0; i < h->length; i++) {
+		for (i = 0; i < DUK_HARRAY_GET_LENGTH(h); i++) {
 			duk_tval *tv_val;
 			duk_hstring *varname;
 
-			tv_val = DUK_HOBJECT_A_GET_VALUE_PTR(thr->heap, (duk_hobject *) h, i);
+			tv_val = DUK_HARRAY_GET_ITEMS(thr->heap, h) + i;
 			DUK_ASSERT(tv_val != NULL);
 			DUK_ASSERT(DUK_TVAL_IS_STRING(tv_val));
 
@@ -439,7 +442,7 @@ static const duk_uint8_t *duk__load_func(duk_hthread *thr, const duk_uint8_t *p,
 	DUK_ASSERT(DUK_HCOMPFUNC_GET_DATA(thr->heap, h_fun) == NULL);
 	DUK_ASSERT(DUK_HCOMPFUNC_GET_FUNCS(thr->heap, h_fun) == NULL);
 	DUK_ASSERT(DUK_HCOMPFUNC_GET_BYTECODE(thr->heap, h_fun) == NULL);
-	DUK_ASSERT(DUK_HOBJECT_GET_PROTOTYPE(thr->heap, (duk_hobject *) h_fun) == thr->builtins[DUK_BIDX_FUNCTION_PROTOTYPE]);
+	DUK_ASSERT(duk_hobject_get_proto_raw(thr->heap, (duk_hobject *) h_fun) == thr->builtins[DUK_BIDX_FUNCTION_PROTOTYPE]);
 
 	h_fun->nregs = DUK_RAW_READINC_U16_BE(p);
 	h_fun->nargs = DUK_RAW_READINC_U16_BE(p);
@@ -455,13 +458,10 @@ static const duk_uint8_t *duk__load_func(duk_hthread *thr, const duk_uint8_t *p,
 	DUK_HEAPHDR_SET_FLAGS((duk_heaphdr *) h_fun, tmp32); /* masks flags to only change duk_hobject flags */
 
 	/* standard prototype (no need to set here, already set) */
-	DUK_ASSERT(DUK_HOBJECT_GET_PROTOTYPE(thr->heap, (duk_hobject *) h_fun) == thr->builtins[DUK_BIDX_FUNCTION_PROTOTYPE]);
-#if 0
-	DUK_HOBJECT_SET_PROTOTYPE_UPDREF(thr, &h_fun->obj, thr->builtins[DUK_BIDX_FUNCTION_PROTOTYPE]);
-#endif
+	DUK_ASSERT(duk_hobject_get_proto_raw(thr->heap, (duk_hobject *) h_fun) == thr->builtins[DUK_BIDX_FUNCTION_PROTOTYPE]);
 
 	/* assert just a few critical flags */
-	DUK_ASSERT(DUK_HEAPHDR_GET_TYPE((duk_heaphdr *) h_fun) == DUK_HTYPE_OBJECT);
+	DUK_ASSERT(DUK_HEAPHDR_GET_HTYPE((duk_heaphdr *) h_fun) == DUK_HTYPE_COMPFUNC);
 	DUK_ASSERT(!DUK_HOBJECT_HAS_BOUNDFUNC(&h_fun->obj));
 	DUK_ASSERT(DUK_HOBJECT_HAS_COMPFUNC(&h_fun->obj));
 	DUK_ASSERT(!DUK_HOBJECT_HAS_NATFUNC(&h_fun->obj));
@@ -589,14 +589,13 @@ static const duk_uint8_t *duk__load_func(duk_hthread *thr, const duk_uint8_t *p,
 		 */
 		duk_hdecenv *new_env;
 
-		new_env =
-		    duk_hdecenv_alloc(thr, DUK_HOBJECT_FLAG_EXTENSIBLE | DUK_HOBJECT_CLASS_AS_FLAGS(DUK_HOBJECT_CLASS_DECENV));
+		new_env = duk_hdecenv_alloc(thr, DUK_HOBJECT_FLAG_EXTENSIBLE | DUK_HEAPHDR_HTYPE_AS_FLAGS(DUK_HTYPE_DECENV));
 		DUK_ASSERT(new_env != NULL);
 		DUK_ASSERT(new_env->thread == NULL); /* Closed. */
 		DUK_ASSERT(new_env->varmap == NULL);
 		DUK_ASSERT(new_env->regbase_byteoff == 0);
 		DUK_HDECENV_ASSERT_VALID(new_env);
-		DUK_ASSERT(DUK_HOBJECT_GET_PROTOTYPE(thr->heap, (duk_hobject *) new_env) == NULL);
+		DUK_ASSERT(duk_hobject_get_proto_raw(thr->heap, (duk_hobject *) new_env) == NULL);
 		DUK_HOBJECT_SET_PROTOTYPE(thr->heap, (duk_hobject *) new_env, func_env);
 		DUK_HOBJECT_INCREF(thr, func_env);
 

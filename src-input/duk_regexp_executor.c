@@ -672,9 +672,9 @@ DUK_LOCAL void duk__regexp_match_helper(duk_hthread *thr, duk_small_int_t force_
 	 */
 
 	/* TypeError if wrong; class check, see E5 Section 15.10.6 */
-	h_regexp = duk_require_hobject_with_class(thr, -2, DUK_HOBJECT_CLASS_REGEXP);
+	h_regexp = duk_require_hobject_with_htype(thr, -2, DUK_HTYPE_REGEXP);
 	DUK_ASSERT(h_regexp != NULL);
-	DUK_ASSERT(DUK_HOBJECT_GET_CLASS_NUMBER(h_regexp) == DUK_HOBJECT_CLASS_REGEXP);
+	DUK_ASSERT(DUK_HOBJECT_GET_HTYPE(h_regexp) == DUK_HTYPE_REGEXP);
 	DUK_UNREF(h_regexp);
 
 	h_input = duk_to_hstring(thr, -1);
@@ -888,7 +888,7 @@ match_over:
 		h_res = duk_require_hobject(thr, -1);
 		DUK_ASSERT(DUK_HOBJECT_HAS_EXTENSIBLE(h_res));
 		DUK_ASSERT(DUK_HOBJECT_HAS_EXOTIC_ARRAY(h_res));
-		DUK_ASSERT(DUK_HOBJECT_GET_CLASS_NUMBER(h_res) == DUK_HOBJECT_CLASS_ARRAY);
+		DUK_ASSERT(DUK_HOBJECT_GET_HTYPE(h_res) == DUK_HTYPE_ARRAY);
 #endif
 
 		/* [ ... re_obj input bc saved_buf res_obj ] */

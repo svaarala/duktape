@@ -254,8 +254,7 @@ DUK_LOCAL void duk__add_traceback(duk_hthread *thr,
 		/* Add function object. */
 		tv_src = &act->tv_func; /* object (function) or lightfunc */
 		DUK_ASSERT(DUK_TVAL_IS_OBJECT(tv_src) || DUK_TVAL_IS_LIGHTFUNC(tv_src));
-		DUK_TVAL_SET_TVAL(tv, tv_src);
-		DUK_TVAL_INCREF(thr, tv);
+		DUK_TVAL_SET_TVAL_INCREF(thr, tv, tv_src);
 		tv++;
 
 		/* Add a number containing: pc, activation flags.
@@ -274,10 +273,10 @@ DUK_LOCAL void duk__add_traceback(duk_hthread *thr,
 #if defined(DUK_USE_ASSERTIONS)
 	{
 		duk_harray *a;
-		a = (duk_harray *) duk_known_hobject(thr, -1);
+		a = duk_known_harray(thr, -1);
 		DUK_ASSERT(a != NULL);
-		DUK_ASSERT((duk_uint32_t) (tv - DUK_HOBJECT_A_GET_BASE(thr->heap, (duk_hobject *) a)) == a->length);
-		DUK_ASSERT(a->length == (duk_uint32_t) arr_size);
+		DUK_ASSERT((duk_uint32_t) (tv - DUK_HARRAY_GET_ITEMS(thr->heap, a)) == DUK_HARRAY_GET_LENGTH(a));
+		DUK_ASSERT(DUK_HARRAY_GET_LENGTH(a) == (duk_uint32_t) arr_size);
 		DUK_ASSERT(duk_is_bare_object(thr, -1));
 	}
 #endif
