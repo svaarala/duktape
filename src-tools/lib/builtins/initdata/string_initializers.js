@@ -70,10 +70,10 @@ function emitStringInitMacro(genc) {
     genc.emitLine('#endif');
     genc.emitLine('#if defined(DUK_USE_HSTRING_CLEN)');
     genc.emitLine('#define DUK__STRINIT(heaphdr_flags,refcount,hash32,hash16,blen,clen,next) ' +
-                  ' { { (heaphdr_flags) | ((hash16) << 16), DUK__REFCINIT((refcount)), (blen), (duk_hstring *) DUK_LOSE_CONST((next)) }, (clen) }');
+                  ' { { (heaphdr_flags), DUK__REFCINIT((refcount)), (blen), (duk_hstring *) DUK_LOSE_CONST((next)) }, (hash16), (clen) }');
     genc.emitLine('#else  /* DUK_USE_HSTRING_CLEN */')
     genc.emitLine('#define DUK__STRINIT(heaphdr_flags,refcount,hash32,hash16,blen,clen,next) ' +
-                  ' { { (heaphdr_flags) | ((hash16) << 16), DUK__REFCINIT((refcount)), (blen), (duk_hstring *) DUK_LOSE_CONST((next)) } }');
+                  ' { { (heaphdr_flags), DUK__REFCINIT((refcount)), (blen), (duk_hstring *) DUK_LOSE_CONST((next)) }, (hash16) }');
     genc.emitLine('#endif  /* DUK_USE_HSTRING_CLEN */');
     genc.emitLine('#else  /* DUK_USE_HEAPPTR16 */');
     genc.emitLine('#define DUK__STRINIT(heaphdr_flags,refcount,hash32,hash16,blen,clen,next) ' +
@@ -100,7 +100,7 @@ exports.emitStringDeclarations = emitStringDeclarations;
 function emitStringInitializer(genc, v, biStrMap, reservedWords, strictReservedWords, romstrNext) {
     let tmp = 'DUK_INTERNAL const duk_romstr_' + v.length + ' ' + biStrMap[v] + ' = {';
 
-    let flags = [ 'DUK_HTYPE_STRING',
+    let flags = [ 'DUK_HTYPE_STRING_INTERNAL',
                   'DUK_HEAPHDR_FLAG_READONLY',
                   'DUK_HEAPHDR_FLAG_REACHABLE',
                   'DUK_HSTRING_FLAG_PINNED_LITERAL' ];
@@ -114,6 +114,9 @@ function emitStringInitializer(genc, v, biStrMap, reservedWords, strictReservedW
     }
     if (isArridx) {
         flags.push('DUK_HSTRING_FLAG_ARRIDX');
+    }
+    if (false) {  // XXX
+        flags.push('DUK_HSTRING_FLAG_CANNUM');
     }
     if (stringIsAnySymbol(v)) {
         flags.push('DUK_HSTRING_FLAG_SYMBOL');
@@ -129,6 +132,9 @@ function emitStringInitializer(genc, v, biStrMap, reservedWords, strictReservedW
     }
     if (typeof strictReservedWords[v] !== 'undefined') {
         flags.push('DUK_HSTRING_FLAG_STRICT_RESERVED_WORD');
+    }
+    if (v === 'length') {
+        flags.push('DUK_HSTRING_FLAG_LENGTH');
     }
 
     let h_next = 'NULL';

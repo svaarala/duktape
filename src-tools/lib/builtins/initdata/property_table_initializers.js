@@ -21,33 +21,6 @@ function emitPropertyTableStructs(genc, meta, objs, biStrMap, biObjMap) {
     // but there'd be very few of them so it's more straightforward to
     // not reuse the structs.
 
-    genc.emitLine('#if defined(DUK_USE_HOBJECT_LAYOUT_1)');
-
-    objs.forEach((o, idx) => {
-        var numProps = o.properties.length;
-        var parts = [];
-        if (numProps === 0) {
-            return;
-        }
-
-        parts.push('typedef struct duk_romprops_' + idx + ' duk_romprops_' + idx + '; ');
-        parts.push('struct duk_romprops_' + idx + ' { ');
-
-        o.properties.forEach((p, propIdx) => {
-            parts.push('const duk_hstring *key' + propIdx + '; ');
-        });
-        o.properties.forEach((p, propIdx) => {
-            parts.push(getValueInitializerType(meta, p, biStrMap, biObjMap) + ' val' + propIdx + '; ');
-        });
-        o.properties.forEach((p, propIdx) => {
-            parts.push('duk_uint8_t flags' + propIdx + '; ');
-        });
-        parts.push('};');
-        genc.emitLine(parts.join(''));
-    });
-
-    genc.emitLine('#elif defined(DUK_USE_HOBJECT_LAYOUT_2)');
-
     objs.forEach((o, idx) => {
         var numProps = o.properties.length;
         var parts = [];
@@ -67,42 +40,9 @@ function emitPropertyTableStructs(genc, meta, objs, biStrMap, biObjMap) {
         o.properties.forEach((p, propIdx) => {
             parts.push('duk_uint8_t flags' + propIdx + '; ');
         });
-        // Padding follows for flags, but we don't need to emit it
-        // (at the moment there is never an array or hash part).
         parts.push('};');
         genc.emitLine(parts.join(''));
     });
-
-    genc.emitLine('#elif defined(DUK_USE_HOBJECT_LAYOUT_3)');
-
-    objs.forEach((o, idx) => {
-        var numProps = o.properties.length;
-        var parts = [];
-        if (numProps === 0) {
-            return;
-        }
-
-        parts.push('typedef struct duk_romprops_' + idx + ' duk_romprops_' + idx + '; ');
-        parts.push('struct duk_romprops_' + idx + ' { ');
-
-        o.properties.forEach((p, propIdx) => {
-            parts.push(getValueInitializerType(meta, p, biStrMap, biObjMap) + ' val' + propIdx + '; ');
-        });
-        // No array values
-        o.properties.forEach((p, propIdx) => {
-            parts.push('const duk_hstring *key' + propIdx + '; ');
-        });
-        // No hash index
-        o.properties.forEach((p, propIdx) => {
-            parts.push('duk_uint8_t flags' + propIdx + '; ');
-        });
-        parts.push('};');
-        genc.emitLine(parts.join(''));
-    });
-
-    genc.emitLine('#else');
-    genc.emitLine('#error invalid object layout');
-    genc.emitLine('#endif');
 }
 exports.emitPropertyTableStructs = emitPropertyTableStructs;
 
@@ -183,20 +123,8 @@ function emitPropertyTableDefinitions(genc, meta, objs, biStrMap, biObjMap) {
         }
     }
 
-    genc.emitLine('#if defined(DUK_USE_HOBJECT_LAYOUT_1)');
-    objs.forEach((o, idx) => {
-        emitInitializer(idx, o, 1);
-    });
-    genc.emitLine('#elif defined(DUK_USE_HOBJECT_LAYOUT_2)');
     objs.forEach((o, idx) => {
         emitInitializer(idx, o, 2);
     });
-    genc.emitLine('#elif defined(DUK_USE_HOBJECT_LAYOUT_3)');
-    objs.forEach((o, idx) => {
-        emitInitializer(idx, o, 3);
-    });
-    genc.emitLine('#else');
-    genc.emitLine('#error invalid object layout');
-    genc.emitLine('#endif');
 }
 exports.emitPropertyTableDefinitions = emitPropertyTableDefinitions;

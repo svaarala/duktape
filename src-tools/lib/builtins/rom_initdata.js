@@ -9,7 +9,7 @@ const { propDefault, walkObjectsAndProperties } = require('./metadata/util');
 const { createBareObject } = require('../util/bare');
 const { assert } = require('../util/assert');
 const { jsonStringifyAscii } = require('../util/json');
-const { classToNumber } = require('./classnames');
+const { classToHtypeNumber } = require('./classnames');
 const { emitStringHashMacros, emitStringInitMacro, emitStringDeclarations, emitStringInitializer } = require('./initdata/string_initializers');
 const { createRomStringTable } = require('./initdata/stringtable');
 const { emitPropertyTableStructs, emitPropertyTableForwardDeclarations, emitPropertyTableDefinitions } = require('./initdata/property_table_initializers');
@@ -182,7 +182,6 @@ function emitObjectDefinitions(genc, meta, objs, biObjMap, compressRomPtr) {
 
         parts.push('DUK_EXTERNAL const ' + structName + ' duk_obj_' + idx + ' = ');
 
-        flags.push('DUK_HTYPE_OBJECT');
         flags.push('DUK_HEAPHDR_FLAG_READONLY');
         flags.push('DUK_HEAPHDR_FLAG_REACHABLE');
         if (isFunc) {
@@ -202,7 +201,7 @@ function emitObjectDefinitions(genc, meta, objs, biObjMap, compressRomPtr) {
         if (propDefault(o, 'special_call', false)) {
             flags.push('DUK_HOBJECT_FLAG_SPECIAL_CALL');
         }
-        flags.push('DUK_HOBJECT_CLASS_AS_FLAGS(' + classToNumber(o.class) + ')');
+        flags.push('DUK_HEAPHDR_HTYPE_AS_FLAGS(' + classToHtypeNumber(o.class) + ')');
 
         var refcount = 1;  // refcount is faked to be always 1
 
@@ -256,6 +255,9 @@ function emitObjectDefinitions(genc, meta, objs, biObjMap, compressRomPtr) {
             parts.push('DUK__ROMARR_INIT(' + sharedFields.concat([
                 arrlen
             ]).join(',') + ');');
+            if (arrlen > 0) {
+                throw new TypeError('non-empty ROM Array initializers not supported at present');
+            }
         } else if (o.class === 'ObjEnv') {
             var objenvTarget = '&' + biObjMap[o.objenv_target];
             var objenvHasThis = o.objenv_has_this;
