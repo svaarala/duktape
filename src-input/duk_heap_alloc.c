@@ -9,6 +9,7 @@
 #define DUK__FIXED_HASH_SEED 0xabcd1234
 #endif
 
+/* For debug logging in pointer compressed builds. */
 #if defined(DUK_USE_DEBUG) && (defined(DUK_USE_HEAPPTR_ENC16) || defined(DUK_USE_DATAPTR_ENC16) || defined(DUK_USE_FUNCPTR_ENC16))
 DUK_INTERNAL duk_heap *duk_debug_global_heap_singleton = NULL;
 #endif
@@ -439,8 +440,8 @@ DUK_INTERNAL void duk_heap_free(duk_heap *heap) {
 	DUK_D(DUK_DPRINT("freeing heap structure: %p", (void *) heap));
 	heap->free_func(heap->heap_udata, heap);
 
-#if defined(DUK_USE_HEAPPTR16) && defined(DUK_USE_DEBUG)
-	duk_global_dbgheap = NULL;
+#if defined(DUK_USE_DEBUG) && (defined(DUK_USE_HEAPPTR_ENC16) || defined(DUK_USE_DATAPTR_ENC16) || defined(DUK_USE_FUNCPTR_ENC16))
+	duk_debug_global_heap_singleton = NULL;
 #endif
 }
 
@@ -1125,13 +1126,6 @@ duk_heap *duk_heap_alloc(duk_alloc_function alloc_func,
 #endif
 #endif /* DUK_USE_LITCACHE_SIZE */
 
-#if defined(DUK_USE_HEAPPTR16) && defined(DUK_USE_DEBUG)
-	/* Heap reference (singleton) for debug prints when pointer compression
-	 * is enabled.
-	 */
-	duk_global_dbgheap = res;
-#endif
-
 	/* XXX: error handling is incomplete.  It would be cleanest if
 	 * there was a setjmp catchpoint, so that all init code could
 	 * freely throw errors.  If that were the case, the return code
@@ -1266,8 +1260,8 @@ failed:
 		duk_heap_free(res);
 	}
 
-#if defined(DUK_USE_HEAPPTR16) && defined(DUK_USE_DEBUG)
-	duk_global_dbgheap = NULL;
+#if defined(DUK_USE_DEBUG) && (defined(DUK_USE_HEAPPTR_ENC16) || defined(DUK_USE_DATAPTR_ENC16) || defined(DUK_USE_FUNCPTR_ENC16))
+	duk_debug_global_heap_singleton = NULL;
 #endif
 
 	return NULL;

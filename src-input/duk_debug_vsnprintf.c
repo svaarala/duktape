@@ -59,12 +59,13 @@
 /* Needed for pointer compression, but we don't have a caller-given heap/thr
  * pointer for debug logs now.
  */
-#if defined(DUK_USE_HEAPPTR16) && defined(DUK_USE_DEBUG)
-DUK_INTERNAL duk_heap *duk_global_dbgheap = NULL;
-#define DUK__DBGHEAP duk_global_dbgheap
+DUK_LOCAL duk__debug_get_heap(void) {
+#if defined(DUK_USE_DEBUG) && (defined(DUK_USE_HEAPPTR_ENC16) || defined(DUK_USE_DATAPTR_ENC16) || defined(DUK_USE_FUNCPTR_ENC16))
+	return duk_debug_global_heap_singleton;
 #else
-#define DUK__DBGHEAP NULL
+	return NULL;
 #endif
+}
 
 #include <stdio.h>
 #include <stdarg.h>
@@ -184,8 +185,8 @@ DUK_LOCAL void duk__print_shared_heaphdr(duk__dprint_state *st, duk_heaphdr *h) 
 		duk_fb_sprintf(fb,
 		               "[h_next=%p,h_prev=%p,h_refcount=%lu,h_flags=%08lx,type=%ld,"
 		               "reachable=%ld,temproot=%ld,finalizable=%ld,finalized=%ld]",
-		               (void *) DUK_HEAPHDR_GET_NEXT(DUK__DBGHEAP, h),
-		               (void *) DUK_HEAPHDR_GET_PREV(DUK__DBGHEAP, h),
+		               (void *) DUK_HEAPHDR_GET_NEXT(duk__debug_get_heap(), h),
+		               (void *) DUK_HEAPHDR_GET_PREV(duk__debug_get_heap(), h),
 		               (unsigned long) DUK_HEAPHDR_GET_REFCOUNT(h),
 		               (unsigned long) DUK_HEAPHDR_GET_FLAGS(h),
 		               (long) DUK_HEAPHDR_GET_HTYPE(h),
@@ -198,7 +199,7 @@ DUK_LOCAL void duk__print_shared_heaphdr(duk__dprint_state *st, duk_heaphdr *h) 
 	if (st->heavy) {
 		duk_fb_sprintf(fb,
 		               "[h_next=%p,h_flags=%08lx,type=%ld,reachable=%ld,temproot=%ld,finalizable=%ld,finalized=%ld]",
-		               (void *) DUK_HEAPHDR_GET_NEXT(DUK__DBGHEAP, h),
+		               (void *) DUK_HEAPHDR_GET_NEXT(duk__debug_get_heap(), h),
 		               (unsigned long) DUK_HEAPHDR_GET_FLAGS(h),
 		               (long) DUK_HEAPHDR_GET_HTYPE(h),
 		               (long) (DUK_HEAPHDR_HAS_REACHABLE(h) ? 1 : 0),
@@ -392,7 +393,7 @@ DUK_LOCAL void duk__print_hobject(duk__dprint_state *st, duk_hobject *h) {
 
 	duk_fb_put_cstring(fb, brace1);
 
-	if (DUK_HOBJECT_IS_HARRAY(h) && DUK_HARRAY_GET_ITEMS(DUK__DBGHEAP, (duk_harray *) h) &&
+	if (DUK_HOBJECT_IS_HARRAY(h) && DUK_HARRAY_GET_ITEMS(duk__debug_get_heap(), (duk_harray *) h) &&
 	    DUK_HARRAY_GET_ITEMS_LENGTH((duk_harray *) h) > 0) {
 		duk_uint32_t a_limit = DUK_HARRAY_GET_ITEMS_LENGTH((duk_harray *) h);
 
@@ -404,7 +405,7 @@ DUK_LOCAL void duk__print_hobject(duk__dprint_state *st, duk_hobject *h) {
 		} else {
 			/* Leave out trailing 'unused' elements. */
 			while (a_limit > 0) {
-				tv = DUK_HARRAY_GET_ITEMS(DUK__DBGHEAP, (duk_harray *) h) + (a_limit - 1);
+				tv = DUK_HARRAY_GET_ITEMS(duk__debug_get_heap(), (duk_harray *) h) + (a_limit - 1);
 				if (!DUK_TVAL_IS_UNUSED(tv)) {
 					break;
 				}
@@ -412,7 +413,7 @@ DUK_LOCAL void duk__print_hobject(duk__dprint_state *st, duk_hobject *h) {
 			}
 		}
 		for (i = 0; i < a_limit; i++) {
-			tv = DUK_HARRAY_GET_ITEMS(DUK__DBGHEAP, (duk_harray *) h) + i;
+			tv = DUK_HARRAY_GET_ITEMS(duk__debug_get_heap(), (duk_harray *) h) + i;
 			DUK__COMMA();
 			duk__print_tval(st, tv);
 		}
@@ -450,9 +451,9 @@ DUK_LOCAL void duk__print_hobject(duk__dprint_state *st, duk_hobject *h) {
 			}
 		}
 	}
-	if (DUK_HOBJECT_GET_PROPS(DUK__DBGHEAP, h)) {
+	if (DUK_HOBJECT_GET_PROPS(duk__debug_get_heap(), h)) {
 		for (i = 0; i < DUK_HOBJECT_GET_ENEXT(h); i++) {
-			key = DUK_HOBJECT_E_GET_KEY(DUK__DBGHEAP, h, i);
+			key = DUK_HOBJECT_E_GET_KEY(duk__debug_get_heap(), h, i);
 			if (!key) {
 				continue;
 			}
@@ -462,17 +463,17 @@ DUK_LOCAL void duk__print_hobject(duk__dprint_state *st, duk_hobject *h) {
 			DUK__COMMA();
 			duk__print_hstring(st, key, 0);
 			duk_fb_put_byte(fb, (duk_uint8_t) DUK_ASC_COLON);
-			if (DUK_HOBJECT_E_SLOT_IS_ACCESSOR(DUK__DBGHEAP, h, i)) {
+			if (DUK_HOBJECT_E_SLOT_IS_ACCESSOR(duk__debug_get_heap(), h, i)) {
 				duk_fb_sprintf(fb,
 				               "[get:%p,set:%p]",
-				               (void *) DUK_HOBJECT_E_GET_VALUE(DUK__DBGHEAP, h, i).a.get,
-				               (void *) DUK_HOBJECT_E_GET_VALUE(DUK__DBGHEAP, h, i).a.set);
+				               (void *) DUK_HOBJECT_E_GET_VALUE(duk__debug_get_heap(), h, i).a.get,
+				               (void *) DUK_HOBJECT_E_GET_VALUE(duk__debug_get_heap(), h, i).a.set);
 			} else {
-				tv = &DUK_HOBJECT_E_GET_VALUE(DUK__DBGHEAP, h, i).v;
+				tv = &DUK_HOBJECT_E_GET_VALUE(duk__debug_get_heap(), h, i).v;
 				duk__print_tval(st, tv);
 			}
 			if (st->heavy) {
-				duk_fb_sprintf(fb, "<%02lx>", (unsigned long) DUK_HOBJECT_E_GET_FLAGS(DUK__DBGHEAP, h, i));
+				duk_fb_sprintf(fb, "<%02lx>", (unsigned long) DUK_HOBJECT_E_GET_FLAGS(duk__debug_get_heap(), h, i));
 			}
 		}
 	}
@@ -567,13 +568,13 @@ DUK_LOCAL void duk__print_hobject(duk__dprint_state *st, duk_hobject *h) {
 		duk_hcompfunc *f = (duk_hcompfunc *) h;
 		DUK__COMMA();
 		duk_fb_put_cstring(fb, "__data:");
-		duk__print_hbuffer(st, (duk_hbuffer *) DUK_HCOMPFUNC_GET_DATA(DUK__DBGHEAP, f));
+		duk__print_hbuffer(st, (duk_hbuffer *) DUK_HCOMPFUNC_GET_DATA(duk__debug_get_heap(), f));
 		DUK__COMMA();
 		duk_fb_put_cstring(fb, "__lexenv:");
-		duk__print_hobject(st, DUK_HCOMPFUNC_GET_LEXENV(DUK__DBGHEAP, f));
+		duk__print_hobject(st, DUK_HCOMPFUNC_GET_LEXENV(duk__debug_get_heap(), f));
 		DUK__COMMA();
 		duk_fb_put_cstring(fb, "__varenv:");
-		duk__print_hobject(st, DUK_HCOMPFUNC_GET_VARENV(DUK__DBGHEAP, f));
+		duk__print_hobject(st, DUK_HCOMPFUNC_GET_VARENV(duk__debug_get_heap(), f));
 		DUK__COMMA();
 		duk_fb_sprintf(fb, "__nregs:%ld", (long) f->nregs);
 		DUK__COMMA();
@@ -586,7 +587,7 @@ DUK_LOCAL void duk__print_hobject(duk__dprint_state *st, duk_hobject *h) {
 #endif
 		DUK__COMMA();
 		duk_fb_put_cstring(fb, "__data:");
-		duk__print_hbuffer(st, (duk_hbuffer *) DUK_HCOMPFUNC_GET_DATA(DUK__DBGHEAP, f));
+		duk__print_hbuffer(st, (duk_hbuffer *) DUK_HCOMPFUNC_GET_DATA(duk__debug_get_heap(), f));
 	} else if (st->internal && DUK_HOBJECT_IS_NATFUNC(h)) {
 		duk_hnatfunc *f = (duk_hnatfunc *) h;
 		DUK__COMMA();
@@ -704,25 +705,25 @@ DUK_LOCAL void duk__print_hobject(duk__dprint_state *st, duk_hobject *h) {
 	duk_fb_sprintf(fb, "__heapptr:%p", (void *) h); /* own pointer */
 
 	/* prototype should be last, for readability */
-	if (duk_hobject_get_proto_raw(DUK__DBGHEAP, h)) {
+	if (duk_hobject_get_proto_raw(duk__debug_get_heap(), h)) {
 		if (st->follow_proto) {
 			DUK__COMMA();
 			duk_fb_put_cstring(fb, "__prototype:");
-			duk__print_hobject(st, duk_hobject_get_proto_raw(DUK__DBGHEAP, h));
+			duk__print_hobject(st, duk_hobject_get_proto_raw(duk__debug_get_heap(), h));
 		} else {
 			DUK__COMMA();
-			duk_fb_sprintf(fb, "__prototype:%p", (void *) duk_hobject_get_proto_raw(DUK__DBGHEAP, h));
+			duk_fb_sprintf(fb, "__prototype:%p", (void *) duk_hobject_get_proto_raw(duk__debug_get_heap(), h));
 		}
 	}
 
 	duk_fb_put_cstring(fb, brace2);
 
 #if defined(DUK_USE_HOBJECT_HASH_PART)
-	if (st->heavy && duk_hobject_get_hsize(DUK__DBGHEAP, h) > 0) {
-		duk_uint32_t hsize = duk_hobject_get_hsize(DUK__DBGHEAP, h);
+	if (st->heavy && duk_hobject_get_hsize(duk__debug_get_heap(), h) > 0) {
+		duk_uint32_t hsize = duk_hobject_get_hsize(duk__debug_get_heap(), h);
 		duk_fb_put_byte(fb, (duk_uint8_t) DUK_ASC_LANGLE);
 		for (i = 0; i < hsize; i++) {
-			duk_uint_t h_idx = DUK_HOBJECT_H_GET_INDEX(DUK__DBGHEAP, h, i);
+			duk_uint_t h_idx = DUK_HOBJECT_H_GET_INDEX(duk__debug_get_heap(), h, i);
 			if (i > 0) {
 				duk_fb_put_byte(fb, (duk_uint8_t) DUK_ASC_COMMA);
 			}
@@ -767,13 +768,13 @@ DUK_LOCAL void duk__print_hbuffer(duk__dprint_state *st, duk_hbuffer *h) {
 			duk_hbuffer_external *g = (duk_hbuffer_external *) h;
 			duk_fb_sprintf(fb,
 			               "buffer:external:%p:%ld",
-			               (void *) DUK_HBUFFER_EXTERNAL_GET_DATA_PTR(DUK__DBGHEAP, g),
+			               (void *) DUK_HBUFFER_EXTERNAL_GET_DATA_PTR(duk__debug_get_heap(), g),
 			               (long) DUK_HBUFFER_EXTERNAL_GET_SIZE(g));
 		} else {
 			duk_hbuffer_dynamic *g = (duk_hbuffer_dynamic *) h;
 			duk_fb_sprintf(fb,
 			               "buffer:dynamic:%p:%ld",
-			               (void *) DUK_HBUFFER_DYNAMIC_GET_DATA_PTR(DUK__DBGHEAP, g),
+			               (void *) DUK_HBUFFER_DYNAMIC_GET_DATA_PTR(duk__debug_get_heap(), g),
 			               (long) DUK_HBUFFER_DYNAMIC_GET_SIZE(g));
 		}
 	} else {
@@ -787,7 +788,7 @@ DUK_LOCAL void duk__print_hbuffer(duk__dprint_state *st, duk_hbuffer *h) {
 	if (st->hexdump) {
 		duk_fb_sprintf(fb, "=[");
 		n = DUK_HBUFFER_GET_SIZE(h);
-		p = (duk_uint8_t *) DUK_HBUFFER_GET_DATA_PTR(DUK__DBGHEAP, h);
+		p = (duk_uint8_t *) DUK_HBUFFER_GET_DATA_PTR(duk__debug_get_heap(), h);
 		for (i = 0; i < n; i++) {
 			duk_fb_sprintf(fb, "%02lx", (unsigned long) p[i]);
 		}

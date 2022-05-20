@@ -63,6 +63,8 @@ DUK_INTERNAL void duk_prop_frompropdesc_propattrs(duk_hthread *thr, duk_int_t at
 	duk_xdef_prop_stridx_short_wec(thr, -2, DUK_STRIDX_ENUMERABLE);
 	duk_push_boolean(thr, uattrs & DUK_PROPDESC_FLAG_CONFIGURABLE);
 	duk_xdef_prop_stridx_short_wec(thr, -2, DUK_STRIDX_CONFIGURABLE);
+
+	/* [ ... res ] */
 }
 
 DUK_INTERNAL void duk_prop_frompropdesc_with_idx(duk_hthread *thr, duk_idx_t idx_desc, duk_int_t defprop_flags) {
@@ -150,8 +152,14 @@ DUK_LOCAL duk_bool_t duk__prop_getset_check_and_promote(duk_hthread *thr) {
  * attributes).
  *
  * Supports partial descriptors.
+ *
+ * [ ... desc_obj ] -> [ ... <none|value|get set ] + defprop_flags
  */
 DUK_INTERNAL duk_small_uint_t duk_prop_topropdesc(duk_hthread *thr) {
+#if defined(DUK_USE_ASSERTIONS)
+	duk_idx_t entry_top = duk_get_top(thr);
+	duk_idx_t val_count = 0;
+#endif
 	duk_idx_t obj_idx;
 	duk_bool_t flag;
 	duk_small_uint_t attrs = 0U;
@@ -176,6 +184,9 @@ DUK_INTERNAL duk_small_uint_t duk_prop_topropdesc(duk_hthread *thr) {
 
 	if (duk__prop_has_get_prop_stridx(thr, obj_idx, DUK_STRIDX_VALUE)) {
 		attrs |= DUK_DEFPROP_HAVE_VALUE;
+#if defined(DUK_USE_ASSERTIONS)
+		val_count++;
+#endif
 	}
 
 	if (duk__prop_has_get_prop_stridx_toboolean(thr, obj_idx, DUK_STRIDX_WRITABLE, &flag)) {
@@ -186,6 +197,9 @@ DUK_INTERNAL duk_small_uint_t duk_prop_topropdesc(duk_hthread *thr) {
 		if (!duk__prop_getset_check_and_promote(thr)) {
 			goto invalid_desc;
 		}
+#if defined(DUK_USE_ASSERTIONS)
+		val_count++;
+#endif
 		attrs |= DUK_DEFPROP_HAVE_GETTER;
 	}
 
@@ -193,6 +207,9 @@ DUK_INTERNAL duk_small_uint_t duk_prop_topropdesc(duk_hthread *thr) {
 		if (!duk__prop_getset_check_and_promote(thr)) {
 			goto invalid_desc;
 		}
+#if defined(DUK_USE_ASSERTIONS)
+		val_count++;
+#endif
 		attrs |= DUK_DEFPROP_HAVE_SETTER;
 	}
 
@@ -202,6 +219,11 @@ DUK_INTERNAL duk_small_uint_t duk_prop_topropdesc(duk_hthread *thr) {
 		}
 	}
 
+	duk_remove(thr, obj_idx);
+
+#if defined(DUK_USE_ASSERTIONS)
+	DUK_ASSERT(duk_get_top(thr) == entry_top - 1 + val_count);
+#endif
 	return attrs;
 
 invalid_desc:
@@ -264,6 +286,14 @@ DUK_INTERNAL void duk_prop_pop_propdesc(duk_hthread *thr, duk_small_int_t attrs)
 		duk_small_uint_t uattrs = (duk_small_uint_t) attrs;
 		duk_pop_n(thr, (uattrs & DUK_PROPDESC_FLAG_ACCESSOR) ? 2 : 1);
 	}
+}
+
+DUK_INTERNAL duk_small_uint_t duk_prop_propdesc_valcount(duk_small_int_t attrs) {
+	if (attrs >= 0) {
+		duk_small_uint_t uattrs = (duk_small_uint_t) attrs;
+		return (uattrs & DUK_PROPDESC_FLAG_ACCESSOR) ? 2 : 1;
+	}
+	return 0;
 }
 
 DUK_INTERNAL duk_hobject *duk_prop_switch_stabilized_target_top(duk_hthread *thr, duk_hobject *target, duk_hobject *next) {

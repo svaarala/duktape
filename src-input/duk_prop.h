@@ -12,6 +12,8 @@ DUK_INTERNAL_DECL void duk_prop_frompropdesc_propattrs(duk_hthread *thr, duk_int
 DUK_INTERNAL_DECL void duk_prop_frompropdesc_with_idx(duk_hthread *thr, duk_idx_t idx_desc, duk_int_t attrs);
 DUK_INTERNAL_DECL duk_small_uint_t duk_prop_topropdesc(duk_hthread *thr);
 DUK_INTERNAL_DECL void duk_prop_pop_propdesc(duk_hthread *thr, duk_small_int_t attrs);
+DUK_INTERNAL_DECL duk_small_uint_t duk_prop_propdesc_valcount(duk_small_int_t attrs);
+
 DUK_INTERNAL_DECL duk_hobject *duk_prop_switch_stabilized_target_top(duk_hthread *thr, duk_hobject *target, duk_hobject *next);
 
 DUK_INTERNAL_DECL duk_bool_t duk_prop_arguments_map_prep(duk_hthread *thr,

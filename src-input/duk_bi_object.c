@@ -132,6 +132,8 @@ DUK_INTERNAL duk_ret_t duk_bi_object_constructor_define_properties(duk_hthread *
 	duk_uint_t defprop_flags;
 	duk_hobject *obj;
 
+	DUK_ASSERT_TOP(thr, 2);
+
 	/* Lightfunc and plain buffer handling by ToObject() coercion. */
 	obj = duk_require_hobject_promote_mask(thr, 0, DUK_TYPE_MASK_LIGHTFUNC | DUK_TYPE_MASK_BUFFER);
 	DUK_ASSERT(obj != NULL);
@@ -156,6 +158,8 @@ DUK_INTERNAL duk_ret_t duk_bi_object_constructor_define_properties(duk_hthread *
 		duk_set_top(thr, 2); /* -> [ hobject props ] */
 		duk_enum(thr, 1, DUK_ENUM_OWN_PROPERTIES_ONLY | DUK_ENUM_INCLUDE_SYMBOLS /*enum_flags*/);
 
+		DUK_ASSERT_TOP(thr, 3);
+
 		for (;;) {
 			duk_hstring *key;
 
@@ -175,13 +179,13 @@ DUK_INTERNAL duk_ret_t duk_bi_object_constructor_define_properties(duk_hthread *
 
 			defprop_flags = duk_prop_topropdesc(thr) | DUK_DEFPROP_THROW;
 
-			/* [ hobject props enum(props) key desc [multiple values] ] */
+			/* [ hobject props enum(props) key <variable> ] */
 
 			if (pass == 0) {
 				continue;
 			}
 
-			duk_prop_defown(thr, obj, DUK_GET_TVAL_POSIDX(thr, 3), 5 /*idx_desc*/, defprop_flags);
+			duk_prop_defown(thr, obj, DUK_GET_TVAL_POSIDX(thr, 3), 4 /*idx_desc*/, defprop_flags);
 		}
 	}
 
@@ -497,12 +501,12 @@ DUK_INTERNAL duk_ret_t duk_bi_object_constructor_define_property(duk_hthread *th
 	obj = duk_require_hobject_promote_mask(thr, 0, DUK_TYPE_MASK_LIGHTFUNC | DUK_TYPE_MASK_BUFFER);
 	DUK_ASSERT(obj != NULL);
 	DUK_ASSERT(duk_get_top(thr) == 3);
-	defprop_flags = duk_prop_topropdesc(thr);
+	defprop_flags = duk_prop_topropdesc(thr); /* -> [ obj key <variable> */
 	DUK_ASSERT(magic == 0U || magic == 1U);
 	if (magic == 0U) {
 		defprop_flags |= DUK_DEFPROP_THROW;
 	}
-	idx_desc = 3;
+	idx_desc = 2;
 	ret = duk_prop_defown(thr, obj, DUK_GET_TVAL_POSIDX(thr, 1), idx_desc, defprop_flags);
 
 	/* Ignore the property descriptor conversion outputs on the value stack,

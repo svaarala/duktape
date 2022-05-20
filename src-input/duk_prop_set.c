@@ -2504,10 +2504,12 @@ DUK_LOCAL DUK_ALWAYS_INLINE duk_bool_t duk__prop_set_stroridx_helper(duk_hthread
 		}
 
 #if defined(DUK_USE_ASSERTIONS)
+#if defined(DUK_USE_REFERENCE_COUNTING)
 		DUK_ASSERT(DUK_HEAPHDR_GET_REFCOUNT((duk_heaphdr *) target) > 0);
 		if (side_effect_safe && DUK_HEAPHDR_GET_REFCOUNT((duk_heaphdr *) target) == 1) {
 			DUK_DD(DUK_DDPRINT("'target' is only reachable via stabilized value stack slot"));
 		}
+#endif
 #endif
 
 		DUK_GC_TORTURE(thr->heap);
@@ -2610,10 +2612,12 @@ DUK_LOCAL DUK_ALWAYS_INLINE duk_bool_t duk__prop_set_stroridx_helper(duk_hthread
 		}
 
 #if defined(DUK_USE_ASSERTIONS)
+#if defined(DUK_USE_REFERENCE_COUNTING)
 		DUK_ASSERT(DUK_HEAPHDR_GET_REFCOUNT((duk_heaphdr *) target) > 0);
 		if (side_effect_safe && DUK_HEAPHDR_GET_REFCOUNT((duk_heaphdr *) target) == 1) {
 			DUK_DD(DUK_DDPRINT("'target' is only reachable via stabilized value stack slot"));
 		}
+#endif
 #endif
 
 		next = DUK_HOBJECT_GET_PROTOTYPE(thr->heap, target);
