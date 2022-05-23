@@ -447,25 +447,51 @@ DUK_LOCAL duk_bool_t duk__prop_has_idxkey(duk_hthread *thr, duk_tval *tv_obj, du
 }
 
 DUK_INTERNAL duk_bool_t duk_prop_has_strkey(duk_hthread *thr, duk_tval *tv_obj, duk_hstring *key) {
+#if defined(DUK_USE_ASSERTIONS)
+	duk_idx_t entry_top;
+#endif
+
 	DUK_ASSERT(thr != NULL);
 	DUK_ASSERT(tv_obj != NULL);
 	DUK_ASSERT(DUK_TVAL_IS_OBJECT(tv_obj) || DUK_TVAL_IS_BUFFER(tv_obj) || DUK_TVAL_IS_LIGHTFUNC(tv_obj));
 	DUK_ASSERT(key != NULL);
+#if defined(DUK_USE_ASSERTIONS)
+	entry_top = duk_get_top(thr);
+#endif
 
 	if (DUK_UNLIKELY(DUK_HSTRING_HAS_ARRIDX(key))) {
-		return duk__prop_has_idxkey(thr, tv_obj, duk_hstring_get_arridx_fast_known(key));
+		duk_bool_t rc;
+
+		rc = duk__prop_has_idxkey(thr, tv_obj, duk_hstring_get_arridx_fast_known(key));
+		DUK_ASSERT(duk_get_top(thr) == entry_top);
+		return rc;
 	} else {
-		return duk__prop_has_strkey(thr, tv_obj, key);
+		duk_bool_t rc;
+
+		DUK_ASSERT(!DUK_HSTRING_HAS_ARRIDX(key));
+		rc = duk__prop_has_strkey(thr, tv_obj, key);
+		DUK_ASSERT(duk_get_top(thr) == entry_top);
+		return rc;
 	}
 }
 
 DUK_INTERNAL duk_bool_t duk_prop_has_idxkey(duk_hthread *thr, duk_tval *tv_obj, duk_uarridx_t idx) {
+#if defined(DUK_USE_ASSERTIONS)
+	duk_idx_t entry_top;
+#endif
+
 	DUK_ASSERT(thr != NULL);
 	DUK_ASSERT(tv_obj != NULL);
 	DUK_ASSERT(DUK_TVAL_IS_OBJECT(tv_obj) || DUK_TVAL_IS_BUFFER(tv_obj) || DUK_TVAL_IS_LIGHTFUNC(tv_obj));
+	DUK_ASSERT_ARRIDX_VALID(idx);
+#if defined(DUK_USE_ASSERTIONS)
+	entry_top = duk_get_top(thr);
+#endif
 
 	if (DUK_LIKELY(idx <= DUK_ARRIDX_MAX)) {
-		return duk__prop_has_idxkey(thr, tv_obj, idx);
+		duk_bool_t rc = duk__prop_has_idxkey(thr, tv_obj, idx);
+		DUK_ASSERT(duk_get_top(thr) == entry_top);
+		return rc;
 	} else {
 		duk_bool_t rc;
 		duk_hstring *key;
@@ -474,11 +500,15 @@ DUK_INTERNAL duk_bool_t duk_prop_has_idxkey(duk_hthread *thr, duk_tval *tv_obj, 
 		key = duk_push_u32_tohstring(thr, idx);
 		rc = duk__prop_has_strkey(thr, tv_obj, key);
 		duk_pop_unsafe(thr);
+		DUK_ASSERT(duk_get_top(thr) == entry_top);
 		return rc;
 	}
 }
 
 DUK_INTERNAL duk_bool_t duk_prop_has(duk_hthread *thr, duk_tval *tv_obj, duk_tval *tv_key) {
+#if defined(DUK_USE_ASSERTIONS)
+	duk_idx_t entry_top;
+#endif
 	duk_bool_t rc;
 	duk_hstring *key;
 	duk_uarridx_t idx;
@@ -486,6 +516,9 @@ DUK_INTERNAL duk_bool_t duk_prop_has(duk_hthread *thr, duk_tval *tv_obj, duk_tva
 	DUK_ASSERT(thr != NULL);
 	DUK_ASSERT(tv_obj != NULL);
 	DUK_ASSERT(tv_key != NULL);
+#if defined(DUK_USE_ASSERTIONS)
+	entry_top = duk_get_top(thr);
+#endif
 
 	/* Behavior for non-object rvalue differs from other property
 	 * operations: primitive values are rejected, and rvalue (base)
@@ -566,11 +599,18 @@ DUK_INTERNAL duk_bool_t duk_prop_has(duk_hthread *thr, duk_tval *tv_obj, duk_tva
 	(void) duk_to_property_key_hstring(thr, -1);
 	rc = duk_prop_has(thr, DUK_GET_TVAL_NEGIDX(thr, -2), DUK_GET_TVAL_NEGIDX(thr, -1));
 	duk_pop_2_unsafe(thr);
+	DUK_ASSERT(duk_get_top(thr) == entry_top);
 	return rc;
 
 use_idx:
-	return duk__prop_has_idxkey(thr, tv_obj, idx);
+	DUK_ASSERT_ARRIDX_VALID(idx);
+	rc = duk__prop_has_idxkey(thr, tv_obj, idx);
+	DUK_ASSERT(duk_get_top(thr) == entry_top);
+	return rc;
 
 use_str:
-	return duk__prop_has_strkey(thr, tv_obj, key);
+	DUK_ASSERT(!DUK_HSTRING_HAS_ARRIDX(key));
+	rc = duk__prop_has_strkey(thr, tv_obj, key);
+	DUK_ASSERT(duk_get_top(thr) == entry_top);
+	return rc;
 }

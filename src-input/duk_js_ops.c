@@ -1144,7 +1144,9 @@ DUK_LOCAL duk_bool_t duk__js_instanceof_helper(duk_hthread *thr, duk_tval *tv_x,
 
 		DUK_ASSERT(val != NULL);
 #if defined(DUK_USE_ES6_PROXY)
-		val = duk_hobject_resolve_proxy_target(val);
+		/* Here we must throw for revoked proxy. */
+		val = duk_hobject_resolve_proxy_target_autothrow(thr, val);
+		DUK_ASSERT(val != NULL);
 #endif
 
 		if (skip_first) {
@@ -1302,18 +1304,23 @@ DUK_INTERNAL duk_small_uint_t duk_js_typeof_stridx(duk_tval *tv_x) {
  *  IsArray()
  */
 
-DUK_INTERNAL duk_bool_t duk_js_isarray_hobject(duk_hobject *h) {
+DUK_INTERNAL duk_bool_t duk_js_isarray_hobject(duk_hthread *thr, duk_hobject *h) {
 	DUK_ASSERT(h != NULL);
+
 #if defined(DUK_USE_ES6_PROXY)
-	h = duk_hobject_resolve_proxy_target(h);
+	/* Here we must throw for revoked proxy. */
+	h = duk_hobject_resolve_proxy_target_autothrow(thr, h);
+	DUK_ASSERT(h != NULL);
+#else
+	DUK_UNREF(thr);
 #endif
 	return (DUK_HEAPHDR_IS_ARRAY((duk_heaphdr *) h) ? 1 : 0);
 }
 
-DUK_INTERNAL duk_bool_t duk_js_isarray(duk_tval *tv) {
+DUK_INTERNAL duk_bool_t duk_js_isarray(duk_hthread *thr, duk_tval *tv) {
 	DUK_ASSERT(tv != NULL);
 	if (DUK_TVAL_IS_OBJECT(tv)) {
-		return duk_js_isarray_hobject(DUK_TVAL_GET_OBJECT(tv));
+		return duk_js_isarray_hobject(thr, DUK_TVAL_GET_OBJECT(tv));
 	}
 	return 0;
 }

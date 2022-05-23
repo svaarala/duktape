@@ -102,9 +102,10 @@ DUK_INTERNAL duk_hobject *duk_proxy_get_target_autothrow(duk_hthread *thr, duk_h
 #endif /* DUK_USE_ES6_PROXY */
 
 /* Get Proxy target object.  If the argument is not a Proxy, return it as is.
- * If a Proxy is revoked, an error is thrown.
+ * If a Proxy is revoked, return NULL.
  */
-DUK_INTERNAL duk_hobject *duk_hobject_resolve_proxy_target(duk_hobject *obj) {
+DUK_INTERNAL duk_hobject *duk_hobject_resolve_proxy_target_nothrow(duk_hthread *thr, duk_hobject *obj) {
+	DUK_ASSERT(thr != NULL);
 	DUK_ASSERT(obj != NULL);
 
 	/* Resolve Proxy targets until Proxy chain ends.  No explicit check for
@@ -119,10 +120,43 @@ DUK_INTERNAL duk_hobject *duk_hobject_resolve_proxy_target(duk_hobject *obj) {
 		h_proxy = (duk_hproxy *) obj;
 		DUK_HPROXY_ASSERT_VALID(h_proxy);
 		obj = h_proxy->target;
+		if (obj == NULL) {
+			/* Revoked. */
+			return NULL;
+		}
 		DUK_ASSERT(obj != NULL);
 	}
 #endif /* DUK_USE_ES6_PROXY */
 
 	DUK_ASSERT(obj != NULL);
 	return obj;
+}
+
+/* Get Proxy target object.  If the argument is not a Proxy, return it as is.
+ * If a Proxy is revoked, throw a TypeError.
+ */
+DUK_INTERNAL duk_hobject *duk_hobject_resolve_proxy_target_autothrow(duk_hthread *thr, duk_hobject *obj) {
+	duk_hobject *res;
+
+	DUK_ASSERT(thr != NULL);
+	DUK_ASSERT(obj != NULL);
+
+	res = duk_hobject_resolve_proxy_target_nothrow(thr, obj);
+
+	if (res) {
+		return res;
+	} else {
+		DUK_ERROR_TYPE_PROXY_REVOKED(thr);
+	}
+}
+
+DUK_INTERNAL void duk_proxy_revoke(duk_hthread *thr, duk_hproxy *h) {
+	DUK_ASSERT(thr != NULL);
+	DUK_ASSERT(h != NULL);
+	DUK_ASSERT(DUK_HOBJECT_IS_PROXY((duk_hobject *) h));
+
+	DUK_UNREF(thr);
+
+	h->target = NULL;
+	h->handler = NULL;
 }

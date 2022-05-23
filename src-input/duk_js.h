@@ -58,8 +58,8 @@ DUK_INTERNAL_DECL duk_bool_t duk_js_instanceof_ordinary(duk_hthread *thr, duk_tv
 #endif
 DUK_INTERNAL_DECL duk_bool_t duk_js_in(duk_hthread *thr, duk_tval *tv_x, duk_tval *tv_y);
 DUK_INTERNAL_DECL duk_small_uint_t duk_js_typeof_stridx(duk_tval *tv_x);
-DUK_INTERNAL_DECL duk_bool_t duk_js_isarray_hobject(duk_hobject *h);
-DUK_INTERNAL_DECL duk_bool_t duk_js_isarray(duk_tval *tv);
+DUK_INTERNAL_DECL duk_bool_t duk_js_isarray_hobject(duk_hthread *thr, duk_hobject *h);
+DUK_INTERNAL_DECL duk_bool_t duk_js_isarray(duk_hthread *thr, duk_tval *tv);
 
 /* arithmetic */
 DUK_INTERNAL_DECL double duk_js_arith_pow(double x, double y);

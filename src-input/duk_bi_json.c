@@ -1015,7 +1015,7 @@ DUK_LOCAL void duk__json_dec_reviver_walk(duk_json_dec_ctx *js_ctx) {
 
 	h = duk_get_hobject(thr, -1);
 	if (h != NULL) {
-		if (duk_js_isarray_hobject(h)) {
+		if (duk_js_isarray_hobject(thr, h)) {
 			arr_len = (duk_uarridx_t) duk_get_length(thr, -1);
 			for (i = 0; i < arr_len; i++) {
 				/* [ ... holder name val ] */
@@ -2266,7 +2266,7 @@ DUK_LOCAL duk_bool_t duk__json_enc_value(duk_json_enc_ctx *js_ctx, duk_idx_t idx
 		 */
 		DUK_ASSERT(!DUK_HOBJECT_IS_CALLABLE(h));
 
-		if (duk_js_isarray_hobject(h)) {
+		if (duk_js_isarray_hobject(thr, h)) {
 			duk__json_enc_array(js_ctx);
 		} else {
 			duk__json_enc_object(js_ctx);
@@ -3125,7 +3125,7 @@ void duk_bi_json_stringify_helper(duk_hthread *thr,
 	if (h != NULL) {
 		if (DUK_HOBJECT_IS_CALLABLE(h)) {
 			js_ctx->h_replacer = h;
-		} else if (duk_js_isarray_hobject(h)) {
+		} else if (duk_js_isarray_hobject(thr, h)) {
 			duk__json_setup_plist_from_array(thr, js_ctx, idx_replacer);
 		}
 	}

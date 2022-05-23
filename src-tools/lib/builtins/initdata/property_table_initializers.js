@@ -87,7 +87,7 @@ function emitPropertyTableDefinitions(genc, meta, objs, biStrMap, biObjMap) {
         return res;
     }
 
-    function emitInitializer(idx, o, layout) {
+    function emitInitializer(idx, o) {
         var initVals = [];
         var initKeys = [];
         var initFlags = [];
@@ -102,20 +102,7 @@ function emitPropertyTableDefinitions(genc, meta, objs, biStrMap, biObjMap) {
         for (let p of o.properties) {
             initFlags.push(prepAttrs(p));
         }
-        switch (layout) {
-        case 1:
-            initList = initKeys.concat(initVals).concat(initFlags);
-            break;
-        case 2:
-            initList = initVals.concat(initKeys).concat(initFlags);
-            break;
-        case 3:
-            // Same as layout 2 now, no hash/array.
-            initList = initVals.concat(initKeys).concat(initFlags);
-            break;
-        default:
-            throw new TypeError('internal error, invalid layout: ' + layout);
-        }
+        initList = initVals.concat(initKeys).concat(initFlags);
 
         if (initList.length > 0) {
             genc.emitLine('DUK_EXTERNAL const duk_romprops_' + idx + ' duk_prop_' + idx +
@@ -124,7 +111,7 @@ function emitPropertyTableDefinitions(genc, meta, objs, biStrMap, biObjMap) {
     }
 
     objs.forEach((o, idx) => {
-        emitInitializer(idx, o, 2);
+        emitInitializer(idx, o);
     });
 }
 exports.emitPropertyTableDefinitions = emitPropertyTableDefinitions;

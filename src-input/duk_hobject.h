@@ -639,6 +639,7 @@ DUK_INTERNAL_DECL duk_bool_t duk_hobject_object_is_sealed_frozen_helper(duk_hthr
 /* internal properties */
 DUK_INTERNAL_DECL duk_tval *duk_hobject_get_internal_value_tval_ptr(duk_heap *heap, duk_hobject *obj);
 DUK_INTERNAL_DECL duk_hstring *duk_hobject_get_internal_value_string(duk_heap *heap, duk_hobject *obj);
+DUK_INTERNAL_DECL duk_hobject *duk_hobject_get_internal_value_object(duk_heap *heap, duk_hobject *obj);
 DUK_INTERNAL_DECL duk_harray *duk_hobject_get_formals(duk_hthread *thr, duk_hobject *obj);
 DUK_INTERNAL_DECL duk_hobject *duk_hobject_get_varmap(duk_hthread *thr, duk_hobject *obj);
 
@@ -646,7 +647,8 @@ DUK_INTERNAL_DECL duk_hobject *duk_hobject_get_varmap(duk_hthread *thr, duk_hobj
 DUK_INTERNAL_DECL void duk_hobject_compact_object(duk_hthread *thr, duk_hobject *obj);
 
 /* Proxy */
-DUK_INTERNAL_DECL duk_hobject *duk_hobject_resolve_proxy_target(duk_hobject *obj);
+DUK_INTERNAL_DECL duk_hobject *duk_hobject_resolve_proxy_target_nothrow(duk_hthread *thr, duk_hobject *obj);
+DUK_INTERNAL_DECL duk_hobject *duk_hobject_resolve_proxy_target_autothrow(duk_hthread *thr, duk_hobject *obj);
 DUK_INTERNAL_DECL duk_hobject *duk_proxy_get_target_autothrow(duk_hthread *thr, duk_hproxy *h);
 #if defined(DUK_USE_ES6_PROXY)
 DUK_INTERNAL_DECL duk_bool_t duk_proxy_trap_check_strkey(duk_hthread *thr,
@@ -659,6 +661,7 @@ DUK_INTERNAL_DECL duk_bool_t duk_proxy_trap_check_idxkey(duk_hthread *thr,
                                                          duk_small_uint_t trap_stridx);
 DUK_INTERNAL_DECL duk_bool_t duk_proxy_trap_check_nokey(duk_hthread *thr, duk_hproxy *h, duk_small_uint_t trap_stridx);
 #endif
+DUK_INTERNAL_DECL void duk_proxy_revoke(duk_hthread *thr, duk_hproxy *h);
 
 /* macros */
 DUK_INTERNAL_DECL duk_hobject *duk_hobject_get_proto_raw(duk_heap *heap, duk_hobject *h);
