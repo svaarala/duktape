@@ -62,8 +62,8 @@ DUK_INTERNAL duk_uint32_t duk_hobject_get_min_grow_a(duk_uint32_t a_size) {
 }
 
 /* Compute hash part size as a function of entry part size. */
-#if defined(DUK_USE_HOBJECT_HASH_PART)
 DUK_LOCAL duk_uint32_t duk__compute_hash_size(duk_uint32_t e_size) {
+#if defined(DUK_USE_HOBJECT_HASH_PART)
 	duk_uint32_t res;
 	duk_uint32_t tmp;
 
@@ -90,8 +90,11 @@ DUK_LOCAL duk_uint32_t duk__compute_hash_size(duk_uint32_t e_size) {
 	}
 	DUK_ASSERT(res > e_size); /* >= e_size required for hashing to work */
 	return res;
-}
+#else
+	DUK_UNREF(e_size);
+	return 0;
 #endif /* USE_PROP_HASH_PART */
+}
 
 DUK_INTERNAL duk_uint32_t duk_harray_count_used_items(duk_heap *heap, duk_harray *a) {
 	duk_uint32_t i, n;

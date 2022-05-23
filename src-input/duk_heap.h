@@ -754,8 +754,8 @@ DUK_INTERNAL_DECL void duk_heap_mark_and_sweep(duk_heap *heap, duk_small_uint_t 
 
 DUK_INTERNAL_DECL duk_uint32_t duk_heap_hashstring(duk_heap *heap, const duk_uint8_t *str, duk_size_t len);
 
-#if defined(DUK_USE_HEAPPTR16) && defined(DUK_USE_DEBUG)
-DUK_INTERNAL_DECL duk_heap *duk_global_dbgheap;
+#if defined(DUK_USE_DEBUG) && (defined(DUK_USE_HEAPPTR_ENC16) || defined(DUK_USE_DATAPTR_ENC16) || defined(DUK_USE_FUNCPTR_ENC16))
+DUK_INTERNAL_DECL duk_heap *duk_debug_global_heap_singleton;
 #endif
 
 #endif /* DUK_HEAP_H_INCLUDED */

@@ -56,35 +56,46 @@ DUK_LOCAL duk_small_int_t duk__prop_getowndesc_idxkey_plain(duk_hthread *thr, du
 
 #if defined(DUK_USE_PROXY_POLICY)
 DUK_LOCAL duk_small_int_t duk__prop_getown_proxy_policy(duk_hthread *thr, duk_hobject *obj) {
+#if defined(DUK_USE_ASSERTIONS)
+	duk_idx_t entry_top = duk_get_top(thr);
+#endif
 	duk_hobject *target;
 	duk_small_int_t attrs;
-	duk_small_int_t rc;
+	duk_small_int_t attrs_target;
+
+	/* [ ... key result ] */
 
 	DUK_ASSERT(duk_is_object(thr, -1) || duk_is_undefined(thr, -1));
 
 	target = duk_proxy_get_target_autothrow(thr, (duk_hproxy *) obj);
 	DUK_ASSERT(target != NULL);
 
-	attrs = duk_prop_getowndesc_obj_tvkey(thr, target, duk_require_tval(thr, -2));
-	duk_prop_pop_propdesc(thr, attrs);
+	attrs_target = duk_prop_getownattr_obj_tvkey(thr, target, duk_require_tval(thr, -2));
+	duk_remove_m2(thr);
+
+	/* [ ... result ] */
 
 	if (duk_is_undefined(thr, -1)) {
-		if (attrs >= 0) {
-			duk_small_uint_t uattrs = (duk_small_uint_t) attrs;
-			if ((uattrs & DUK_PROPDESC_FLAG_CONFIGURABLE) == 0) {
+		if (attrs_target >= 0) {
+			duk_small_uint_t uattrs_target = (duk_small_uint_t) attrs_target;
+			if ((uattrs_target & DUK_PROPDESC_FLAG_CONFIGURABLE) == 0) {
 				goto fail;
 			}
 			if (!duk_js_isextensible(thr, target)) {
 				goto fail;
 			}
 		}
-		rc = -1;
+		attrs = -1;
+		duk_pop_unsafe(thr);
 	} else {
 		DUK_ASSERT(duk_is_object(thr, -1));
-		rc = (duk_small_int_t) duk_prop_topropdesc(thr);
+		attrs = (duk_small_int_t) duk_prop_topropdesc(thr); /* -> [ ... <variable> ] */
+		DUK_ASSERT(attrs >= 0);
 		/* XXX: Missing stuff here. */
 	}
-	return rc;
+
+	DUK_ASSERT(duk_get_top(thr) == entry_top - 2 + duk_prop_propdesc_valcount(attrs));
+	return attrs;
 
 fail:
 	DUK_ERROR_TYPE(thr, DUK_STR_INVALID_TRAP_RESULT);
@@ -93,7 +104,10 @@ fail:
 #endif
 
 DUK_LOCAL duk_small_int_t duk__prop_getown_proxy_tail(duk_hthread *thr, duk_hobject *obj) {
-	duk_small_int_t rc;
+#if defined(DUK_USE_ASSERTIONS)
+	duk_idx_t entry_top = duk_get_top(thr);
+#endif
+	duk_small_int_t attrs;
 
 	/* [ ... trap handler target key ] */
 
@@ -104,20 +118,24 @@ DUK_LOCAL duk_small_int_t duk__prop_getown_proxy_tail(duk_hthread *thr, duk_hobj
 
 	duk_call_method(thr, 2); /* [ ... key trap handler target key ] -> [ ... key result ] */
 
+	/* [ ... key result ] */
+
 	if (duk_check_type_mask(thr, -1, DUK_TYPE_MASK_UNDEFINED | DUK_TYPE_MASK_OBJECT)) {
 #if defined(DUK_USE_PROXY_POLICY)
-		rc = duk__prop_getown_proxy_policy(thr, obj);
+		attrs = duk__prop_getown_proxy_policy(thr, obj);
 #else
 		DUK_DD(DUK_DDPRINT("proxy policy check for 'getOwnPropertyDescriptor' trap disabled in configuration"));
 		/* XXX: Missing stuff here. */
-		rc = -1;
+		attrs = -1;
 #endif
 	} else {
 		goto invalid_result;
 	}
 
-	duk_remove_m2(thr); /* [ ... key result ] -> [ ... result ] */
-	return rc;
+	/* [ ... <variable> ] */
+
+	DUK_ASSERT(duk_get_top(thr) == entry_top - 4 + duk_prop_propdesc_valcount(attrs));
+	return attrs;
 
 invalid_result:
 	DUK_ERROR_TYPE(thr, DUK_STR_INVALID_TRAP_RESULT);
@@ -448,67 +466,97 @@ DUK_LOCAL duk_small_int_t duk__prop_getowndesc_idxkey_safe(duk_hthread *thr, duk
 }
 
 DUK_INTERNAL duk_small_int_t duk_prop_getowndesc_obj_strkey(duk_hthread *thr, duk_hobject *obj, duk_hstring *key) {
+#if defined(DUK_USE_ASSERTIONS)
+	duk_idx_t entry_top = duk_get_top(thr);
+#endif
+
 	DUK_ASSERT(thr != NULL);
 	DUK_ASSERT(obj != NULL);
 	DUK_ASSERT(key != NULL);
 
 	if (DUK_UNLIKELY(DUK_HSTRING_HAS_ARRIDX(key))) {
-		return duk__prop_getowndesc_idxkey_unsafe(thr, obj, duk_hstring_get_arridx_fast_known(key));
+		duk_small_int_t attrs = duk__prop_getowndesc_idxkey_unsafe(thr, obj, duk_hstring_get_arridx_fast_known(key));
+		DUK_ASSERT(duk_get_top(thr) == entry_top + duk_prop_propdesc_valcount(attrs));
+		return attrs;
 	} else {
-		return duk__prop_getowndesc_strkey_unsafe(thr, obj, key);
+		duk_small_int_t attrs = duk__prop_getowndesc_strkey_unsafe(thr, obj, key);
+		DUK_ASSERT(duk_get_top(thr) == entry_top + duk_prop_propdesc_valcount(attrs));
+		return attrs;
 	}
 }
 
 DUK_INTERNAL duk_small_int_t duk_prop_getowndesc_obj_idxkey(duk_hthread *thr, duk_hobject *obj, duk_uarridx_t idx) {
+#if defined(DUK_USE_ASSERTIONS)
+	duk_idx_t entry_top = duk_get_top(thr);
+#endif
+
 	DUK_ASSERT(thr != NULL);
 	DUK_ASSERT(obj != NULL);
 	DUK_ASSERT_ARRIDX_VALID(idx);
 
 	if (DUK_LIKELY(idx <= DUK_ARRIDX_MAX)) {
-		return duk__prop_getowndesc_idxkey_unsafe(thr, obj, idx);
+		duk_small_int_t attrs = duk__prop_getowndesc_idxkey_unsafe(thr, obj, idx);
+		DUK_ASSERT(duk_get_top(thr) == entry_top + duk_prop_propdesc_valcount(attrs));
+		return attrs;
 	} else {
-		duk_small_int_t rc;
+		duk_small_int_t attrs;
 		duk_hstring *key;
 
 		DUK_DD(DUK_DDPRINT("corner case, input idx 0xffffffff is not an arridx, must coerce to string"));
 
 		key = duk_push_u32_tohstring(thr, idx);
-		rc = duk__prop_getowndesc_strkey_unsafe(thr, obj, key);
+		attrs = duk__prop_getowndesc_strkey_unsafe(thr, obj, key);
 		duk_pop_unsafe(thr);
-		return rc;
+		DUK_ASSERT(duk_get_top(thr) == entry_top + duk_prop_propdesc_valcount(attrs));
+		return attrs;
 	}
 }
 
 DUK_INTERNAL duk_small_int_t duk_prop_getowndesc_obj_tvkey(duk_hthread *thr, duk_hobject *obj, duk_tval *tv_key) {
-	duk_small_int_t rc;
-	duk_idx_t entry_top;
+	duk_small_int_t attrs;
+	duk_idx_t entry_top = duk_get_top(thr);
 
 	DUK_ASSERT(thr != NULL);
 	DUK_ASSERT(obj != NULL);
 	DUK_ASSERT(tv_key != NULL);
 
-	entry_top = duk_get_top(thr);
 	duk_push_tval(thr, tv_key);
-	rc = duk_prop_getowndesc_obj_strkey(thr, obj, duk_to_property_key_hstring(thr, -1));
+	attrs = duk_prop_getowndesc_obj_strkey(thr, obj, duk_to_property_key_hstring(thr, -1));
 	duk_remove(thr, entry_top); /* Remove stabilized 'tv_key', keep property value or get/set. */
 	DUK_ASSERT(duk_get_top(thr) >= entry_top);
-	return rc;
+	DUK_ASSERT(duk_get_top(thr) == entry_top + duk_prop_propdesc_valcount(attrs));
+	return attrs;
 }
 
 DUK_INTERNAL duk_small_int_t duk_prop_getownattr_obj_strkey(duk_hthread *thr, duk_hobject *obj, duk_hstring *key) {
+#if defined(DUK_USE_ASSERTIONS)
+	duk_idx_t entry_top = duk_get_top(thr);
+#endif
 	duk_small_int_t attrs = duk_prop_getowndesc_obj_strkey(thr, obj, key);
+
 	duk_prop_pop_propdesc(thr, attrs);
+	DUK_ASSERT(duk_get_top(thr) == entry_top);
 	return attrs;
 }
 
 DUK_INTERNAL duk_small_int_t duk_prop_getownattr_obj_idxkey(duk_hthread *thr, duk_hobject *obj, duk_uarridx_t idx) {
+#if defined(DUK_USE_ASSERTIONS)
+	duk_idx_t entry_top = duk_get_top(thr);
+#endif
 	duk_small_int_t attrs = duk_prop_getowndesc_obj_idxkey(thr, obj, idx);
+
 	duk_prop_pop_propdesc(thr, attrs);
+	DUK_ASSERT(duk_get_top(thr) == entry_top);
 	return attrs;
 }
 
 DUK_INTERNAL duk_small_int_t duk_prop_getownattr_obj_tvkey(duk_hthread *thr, duk_hobject *obj, duk_tval *tv_key) {
+#if defined(DUK_USE_ASSERTIONS)
+	duk_idx_t entry_top = duk_get_top(thr);
+#endif
 	duk_small_int_t attrs = duk_prop_getowndesc_obj_tvkey(thr, obj, tv_key);
+
 	duk_prop_pop_propdesc(thr, attrs);
+	DUK_ASSERT(duk_get_top(thr) == entry_top);
 	return attrs;
 }

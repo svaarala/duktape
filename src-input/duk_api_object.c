@@ -586,6 +586,9 @@ DUK_INTERNAL void duk_xdef_prop_stridx_thrower(duk_hthread *thr, duk_idx_t obj_i
 
 /* Object.getOwnPropertyDescriptor() equivalent C binding. */
 DUK_EXTERNAL void duk_get_prop_desc(duk_hthread *thr, duk_idx_t obj_idx, duk_uint_t flags) {
+#if defined(DUK_USE_ASSERTIONS)
+	duk_idx_t entry_top = duk_get_top(thr);
+#endif
 	duk_hobject *obj;
 	duk_int_t attrs;
 
@@ -596,6 +599,7 @@ DUK_EXTERNAL void duk_get_prop_desc(duk_hthread *thr, duk_idx_t obj_idx, duk_uin
 	attrs = duk_prop_getowndesc_obj_tvkey(thr, obj, duk_require_tval(thr, -1)); /* -> [ ... key <desc specific> ] */
 	duk_prop_frompropdesc_propattrs(thr, attrs); /* -> [ ... key desc ] */
 	duk_remove_m2(thr); /* -> [ ... desc ] */
+	DUK_ASSERT(duk_get_top(thr) == entry_top); /* key replaced with desc */
 }
 
 /* Object.defineProperty() equivalent C binding. */
