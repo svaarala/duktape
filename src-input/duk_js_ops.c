@@ -170,7 +170,7 @@ DUK_LOCAL duk_double_t duk__tonumber_string_raw(duk_hthread *thr) {
 
 #if defined(DUK_USE_PREFER_SIZE)
 	d = duk_get_number(thr, -1);
-	duk_pop_unsafe(thr);
+	duk_pop_known(thr);
 #else
 	thr->valstack_top--;
 	DUK_ASSERT(DUK_TVAL_IS_NUMBER(thr->valstack_top));
@@ -227,7 +227,7 @@ DUK_INTERNAL duk_double_t duk_js_tonumber(duk_hthread *thr, duk_tval *tv) {
 		DUK_ASSERT(duk_get_tval(thr, -1) != NULL);
 		d = duk_js_tonumber(thr, duk_get_tval(thr, -1));
 
-		duk_pop_unsafe(thr);
+		duk_pop_known(thr);
 		return d;
 	}
 	case DUK_TAG_POINTER: {
@@ -690,7 +690,7 @@ recursive_call:
 	{
 		duk_bool_t rc;
 		rc = duk_js_equals_helper(thr, DUK_GET_TVAL_NEGIDX(thr, -2), DUK_GET_TVAL_NEGIDX(thr, -1), 0 /*flags:nonstrict*/);
-		duk_pop_2_unsafe(thr);
+		duk_pop_2_known(thr);
 		return rc;
 	}
 }
@@ -931,7 +931,7 @@ DUK_INTERNAL duk_bool_t duk_js_compare_helper(duk_hthread *thr, duk_tval *tv_x, 
 
 		if (DUK_LIKELY(!DUK_HSTRING_HAS_SYMBOL(h1) && !DUK_HSTRING_HAS_SYMBOL(h2))) {
 			rc = duk_js_string_compare(h1, h2);
-			duk_pop_2_unsafe(thr);
+			duk_pop_2_known(thr);
 			if (rc < 0) {
 				return retval ^ 1;
 			} else {
@@ -957,11 +957,11 @@ DUK_INTERNAL duk_bool_t duk_js_compare_helper(duk_hthread *thr, duk_tval *tv_x, 
 	d1 = duk_to_number_m2(thr);
 	d2 = duk_to_number_m1(thr);
 
-	/* We want to duk_pop_2_unsafe(thr); because the values are numbers
+	/* We want to duk_pop_2_known(thr); because the values are numbers
 	 * no decref check is needed.
 	 */
 #if defined(DUK_USE_PREFER_SIZE)
-	duk_pop_2_nodecref_unsafe(thr);
+	duk_pop_2_nodecref_known(thr);
 #else
 	DUK_ASSERT(!DUK_TVAL_NEEDS_REFCOUNT_UPDATE(duk_get_tval(thr, -2)));
 	DUK_ASSERT(!DUK_TVAL_NEEDS_REFCOUNT_UPDATE(duk_get_tval(thr, -1)));
@@ -1164,15 +1164,15 @@ DUK_LOCAL duk_bool_t duk__js_instanceof_helper(duk_hthread *thr, duk_tval *tv_x,
 	DUK_WO_NORETURN(return 0;);
 
 pop2_and_false:
-	duk_pop_2_unsafe(thr);
+	duk_pop_2_known(thr);
 	return 0;
 
 pop3_and_false:
-	duk_pop_3_unsafe(thr);
+	duk_pop_3_known(thr);
 	return 0;
 
 pop3_and_true:
-	duk_pop_3_unsafe(thr);
+	duk_pop_3_known(thr);
 	return 1;
 
 error_invalid_rval:

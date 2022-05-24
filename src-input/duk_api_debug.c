@@ -26,7 +26,7 @@ DUK_EXTERNAL void duk_push_context_dump(duk_hthread *thr) {
 	 * Perhaps values need to be coerced individually?
 	 */
 	duk_bi_json_stringify_helper(thr,
-	                             duk_get_top_index(thr), /*idx_value*/
+	                             duk_get_top_index_known(thr), /*idx_value*/
 	                             DUK_INVALID_INDEX, /*idx_replacer*/
 	                             DUK_INVALID_INDEX, /*idx_space*/
 	                             DUK_JSON_FLAG_EXT_CUSTOM | DUK_JSON_FLAG_ASCII_ONLY |

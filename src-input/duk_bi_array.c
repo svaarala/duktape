@@ -266,7 +266,7 @@ DUK_INTERNAL duk_ret_t duk_bi_array_prototype_concat(duk_hthread *thr) {
 			} else {
 				spreadable = duk_to_boolean(thr, -1);
 			}
-			duk_pop_nodecref_unsafe(thr);
+			duk_pop_nodecref_known(thr);
 #else
 			spreadable = duk_js_isarray_hobject(thr, h);
 #endif
@@ -408,7 +408,7 @@ DUK_INTERNAL duk_ret_t duk_bi_array_prototype_join_shared(duk_hthread *thr) {
 
 		duk_get_prop_index(thr, 1, (duk_uarridx_t) idx);
 		if (duk_is_nullish(thr, -1)) {
-			duk_pop_nodecref_unsafe(thr);
+			duk_pop_nodecref_known(thr);
 			duk_push_hstring_empty(thr);
 		} else {
 			if (to_locale_string) {
@@ -726,7 +726,7 @@ DUK_LOCAL duk_small_int_t duk__array_sort_compare(duk_hthread *thr, duk_int_t id
 			ret = 0;
 		}
 
-		duk_pop_nodecref_unsafe(thr);
+		duk_pop_nodecref_known(thr);
 		DUK_DDD(DUK_DDDPRINT("-> result %ld (from comparefn, after coercion)", (long) ret));
 		return ret;
 	}
@@ -743,7 +743,7 @@ DUK_LOCAL duk_small_int_t duk__array_sort_compare(duk_hthread *thr, duk_int_t id
 	goto pop_ret;
 
 pop_ret:
-	duk_pop_2_unsafe(thr);
+	duk_pop_2_known(thr);
 	DUK_DDD(DUK_DDDPRINT("-> result %ld", (long) ret));
 	return ret;
 }
@@ -919,7 +919,7 @@ DUK_INTERNAL duk_ret_t duk_bi_array_prototype_sort(duk_hthread *thr) {
 	}
 
 	DUK_ASSERT_TOP(thr, 3);
-	duk_pop_nodecref_unsafe(thr);
+	duk_pop_nodecref_known(thr);
 	return 1; /* return ToObject(this) */
 }
 
@@ -1145,7 +1145,7 @@ DUK_INTERNAL duk_ret_t duk_bi_array_prototype_reverse(duk_hthread *thr) {
 	}
 
 	DUK_ASSERT_TOP(thr, 2);
-	duk_pop_unsafe(thr); /* -> [ ToObject(this) ] */
+	duk_pop_known(thr); /* -> [ ToObject(this) ] */
 	return 1;
 }
 
@@ -1404,7 +1404,7 @@ DUK_INTERNAL duk_ret_t duk_bi_array_prototype_indexof_shared(duk_hthread *thr) {
 			}
 		}
 
-		duk_pop_unsafe(thr);
+		duk_pop_known(thr);
 	}
 
 not_found:
@@ -1518,7 +1518,7 @@ DUK_INTERNAL duk_ret_t duk_bi_array_prototype_iter_shared(duk_hthread *thr) {
 			DUK_UNREACHABLE();
 			break;
 		}
-		duk_pop_2_unsafe(thr);
+		duk_pop_2_known(thr);
 
 		DUK_ASSERT_TOP(thr, 5);
 	}

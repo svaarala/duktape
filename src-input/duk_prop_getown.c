@@ -86,7 +86,7 @@ DUK_LOCAL duk_small_int_t duk__prop_getown_proxy_policy(duk_hthread *thr, duk_ho
 			}
 		}
 		attrs = -1;
-		duk_pop_unsafe(thr);
+		duk_pop_known(thr);
 	} else {
 		DUK_ASSERT(duk_is_object(thr, -1));
 		attrs = (duk_small_int_t) duk_prop_topropdesc(thr); /* -> [ ... <variable> ] */
@@ -327,9 +327,9 @@ DUK_LOCAL duk_small_int_t duk__prop_getowndesc_idxkey_arguments(duk_hthread *thr
 			 * looked up above may no longer be mapped, but this doesn't
 			 * matter for safety.
 			 */
-			duk_pop_unsafe(thr);
+			duk_pop_known(thr);
 			(void) duk_js_getvar_envrec(thr, env, varname, 1 /*throw*/); /* -> [ ... value this_binding ] */
-			duk_pop_unsafe(thr);
+			duk_pop_known(thr);
 		}
 	}
 
@@ -517,7 +517,7 @@ DUK_INTERNAL duk_small_int_t duk_prop_getowndesc_obj_idxkey(duk_hthread *thr, du
 
 		key = duk_push_u32_tohstring(thr, idx);
 		attrs = duk__prop_getowndesc_strkey_unsafe(thr, obj, key);
-		duk_pop_unsafe(thr);
+		duk_pop_known(thr);
 		DUK_ASSERT(duk_get_top(thr) == entry_top + duk_prop_propdesc_valcount(attrs));
 		return attrs;
 	}

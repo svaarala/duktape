@@ -37,6 +37,10 @@ DUK_INTERNAL duk_ret_t duk_bi_proxy_constructor_revocable(duk_hthread *thr) {
 	duk_push_proxy(thr, 0 /*flags*/); /* [ target handler ] -> [ proxy ] */
 	duk_push_object(thr);
 	duk_push_c_function(thr, duk__bi_proxy_revoker, 0);
+	duk_push_hstring_empty(thr);
+	duk_xdef_prop_stridx_short(thr, -2, DUK_STRIDX_NAME, DUK_PROPDESC_FLAGS_C);
+	duk_push_uint(thr, 0);
+	duk_xdef_prop_stridx_short(thr, -2, DUK_STRIDX_LENGTH, DUK_PROPDESC_FLAGS_C);
 	duk_dup(thr, 0); /* -> [ proxy retval revoker proxy ] */
 	duk_xdef_prop_stridx_short(thr, -2, DUK_STRIDX_INT_VALUE, DUK_PROPDESC_FLAGS_NONE);
 	duk_pull(thr, 0); /* -> [ retval revoker proxy ] */

@@ -33,25 +33,20 @@ DUK_LOCAL const char *duk__get_symbol_type_string(duk_hstring *h) {
 	return duk__symbol_type_strings[idx];
 }
 
-DUK_INTERNAL void duk_push_class_string_hobject(duk_hthread *thr, duk_hobject *obj, duk_bool_t avoid_side_effects) {
-	duk_uint32_t htype;
-	duk_small_uint_t stridx;
-
-	DUK_ASSERT(obj != NULL);
-	DUK_UNREF(avoid_side_effects);
-
-	duk_push_literal(thr, "[object ");
-	htype = DUK_HOBJECT_GET_HTYPE(obj);
-	stridx = duk_htype_to_stridx[htype];
-	duk_push_hstring_stridx(thr, stridx);
-	duk_push_literal(thr, "]");
-	duk_concat(thr, 3);
+DUK_INTERNAL void duk_push_objproto_tostring_hobject(duk_hthread *thr, duk_hobject *obj, duk_bool_t avoid_side_effects) {
+	/* Just rely on the duk_tval variant for now. */
+	duk_push_hobject(thr, obj);
+	duk_push_objproto_tostring_tval(thr, DUK_GET_TVAL_NEGIDX(thr, -1), avoid_side_effects);
+	duk_remove_m2(thr);
 }
 
 /* Push Object.prototype.toString() output for 'tv'.
  * https://tc39.es/ecma262/#sec-object.prototype.tostring
+ *
+ * This operation is almost error free but does throw for revoked Proxies.
+ * When avoid_side_effects=1 we avoid a throw for a revoked Proxy.
  */
-DUK_INTERNAL void duk_push_class_string_tval(duk_hthread *thr, duk_tval *tv, duk_bool_t avoid_side_effects) {
+DUK_INTERNAL void duk_push_objproto_tostring_tval(duk_hthread *thr, duk_tval *tv, duk_bool_t avoid_side_effects) {
 	duk_hobject *h;
 	duk_hobject *h_resolved;
 	duk_small_uint_t htype;
@@ -123,8 +118,12 @@ DUK_INTERNAL void duk_push_class_string_tval(duk_hthread *thr, duk_tval *tv, duk
 		/* Here we want to detect a revoked Proxy without throwing. */
 		h_resolved = duk_hobject_resolve_proxy_target_nothrow(thr, h);
 		if (h_resolved == NULL) {
-			duk_push_string(thr, "Proxy(revoked)");
-			goto tag_pushed;
+			if (avoid_side_effects) {
+				duk_push_string(thr, "RevokedProxy");
+				goto tag_pushed;
+			} else {
+				DUK_ERROR_TYPE_PROXY_REVOKED(thr);
+			}
 		} else if (DUK_HOBJECT_IS_ARRAY(h_resolved)) {
 			/* IsArray() resolves Proxy chain target recursively. */
 			stridx = DUK_STRIDX_UC_ARRAY;
@@ -150,19 +149,19 @@ DUK_INTERNAL void duk_push_class_string_tval(duk_hthread *thr, duk_tval *tv, duk
 				 * form if it's a string.
 				 */
 				(void) duk_prop_getvalue_stridx_push(thr,
-				                                     duk_get_top_index(thr),
+				                                     duk_get_top_index_known(thr),
 				                                     DUK_STRIDX_WELLKNOWN_SYMBOL_TO_STRING_TAG);
 				if (duk_is_string_notsymbol(thr, -1)) {
 					duk_remove_m2(thr); /* -> [ ... tag ] */
 					goto tag_pushed;
 				}
-				duk_pop_unsafe(thr); /* -> [ ... target ] */
+				duk_pop_known(thr); /* -> [ ... target ] */
 			}
 #else
 			DUK_UNREF(avoid_side_effects);
 #endif
 		}
-		duk_pop_unsafe(thr); /* -> [ ... ] */
+		duk_pop_known(thr); /* -> [ ... ] */
 	}
 
 push_stridx:
@@ -264,7 +263,7 @@ DUK_LOCAL void duk__push_readable_hobject(duk_hthread *thr, duk_hobject *obj, du
 			return;
 		}
 	}
-	duk_push_class_string_hobject(thr, obj, 1 /*avoid_side_effects*/);
+	duk_push_objproto_tostring_hobject(thr, obj, 1 /*avoid_side_effects*/);
 }
 
 DUK_LOCAL const char *duk__push_readable_tval(duk_hthread *thr, duk_tval *tv, duk_bool_t error_aware) {

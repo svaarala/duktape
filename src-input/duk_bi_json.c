@@ -2993,9 +2993,9 @@ DUK_LOCAL void duk__json_setup_plist_from_array(duk_hthread *thr, duk_json_enc_c
 			duk_dup_top(thr); /* -> [ ... proplist found key key ] */
 			(void) duk_get_prop(thr, -3); /* -> [ ... proplist found key found[key] ] */
 			if (duk_to_boolean(thr, -1)) {
-				duk_pop_2_unsafe(thr);
+				duk_pop_2_known(thr);
 			} else {
-				duk_pop_unsafe(thr);
+				duk_pop_known(thr);
 				duk_dup_top(thr);
 				duk_push_true(thr); /* -> [ ... proplist found key key true ] */
 				(void) duk_put_prop(thr, -4); /* -> [ ... proplist found key ] */
@@ -3003,11 +3003,11 @@ DUK_LOCAL void duk__json_setup_plist_from_array(duk_hthread *thr, duk_json_enc_c
 				plist_idx++;
 			}
 		} else {
-			duk_pop_unsafe(thr);
+			duk_pop_known(thr);
 		}
 	}
 
-	duk_pop_unsafe(thr);
+	duk_pop_known(thr);
 
 	/* [ ... proplist ] */
 }

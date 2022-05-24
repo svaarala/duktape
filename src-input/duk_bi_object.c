@@ -9,7 +9,7 @@ DUK_INTERNAL duk_ret_t duk_bi_object_prototype_to_string(duk_hthread *thr) {
 	duk_tval *tv;
 
 	tv = DUK_HTHREAD_THIS_PTR(thr);
-	duk_push_class_string_tval(thr, tv, 0 /*avoid_side_effects*/);
+	duk_push_objproto_tostring_tval(thr, tv, 0 /*avoid_side_effects*/);
 	return 1;
 }
 

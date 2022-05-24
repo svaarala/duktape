@@ -218,9 +218,8 @@ DUK_INTERNAL duk_bool_t duk_hobject_object_is_sealed_frozen_helper(duk_hthread *
 		duk_small_int_t attrs;
 
 		(void) duk_get_prop_index(thr, -1, i);
-		attrs = duk_prop_getowndesc_obj_tvkey(thr, obj, DUK_GET_TVAL_NEGIDX(thr, -1));
-		duk_prop_pop_propdesc(thr, attrs);
-		duk_pop_unsafe(thr);
+		attrs = duk_prop_getownattr_obj_tvkey(thr, obj, DUK_GET_TVAL_NEGIDX(thr, -1));
+		duk_pop_known(thr);
 		if (attrs >= 0) {
 			if (attrs & DUK_PROPDESC_FLAG_CONFIGURABLE) {
 				return 0;
@@ -231,7 +230,7 @@ DUK_INTERNAL duk_bool_t duk_hobject_object_is_sealed_frozen_helper(duk_hthread *
 		}
 	}
 
-	duk_pop_unsafe(thr);
+	duk_pop_known(thr);
 	return 1;
 }
 

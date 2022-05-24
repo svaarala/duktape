@@ -190,7 +190,7 @@ DUK_LOCAL DUK_EXEC_ALWAYS_INLINE_PERF void duk__vm_arith_add(duk_hthread *thr,
 		DUK_ASSERT_DOUBLE_IS_NORMALIZED(d2);
 
 		du.d = d1 + d2;
-		duk_pop_2_unsafe(thr);
+		duk_pop_2_known(thr);
 		duk_push_number(thr, du.d); /* will NaN normalize result */
 	}
 	duk_replace(thr, (duk_idx_t) idx_z); /* side effects */
@@ -310,7 +310,7 @@ skip_fastint:
 		DUK_ASSERT(duk_is_number(thr, -1));
 		DUK_ASSERT_DOUBLE_IS_NORMALIZED(d1);
 		DUK_ASSERT_DOUBLE_IS_NORMALIZED(d2);
-		duk_pop_2_unsafe(thr);
+		duk_pop_2_known(thr);
 	}
 
 	switch (opcode_shifted) {
@@ -404,7 +404,7 @@ DUK_LOCAL DUK_EXEC_ALWAYS_INLINE_PERF void duk__vm_bitwise_binary_op(duk_hthread
 		duk_push_tval_unsafe(thr, tv_y);
 		i1 = duk_to_int32(thr, -2);
 		i2 = duk_to_int32(thr, -1);
-		duk_pop_2_unsafe(thr);
+		duk_pop_2_known(thr);
 	}
 
 	switch (opcode_shifted) {
@@ -593,7 +593,7 @@ DUK_LOCAL DUK_EXEC_ALWAYS_INLINE_PERF void duk__vm_bitwise_not(duk_hthread *thr,
 	{
 		duk_push_tval_unsafe(thr, tv);
 		i1 = duk_to_int32(thr, -1); /* side effects */
-		duk_pop_unsafe(thr);
+		duk_pop_known(thr);
 	}
 
 	/* Result is always fastint compatible. */
@@ -759,9 +759,9 @@ DUK_LOCAL DUK_EXEC_ALWAYS_INLINE_PERF void duk__prepost_incdec_var_helper(duk_ht
 		duk_push_number(thr, y); /* -> [ ... x this y ] */
 		DUK_ASSERT(act == thr->callstack_curr);
 		duk_js_putvar_activation(thr, act, name, DUK_GET_TVAL_NEGIDX(thr, -1), is_strict);
-		duk_pop_2_unsafe(thr); /* -> [ ... x ] */
+		duk_pop_2_known(thr); /* -> [ ... x ] */
 	} else {
-		duk_pop_2_unsafe(thr); /* -> [ ... ] */
+		duk_pop_2_known(thr); /* -> [ ... ] */
 		duk_push_number(thr, y); /* -> [ ... y ] */
 		DUK_ASSERT(act == thr->callstack_curr);
 		duk_js_putvar_activation(thr, act, name, DUK_GET_TVAL_NEGIDX(thr, -1), is_strict);
@@ -1011,7 +1011,7 @@ DUK_LOCAL void duk__handle_catch_part2(duk_hthread *thr) {
 
 	DUK_CAT_SET_LEXENV_ACTIVE(cat);
 
-	duk_pop_unsafe(thr);
+	duk_pop_known(thr);
 
 	DUK_DDD(DUK_DDDPRINT("new_env finished: %!iO", (duk_heaphdr *) new_env));
 }
@@ -2413,7 +2413,7 @@ DUK_LOCAL DUK_EXEC_NOINLINE_PERF void duk__handle_op_trycatch(duk_hthread *thr, 
 	                     (long) cat->idx_base,
 	                     (duk_heaphdr *) cat->h_varname));
 
-	duk_pop_unsafe(thr);
+	duk_pop_known(thr);
 }
 
 DUK_LOCAL DUK_EXEC_NOINLINE_PERF duk_instr_t *duk__handle_op_endtry(duk_hthread *thr, duk_uint_fast32_t ins) {
@@ -2655,7 +2655,7 @@ DUK_LOCAL DUK_EXEC_NOINLINE_PERF void duk__handle_op_initenum(duk_hthread *thr, 
 
 		duk_prop_enum_create_enumerator(thr, h, 0 /*enum_flags*/); /* [ ... val ] -> [ ... val enum ] */
 		duk_replace(thr, (duk_idx_t) b);
-		duk_pop_unsafe(thr);
+		duk_pop_known(thr);
 	}
 }
 
@@ -2684,7 +2684,7 @@ DUK_LOCAL DUK_EXEC_NOINLINE_PERF duk_small_uint_t duk__handle_op_nextenum(duk_ht
 	if (duk_is_object(thr, (duk_idx_t) c)) {
 		/* XXX: assert 'c' is an enumerator */
 		duk_dup(thr, (duk_idx_t) c);
-		if (duk_prop_enum_next(thr, duk_get_top_index(thr), 0 /*get_value*/)) {
+		if (duk_prop_enum_next(thr, duk_get_top_index_known(thr), 0 /*get_value*/)) {
 			/* [ ... enum ] -> [ ... enum next_key ] */
 			DUK_DDD(DUK_DDDPRINT("enum active, next key is %!T, skip jump slot ", (duk_tval *) duk_get_tval(thr, -1)));
 			pc_skip = 1;
@@ -2692,10 +2692,10 @@ DUK_LOCAL DUK_EXEC_NOINLINE_PERF duk_small_uint_t duk__handle_op_nextenum(duk_ht
 			/* [ ... enum ] -> [ ... enum ] */
 			DUK_DDD(DUK_DDDPRINT("enum finished, execute jump slot"));
 			DUK_ASSERT(DUK_TVAL_IS_UNDEFINED(thr->valstack_top)); /* valstack policy */
-			thr->valstack_top++; /* = duk_push_undefined_unsafe() */
+			duk_push_undefined_unsafe(thr);
 		}
 		duk_replace(thr, (duk_idx_t) b);
-		duk_pop_unsafe(thr);
+		duk_pop_known(thr);
 	} else {
 		/* 'null' enumerator case -> behave as with an empty enumerator */
 		DUK_ASSERT(duk_is_null(thr, (duk_idx_t) c));
@@ -3610,7 +3610,7 @@ restart_execution:
 				tv = DUK_GET_TVAL_NEGIDX(thr, -2);
 				stridx = duk_js_typeof_stridx(tv);
 				tv = NULL; /* no longer needed */
-				duk_pop_2_unsafe(thr);
+				duk_pop_2_known(thr);
 			} else {
 				/* unresolvable, no stack changes */
 				stridx = DUK_STRIDX_LC_UNDEFINED;
@@ -4230,7 +4230,7 @@ restart_execution:
 			 */
 
 			x = duk_to_number_m1(thr);
-			duk_pop_unsafe(thr);
+			duk_pop_known(thr);
 			if (ins & DUK_BC_INCDECP_FLAG_DEC) {
 				y = x - 1.0;
 			} else {
@@ -4248,7 +4248,7 @@ restart_execution:
 			DUK_UNREF(rc); /* ignore */
 			tv_obj = NULL; /* invalidated */
 			tv_key = NULL; /* invalidated */
-			duk_pop_2_unsafe(thr);
+			duk_pop_2_known(thr);
 
 			z = (ins & DUK_BC_INCDECP_FLAG_POST) ? x : y;
 #if defined(DUK_USE_EXEC_PREFER_SIZE)
@@ -4282,7 +4282,7 @@ restart_execution:
 		 */ \
 		duk_push_tval_unsafe(thr, (barg)); \
 		(void) duk_prop_getvalue_outidx(thr, thr->valstack_top - thr->valstack_bottom - 1, (carg), DUK_DEC_A(ins)); \
-		duk_pop_unsafe(thr); \
+		duk_pop_known(thr); \
 		break; \
 	}
 #define DUK__GETPROPC_BODY(barg, carg) \
@@ -4340,7 +4340,7 @@ restart_execution:
 		 */ \
 		duk_push_tval_unsafe(thr, (carg)); \
 		(void) duk_prop_putvalue_inidx(thr, (aidx), (barg), duk_get_top(thr) - 1, DUK__STRICT()); \
-		duk_pop_unsafe(thr); \
+		duk_pop_known(thr); \
 		break; \
 	}
 #define DUK__DELPROP_BODY(bidx, carg) \
@@ -4462,7 +4462,7 @@ restart_execution:
 				duk_push_tval_unsafe(thr, DUK__REGCONSTP_C(ins));
 			} else {
 				DUK_ASSERT(DUK_TVAL_IS_UNDEFINED(thr->valstack_top)); /* valstack policy */
-				thr->valstack_top++;
+				duk_push_undefined_unsafe(thr);
 			}
 			tv1 = DUK_GET_TVAL_NEGIDX(thr, -1);
 
@@ -4479,7 +4479,7 @@ restart_execution:
 				}
 			}
 
-			duk_pop_unsafe(thr);
+			duk_pop_known(thr);
 			break;
 		}
 
@@ -4595,7 +4595,7 @@ restart_execution:
 			act = thr->callstack_curr;
 			DUK_ASSERT(act != NULL);
 			(void) duk_js_getvar_activation(thr, act, name, 1 /*throw*/); /* -> [... val this] */
-			duk_pop_unsafe(thr); /* 'this' binding is not needed here */
+			duk_pop_known(thr); /* 'this' binding is not needed here */
 			DUK__REPLACE_TOP_A_BREAK();
 		}
 
@@ -4671,7 +4671,7 @@ restart_execution:
 				duk_push_tval_unsafe(thr, DUK__REGP_BC(ins));
 			} else if (op == DUK_OP_RETUNDEF) {
 				DUK_ASSERT(DUK_TVAL_IS_UNDEFINED(thr->valstack_top)); /* valstack policy */
-				thr->valstack_top++;
+				duk_push_undefined_unsafe(thr);
 			} else {
 				DUK_ASSERT(op == DUK_OP_RETCONST || op == DUK_OP_RETCONSTN);
 				duk_push_tval_unsafe(thr, DUK__CONSTP_BC(ins));
@@ -4685,8 +4685,7 @@ restart_execution:
 
 			DUK__SYNC_AND_NULL_CURR_PC();
 			tv = DUK__REGP_BC(ins);
-			DUK_TVAL_SET_TVAL_INCREF(thr, thr->valstack_top, tv);
-			thr->valstack_top++;
+			duk_push_tval_unsafe(thr, tv);
 			DUK__RETURN_SHARED();
 		}
 		/* This will be unused without refcounting. */
@@ -4695,8 +4694,7 @@ restart_execution:
 
 			DUK__SYNC_AND_NULL_CURR_PC();
 			tv = DUK__CONSTP_BC(ins);
-			DUK_TVAL_SET_TVAL_INCREF(thr, thr->valstack_top, tv);
-			thr->valstack_top++;
+			duk_push_tval_unsafe(thr, tv);
 			DUK__RETURN_SHARED();
 		}
 		case DUK_OP_RETCONSTN: {
@@ -4704,18 +4702,17 @@ restart_execution:
 
 			DUK__SYNC_AND_NULL_CURR_PC();
 			tv = DUK__CONSTP_BC(ins);
-			DUK_TVAL_SET_TVAL(thr->valstack_top, tv);
 #if defined(DUK_USE_REFERENCE_COUNTING)
 			/* Without refcounting only RETCONSTN is used. */
 			DUK_ASSERT(!DUK_TVAL_IS_HEAP_ALLOCATED(tv)); /* no INCREF for this constant */
 #endif
-			thr->valstack_top++;
+			duk_push_tval_unsafe_noincref(thr, tv);
 			DUK__RETURN_SHARED();
 		}
 		case DUK_OP_RETUNDEF: {
 			DUK__SYNC_AND_NULL_CURR_PC();
-			thr->valstack_top++; /* value at valstack top is already undefined by valstack policy */
 			DUK_ASSERT(DUK_TVAL_IS_UNDEFINED(thr->valstack_top));
+			duk_push_undefined_unsafe(thr);
 			DUK__RETURN_SHARED();
 		}
 #endif /* DUK_USE_EXEC_PREFER_SIZE */

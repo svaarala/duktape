@@ -481,7 +481,7 @@ DUK_LOCAL duk_re_sp_t duk__match_regexp(duk_re_matcher_ctx *re_ctx, const duk_ui
 				                     (long) (idx_start + idx_count - 1),
 				                     (long) (idx_start / 2),
 				                     (long) ((idx_start + idx_count - 1) / 2)));
-				duk_pop_unsafe(re_ctx->thr);
+				duk_pop_known(re_ctx->thr);
 				sp = sub_sp;
 				goto match;
 			}
@@ -495,7 +495,7 @@ DUK_LOCAL duk_re_sp_t duk__match_regexp(duk_re_matcher_ctx *re_ctx, const duk_ui
 			duk_memcpy((void *) (re_ctx->saved + idx_start),
 			           (const void *) range_save,
 			           sizeof(duk_re_sp_t) * idx_count);
-			duk_pop_unsafe(re_ctx->thr);
+			duk_pop_known(re_ctx->thr);
 			goto fail;
 		}
 		case DUK_REOP_LOOKPOS:
@@ -539,7 +539,7 @@ DUK_LOCAL duk_re_sp_t duk__match_regexp(duk_re_matcher_ctx *re_ctx, const duk_ui
 			sub_sp = duk__match_regexp(re_ctx, pc + skip, sp);
 			if (DUK__RE_SP_VALID(sub_sp)) {
 				/* match: keep saves */
-				duk_pop_unsafe(re_ctx->thr);
+				duk_pop_known(re_ctx->thr);
 				sp = sub_sp;
 				goto match;
 			}
@@ -549,7 +549,7 @@ DUK_LOCAL duk_re_sp_t duk__match_regexp(duk_re_matcher_ctx *re_ctx, const duk_ui
 		lookahead_fail:
 			/* fail: restore saves */
 			duk_memcpy((void *) re_ctx->saved, (const void *) full_save, sizeof(duk_re_sp_t) * re_ctx->nsaved);
-			duk_pop_unsafe(re_ctx->thr);
+			duk_pop_known(re_ctx->thr);
 			goto fail;
 		}
 		case DUK_REOP_BACKREFERENCE: {
@@ -758,7 +758,7 @@ DUK_LOCAL void duk__regexp_match_helper(duk_hthread *thr, duk_small_int_t force_
 	duk_get_prop_stridx_short(thr, -4, DUK_STRIDX_LAST_INDEX); /* -> [ ... re_obj input bc saved_buf lastIndex ] */
 	(void) duk_to_int(thr, -1); /* ToInteger(lastIndex) */
 	d = duk_get_number(thr, -1); /* integer, but may be +/- Infinite, +/- zero (not NaN, though) */
-	duk_pop_nodecref_unsafe(thr);
+	duk_pop_nodecref_known(thr);
 
 	if (global) {
 		if (d < 0.0 || d > (double) duk_hstring_get_charlen(h_input)) {
@@ -963,7 +963,7 @@ match_over:
 
 	/* [ ... res_obj re_obj input bc saved_buf ] */
 
-	duk_pop_n_unsafe(thr, 4);
+	duk_pop_n_known(thr, 4);
 
 	/* [ ... res_obj ] */
 

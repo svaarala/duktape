@@ -51,7 +51,7 @@ DUK_LOCAL duk_bool_t duk__proxy_trap_check(duk_hthread *thr, duk_hproxy *h, duk_
 		duk_insert(thr, -3); /* [ -> [ ... trap handler target ] */
 		return 1;
 	} else {
-		duk_pop_3_unsafe(thr);
+		duk_pop_3_known(thr);
 		return 0;
 	}
 }

@@ -281,7 +281,7 @@ void duk_js_push_closure(duk_hthread *thr,
 			DUK_HCOMPFUNC_SET_VARENV(thr->heap, fun_clos, (duk_hobject *) new_env);
 			DUK_HOBJECT_INCREF(thr, (duk_hobject *) new_env);
 			DUK_HOBJECT_INCREF(thr, (duk_hobject *) new_env);
-			duk_pop_unsafe(thr);
+			duk_pop_known(thr);
 
 			/* [ ... closure template ] */
 		} else
@@ -350,7 +350,7 @@ void duk_js_push_closure(duk_hthread *thr,
 			duk_xdef_prop_stridx_short(thr, -3, stridx, DUK_PROPDESC_FLAGS_C);
 		} else {
 			DUK_DDD(DUK_DDDPRINT("copying property, stridx=%ld -> not found", (long) stridx));
-			duk_pop_unsafe(thr);
+			duk_pop_known(thr);
 		}
 	}
 
@@ -457,7 +457,7 @@ void duk_js_push_closure(duk_hthread *thr,
 		 * it from Function.prototype.name.
 		 */
 		DUK_DD(DUK_DDPRINT("not setting function instance .name"));
-		duk_pop_unsafe(thr);
+		duk_pop_known(thr);
 	}
 #endif
 
@@ -495,7 +495,7 @@ void duk_js_push_closure(duk_hthread *thr,
 	                     (duk_tval *) duk_get_tval(thr, -1),
 	                     (duk_tval *) duk_get_tval(thr, -2)));
 
-	duk_pop_unsafe(thr);
+	duk_pop_known(thr);
 
 	/* [ ... closure ] */
 }
@@ -528,8 +528,12 @@ DUK_LOCAL void duk__preallocate_env_entries(duk_hthread *thr, duk_hobject *varma
 		 */
 		duk_push_undefined(thr);
 		DUK_DDD(DUK_DDDPRINT("preallocate env entry for key %!O", key));
-		(void) duk_prop_defown_strkey(thr, env, key, duk_get_top_index(thr), DUK_DEFPROP_ATTR_WE | DUK_DEFPROP_HAVE_VALUE);
-		duk_pop_unsafe(thr);
+		(void) duk_prop_defown_strkey(thr,
+		                              env,
+		                              key,
+		                              duk_get_top_index_known(thr),
+		                              DUK_DEFPROP_ATTR_WE | DUK_DEFPROP_HAVE_VALUE);
+		duk_pop_known(thr);
 	}
 }
 
@@ -630,7 +634,7 @@ void duk_js_init_activation_environment_records_delayed(duk_hthread *thr, duk_ac
 	DUK_HOBJECT_INCREF(thr, env); /* XXX: incref by count (here 2 times) */
 	DUK_HOBJECT_INCREF(thr, env);
 
-	duk_pop_unsafe(thr);
+	duk_pop_known(thr);
 }
 
 /*
@@ -735,8 +739,12 @@ DUK_INTERNAL void duk_js_close_environment_record(duk_hthread *thr, duk_hobject 
 		                     (long) regnum,
 		                     (duk_tval *) duk_get_tval(thr, -1)));
 
-		(void) duk_prop_defown_strkey(thr, env, key, duk_get_top_index(thr), DUK_DEFPROP_ATTR_WE | DUK_DEFPROP_HAVE_VALUE);
-		duk_pop_unsafe(thr);
+		(void) duk_prop_defown_strkey(thr,
+		                              env,
+		                              key,
+		                              duk_get_top_index_known(thr),
+		                              DUK_DEFPROP_ATTR_WE | DUK_DEFPROP_HAVE_VALUE);
+		duk_pop_known(thr);
 	}
 
 	/* NULL atomically to avoid inconsistent state + side effects. */
@@ -1344,7 +1352,7 @@ void duk__putvar_helper(duk_hthread *thr,
 			duk_push_tval_unsafe(thr, &tv_tmp_val);
 			DUK_TVAL_SET_STRING(&tv_tmp_key, name);
 			(void) duk_prop_putvalue_inidx(thr, duk_get_top(thr) - 2, &tv_tmp_key, duk_get_top(thr) - 1, strict);
-			duk_pop_2_unsafe(thr);
+			duk_pop_2_known(thr);
 
 			/* ref.value invalidated here */
 		}
@@ -1372,7 +1380,7 @@ void duk__putvar_helper(duk_hthread *thr,
 	duk_push_tval_unsafe(thr, &tv_tmp_val);
 	DUK_TVAL_SET_STRING(&tv_tmp_key, name);
 	(void) duk_prop_putvalue_inidx(thr, duk_get_top(thr) - 2, &tv_tmp_key, duk_get_top(thr) - 1, 0 /* no throw */);
-	duk_pop_2_unsafe(thr);
+	duk_pop_2_known(thr);
 
 	/* NB: 'val' may be invalidated here because put_value may realloc valstack,
 	 * caller beware.
@@ -1633,9 +1641,9 @@ duk_bool_t duk__declvar_helper(duk_hthread *thr,
 		(void) duk_prop_defown_strkey(thr,
 		                              ref.holder,
 		                              name,
-		                              duk_get_top_index(thr),
+		                              duk_get_top_index_known(thr),
 		                              prop_flags | (do_full_write ? DUK_DEFPROP_HAVE_WEC : 0) | DUK_DEFPROP_HAVE_VALUE);
-		duk_pop_unsafe(thr);
+		duk_pop_known(thr);
 		return 0;
 	}
 
@@ -1676,7 +1684,7 @@ duk_bool_t duk__declvar_helper(duk_hthread *thr,
 	duk_push_hstring(thr, name);
 	duk_push_tval(thr, val);
 	duk_xdef_prop(thr, -3, prop_flags); /* [holder name val] -> [holder] */
-	duk_pop_unsafe(thr);
+	duk_pop_known(thr);
 
 	return 0;
 

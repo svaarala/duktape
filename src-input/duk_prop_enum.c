@@ -132,7 +132,7 @@ DUK_INTERNAL void duk_prop_enum_keylist(duk_hthread *thr, duk_hobject *obj, duk_
 				duk_bool_t keep = 1;
 
 				duk_push_true(thr);
-				duk_prop_putvalue_inidx(thr, idx_visited, tv_key, duk_get_top_index(thr), 0 /*throw_flag*/);
+				duk_prop_putvalue_inidx(thr, idx_visited, tv_key, duk_get_top_index_known(thr), 0 /*throw_flag*/);
 
 				if (keep) {
 					duk_push_tval(thr, tv_key);
@@ -146,7 +146,7 @@ DUK_INTERNAL void duk_prop_enum_keylist(duk_hthread *thr, duk_hobject *obj, duk_
 		}
 
 		DUK_ASSERT(duk_get_top(thr) == idx_base_top + 1);
-		duk_pop_unsafe(thr);
+		duk_pop_known(thr);
 		DUK_ASSERT(duk_get_top(thr) == idx_base_top);
 
 		if (enum_flags & DUK_ENUM_OWN_PROPERTIES_ONLY) {
@@ -170,7 +170,7 @@ DUK_INTERNAL void duk_prop_enum_keylist(duk_hthread *thr, duk_hobject *obj, duk_
 
 	DUK_ASSERT(duk_get_top(thr) == idx_base_top);
 
-	duk_pop_2_unsafe(thr);
+	duk_pop_2_known(thr);
 	DUK_ASSERT(duk_get_top(thr) == entry_top + 1);
 
 	/* [ ... res ] */
@@ -225,7 +225,7 @@ DUK_INTERNAL duk_bool_t duk_prop_enum_next(duk_hthread *thr, duk_idx_t idx_enum,
 
 	(void) duk_get_prop_index(thr, -3, idx_next);
 	if (duk_is_undefined(thr, -1)) {
-		duk_pop_n_unsafe(thr, 4);
+		duk_pop_n_known(thr, 4);
 		return 0;
 	}
 
@@ -249,7 +249,7 @@ DUK_INTERNAL duk_bool_t duk_prop_enum_next(duk_hthread *thr, duk_idx_t idx_enum,
 
 	/* [ ... key val? .keys .target .index ] */
 
-	duk_pop_3_unsafe(thr);
+	duk_pop_3_known(thr);
 
 	/* [ ... key val? ] */
 

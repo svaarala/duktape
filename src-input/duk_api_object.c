@@ -47,7 +47,7 @@ DUK_EXTERNAL duk_bool_t duk_get_prop_string(duk_hthread *thr, duk_idx_t obj_idx,
 	obj_idx = duk_require_normalize_index(thr, obj_idx);
 	(void) duk_push_string(thr, key);
 	h_key = duk_known_hstring(thr, -1);
-	idx_key = duk_get_top_index_unsafe(thr);
+	idx_key = duk_get_top_index_known(thr);
 	return duk_prop_getvalue_strkey_outidx(thr, obj_idx, h_key, idx_key);
 }
 
@@ -61,7 +61,7 @@ DUK_EXTERNAL duk_bool_t duk_get_prop_lstring(duk_hthread *thr, duk_idx_t obj_idx
 	obj_idx = duk_require_normalize_index(thr, obj_idx);
 	(void) duk_push_lstring(thr, key, key_len);
 	h_key = duk_known_hstring(thr, -1);
-	idx_key = duk_get_top_index_unsafe(thr);
+	idx_key = duk_get_top_index_known(thr);
 	return duk_prop_getvalue_strkey_outidx(thr, obj_idx, h_key, idx_key);
 }
 
@@ -77,7 +77,7 @@ DUK_EXTERNAL duk_bool_t duk_get_prop_literal_raw(duk_hthread *thr, duk_idx_t obj
 	obj_idx = duk_require_normalize_index(thr, obj_idx);
 	(void) duk_push_literal_raw(thr, key, key_len);
 	h_key = duk_known_hstring(thr, -1);
-	idx_key = duk_get_top_index_unsafe(thr);
+	idx_key = duk_get_top_index_known(thr);
 	return duk_prop_getvalue_strkey_outidx(thr, obj_idx, h_key, idx_key);
 }
 #endif
@@ -90,7 +90,7 @@ DUK_EXTERNAL duk_bool_t duk_get_prop_index(duk_hthread *thr, duk_idx_t obj_idx, 
 	/* The case of index > 0xfffffffe is handled by the property code. */
 	obj_idx = duk_require_normalize_index(thr, obj_idx);
 	duk_push_undefined(thr);
-	idx_out = duk_get_top_index_unsafe(thr);
+	idx_out = duk_get_top_index_known(thr);
 	return duk_prop_getvalue_idxkey_outidx(thr, obj_idx, arr_idx, idx_out);
 }
 
@@ -112,7 +112,7 @@ DUK_INTERNAL duk_bool_t duk_get_prop_stridx(duk_hthread *thr, duk_idx_t obj_idx,
 	obj_idx = duk_require_normalize_index(thr, obj_idx);
 	h_str = DUK_HTHREAD_GET_STRING(thr, stridx);
 	duk_push_undefined(thr);
-	idx_out = duk_get_top_index_unsafe(thr);
+	idx_out = duk_get_top_index_known(thr);
 	return duk_prop_getvalue_strkey_outidx(thr, obj_idx, h_str, idx_out);
 }
 
@@ -199,13 +199,13 @@ DUK_EXTERNAL duk_bool_t duk_put_prop(duk_hthread *thr, duk_idx_t obj_idx) {
 	obj_idx = duk_require_normalize_index(thr, obj_idx);
 	tv_key = duk_require_tval(thr, -2); /* Also ensures -1 exists. */
 	DUK_ASSERT(duk_is_valid_index(thr, -1));
-	val_idx = duk_get_top_index_unsafe(thr);
+	val_idx = duk_get_top_index_known(thr);
 	throw_flag = duk_is_strict_call(thr);
 
 	rc = duk_prop_putvalue_inidx(thr, obj_idx, tv_key, val_idx, throw_flag);
 	DUK_ASSERT(rc == 0 || rc == 1);
 
-	duk_pop_2_unsafe(thr);
+	duk_pop_2_known(thr);
 	return rc;
 }
 
@@ -231,7 +231,7 @@ DUK_EXTERNAL duk_bool_t duk_put_prop_string(duk_hthread *thr, duk_idx_t obj_idx,
 	rc = duk_prop_putvalue_strkey_inidx(thr, obj_idx, h_key, val_idx, throw_flag);
 	DUK_ASSERT(rc == 0 || rc == 1);
 
-	duk_pop_2_unsafe(thr);
+	duk_pop_2_known(thr);
 	return rc;
 }
 
@@ -253,7 +253,7 @@ DUK_EXTERNAL duk_bool_t duk_put_prop_lstring(duk_hthread *thr, duk_idx_t obj_idx
 	rc = duk_prop_putvalue_strkey_inidx(thr, obj_idx, h_key, val_idx, throw_flag);
 	DUK_ASSERT(rc == 0 || rc == 1);
 
-	duk_pop_2_unsafe(thr);
+	duk_pop_2_known(thr);
 	return rc;
 }
 
@@ -277,7 +277,7 @@ DUK_EXTERNAL duk_bool_t duk_put_prop_literal_raw(duk_hthread *thr, duk_idx_t obj
 	rc = duk_prop_putvalue_strkey_inidx(thr, obj_idx, h_key, val_idx, throw_flag);
 	DUK_ASSERT(rc == 0 || rc == 1);
 
-	duk_pop_2_unsafe(thr);
+	duk_pop_2_known(thr);
 	return rc;
 }
 #endif
@@ -296,7 +296,7 @@ DUK_EXTERNAL duk_bool_t duk_put_prop_index(duk_hthread *thr, duk_idx_t obj_idx, 
 	rc = duk_prop_putvalue_idxkey_inidx(thr, obj_idx, arr_idx, val_idx, throw_flag);
 	DUK_ASSERT(rc == 0 || rc == 1);
 
-	duk_pop_unsafe(thr);
+	duk_pop_known(thr);
 	return rc;
 }
 
@@ -317,7 +317,7 @@ DUK_EXTERNAL duk_bool_t duk_put_prop_heapptr(duk_hthread *thr, duk_idx_t obj_idx
 	rc = duk_prop_putvalue_inidx(thr, obj_idx, tv_key, val_idx, throw_flag);
 	DUK_ASSERT(rc == 0 || rc == 1);
 
-	duk_pop_2_unsafe(thr);
+	duk_pop_2_known(thr);
 	return rc;
 }
 
@@ -339,7 +339,7 @@ DUK_INTERNAL duk_bool_t duk_put_prop_stridx(duk_hthread *thr, duk_idx_t obj_idx,
 	rc = duk_prop_putvalue_strkey_inidx(thr, obj_idx, h_key, val_idx, throw_flag);
 	DUK_ASSERT(rc == 0 || rc == 1);
 
-	duk_pop_unsafe(thr);
+	duk_pop_known(thr);
 	return rc;
 }
 
@@ -361,7 +361,7 @@ DUK_EXTERNAL duk_bool_t duk_del_prop(duk_hthread *thr, duk_idx_t obj_idx) {
 	rc = duk_prop_deleteoper(thr, obj_idx, tv_key, delprop_flags);
 	DUK_ASSERT(rc == 0 || rc == 1);
 
-	duk_pop_unsafe(thr); /* remove key */
+	duk_pop_known(thr); /* remove key */
 	return rc;
 }
 
@@ -444,7 +444,7 @@ DUK_EXTERNAL duk_bool_t duk_has_prop(duk_hthread *thr, duk_idx_t obj_idx) {
 	rc = duk_prop_has(thr, tv_obj, tv_key);
 	DUK_ASSERT(rc == 0 || rc == 1);
 
-	duk_pop_unsafe(thr); /* remove key */
+	duk_pop_known(thr); /* remove key */
 	return rc; /* 1 if property found, 0 otherwise */
 }
 
@@ -524,9 +524,9 @@ DUK_INTERNAL void duk_xdef_prop(duk_hthread *thr, duk_idx_t obj_idx, duk_small_u
 
 	desc_flags |= DUK_DEFPROP_FORCE;
 	desc_flags |= DUK_DEFPROP_HAVE_WEC | DUK_DEFPROP_HAVE_VALUE;
-	(void) duk_prop_defown(thr, obj, tv_key, duk_get_top_index_unsafe(thr), desc_flags);
+	(void) duk_prop_defown(thr, obj, tv_key, duk_get_top_index_known(thr), desc_flags);
 
-	duk_pop_2_unsafe(thr); /* pop key and value */
+	duk_pop_2_known(thr); /* pop key and value */
 }
 
 DUK_INTERNAL void duk_xdef_prop_index(duk_hthread *thr, duk_idx_t obj_idx, duk_uarridx_t arr_idx, duk_small_uint_t desc_flags) {
@@ -540,8 +540,8 @@ DUK_INTERNAL void duk_xdef_prop_index(duk_hthread *thr, duk_idx_t obj_idx, duk_u
 
 	desc_flags |= DUK_DEFPROP_FORCE;
 	desc_flags |= DUK_DEFPROP_HAVE_WEC | DUK_DEFPROP_HAVE_VALUE;
-	(void) duk_prop_defown_idxkey(thr, obj, arr_idx, duk_get_top_index_unsafe(thr), desc_flags);
-	duk_pop_unsafe(thr);
+	(void) duk_prop_defown_idxkey(thr, obj, arr_idx, duk_get_top_index_known(thr), desc_flags);
+	duk_pop_known(thr);
 }
 
 DUK_INTERNAL void duk_xdef_prop_stridx(duk_hthread *thr, duk_idx_t obj_idx, duk_small_uint_t stridx, duk_small_uint_t desc_flags) {
@@ -559,8 +559,8 @@ DUK_INTERNAL void duk_xdef_prop_stridx(duk_hthread *thr, duk_idx_t obj_idx, duk_
 
 	desc_flags |= DUK_DEFPROP_FORCE;
 	desc_flags |= DUK_DEFPROP_HAVE_WEC | DUK_DEFPROP_HAVE_VALUE;
-	(void) duk_prop_defown_strkey(thr, obj, key, duk_get_top_index_unsafe(thr), desc_flags);
-	duk_pop_unsafe(thr);
+	(void) duk_prop_defown_strkey(thr, obj, key, duk_get_top_index_known(thr), desc_flags);
+	duk_pop_known(thr);
 }
 
 DUK_INTERNAL void duk_xdef_prop_stridx_short_raw(duk_hthread *thr, duk_uint_t packed_args) {
@@ -623,7 +623,7 @@ DUK_EXTERNAL void duk_def_prop(duk_hthread *thr, duk_idx_t obj_idx, duk_uint_t f
 		goto fail_invalid_desc;
 	}
 
-	idx_base = duk_get_top_index(thr);
+	idx_base = duk_get_top_index_known(thr); /* At least one value on valstack. */
 	if (flags & DUK_DEFPROP_HAVE_SETTER) {
 		duk_hobject *set;
 		duk_require_type_mask(thr, idx_base, DUK_TYPE_MASK_UNDEFINED | DUK_TYPE_MASK_OBJECT | DUK_TYPE_MASK_LIGHTFUNC);
@@ -825,8 +825,9 @@ DUK_EXTERNAL void duk_put_number_list(duk_hthread *thr, duk_idx_t obj_idx, const
 	obj_idx = duk_require_normalize_index(thr, obj_idx);
 	if (ent != NULL) {
 		while (ent->key != NULL) {
-			tv = thr->valstack_top++;
+			tv = thr->valstack_top;
 			DUK_ASSERT(DUK_TVAL_IS_UNDEFINED(tv)); /* value stack init policy */
+			duk_push_undefined_unsafe(thr);
 			DUK_TVAL_SET_NUMBER_CHKFAST_SLOW(tv, ent->value); /* no need for decref/incref */
 			duk_put_prop_string(thr, obj_idx, ent->key);
 			ent++;
@@ -967,7 +968,7 @@ DUK_EXTERNAL duk_bool_t duk_put_global_heapptr(duk_hthread *thr, void *ptr) {
 DUK_INTERNAL duk_bool_t duk_get_method_stridx(duk_hthread *thr, duk_idx_t idx, duk_small_uint_t stridx) {
 	(void) duk_get_prop_stridx(thr, idx, stridx);
 	if (duk_is_nullish(thr, -1)) {
-		duk_pop_nodecref_unsafe(thr);
+		duk_pop_nodecref_known(thr);
 		return 0;
 	}
 	if (!duk_is_callable(thr, -1)) {

@@ -281,7 +281,7 @@ DUK_LOCAL duk_bool_t duk__prop_delete_proxy_tail(duk_hthread *thr, duk_hobject *
 	DUK_DD(DUK_DDPRINT("proxy policy check for 'deleteProperty' trap disabled in configuration"));
 #endif
 
-	duk_pop_unsafe(thr);
+	duk_pop_known(thr);
 
 	return trap_rc;
 }
@@ -502,7 +502,7 @@ retry_target:
 	 */
 	if (side_effect_safe) {
 		duk_bool_t del_rc = duk__prop_delete_obj_strkey_ordinary(thr, target, key, delprop_flags);
-		duk_pop_unsafe(thr);
+		duk_pop_known(thr);
 		return del_rc;
 	} else {
 		return duk__prop_delete_obj_strkey_ordinary(thr, target, key, delprop_flags);
@@ -510,14 +510,14 @@ retry_target:
 
 success:
 	if (side_effect_safe) {
-		duk_pop_unsafe(thr);
+		duk_pop_known(thr);
 	}
 	return 1;
 
 fail_not_configurable:
 fail_proxy:
 	if (side_effect_safe) {
-		duk_pop_unsafe(thr);
+		duk_pop_known(thr);
 	}
 	return duk__prop_delete_error_obj_strkey(thr, target, key, delprop_flags);
 
@@ -791,7 +791,7 @@ retry_target:
 
 	if (side_effect_safe) {
 		duk_bool_t del_rc = duk__prop_delete_obj_idxkey_ordinary(thr, target, idx, delprop_flags);
-		duk_pop_unsafe(thr);
+		duk_pop_known(thr);
 		return del_rc;
 	} else {
 		return duk__prop_delete_obj_idxkey_ordinary(thr, target, idx, delprop_flags);
@@ -799,14 +799,14 @@ retry_target:
 
 success:
 	if (side_effect_safe) {
-		duk_pop_unsafe(thr);
+		duk_pop_known(thr);
 	}
 	return 1;
 
 fail_not_configurable:
 fail_proxy:
 	if (side_effect_safe) {
-		duk_pop_unsafe(thr);
+		duk_pop_known(thr);
 	}
 	return duk__prop_delete_error_obj_idxkey(thr, target, idx, delprop_flags);
 
@@ -856,7 +856,7 @@ DUK_INTERNAL duk_bool_t duk_prop_delete_obj_idxkey(duk_hthread *thr,
 		DUK_DD(DUK_DDPRINT("corner case, input idx 0xffffffff is not an arridx, must coerce to string"));
 		key = duk_push_u32_tohstring(thr, idx);
 		rc = duk__prop_delete_obj_strkey_unsafe(thr, obj, key, delprop_flags);
-		duk_pop_unsafe(thr);
+		duk_pop_known(thr);
 		return rc;
 	}
 }
@@ -1032,7 +1032,7 @@ DUK_INTERNAL duk_bool_t duk_prop_delete_idxkey(duk_hthread *thr,
 		DUK_DD(DUK_DDPRINT("corner case, input idx 0xffffffff is not an arridx, must coerce to string"));
 		key = duk_push_u32_tohstring(thr, idx);
 		rc = duk__prop_delete_strkey(thr, idx_obj, key, delprop_flags);
-		duk_pop_unsafe(thr);
+		duk_pop_known(thr);
 		DUK_ASSERT(duk_get_top(thr) == entry_top);
 		return rc;
 	}
@@ -1121,7 +1121,7 @@ DUK_INTERNAL duk_bool_t duk_prop_deleteoper(duk_hthread *thr, duk_idx_t idx_obj,
 	key = duk_to_property_key_hstring(thr, -1);
 	DUK_ASSERT(key != NULL);
 	rc = duk_prop_delete_strkey(thr, idx_obj, key, delprop_flags);
-	duk_pop_unsafe(thr);
+	duk_pop_known(thr);
 	DUK_ASSERT(duk_get_top(thr) == entry_top);
 	return rc;
 
