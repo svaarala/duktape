@@ -479,7 +479,6 @@ DUK_INTERNAL duk_ret_t duk_bi_object_constructor_define_property(duk_hthread *th
 	duk_small_uint_t magic;
 	duk_bool_t throw_flag;
 	duk_bool_t ret;
-	duk_idx_t idx_desc;
 
 	DUK_ASSERT(thr != NULL);
 	DUK_ASSERT_TOP(thr, 3);
@@ -506,8 +505,7 @@ DUK_INTERNAL duk_ret_t duk_bi_object_constructor_define_property(duk_hthread *th
 	if (magic == 0U) {
 		defprop_flags |= DUK_DEFPROP_THROW;
 	}
-	idx_desc = 2;
-	ret = duk_prop_defown(thr, obj, DUK_GET_TVAL_POSIDX(thr, 1), idx_desc, defprop_flags);
+	ret = duk_prop_defown(thr, obj, DUK_GET_TVAL_POSIDX(thr, 1), 2 /*idx_desc*/, defprop_flags);
 
 	/* Ignore the property descriptor conversion outputs on the value stack,
 	 * they're popped automatically.

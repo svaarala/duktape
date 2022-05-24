@@ -1364,26 +1364,53 @@ duk__prop_defown_idxkey_safe(duk_hthread *thr, duk_hobject *obj, duk_uarridx_t i
 
 DUK_INTERNAL duk_bool_t
 duk_prop_defown_strkey(duk_hthread *thr, duk_hobject *obj, duk_hstring *key, duk_idx_t idx_desc, duk_uint_t defprop_flags) {
+#if defined(DUK_USE_ASSERTIONS)
+	duk_idx_t entry_top;
+#endif
+
 	DUK_ASSERT(thr != NULL);
 	DUK_ASSERT(obj != NULL);
 	DUK_ASSERT(key != NULL);
 	DUK_ASSERT(idx_desc >= 0);
+	DUK_ASSERT(duk_is_valid_posidx(thr, idx_desc));
+#if defined(DUK_USE_ASSERTIONS)
+	entry_top = duk_get_top(thr);
+#endif
 
 	if (DUK_UNLIKELY(DUK_HSTRING_HAS_ARRIDX(key))) {
-		return duk__prop_defown_idxkey_unsafe(thr, obj, duk_hstring_get_arridx_fast_known(key), idx_desc, defprop_flags);
+		duk_bool_t rc;
+
+		rc = duk__prop_defown_idxkey_unsafe(thr, obj, duk_hstring_get_arridx_fast_known(key), idx_desc, defprop_flags);
+		DUK_ASSERT(duk_get_top(thr) == entry_top);
+		return rc;
 	} else {
-		return duk__prop_defown_strkey_unsafe(thr, obj, key, idx_desc, defprop_flags);
+		duk_bool_t rc;
+
+		DUK_ASSERT(!DUK_HSTRING_HAS_ARRIDX(key));
+		rc = duk__prop_defown_strkey_unsafe(thr, obj, key, idx_desc, defprop_flags);
+		DUK_ASSERT(duk_get_top(thr) == entry_top);
+		return rc;
 	}
 }
 
 DUK_INTERNAL duk_bool_t
 duk_prop_defown_idxkey(duk_hthread *thr, duk_hobject *obj, duk_uarridx_t idx, duk_idx_t idx_desc, duk_uint_t defprop_flags) {
+#if defined(DUK_USE_ASSERTIONS)
+	duk_idx_t entry_top;
+#endif
+
 	DUK_ASSERT(thr != NULL);
 	DUK_ASSERT(obj != NULL);
 	DUK_ASSERT(idx_desc >= 0);
+	DUK_ASSERT(duk_is_valid_posidx(thr, idx_desc));
+#if defined(DUK_USE_ASSERTIONS)
+	entry_top = duk_get_top(thr);
+#endif
 
 	if (DUK_LIKELY(idx <= DUK_ARRIDX_MAX)) {
-		return duk__prop_defown_idxkey_unsafe(thr, obj, idx, idx_desc, defprop_flags);
+		duk_bool_t rc = duk__prop_defown_idxkey_unsafe(thr, obj, idx, idx_desc, defprop_flags);
+		DUK_ASSERT(duk_get_top(thr) == entry_top);
+		return rc;
 	} else {
 		duk_bool_t rc;
 		duk_hstring *key;
@@ -1392,12 +1419,16 @@ duk_prop_defown_idxkey(duk_hthread *thr, duk_hobject *obj, duk_uarridx_t idx, du
 		key = duk_push_u32_tohstring(thr, idx);
 		rc = duk__prop_defown_strkey_unsafe(thr, obj, key, idx_desc, defprop_flags);
 		duk_pop_unsafe(thr);
+		DUK_ASSERT(duk_get_top(thr) == entry_top);
 		return rc;
 	}
 }
 
 DUK_INTERNAL duk_bool_t
 duk_prop_defown(duk_hthread *thr, duk_hobject *obj, duk_tval *tv_key, duk_idx_t idx_desc, duk_uint_t defprop_flags) {
+#if defined(DUK_USE_ASSERTIONS)
+	duk_idx_t entry_top;
+#endif
 	duk_bool_t rc;
 	duk_hstring *key;
 	duk_uarridx_t idx;
@@ -1412,8 +1443,11 @@ duk_prop_defown(duk_hthread *thr, duk_hobject *obj, duk_tval *tv_key, duk_idx_t 
 	/* 'idx_desc' must be valid, but only if defprop_flags indicates
 	 * there is a value or getter/setter.
 	 */
-	DUK_ASSERT(idx_desc >= 0);
+	DUK_ASSERT(duk_is_valid_posidx(thr, idx_desc));
 	/* 'throw_flag' is embedded into defprop_flags. */
+#if defined(DUK_USE_ASSERTIONS)
+	entry_top = duk_get_top(thr);
+#endif
 
 	switch (DUK_TVAL_GET_TAG(tv_key)) {
 	case DUK_TAG_STRING:
@@ -1473,13 +1507,18 @@ duk_prop_defown(duk_hthread *thr, duk_hobject *obj, duk_tval *tv_key, duk_idx_t 
 	DUK_ASSERT(key != NULL);
 	rc = duk_prop_defown_strkey(thr, obj, key, idx_desc, defprop_flags);
 	duk_pop_unsafe(thr);
+	DUK_ASSERT(duk_get_top(thr) == entry_top);
 	return rc;
 
 use_idx:
 	DUK_ASSERT_ARRIDX_VALID(idx);
-	return duk__prop_defown_idxkey_unsafe(thr, obj, idx, idx_desc, defprop_flags);
+	rc = duk__prop_defown_idxkey_unsafe(thr, obj, idx, idx_desc, defprop_flags);
+	DUK_ASSERT(duk_get_top(thr) == entry_top);
+	return rc;
 
 use_str:
 	DUK_ASSERT(!DUK_HSTRING_HAS_ARRIDX(key));
-	return duk__prop_defown_strkey_unsafe(thr, obj, key, idx_desc, defprop_flags);
+	rc = duk__prop_defown_strkey_unsafe(thr, obj, key, idx_desc, defprop_flags);
+	DUK_ASSERT(duk_get_top(thr) == entry_top);
+	return rc;
 }

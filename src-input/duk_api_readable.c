@@ -120,9 +120,12 @@ DUK_INTERNAL void duk_push_class_string_tval(duk_hthread *thr, duk_tval *tv, duk
 		tv = NULL;
 		DUK_ASSERT(h != NULL);
 
-		h_resolved = duk_hobject_resolve_proxy_target(h);
-		DUK_ASSERT(h_resolved != NULL);
-		if (DUK_HOBJECT_IS_ARRAY(h_resolved)) {
+		/* Here we want to detect a revoked Proxy without throwing. */
+		h_resolved = duk_hobject_resolve_proxy_target_nothrow(thr, h);
+		if (h_resolved == NULL) {
+			duk_push_string(thr, "Proxy(revoked)");
+			goto tag_pushed;
+		} else if (DUK_HOBJECT_IS_ARRAY(h_resolved)) {
 			/* IsArray() resolves Proxy chain target recursively. */
 			stridx = DUK_STRIDX_UC_ARRAY;
 		} else {

@@ -966,8 +966,10 @@ duk__get_ownprop_idxkey_uint8array(duk_hthread *thr, duk_hobject *obj, duk_uarri
 
 	data = duk_hbufobj_uint8array_get_validated_data_ptr(thr, h, idx);
 	if (DUK_LIKELY(data != NULL)) {
+		duk_bool_t rc = duk__prop_get_write_u32_result(thr, idx_out, (duk_uint32_t) *data);
+		DUK_ASSERT(rc == 1);
 		DUK_ASSERT(DUK__GETOWN_FOUND == 1);
-		return duk__prop_get_write_u32_result(thr, idx_out, (duk_uint32_t) *data);
+		return rc;
 	} else {
 		/* Out-of-bounds, detached, uncovered: treat as not found. */
 		return DUK__GETOWN_DONE_NOTFOUND; /* Short circuit. */
@@ -1626,20 +1628,28 @@ go_next:
 
 DUK_INTERNAL duk_bool_t duk_prop_getvalue_strkey_outidx(duk_hthread *thr, duk_idx_t idx_recv, duk_hstring *key, duk_idx_t idx_out) {
 #if defined(DUK_USE_ASSERTIONS)
-	duk_idx_t entry_top = duk_get_top(thr);
+	duk_idx_t entry_top;
 #endif
 
 	DUK_ASSERT(thr != NULL);
 	DUK_ASSERT(duk_is_valid_posidx(thr, idx_recv));
 	DUK_ASSERT(key != NULL);
 	DUK_ASSERT(duk_is_valid_posidx(thr, idx_out));
+#if defined(DUK_USE_ASSERTIONS)
+	entry_top = duk_get_top(thr);
+#endif
 
 	if (DUK_UNLIKELY(DUK_HSTRING_HAS_ARRIDX(key))) {
-		duk_bool_t rc = duk__prop_getvalue_idxkey_outidx(thr, idx_recv, duk_hstring_get_arridx_fast_known(key), idx_out);
+		duk_bool_t rc;
+
+		rc = duk__prop_getvalue_idxkey_outidx(thr, idx_recv, duk_hstring_get_arridx_fast_known(key), idx_out);
 		DUK_ASSERT(duk_get_top(thr) == entry_top);
 		return rc;
 	} else {
-		duk_bool_t rc = duk__prop_getvalue_strkey_outidx(thr, idx_recv, key, idx_out);
+		duk_bool_t rc;
+
+		DUK_ASSERT(!DUK_HSTRING_HAS_ARRIDX(key));
+		rc = duk__prop_getvalue_strkey_outidx(thr, idx_recv, key, idx_out);
 		DUK_ASSERT(duk_get_top(thr) == entry_top);
 		return rc;
 	}
@@ -1647,7 +1657,7 @@ DUK_INTERNAL duk_bool_t duk_prop_getvalue_strkey_outidx(duk_hthread *thr, duk_id
 
 DUK_INTERNAL duk_bool_t duk_prop_getvalue_strkey_push(duk_hthread *thr, duk_idx_t idx_recv, duk_hstring *key) {
 #if defined(DUK_USE_ASSERTIONS)
-	duk_idx_t entry_top = duk_get_top(thr);
+	duk_idx_t entry_top;
 #endif
 	duk_idx_t idx_out;
 	duk_bool_t rc;
@@ -1655,6 +1665,9 @@ DUK_INTERNAL duk_bool_t duk_prop_getvalue_strkey_push(duk_hthread *thr, duk_idx_
 	DUK_ASSERT(thr != NULL);
 	DUK_ASSERT(duk_is_valid_posidx(thr, idx_recv));
 	DUK_ASSERT(key != NULL);
+#if defined(DUK_USE_ASSERTIONS)
+	entry_top = duk_get_top(thr);
+#endif
 
 	duk_push_undefined(thr);
 	idx_out = (duk_idx_t) (thr->valstack_top - thr->valstack_bottom - 1);
@@ -1669,11 +1682,16 @@ DUK_INTERNAL duk_bool_t duk_prop_getvalue_idxkey_outidx(duk_hthread *thr,
                                                         duk_uarridx_t idx,
                                                         duk_idx_t idx_out) {
 #if defined(DUK_USE_ASSERTIONS)
-	duk_idx_t entry_top = duk_get_top(thr);
+	duk_idx_t entry_top;
 #endif
+
 	DUK_ASSERT(thr != NULL);
 	DUK_ASSERT(duk_is_valid_posidx(thr, idx_recv));
+	DUK_ASSERT_ARRIDX_VALID(idx);
 	DUK_ASSERT(duk_is_valid_posidx(thr, idx_out));
+#if defined(DUK_USE_ASSERTIONS)
+	entry_top = duk_get_top(thr);
+#endif
 
 	if (DUK_LIKELY(idx <= DUK_ARRIDX_MAX)) {
 		duk_bool_t rc = duk__prop_getvalue_idxkey_outidx(thr, idx_recv, idx, idx_out);
@@ -1700,7 +1718,7 @@ DUK_INTERNAL duk_bool_t duk_prop_getvalue_idxkey_outidx(duk_hthread *thr,
 
 DUK_INTERNAL duk_bool_t duk_prop_getvalue_outidx(duk_hthread *thr, duk_idx_t idx_recv, duk_tval *tv_key, duk_idx_t idx_out) {
 #if defined(DUK_USE_ASSERTIONS)
-	duk_idx_t entry_top = duk_get_top(thr);
+	duk_idx_t entry_top;
 #endif
 	duk_bool_t rc;
 	duk_hstring *key;
@@ -1715,6 +1733,9 @@ DUK_INTERNAL duk_bool_t duk_prop_getvalue_outidx(duk_hthread *thr, duk_idx_t idx
 	 */
 	DUK_ASSERT(duk_is_valid_posidx(thr, idx_out));
 	/* Output index may overlap with receiver or key. */
+#if defined(DUK_USE_ASSERTIONS)
+	entry_top = duk_get_top(thr);
+#endif
 
 	/* Must check receiver (typically object) and key (typically
 	 * string, symbol, or numeric index) efficiently.  Key is coerced
@@ -1848,7 +1869,7 @@ use_str:
 
 DUK_INTERNAL duk_bool_t duk_prop_getvalue_push(duk_hthread *thr, duk_idx_t idx_recv, duk_tval *tv_key) {
 #if defined(DUK_USE_ASSERTIONS)
-	duk_idx_t entry_top = duk_get_top(thr);
+	duk_idx_t entry_top;
 #endif
 	duk_bool_t rc;
 	duk_idx_t idx_out;
@@ -1856,6 +1877,9 @@ DUK_INTERNAL duk_bool_t duk_prop_getvalue_push(duk_hthread *thr, duk_idx_t idx_r
 	DUK_ASSERT(thr != NULL);
 	DUK_ASSERT(duk_is_valid_posidx(thr, idx_recv));
 	DUK_ASSERT(tv_key != NULL);
+#if defined(DUK_USE_ASSERTIONS)
+	entry_top = duk_get_top(thr);
+#endif
 
 	duk_push_undefined(thr);
 	idx_out = duk_get_top_index_unsafe(thr);
@@ -1868,7 +1892,7 @@ DUK_INTERNAL duk_bool_t duk_prop_getvalue_stridx_outidx(duk_hthread *thr,
                                                         duk_small_uint_t stridx,
                                                         duk_idx_t idx_out) {
 #if defined(DUK_USE_ASSERTIONS)
-	duk_idx_t entry_top = duk_get_top(thr);
+	duk_idx_t entry_top;
 #endif
 	duk_bool_t rc;
 
@@ -1876,6 +1900,9 @@ DUK_INTERNAL duk_bool_t duk_prop_getvalue_stridx_outidx(duk_hthread *thr,
 	DUK_ASSERT(duk_is_valid_posidx(thr, idx_recv));
 	DUK_ASSERT_STRIDX_VALID(stridx);
 	DUK_ASSERT(duk_is_valid_posidx(thr, idx_out));
+#if defined(DUK_USE_ASSERTIONS)
+	entry_top = duk_get_top(thr);
+#endif
 
 	rc = duk_prop_getvalue_strkey_outidx(thr, idx_recv, DUK_HTHREAD_GET_STRING(thr, stridx), idx_out);
 	DUK_ASSERT(duk_get_top(thr) == entry_top);
@@ -1884,13 +1911,16 @@ DUK_INTERNAL duk_bool_t duk_prop_getvalue_stridx_outidx(duk_hthread *thr,
 
 DUK_INTERNAL duk_bool_t duk_prop_getvalue_stridx_push(duk_hthread *thr, duk_idx_t idx_recv, duk_small_uint_t stridx) {
 #if defined(DUK_USE_ASSERTIONS)
-	duk_idx_t entry_top = duk_get_top(thr);
+	duk_idx_t entry_top;
 #endif
 	duk_bool_t rc;
 
 	DUK_ASSERT(thr != NULL);
 	DUK_ASSERT(duk_is_valid_posidx(thr, idx_recv));
 	DUK_ASSERT_STRIDX_VALID(stridx);
+#if defined(DUK_USE_ASSERTIONS)
+	entry_top = duk_get_top(thr);
+#endif
 
 	rc = duk_prop_getvalue_strkey_push(thr, idx_recv, DUK_HTHREAD_GET_STRING(thr, stridx));
 	DUK_ASSERT(duk_get_top(thr) == entry_top + 1);

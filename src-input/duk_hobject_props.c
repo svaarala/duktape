@@ -259,6 +259,16 @@ DUK_INTERNAL duk_hstring *duk_hobject_get_internal_value_string(duk_heap *heap, 
 	return h;
 }
 
+DUK_INTERNAL duk_hobject *duk_hobject_get_internal_value_object(duk_heap *heap, duk_hobject *obj) {
+	duk_hobject *h;
+
+	h = (duk_hobject *) duk_hobject_get_internal_value_heaphdr(heap, obj);
+	if (h != NULL) {
+		DUK_ASSERT(DUK_HEAPHDR_IS_ANY_OBJECT((duk_heaphdr *) h));
+	}
+	return h;
+}
+
 DUK_LOCAL duk_hobject *duk__hobject_get_entry_object_stridx(duk_heap *heap, duk_hobject *obj, duk_small_uint_t stridx) {
 	duk_tval *tv;
 	duk_hobject *h;

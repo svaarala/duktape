@@ -861,13 +861,18 @@ DUK_LOCAL void duk__handle_proxy_for_call(duk_hthread *thr, duk_idx_t idx_func, 
 	 * (original 'this' binding) is dropped and ignored.
 	 */
 
+	if (h_proxy->handler == NULL) {
+		DUK_ERROR_TYPE_PROXY_REVOKED(thr);
+	}
 	duk_push_hobject(thr, h_proxy->handler);
 	rc = duk_get_prop_stridx_short(thr, -1, (*call_flags & DUK_CALL_FLAG_CONSTRUCT) ? DUK_STRIDX_CONSTRUCT : DUK_STRIDX_APPLY);
 	if (rc == 0) {
 		/* Not found, continue to target.  If this is a construct
 		 * call, update default instance prototype using the Proxy,
-		 * not the target.
+		 * not the target.  Side effects in trap check may have
+		 * revoked our Proxy so must recheck revocation status.
 		 */
+
 		if (*call_flags & DUK_CALL_FLAG_CONSTRUCT) {
 			if (!(*call_flags & DUK_CALL_FLAG_DEFAULT_INSTANCE_UPDATED)) {
 				*call_flags |= DUK_CALL_FLAG_DEFAULT_INSTANCE_UPDATED;
@@ -875,6 +880,9 @@ DUK_LOCAL void duk__handle_proxy_for_call(duk_hthread *thr, duk_idx_t idx_func, 
 			}
 		}
 		duk_pop_2(thr);
+		if (h_proxy->target == NULL) {
+			DUK_ERROR_TYPE_PROXY_REVOKED(thr);
+		}
 		duk_push_hobject(thr, h_proxy->target);
 		duk_replace(thr, idx_func);
 		return;

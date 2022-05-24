@@ -4129,7 +4129,7 @@ DUK_EXTERNAL duk_bool_t duk_is_array(duk_hthread *thr, duk_idx_t idx) {
 
 	tv = duk_get_tval(thr, idx);
 	if (tv) {
-		return duk_js_isarray(tv);
+		return duk_js_isarray(thr, tv);
 	}
 	return 0;
 }

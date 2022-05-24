@@ -53,6 +53,9 @@ DUK_LOCAL duk_uint_t duk__enum_convert_public_api_flags(duk_uint_t enum_flags) {
  * bare array with the enumerated keys.
  */
 DUK_INTERNAL void duk_prop_enum_keylist(duk_hthread *thr, duk_hobject *obj, duk_uint_t enum_flags) {
+#if defined(DUK_USE_ASSERTIONS)
+	duk_idx_t entry_top;
+#endif
 	duk_idx_t idx_res;
 	duk_idx_t idx_visited;
 	duk_idx_t idx_obj;
@@ -62,6 +65,9 @@ DUK_INTERNAL void duk_prop_enum_keylist(duk_hthread *thr, duk_hobject *obj, duk_
 
 	DUK_ASSERT(thr != NULL);
 	DUK_ASSERT(obj != NULL);
+#if defined(DUK_USE_ASSERTIONS)
+	entry_top = duk_get_top(thr);
+#endif
 
 	idx_res = duk_push_bare_array(thr);
 	idx_visited = duk_push_bare_object(thr);
@@ -165,12 +171,23 @@ DUK_INTERNAL void duk_prop_enum_keylist(duk_hthread *thr, duk_hobject *obj, duk_
 	DUK_ASSERT(duk_get_top(thr) == idx_base_top);
 
 	duk_pop_2_unsafe(thr);
+	DUK_ASSERT(duk_get_top(thr) == entry_top + 1);
 
 	/* [ ... res ] */
 }
 
 /* Create an internal enumerator object for a target object with specified enum flags. */
 DUK_INTERNAL void duk_prop_enum_create_enumerator(duk_hthread *thr, duk_hobject *obj, duk_uint_t enum_flags) {
+#if defined(DUK_USE_ASSERTIONS)
+	duk_idx_t entry_top;
+#endif
+
+	DUK_ASSERT(thr != NULL);
+	DUK_ASSERT(obj != NULL);
+#if defined(DUK_USE_ASSERTIONS)
+	entry_top = duk_get_top(thr);
+#endif
+
 	duk_push_bare_object(thr);
 	duk_prop_enum_keylist(thr, obj, enum_flags);
 	duk_put_prop_literal(thr, -2, "keys");
@@ -178,13 +195,24 @@ DUK_INTERNAL void duk_prop_enum_create_enumerator(duk_hthread *thr, duk_hobject 
 	duk_put_prop_literal(thr, -2, "target");
 	duk_push_uint(thr, 0U);
 	duk_put_prop_literal(thr, -2, "index");
+
+	DUK_ASSERT(duk_get_top(thr) == entry_top + 1);
 }
 
 /* Get next key (and optionally value) from an internal enumerator object and push
  * them on the value stack.
  */
 DUK_INTERNAL duk_bool_t duk_prop_enum_next(duk_hthread *thr, duk_idx_t idx_enum, duk_bool_t get_value) {
+#if defined(DUK_USE_ASSERTIONS)
+	duk_idx_t entry_top;
+#endif
 	duk_uarridx_t idx_next;
+
+	DUK_ASSERT(thr != NULL);
+	DUK_ASSERT(duk_is_valid_index(thr, idx_enum)); /* May also be a negative index. */
+#if defined(DUK_USE_ASSERTIONS)
+	entry_top = duk_get_top(thr);
+#endif
 
 	idx_enum = duk_require_normalize_index(thr, idx_enum);
 
@@ -225,5 +253,6 @@ DUK_INTERNAL duk_bool_t duk_prop_enum_next(duk_hthread *thr, duk_idx_t idx_enum,
 
 	/* [ ... key val? ] */
 
+	DUK_ASSERT(duk_get_top(thr) == entry_top + 1 + (get_value ? 1 : 0));
 	return 1;
 }

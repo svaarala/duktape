@@ -442,12 +442,18 @@ DUK_LOCAL duk_small_int_t duk__prop_ownpropkeys_proxy(duk_hthread *thr, duk_hobj
 }
 
 DUK_INTERNAL void duk_prop_ownpropkeys(duk_hthread *thr, duk_hobject *obj, duk_uint_t ownpropkeys_flags) {
+#if defined(DUK_USE_ASSERTIONS)
+	duk_idx_t entry_top;
+#endif
 	duk_small_uint_t htype;
 	duk_uarridx_t idx_out = 0;
 	duk_harray *arr_out;
 
 	DUK_ASSERT(thr != NULL);
 	DUK_ASSERT(obj != NULL);
+#if defined(DUK_USE_ASSERTIONS)
+	entry_top = duk_get_top(thr);
+#endif
 
 	/* Stabilize 'obj' in case we need to traverse Proxy targets.  Keep
 	 * the current object in this value stack slot (link to previous
@@ -625,4 +631,6 @@ success:
 	DUK_HARRAY_ASSERT_VALID(thr->heap, (duk_harray *) duk_require_hobject(thr, -1));
 
 	duk_remove_m2(thr); /* Remove stabilized 'obj': [ ... obj arr_out ] -> [ ... arr_out ] */
+
+	DUK_ASSERT(duk_get_top(thr) == entry_top + 1);
 }

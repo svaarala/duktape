@@ -181,7 +181,7 @@ DUK_INTERNAL duk_ret_t duk_bi_array_constructor(duk_hthread *thr) {
 
 DUK_INTERNAL duk_ret_t duk_bi_array_constructor_is_array(duk_hthread *thr) {
 	DUK_ASSERT_TOP(thr, 1);
-	return duk_push_boolean_return1(thr, duk_js_isarray(DUK_GET_TVAL_POSIDX(thr, 0)));
+	return duk_push_boolean_return1(thr, duk_js_isarray(thr, DUK_GET_TVAL_POSIDX(thr, 0)));
 }
 
 /*
@@ -262,13 +262,13 @@ DUK_INTERNAL duk_ret_t duk_bi_array_prototype_concat(duk_hthread *thr) {
 #if defined(DUK_USE_SYMBOL_BUILTIN)
 			duk_get_prop_stridx(thr, i, DUK_STRIDX_WELLKNOWN_SYMBOL_IS_CONCAT_SPREADABLE);
 			if (duk_is_undefined(thr, -1)) {
-				spreadable = duk_js_isarray_hobject(h);
+				spreadable = duk_js_isarray_hobject(thr, h);
 			} else {
 				spreadable = duk_to_boolean(thr, -1);
 			}
 			duk_pop_nodecref_unsafe(thr);
 #else
-			spreadable = duk_js_isarray_hobject(h);
+			spreadable = duk_js_isarray_hobject(thr, h);
 #endif
 		}
 
