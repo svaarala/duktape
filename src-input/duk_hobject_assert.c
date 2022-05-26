@@ -28,8 +28,8 @@ DUK_INTERNAL void duk_hobject_assert_valid(duk_heap *heap, duk_hobject *h) {
 	           (DUK_HOBJECT_GET_HTYPE(h) != DUK_HTYPE_ARRAY && !DUK_HOBJECT_HAS_EXOTIC_ARRAY(h)));
 
 	/* No duplicate keys. */
-	n = DUK_HOBJECT_GET_ENEXT(h);
-	keys = DUK_HOBJECT_E_GET_KEY_BASE(heap, h);
+	n = duk_hobject_get_enext(h);
+	keys = duk_hobject_get_strprops_keys(heap, h);
 	for (i = 0; i < n; i++) {
 		duk_hstring *k1 = keys[i];
 		if (k1 == NULL) {
@@ -45,8 +45,8 @@ DUK_INTERNAL void duk_hobject_assert_valid(duk_heap *heap, duk_hobject *h) {
 	}
 
 	/* Keys in string property part must never be arridx keys. */
-	n = DUK_HOBJECT_GET_ENEXT(h);
-	keys = DUK_HOBJECT_E_GET_KEY_BASE(heap, h);
+	n = duk_hobject_get_enext(h);
+	keys = duk_hobject_get_strprops_keys(heap, h);
 	for (i = 0; i < n; i++) {
 		duk_hstring *k1 = keys[i];
 		if (k1 == NULL) {
@@ -59,7 +59,7 @@ DUK_INTERNAL void duk_hobject_assert_valid(duk_heap *heap, duk_hobject *h) {
 	 * index key part.
 	 */
 	if (DUK_HOBJECT_HAS_ARRAY_ITEMS(h)) {
-		DUK_ASSERT(h->idx_props == NULL);
+		DUK_ASSERT(duk_hobject_get_idxprops(heap, h) == NULL);
 		DUK_ASSERT(h->idx_hash == NULL);
 		DUK_ASSERT(h->i_size == 0);
 		DUK_ASSERT(h->i_next == 0);
@@ -72,8 +72,8 @@ DUK_INTERNAL void duk_hobject_assert_compact(duk_heap *heap, duk_hobject *h) {
 
 	DUK_HOBJECT_ASSERT_VALID(heap, h);
 
-	n = DUK_HOBJECT_GET_ENEXT(h);
-	keys = DUK_HOBJECT_E_GET_KEY_BASE(heap, h);
+	n = duk_hobject_get_enext(h);
+	keys = duk_hobject_get_strprops_keys(heap, h);
 	for (i = 0; i < n; i++) {
 		duk_hstring *k1 = keys[i];
 		DUK_ASSERT(k1 != NULL);
@@ -98,8 +98,8 @@ DUK_INTERNAL void duk_hobject_assert_key_absent(duk_heap *heap, duk_hobject *h, 
 
 	DUK_HOBJECT_ASSERT_VALID(heap, h);
 
-	n = DUK_HOBJECT_GET_ENEXT(h);
-	keys = DUK_HOBJECT_E_GET_KEY_BASE(heap, h);
+	n = duk_hobject_get_enext(h);
+	keys = duk_hobject_get_strprops_keys(heap, h);
 	for (i = 0; i < n; i++) {
 		duk_hstring *k = keys[i];
 		if (k == NULL) {
@@ -139,7 +139,7 @@ DUK_INTERNAL void duk_harray_assert_valid(duk_heap *heap, duk_harray *h) {
 	}
 
 	if (DUK_HOBJECT_HAS_ARRAY_ITEMS((duk_hobject *) h)) {
-		DUK_ASSERT(((duk_hobject *) h)->idx_props == NULL);
+		DUK_ASSERT(duk_hobject_get_idxprops(heap, (duk_hobject *) h) == NULL);
 		DUK_ASSERT(((duk_hobject *) h)->idx_hash == NULL);
 		DUK_ASSERT(((duk_hobject *) h)->i_size == 0);
 		DUK_ASSERT(((duk_hobject *) h)->i_next == 0);

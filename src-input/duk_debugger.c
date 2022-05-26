@@ -1904,7 +1904,7 @@ DUK_LOCAL void duk__debug_dump_heaphdr(duk_hthread *thr, duk_heap *heap, duk_hea
 		duk_debug_write_uint(thr, (duk_uint32_t) duk_hobject_get_asize(h));
 		duk_debug_write_uint(thr, (duk_uint32_t) duk_hobject_get_hsize(heap, h));
 
-		for (i = 0; i < (duk_uint_fast32_t) DUK_HOBJECT_GET_ENEXT(h); i++) {
+		for (i = 0; i < (duk_uint_fast32_t) duk_hobject_get_enext(h); i++) {
 			duk_debug_write_uint(thr, (duk_uint32_t) DUK_HOBJECT_E_GET_FLAGS(heap, h, i));
 			k = DUK_HOBJECT_E_GET_KEY(heap, h, i);
 			duk_debug_write_heapptr(thr, (duk_heaphdr *) k);
@@ -2195,7 +2195,7 @@ DUK_LOCAL duk_bool_t duk__debug_getprop_index(duk_hthread *thr, duk_heap *heap, 
 	}
 
 	idx -= a_size;
-	if (idx >= DUK_HOBJECT_GET_ENEXT(h_obj)) {
+	if (idx >= duk_hobject_get_enext(h_obj)) {
 		return 0;
 	}
 
@@ -2297,7 +2297,7 @@ DUK_LOCAL void duk__debug_handle_get_heap_obj_info(duk_hthread *thr, duk_heap *h
 			duk_debug_write_null(thr);
 		}
 		duk__debug_getinfo_flags_key(thr, "props");
-		duk_debug_write_pointer(thr, (void *) DUK_HOBJECT_GET_PROPS(heap, h_obj));
+		duk_debug_write_pointer(thr, (void *) duk_hobject_get_strprops(heap, h_obj));
 		duk__debug_getinfo_prop_uint(thr, "e_size", (duk_uint_t) duk_hobject_get_esize(h_obj));
 		duk__debug_getinfo_prop_uint(thr, "e_next", (duk_uint_t) duk_hobject_get_enext(h_obj));
 		duk__debug_getinfo_prop_uint(thr, "a_size", (duk_uint_t) duk_hobject_get_asize(h_obj));

@@ -115,6 +115,7 @@ retry_obj:
 }
 
 /* [[PreventExtensions]] */
+#if defined(DUK_USE_PROXY_POLICY)
 DUK_LOCAL void duk__preventextensions_proxy_policy(duk_hthread *thr, duk_hobject *obj, duk_bool_t trap_rc) {
 	duk_hobject *target;
 
@@ -123,9 +124,10 @@ DUK_LOCAL void duk__preventextensions_proxy_policy(duk_hthread *thr, duk_hobject
 
 	if (trap_rc != 0 && duk_js_isextensible(thr, target)) {
 		DUK_DD(DUK_DDPRINT("preventExtensions() trap successful, but target is still extensible"));
-		DUK_ERROR_TYPE(thr, "proxy invariant violated for 'preventExtensions'");
+		DUK_ERROR_TYPE_PROXY_REJECTED(thr);
 	}
 }
+#endif
 
 DUK_LOCAL duk_bool_t duk__preventextensions_proxy(duk_hthread *thr, duk_hobject *obj) {
 	/* 'obj' stability assumed from caller. */
@@ -202,7 +204,7 @@ DUK_LOCAL duk_bool_t duk__isextensible_proxy(duk_hthread *thr, duk_hobject *obj)
 		DUK_ASSERT(target != NULL);
 		target_rc = duk_js_isextensible(thr, target);
 		if (trap_rc != target_rc) {
-			DUK_ERROR_TYPE(thr, "proxy invariant violated for 'isExtensible'");
+			DUK_ERROR_TYPE_PROXY_REJECTED(thr);
 		}
 #else
 		DUK_DD(DUK_DDPRINT("proxy policy check for 'isExtensible' trap disabled in configuration"));
@@ -214,7 +216,6 @@ DUK_LOCAL duk_bool_t duk__isextensible_proxy(duk_hthread *thr, duk_hobject *obj)
 }
 DUK_INTERNAL_DECL duk_bool_t duk_js_isextensible(duk_hthread *thr, duk_hobject *obj) {
 	duk_small_uint_t htype;
-	duk_bool_t rc;
 
 retry_obj:
 	htype = DUK_HOBJECT_GET_HTYPE(obj);

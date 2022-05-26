@@ -167,9 +167,7 @@ DUK_INTERNAL void duk_push_objproto_tostring_tval(duk_hthread *thr, duk_tval *tv
 push_stridx:
 	duk_push_hstring_stridx(thr, stridx); /* -> [ ... tag ] */
 
-#if defined(DUK_USE_SYMBOL_BUILTIN)
 tag_pushed:
-#endif
 	/* [ ... string ] */
 	duk_push_literal(thr, "[object "); /* -> [ ... tag "[object" ] */
 	duk_insert(thr, -2);

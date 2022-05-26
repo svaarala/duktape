@@ -1002,7 +1002,7 @@ DUK_LOCAL void duk__handle_catch_part2(duk_hthread *thr) {
 
 	DUK_ASSERT(act == thr->callstack_curr);
 	DUK_ASSERT(act != NULL);
-	DUK_HOBJECT_SET_PROTOTYPE(thr->heap, (duk_hobject *) new_env, act->lex_env);
+	duk_hobject_set_proto_raw(thr->heap, (duk_hobject *) new_env, act->lex_env);
 	act->lex_env = (duk_hobject *) new_env;
 	DUK_HOBJECT_INCREF(thr, (duk_hobject *) new_env); /* reachable through activation */
 	/* Net refcount change to act->lex_env is 0: incref for new_env's
@@ -2390,7 +2390,7 @@ DUK_LOCAL DUK_EXEC_NOINLINE_PERF void duk__handle_op_trycatch(duk_hthread *thr, 
 		DUK_ASSERT(act == thr->callstack_curr);
 		DUK_ASSERT(duk_hobject_get_proto_raw(thr->heap, (duk_hobject *) env) == NULL);
 		DUK_ASSERT(act->lex_env != NULL);
-		DUK_HOBJECT_SET_PROTOTYPE(thr->heap, (duk_hobject *) env, act->lex_env);
+		duk_hobject_set_proto_raw(thr->heap, (duk_hobject *) env, act->lex_env);
 		act->lex_env = (duk_hobject *) env; /* Now reachable. */
 		DUK_HOBJECT_INCREF(thr, (duk_hobject *) env);
 		/* Net refcount change to act->lex_env is 0: incref for env's

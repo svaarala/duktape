@@ -89,7 +89,6 @@
 /* Object property access */
 #define DUK_STR_INVALID_BASE          "invalid base value"
 #define DUK_STR_STRICT_CALLER_READ    "cannot read strict 'caller'"
-#define DUK_STR_PROXY_REJECTED        "proxy rejected"
 #define DUK_STR_INVALID_ARRAY_LENGTH  "invalid array length"
 #define DUK_STR_SETTER_UNDEFINED      "setter undefined"
 #define DUK_STR_INVALID_DESCRIPTOR    "invalid descriptor"
@@ -99,8 +98,8 @@
 #define DUK_STR_INVALID_RVALUE        "invalid rvalue"
 
 /* Proxy */
-#define DUK_STR_PROXY_REVOKED       "proxy revoked"
-#define DUK_STR_INVALID_TRAP_RESULT "invalid trap result"
+#define DUK_STR_PROXY_REVOKED  "proxy revoked"
+#define DUK_STR_PROXY_REJECTED "proxy rejected"
 
 /* Variables */
 

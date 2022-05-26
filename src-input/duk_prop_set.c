@@ -2005,9 +2005,7 @@ DUK_LOCAL duk_bool_t duk__setfinal_strkey_ordinary(duk_hthread *thr, duk_hobject
 		ent_idx = (duk_uint_fast32_t) duk_hobject_alloc_strentry_checked(thr, obj, key);
 		DUK_ASSERT(ent_idx >= 0);
 
-		val_base = DUK_HOBJECT_E_GET_VALUE_BASE(thr->heap, obj);
-		key_base = DUK_HOBJECT_E_GET_KEY_BASE(thr->heap, obj);
-		attr_base = DUK_HOBJECT_E_GET_FLAGS_BASE(thr->heap, obj);
+		duk_hobject_get_strprops_key_attr(thr->heap, obj, &val_base, &key_base, &attr_base);
 		DUK_UNREF(key_base);
 
 		DUK_ASSERT(key_base[ent_idx] == key);
@@ -2184,9 +2182,8 @@ DUK_LOCAL duk_bool_t duk__setfinal_idxkey_ordinary(duk_hthread *thr, duk_hobject
 
 		ent_idx = (duk_uint_fast32_t) duk_hobject_alloc_idxentry_checked(thr, obj, idx);
 
-		val_base = (duk_propvalue *) (void *) obj->idx_props;
-		key_base = (duk_uarridx_t *) (void *) (val_base + obj->i_size);
-		attr_base = (duk_uint8_t *) (void *) (key_base + obj->i_size);
+		duk_hobject_get_idxprops_key_attr(thr->heap, obj, &val_base, &key_base, &attr_base);
+		DUK_UNREF(key_base);
 
 		DUK_ASSERT(key_base[ent_idx] == idx);
 		attr_base[ent_idx] = DUK_PROPDESC_FLAGS_WEC;
@@ -2327,6 +2324,7 @@ fail_array:
 	return 0;
 }
 
+#if defined(DUK_USE_PROXY_POLICY)
 DUK_LOCAL void duk__prop_set_proxy_policy(duk_hthread *thr, duk_hobject *obj, duk_idx_t idx_val, duk_bool_t trap_rc) {
 	duk_hobject *target;
 	duk_small_int_t attrs;
@@ -2372,8 +2370,9 @@ DUK_LOCAL void duk__prop_set_proxy_policy(duk_hthread *thr, duk_hobject *obj, du
 	return;
 
 reject:
-	DUK_ERROR_TYPE(thr, DUK_STR_PROXY_REJECTED);
+	DUK_ERROR_TYPE_PROXY_REJECTED(thr);
 }
+#endif
 
 DUK_LOCAL duk_bool_t duk__prop_set_proxy_tail(duk_hthread *thr, duk_hobject *obj, duk_idx_t idx_val, duk_idx_t idx_recv) {
 	duk_bool_t trap_rc;
@@ -2620,7 +2619,7 @@ DUK_LOCAL DUK_ALWAYS_INLINE duk_bool_t duk__prop_set_stroridx_helper(duk_hthread
 #endif
 #endif
 
-		next = DUK_HOBJECT_GET_PROTOTYPE(thr->heap, target);
+		next = duk_hobject_get_proto_raw(thr->heap, target);
 		if (next == NULL) {
 			goto allow_write;
 		} else {

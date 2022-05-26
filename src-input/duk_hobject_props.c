@@ -52,7 +52,7 @@ DUK_INTERNAL void duk_hobject_resize_entrypart(duk_hthread *thr, duk_hobject *ob
 	DUK_ASSERT(thr != NULL);
 	DUK_ASSERT(obj != NULL);
 
-	old_e_size = DUK_HOBJECT_GET_ESIZE(obj);
+	old_e_size = duk_hobject_get_esize(obj);
 	if (old_e_size > new_e_size) {
 		new_e_size = old_e_size;
 	}
@@ -83,7 +83,7 @@ duk_hobject_find_entry(duk_heap *heap, duk_hobject *obj, duk_hstring *key, duk_i
 	DUK_UNREF(heap);
 
 #if defined(DUK_USE_HOBJECT_HASH_PART)
-	hash = DUK_HOBJECT_GET_HASH(heap, obj);
+	hash = duk_hobject_get_strhash(heap, obj);
 	if (hash == NULL)
 #endif
 	{
@@ -95,8 +95,8 @@ duk_hobject_find_entry(duk_heap *heap, duk_hobject *obj, duk_hstring *key, duk_i
 		duk_hstring **h_keys_base;
 		DUK_DDD(DUK_DDDPRINT("duk_hobject_find_entry() using linear scan for lookup"));
 
-		h_keys_base = DUK_HOBJECT_E_GET_KEY_BASE(heap, obj);
-		n = DUK_HOBJECT_GET_ENEXT(obj);
+		h_keys_base = duk_hobject_get_strprops_keys(heap, obj);
+		n = duk_hobject_get_enext(obj);
 		for (i = 0; i < n; i++) {
 			if (h_keys_base[i] == key) {
 				*e_idx = (duk_int_t) i;
@@ -127,14 +127,14 @@ duk_hobject_find_entry(duk_heap *heap, duk_hobject *obj, duk_hstring *key, duk_i
 			DUK_ASSERT(i < n);
 			t = hash[i];
 			DUK_ASSERT(t == DUK_HOBJECT_HASHIDX_UNUSED || t == DUK_HOBJECT_HASHIDX_DELETED ||
-			           (t < DUK_HOBJECT_GET_ESIZE(obj))); /* t >= 0 always true, unsigned */
+			           (t < duk_hobject_get_esize(obj))); /* t >= 0 always true, unsigned */
 
 			if (t == DUK_HOBJECT_HASHIDX_UNUSED) {
 				break;
 			} else if (t == DUK_HOBJECT_HASHIDX_DELETED) {
 				DUK_DDD(DUK_DDDPRINT("lookup miss (deleted) i=%ld, t=%ld", (long) i, (long) t));
 			} else {
-				DUK_ASSERT(t < DUK_HOBJECT_GET_ESIZE(obj));
+				DUK_ASSERT(t < duk_hobject_get_esize(obj));
 				if (DUK_HOBJECT_E_GET_KEY(heap, obj, t) == key) {
 					DUK_DDD(
 					    DUK_DDDPRINT("lookup hit i=%ld, t=%ld -> key %p", (long) i, (long) t, (void *) key));
@@ -337,11 +337,7 @@ DUK_INTERNAL duk_size_t duk_hobject_get_length(duk_hthread *thr, duk_hobject *ob
  *  in sync with the actual property when setting/removing the finalizer.
  */
 
-#if defined(DUK_USE_HEAPPTR16)
 DUK_INTERNAL duk_bool_t duk_hobject_has_finalizer_fast_raw(duk_heap *heap, duk_hobject *obj) {
-#else
-DUK_INTERNAL duk_bool_t duk_hobject_has_finalizer_fast_raw(duk_hobject *obj) {
-#endif
 	duk_uint_t sanity;
 
 	DUK_ASSERT(obj != NULL);
@@ -359,6 +355,7 @@ DUK_INTERNAL duk_bool_t duk_hobject_has_finalizer_fast_raw(duk_hobject *obj) {
 		DUK_ASSERT(heap != NULL);
 		obj = duk_hobject_get_proto_raw(heap, obj);
 #else
+		DUK_UNREF(heap);
 		obj = duk_hobject_get_proto_raw(NULL, obj); /* 'heap' arg ignored */
 #endif
 	} while (obj != NULL);

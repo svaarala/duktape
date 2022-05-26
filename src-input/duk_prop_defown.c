@@ -493,7 +493,7 @@ DUK_LOCAL duk_bool_t duk__prop_defown_strkey_ordinary(duk_hthread *thr,
 		duk_propvalue *pv_slot;
 		duk_uint8_t *attr_slot;
 
-		duk_hobject_get_props_key_attr(thr->heap, obj, &val_base, &key_base, &attr_base);
+		duk_hobject_get_strprops_key_attr(thr->heap, obj, &val_base, &key_base, &attr_base);
 
 		DUK_ASSERT(key_base[ent_idx] == key);
 		pv_slot = val_base + ent_idx;
@@ -512,7 +512,7 @@ DUK_LOCAL duk_bool_t duk__prop_defown_strkey_ordinary(duk_hthread *thr,
 		}
 
 		ent_idx = (duk_uint_fast32_t) duk_hobject_alloc_strentry_checked(thr, obj, key);
-		duk_hobject_get_props_key_attr(thr->heap, obj, &val_base, &key_base, &attr_base);
+		duk_hobject_get_strprops_key_attr(thr->heap, obj, &val_base, &key_base, &attr_base);
 		DUK_ASSERT(key_base[ent_idx] == key);
 		pv_slot = val_base + ent_idx;
 		attr_slot = attr_base + ent_idx;
@@ -891,9 +891,8 @@ DUK_LOCAL duk_bool_t duk__prop_defown_idxkey_ordinary(duk_hthread *thr,
 		duk_propvalue *pv_slot;
 		duk_uint8_t *attr_slot;
 
-		val_base = (duk_propvalue *) (void *) obj->idx_props;
-		key_base = (duk_uarridx_t *) (void *) (val_base + obj->i_size);
-		attr_base = (duk_uint8_t *) (void *) (key_base + obj->i_size);
+		duk_hobject_get_idxprops_key_attr(thr->heap, obj, &val_base, &key_base, &attr_base);
+
 		DUK_ASSERT(key_base[ent_idx] == idx);
 		pv_slot = val_base + ent_idx;
 		attr_slot = attr_base + ent_idx;
@@ -910,9 +909,7 @@ DUK_LOCAL duk_bool_t duk__prop_defown_idxkey_ordinary(duk_hthread *thr,
 			goto fail_not_extensible;
 		}
 		ent_idx = (duk_uint_fast32_t) duk_hobject_alloc_idxentry_checked(thr, obj, idx);
-		val_base = (duk_propvalue *) (void *) obj->idx_props;
-		key_base = (duk_uarridx_t *) (void *) (val_base + obj->i_size);
-		attr_base = (duk_uint8_t *) (void *) (key_base + obj->i_size);
+		duk_hobject_get_idxprops_key_attr(thr->heap, obj, &val_base, &key_base, &attr_base);
 		DUK_ASSERT(key_base[ent_idx] == idx);
 		pv_slot = val_base + ent_idx;
 		attr_slot = attr_base + ent_idx;

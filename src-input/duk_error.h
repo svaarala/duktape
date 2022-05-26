@@ -342,13 +342,13 @@
 		DUK_ERROR_TYPE_INVALID_STATE((thr)); \
 		return 0; \
 	} while (0)
-#define DUK_ERROR_TYPE_INVALID_TRAP_RESULT(thr) \
+#define DUK_ERROR_TYPE_PROXY_REJECTED(thr) \
 	do { \
-		duk_err_type_invalid_trap_result((thr), DUK_FILE_MACRO, (duk_int_t) DUK_LINE_MACRO); \
+		duk_err_type_proxy_rejected((thr), DUK_FILE_MACRO, (duk_int_t) DUK_LINE_MACRO); \
 	} while (0)
-#define DUK_DCERROR_TYPE_INVALID_TRAP_RESULT(thr) \
+#define DUK_DCERROR_TYPE_PROXY_REJECTED(thr) \
 	do { \
-		DUK_ERROR_TYPE((thr), DUK_STR_INVALID_TRAP_RESULT); \
+		DUK_ERROR_TYPE((thr), DUK_STR_PROXY_REJECTED); \
 	} while (0)
 #define DUK_ERROR_TYPE_PROXY_REVOKED(thr) \
 	do { \
@@ -476,11 +476,11 @@
 	do { \
 		duk_err_type((thr)); \
 	} while (0)
-#define DUK_ERROR_TYPE_INVALID_TRAP_RESULT(thr) \
+#define DUK_ERROR_TYPE_PROXY_REJECTED(thr) \
 	do { \
 		duk_err_type((thr)); \
 	} while (0)
-#define DUK_DCERROR_TYPE_INVALID_TRAP_RESULT(thr) \
+#define DUK_DCERROR_TYPE_PROXY_REJECTED(thr) \
 	do { \
 		DUK_UNREF((thr)); \
 		return DUK_RET_TYPE_ERROR; \
@@ -693,7 +693,7 @@ DUK_NORETURN(
     DUK_INTERNAL_DECL void duk_err_range(duk_hthread *thr, const char *filename, duk_int_t linenumber, const char *message));
 DUK_NORETURN(DUK_INTERNAL_DECL void duk_err_type_invalid_args(duk_hthread *thr, const char *filename, duk_int_t linenumber));
 DUK_NORETURN(DUK_INTERNAL_DECL void duk_err_type_invalid_state(duk_hthread *thr, const char *filename, duk_int_t linenumber));
-DUK_NORETURN(DUK_INTERNAL_DECL void duk_err_type_invalid_trap_result(duk_hthread *thr, const char *filename, duk_int_t linenumber));
+DUK_NORETURN(DUK_INTERNAL_DECL void duk_err_type_proxy_rejected(duk_hthread *thr, const char *filename, duk_int_t linenumber));
 DUK_NORETURN(DUK_INTERNAL_DECL void duk_err_type_proxy_revoked(duk_hthread *thr, const char *filename, duk_int_t linenumber));
 DUK_NORETURN(DUK_INTERNAL_DECL void duk_err_type_buffer_detached(duk_hthread *thr, const char *filename, duk_int_t linenumber));
 DUK_NORETURN(DUK_INTERNAL_DECL void duk_err_type_invalid_rvalue(duk_hthread *thr, const char *filename, duk_int_t linenumber));

@@ -208,6 +208,7 @@ DUK_LOCAL void duk__prop_delete_ent_shared(duk_hthread *thr, duk_propvalue *pv_s
 	/* Slot is left as garbage. */
 }
 
+#if defined(DUK_USE_PROXY_POLICY)
 DUK_LOCAL void duk__prop_delete_proxy_policy(duk_hthread *thr, duk_hobject *obj, duk_bool_t trap_rc) {
 	duk_hobject *target;
 	duk_small_int_t attrs;
@@ -256,8 +257,9 @@ DUK_LOCAL void duk__prop_delete_proxy_policy(duk_hthread *thr, duk_hobject *obj,
 	return;
 
 reject:
-	DUK_ERROR_TYPE(thr, DUK_STR_PROXY_REJECTED);
+	DUK_ERROR_TYPE_PROXY_REJECTED(thr);
 }
+#endif
 
 DUK_LOCAL duk_bool_t duk__prop_delete_proxy_tail(duk_hthread *thr, duk_hobject *obj) {
 	duk_bool_t trap_rc;
@@ -332,17 +334,14 @@ DUK_LOCAL duk_bool_t duk__prop_delete_obj_strkey_ordinary(duk_hthread *thr,
 		duk_uint32_t *hash_base;
 		duk_uint32_t *hash_slot;
 
-		attr_base = DUK_HOBJECT_E_GET_FLAGS_BASE(thr->heap, obj);
-		attrs = attr_base[ent_idx];
+		duk_hobject_get_strprops_key_attr(thr->heap, obj, &val_base, &key_base, &attr_base);
 
+		attrs = attr_base[ent_idx];
 		if (DUK_UNLIKELY(!(attrs & DUK_PROPDESC_FLAG_CONFIGURABLE) && !(delprop_flags & DUK_DELPROP_FLAG_FORCE))) {
 			goto fail_not_configurable;
 		}
 
-		val_base = DUK_HOBJECT_E_GET_VALUE_BASE(thr->heap, obj);
 		pv_slot = val_base + ent_idx;
-
-		key_base = DUK_HOBJECT_E_GET_KEY_BASE(thr->heap, obj);
 		key_slot = key_base + ent_idx;
 		DUK_ASSERT(*key_slot != NULL);
 		DUK_ASSERT(*key_slot == key);
@@ -352,7 +351,7 @@ DUK_LOCAL duk_bool_t duk__prop_delete_obj_strkey_ordinary(duk_hthread *thr,
 
 #if defined(DUK_USE_HOBJECT_HASH_PART)
 		if (hash_idx >= 0) {
-			hash_base = DUK_HOBJECT_GET_HASH(thr->heap, obj);
+			hash_base = duk_hobject_get_strhash(thr->heap, obj);
 			DUK_ASSERT(hash_base != NULL);
 			DUK_ASSERT((duk_uint_fast32_t) hash_idx < (duk_uint_fast32_t) hash_base[0]);
 			hash_slot = hash_base + 1 + hash_idx;
@@ -641,9 +640,7 @@ DUK_LOCAL duk_bool_t duk__prop_delete_obj_idxkey_ordinary(duk_hthread *thr,
 		duk_uint32_t *hash_base;
 		duk_uint32_t *hash_slot;
 
-		val_base = (duk_propvalue *) (void *) obj->idx_props;
-		key_base = (duk_uarridx_t *) (void *) (val_base + obj->i_size);
-		attr_base = (duk_uint8_t *) (void *) (key_base + obj->i_size);
+		duk_hobject_get_idxprops_key_attr(thr->heap, obj, &val_base, &key_base, &attr_base);
 
 		attrs = attr_base[ent_idx];
 		if (DUK_UNLIKELY(!(attrs & DUK_PROPDESC_FLAG_CONFIGURABLE) && !(delprop_flags & DUK_DELPROP_FLAG_FORCE))) {

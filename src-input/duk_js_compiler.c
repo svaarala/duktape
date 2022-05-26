@@ -655,7 +655,7 @@ DUK_LOCAL duk_int_t duk__cleanup_varmap(duk_compiler_ctx *comp_ctx) {
 	DUK_ASSERT(h_varmap != NULL);
 
 	ret = 0;
-	e_next = DUK_HOBJECT_GET_ENEXT(h_varmap);
+	e_next = duk_hobject_get_enext(h_varmap);
 	for (i = 0; i < e_next; i++) {
 		h_key = DUK_HOBJECT_E_GET_KEY(thr->heap, h_varmap, i);
 		if (!h_key) {

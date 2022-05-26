@@ -524,7 +524,7 @@ DUK_INTERNAL duk_ret_t duk_bi_global_object_eval(duk_hthread *thr) {
 			duk_push_hobject(thr, (duk_hobject *) new_env);
 
 			DUK_ASSERT(duk_hobject_get_proto_raw(thr->heap, (duk_hobject *) new_env) == NULL);
-			DUK_HOBJECT_SET_PROTOTYPE(thr->heap, (duk_hobject *) new_env, act_lex_env);
+			duk_hobject_set_proto_raw(thr->heap, (duk_hobject *) new_env, act_lex_env);
 			DUK_HOBJECT_INCREF_ALLOWNULL(thr, act_lex_env);
 			DUK_DDD(DUK_DDDPRINT("new_env allocated: %!iO", (duk_heaphdr *) new_env));
 

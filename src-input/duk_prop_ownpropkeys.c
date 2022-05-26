@@ -144,9 +144,7 @@ DUK_LOCAL duk_uarridx_t duk__prop_ownpropkeys_idxprops(duk_hthread *thr,
 	tv_out = tv_out_start;
 	DUK_ASSERT(tv_out != NULL || (idx_out == 0 && n == 0));
 
-	val_base = (duk_propvalue *) (void *) obj->idx_props;
-	key_base = (duk_uarridx_t *) (void *) (val_base + obj->i_size);
-	attr_base = (duk_uint8_t *) (void *) (key_base + obj->i_size);
+	duk_hobject_get_idxprops_key_attr(thr->heap, obj, &val_base, &key_base, &attr_base);
 
 	for (i = 0, n = obj->i_next; i < n; i++) {
 		duk_uarridx_t idx;
@@ -190,7 +188,7 @@ DUK_LOCAL duk_uarridx_t duk__prop_ownpropkeys_strprops(duk_hthread *thr,
 	tv_out = tv_out_start;
 	DUK_ASSERT(tv_out != NULL || (idx_out == 0 && n == 0));
 
-	duk_hobject_get_props_key_attr(thr->heap, obj, &val_base, &key_base, &attr_base);
+	duk_hobject_get_strprops_key_attr(thr->heap, obj, &val_base, &key_base, &attr_base);
 
 	for (i = 0, n = duk_hobject_get_enext(obj); i < n; i++) {
 		duk_hstring *key;
@@ -371,7 +369,7 @@ DUK_LOCAL void duk__prop_ownpropkeys_proxy_policy(duk_hthread *thr, duk_hobject 
 
 		h = duk_get_hstring(thr, -1);
 		if (DUK_UNLIKELY(h == NULL)) {
-			DUK_ERROR_TYPE_INVALID_TRAP_RESULT(thr);
+			DUK_ERROR_TYPE_PROXY_REJECTED(thr);
 			DUK_WO_NORETURN(return;);
 		}
 
@@ -421,7 +419,7 @@ DUK_LOCAL void duk__prop_ownpropkeys_proxy_policy(duk_hthread *thr, duk_hobject 
 	return;
 
 proxy_reject:
-	DUK_ERROR_TYPE(thr, DUK_STR_PROXY_REJECTED);
+	DUK_ERROR_TYPE_PROXY_REJECTED(thr);
 }
 #endif
 
@@ -548,7 +546,8 @@ retry_obj:
 	/* Index properties from idxprops part.  These need to be sorted
 	 * because they're stored in a hash.
 	 */
-	if (obj->idx_props != NULL && obj->i_next > 0) {
+	if (obj->i_next > 0) {
+		DUK_ASSERT(duk_hobject_get_idxprops(thr->heap, obj) != NULL);
 		if (ownpropkeys_flags & DUK_OWNPROPKEYS_FLAG_INCLUDE_ARRIDX) {
 			idx_out = duk__prop_ownpropkeys_idxprops(thr, obj, arr_out, idx_out, ownpropkeys_flags);
 			duk__prop_ownpropkeys_sort_index_keys(thr, arr_out);
@@ -604,7 +603,7 @@ skip_index_part:
 	 * added in the final step if desired.
 	 */
 
-	if (duk_hobject_get_props(thr->heap, obj) != NULL && duk_hobject_get_enext(obj) > 0) {
+	if (duk_hobject_get_strprops(thr->heap, obj) != NULL && duk_hobject_get_enext(obj) > 0) {
 		duk_bool_t found_symbols = 1;
 
 		if (ownpropkeys_flags & DUK_OWNPROPKEYS_FLAG_INCLUDE_STRING) {

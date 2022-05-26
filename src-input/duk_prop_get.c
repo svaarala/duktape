@@ -382,6 +382,7 @@ duk__get_own_prop_idxkey_ordinary(duk_hthread *thr, duk_hobject *obj, duk_uarrid
 	}
 }
 
+#if defined(DUK_USE_PROXY_POLICY)
 DUK_LOCAL void duk__prop_get_own_proxy_policy(duk_hthread *thr, duk_hobject *obj) {
 	duk_hobject *target;
 	duk_small_int_t attrs;
@@ -417,8 +418,9 @@ DUK_LOCAL void duk__prop_get_own_proxy_policy(duk_hthread *thr, duk_hobject *obj
 	return;
 
 reject:
-	DUK_ERROR_TYPE(thr, DUK_STR_PROXY_REJECTED);
+	DUK_ERROR_TYPE_PROXY_REJECTED(thr);
 }
+#endif
 
 DUK_LOCAL duk_bool_t duk__prop_get_own_proxy_tail(duk_hthread *thr, duk_hobject *obj, duk_idx_t idx_out, duk_idx_t idx_recv) {
 	DUK_ASSERT(thr != NULL);
@@ -1321,7 +1323,7 @@ DUK_LOCAL DUK_ALWAYS_INLINE duk_bool_t duk__prop_get_stroridx_helper(duk_hthread
 #endif
 #endif
 
-		next = DUK_HOBJECT_GET_PROTOTYPE(thr->heap, target);
+		next = duk_hobject_get_proto_raw(thr->heap, target);
 		if (next == NULL) {
 			if (DUK_UNLIKELY(DUK_HOBJECT_HAS_EXOTIC_PROXYOBJ(target))) {
 				if (side_effect_safe) {
@@ -1884,7 +1886,9 @@ DUK_INTERNAL duk_bool_t duk_prop_getvalue_push(duk_hthread *thr, duk_idx_t idx_r
 	duk_push_undefined(thr);
 	idx_out = duk_get_top_index_known(thr);
 
-	return duk_prop_getvalue_outidx(thr, idx_recv, tv_key, idx_out);
+	rc = duk_prop_getvalue_outidx(thr, idx_recv, tv_key, idx_out);
+	DUK_ASSERT(duk_get_top(thr) == entry_top + 1);
+	return rc;
 }
 
 DUK_INTERNAL duk_bool_t duk_prop_getvalue_stridx_outidx(duk_hthread *thr,

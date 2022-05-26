@@ -27,11 +27,11 @@ DUK_INTERNAL void duk_free_hobject(duk_heap *heap, duk_hobject *h) {
 	DUK_ASSERT(heap != NULL);
 	DUK_ASSERT(h != NULL);
 
-	DUK_FREE(heap, DUK_HOBJECT_GET_PROPS(heap, h));
+	DUK_FREE(heap, duk_hobject_get_strprops(heap, h));
 #if defined(DUK_USE_HOBJECT_HASH_PART)
-	DUK_FREE(heap, DUK_HOBJECT_GET_HASH(heap, h));
+	DUK_FREE(heap, duk_hobject_get_strhash(heap, h));
 #endif
-	DUK_FREE(heap, h->idx_props);
+	DUK_FREE(heap, duk_hobject_get_idxprops(heap, h));
 	DUK_FREE(heap, h->idx_hash);
 
 	if (DUK_HOBJECT_IS_HARRAY(h)) {
@@ -298,7 +298,7 @@ DUK_LOCAL void duk__free_run_finalizers(duk_heap *heap) {
 				 */
 				DUK_ASSERT(curr != NULL);
 
-				if (DUK_HOBJECT_HAS_FINALIZER_FAST(heap, (duk_hobject *) curr)) {
+				if (duk_hobject_has_finalizer_fast_raw(heap, (duk_hobject *) curr)) {
 					if (!DUK_HEAPHDR_HAS_FINALIZED((duk_heaphdr *) curr)) {
 						DUK_ASSERT(
 						    DUK_HEAP_HAS_FINALIZER_NORESCUE(heap)); /* maps to finalizer 2nd argument */
@@ -596,7 +596,7 @@ DUK_LOCAL duk_bool_t duk__init_heap_thread(duk_heap *heap) {
 	duk_hthread_create_builtin_objects(thr);
 
 	/* default prototype */
-	DUK_HOBJECT_SET_PROTOTYPE_INIT_INCREF(thr, (duk_hobject *) thr, thr->builtins[DUK_BIDX_THREAD_PROTOTYPE]);
+	duk_hobject_set_proto_init_incref(thr, (duk_hobject *) thr, thr->builtins[DUK_BIDX_THREAD_PROTOTYPE]);
 
 	return 1;
 }

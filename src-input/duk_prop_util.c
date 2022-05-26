@@ -272,8 +272,8 @@ DUK_INTERNAL duk_hstring *duk_prop_arguments_map_prep_idxkey(duk_hthread *thr,
 	if (!rc) {
 		return NULL;
 	}
-	DUK_ASSERT((*out_map)->idx_props != NULL);
-	pv = ((duk_propvalue *) (*out_map)->idx_props) + ent_idx;
+	DUK_ASSERT(duk_hobject_get_idxprops(thr->heap, *out_map) != NULL);
+	pv = duk_hobject_get_idxprops(thr->heap, *out_map) + ent_idx;
 	tv_varname = &pv->v;
 	DUK_ASSERT(DUK_TVAL_IS_STRING(tv_varname));
 	varname = DUK_TVAL_GET_STRING(tv_varname);

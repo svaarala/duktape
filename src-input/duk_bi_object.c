@@ -161,8 +161,6 @@ DUK_INTERNAL duk_ret_t duk_bi_object_constructor_define_properties(duk_hthread *
 		DUK_ASSERT_TOP(thr, 3);
 
 		for (;;) {
-			duk_hstring *key;
-
 			/* [ hobject props enum(props) ] */
 
 			duk_set_top(thr, 3);
@@ -651,7 +649,6 @@ DUK_INTERNAL duk_ret_t duk_bi_object_constructor_prevent_extensions(duk_hthread 
 		rc = duk_js_preventextensions(thr, h);
 	}
 
-done:
 	if (magic == 0) {
 		if (rc == 0) {
 			DUK_ERROR_TYPE(thr, DUK_STR_CANNOT_PREVENT_EXTENSIONS);

@@ -72,18 +72,18 @@ DUK_LOCAL void duk__duplicate_ram_global_object(duk_hthread *thr) {
 	DUK_ASSERT(alloc_size > 0);
 	props = DUK_ALLOC_CHECKED(thr, alloc_size);
 	DUK_ASSERT(props != NULL);
-	DUK_ASSERT(DUK_HOBJECT_GET_PROPS(thr->heap, h_oldglobal) != NULL);
-	duk_memcpy((void *) props, (const void *) DUK_HOBJECT_GET_PROPS(thr->heap, h_oldglobal), alloc_size);
+	DUK_ASSERT(duk_hobject_get_strprops(thr->heap, h_oldglobal) != NULL);
+	duk_memcpy((void *) props, (const void *) duk_hobject_get_strprops(thr->heap, h_oldglobal), alloc_size);
 
 	/* XXX: keep property attributes or tweak them here?
 	 * Properties will now be non-configurable even when they're
 	 * normally configurable for the global object.
 	 */
 
-	DUK_ASSERT(DUK_HOBJECT_GET_PROPS(thr->heap, h_global) == NULL);
-	DUK_HOBJECT_SET_PROPS(thr->heap, h_global, props);
-	DUK_HOBJECT_SET_ESIZE(h_global, DUK_HOBJECT_GET_ESIZE(h_oldglobal));
-	DUK_HOBJECT_SET_ENEXT(h_global, DUK_HOBJECT_GET_ENEXT(h_oldglobal));
+	DUK_ASSERT(duk_hobject_get_strprops(thr->heap, h_global) == NULL);
+	duk_hobject_set_strprops(thr->heap, h_global, props);
+	duk_hobject_set_esize(h_global, duk_hobject_get_esize(h_oldglobal));
+	duk_hobject_set_enext(h_global, duk_hobject_get_enext(h_oldglobal));
 #else
 #error internal error in config defines
 #endif

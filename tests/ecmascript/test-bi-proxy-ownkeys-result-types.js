@@ -11,7 +11,7 @@
 
 /*===
 ["foo","bar"]
-TypeError: invalid trap result
+TypeError: proxy rejected
 ===*/
 
 function test() {

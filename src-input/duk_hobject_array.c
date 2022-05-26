@@ -146,9 +146,7 @@ DUK_INTERNAL duk_bool_t duk_harray_put_array_length_u32_smaller(duk_hthread *thr
 		 * When forcing, ignore non-configurability.
 		 */
 
-		val_base = (duk_propvalue *) (void *) obj->idx_props;
-		key_base = (duk_uarridx_t *) (void *) (val_base + obj->i_size);
-		attr_base = (duk_uint8_t *) (void *) (key_base + obj->i_size);
+		duk_hobject_get_idxprops_key_attr(thr->heap, obj, &val_base, &key_base, &attr_base);
 
 		target_len = new_len;
 		if (force_flag) {
