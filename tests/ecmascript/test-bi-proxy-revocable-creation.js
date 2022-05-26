@@ -5,8 +5,8 @@ true
 true true true
 [object Function]
 true true true
-undefined undefined undefined undefined
-undefined undefined undefined undefined
+ false false true
+0 false false true
 ===*/
 
 var target = { foo: 123 };
@@ -34,7 +34,7 @@ Object.getOwnPropertySymbols(P).forEach(function (s) {
 });
 
 var pd = Object.getOwnPropertyDescriptor(P.revoke, 'name') || {};
-print(pd.value, pd.writable, pd.enumerable, pd.writable);
+print(pd.value, pd.writable, pd.enumerable, pd.configurable);
 
 var pd = Object.getOwnPropertyDescriptor(P.revoke, 'length') || {};
-print(pd.value, pd.writable, pd.enumerable, pd.writable);
+print(pd.value, pd.writable, pd.enumerable, pd.configurable);

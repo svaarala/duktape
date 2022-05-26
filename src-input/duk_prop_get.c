@@ -444,7 +444,7 @@ DUK_LOCAL duk_bool_t duk__prop_get_own_proxy_tail(duk_hthread *thr, duk_hobject 
 	/* [ ... key result ] */
 
 	duk_replace_posidx_unsafe(thr, idx_out);
-	duk_pop_unsafe(thr);
+	duk_pop_known(thr);
 
 	return DUK__GETOWN_FOUND;
 }
@@ -504,7 +504,7 @@ DUK_LOCAL duk_bool_t duk__prop_get_check_arguments_map_for_get(duk_hthread *thr,
 	 * e.g. by a with(proxy).
 	 */
 	(void) duk_js_getvar_envrec(thr, env, varname, 1 /*throw*/); /* -> [ ... value this_binding ] */
-	duk_pop_unsafe(thr);
+	duk_pop_known(thr);
 
 	/* Leave result on stack top. */
 	return 1;
@@ -578,9 +578,9 @@ duk__get_own_prop_idxkey_arguments(duk_hthread *thr, duk_hobject *obj, duk_uarri
 	 * be unreachable except for this value stack reference.)
 	 */
 	if (rc_map) {
-		duk_pop_2_unsafe(thr);
+		duk_pop_2_known(thr);
 	} else {
-		duk_pop_unsafe(thr);
+		duk_pop_known(thr);
 	}
 	return DUK__GETOWN_NOTFOUND;
 
@@ -591,7 +591,7 @@ found_do_map_check:
 		 */
 		duk_replace(thr, idx_out);
 	}
-	duk_pop_unsafe(thr);
+	duk_pop_known(thr);
 
 	/* Side effects have occurred so all bets are off.  This is OK in this
 	 * path because caller will terminate property lookup anyway.
@@ -1365,14 +1365,14 @@ DUK_LOCAL DUK_ALWAYS_INLINE duk_bool_t duk__prop_get_stroridx_helper(duk_hthread
 not_found:
 	if (side_effect_safe) {
 		DUK_ASSERT(duk_get_hobject(thr, -1) == target);
-		duk_pop_unsafe(thr);
+		duk_pop_known(thr);
 	}
 	return duk__prop_get_write_notfound_result(thr, idx_out);
 
 found:
 	DUK_ASSERT(rc == 1);
 	if (side_effect_safe) {
-		duk_pop_unsafe(thr);
+		duk_pop_known(thr);
 		return 1;
 	} else {
 		return rc;
@@ -1710,7 +1710,7 @@ DUK_INTERNAL duk_bool_t duk_prop_getvalue_idxkey_outidx(duk_hthread *thr,
 		DUK_DD(DUK_DDPRINT("corner case, input idx 0xffffffff is not an arridx, must coerce to string"));
 		key = duk_push_u32_tohstring(thr, idx);
 		rc = duk__prop_getvalue_strkey_outidx(thr, idx_recv, key, idx_out);
-		duk_pop_unsafe(thr);
+		duk_pop_known(thr);
 		DUK_ASSERT(duk_get_top(thr) == entry_top);
 		return rc;
 	}
@@ -1850,7 +1850,7 @@ DUK_INTERNAL duk_bool_t duk_prop_getvalue_outidx(duk_hthread *thr, duk_idx_t idx
 	key = duk_to_property_key_hstring(thr, -1);
 	DUK_ASSERT(key != NULL);
 	rc = duk_prop_getvalue_strkey_outidx(thr, idx_recv, key, idx_out);
-	duk_pop_unsafe(thr);
+	duk_pop_known(thr);
 	DUK_ASSERT(duk_get_top(thr) == entry_top);
 	return rc;
 
@@ -1882,7 +1882,7 @@ DUK_INTERNAL duk_bool_t duk_prop_getvalue_push(duk_hthread *thr, duk_idx_t idx_r
 #endif
 
 	duk_push_undefined(thr);
-	idx_out = duk_get_top_index_unsafe(thr);
+	idx_out = duk_get_top_index_known(thr);
 
 	return duk_prop_getvalue_outidx(thr, idx_recv, tv_key, idx_out);
 }

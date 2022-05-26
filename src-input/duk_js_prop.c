@@ -16,7 +16,7 @@ DUK_INTERNAL void duk_js_getprototypeof_hproxy(duk_hthread *thr, duk_hproxy *h) 
 		duk_push_hobject(thr, h->target);
 		duk_call_method(thr, 1 /*nargs*/); /* [ ... trap handler target ] -> [ ... result ] */
 	} else {
-		duk_pop_2_unsafe(thr);
+		duk_pop_2_known(thr);
 		duk_js_getprototypeof(thr, h->target);
 	}
 }

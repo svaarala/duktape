@@ -248,7 +248,7 @@ DUK_LOCAL duk_bool_t duk__prop_has_proxy_tail(duk_hthread *thr) {
 		}
 	}
 
-	duk_pop_3_unsafe(thr);
+	duk_pop_3_known(thr);
 	DUK_ASSERT(DUK__HASOWN_NOTFOUND == 0 && DUK__HASOWN_FOUND == 1);
 	DUK_ASSERT(rc == DUK__HASOWN_NOTFOUND || rc == DUK__HASOWN_FOUND);
 	return rc;
@@ -346,7 +346,7 @@ DUK_LOCAL DUK_ALWAYS_INLINE duk_bool_t duk__prop_has_obj_stroridx_helper(duk_hth
 
 done:
 	if (side_effect_safe) {
-		duk_pop_unsafe(thr);
+		duk_pop_known(thr);
 	}
 
 	return rc;
@@ -499,7 +499,7 @@ DUK_INTERNAL duk_bool_t duk_prop_has_idxkey(duk_hthread *thr, duk_tval *tv_obj, 
 		DUK_DD(DUK_DDPRINT("corner case, input idx 0xffffffff is not an arridx, must coerce to string"));
 		key = duk_push_u32_tohstring(thr, idx);
 		rc = duk__prop_has_strkey(thr, tv_obj, key);
-		duk_pop_unsafe(thr);
+		duk_pop_known(thr);
 		DUK_ASSERT(duk_get_top(thr) == entry_top);
 		return rc;
 	}
@@ -598,7 +598,7 @@ DUK_INTERNAL duk_bool_t duk_prop_has(duk_hthread *thr, duk_tval *tv_obj, duk_tva
 	duk_push_tval(thr, tv_key);
 	(void) duk_to_property_key_hstring(thr, -1);
 	rc = duk_prop_has(thr, DUK_GET_TVAL_NEGIDX(thr, -2), DUK_GET_TVAL_NEGIDX(thr, -1));
-	duk_pop_2_unsafe(thr);
+	duk_pop_2_known(thr);
 	DUK_ASSERT(duk_get_top(thr) == entry_top);
 	return rc;
 

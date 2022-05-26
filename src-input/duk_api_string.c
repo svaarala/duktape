@@ -167,7 +167,7 @@ DUK_INTERNAL void duk_concat_2(duk_hthread *thr) {
 	/* [ ... str1 str2 buf ] */
 
 	duk_replace(thr, -3);
-	duk_pop_unsafe(thr);
+	duk_pop_known(thr);
 	return;
 
 error_overflow:

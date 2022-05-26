@@ -636,7 +636,7 @@ DUK_INTERNAL duk_ret_t duk_bi_string_prototype_replace(duk_hthread *thr) {
 		 */
 		h_preserve = duk_push_wtf8_substring_hstring(thr, h_input, end_of_last_match_coff, match_start_coff);
 		DUK_BW_WRITE_ENSURE_HSTRING(thr, bw, h_preserve);
-		duk_pop_unsafe(thr);
+		duk_pop_known(thr);
 
 		end_of_last_match_coff = match_start_coff + duk_hstring_get_charlen(h_match);
 
@@ -673,7 +673,7 @@ DUK_INTERNAL duk_ret_t duk_bi_string_prototype_replace(duk_hthread *thr) {
 			h_repl = duk_to_hstring_m1(thr); /* -> [ ... repl_value ] */
 			DUK_ASSERT(h_repl != NULL);
 			DUK_BW_WRITE_ENSURE_HSTRING(thr, bw, h_repl);
-			duk_pop_unsafe(thr); /* repl_value */
+			duk_pop_known(thr); /* repl_value */
 		} else {
 			r = r_start;
 
@@ -712,7 +712,7 @@ DUK_INTERNAL duk_ret_t duk_bi_string_prototype_replace(duk_hthread *thr) {
 
 					h_part = duk_push_wtf8_substring_hstring(thr, h_input, 0, match_start_coff);
 					DUK_BW_WRITE_ENSURE_HSTRING(thr, bw, h_part);
-					duk_pop_unsafe(thr);
+					duk_pop_known(thr);
 					r++;
 					continue;
 				}
@@ -732,7 +732,7 @@ DUK_INTERNAL duk_ret_t duk_bi_string_prototype_replace(duk_hthread *thr) {
 					                                         part_start_coff,
 					                                         duk_hstring_get_charlen(h_input));
 					DUK_BW_WRITE_ENSURE_HSTRING(thr, bw, h_part);
-					duk_pop_unsafe(thr);
+					duk_pop_known(thr);
 					r++;
 					continue;
 				}
@@ -812,7 +812,7 @@ DUK_INTERNAL duk_ret_t duk_bi_string_prototype_replace(duk_hthread *thr) {
 
 	h_trailer = duk_push_wtf8_substring_hstring(thr, h_input, end_of_last_match_coff, duk_hstring_get_charlen(h_input));
 	DUK_BW_WRITE_ENSURE_HSTRING(thr, bw, h_trailer);
-	duk_pop_unsafe(thr);
+	duk_pop_known(thr);
 
 	DUK_ASSERT_TOP(thr, 4);
 	DUK_BW_COMPACT(thr, bw);

@@ -701,7 +701,7 @@ DUK_LOCAL duk_bool_t duk__prop_defown_proxy_tail(duk_hthread *thr, duk_hobject *
 
 	trap_rc = duk_to_boolean_top_pop(thr);
 	if (!trap_rc) {
-		duk_pop_unsafe(thr);
+		duk_pop_known(thr);
 		return 0;
 	}
 
@@ -712,7 +712,7 @@ DUK_LOCAL duk_bool_t duk__prop_defown_proxy_tail(duk_hthread *thr, duk_hobject *
 	rc = 1;
 #endif
 
-	duk_pop_unsafe(thr);
+	duk_pop_known(thr);
 	return rc;
 }
 
@@ -832,7 +832,7 @@ retry_target:
 
 check_rc:
 	if (side_effect_safe) {
-		duk_pop_unsafe(thr);
+		duk_pop_known(thr);
 	}
 	if (DUK_UNLIKELY(rc == 0)) {
 		return duk__prop_defown_error_obj_strkey(thr, target, key, defprop_flags);
@@ -870,7 +870,7 @@ DUK_LOCAL duk_bool_t duk__prop_defown_bufobj_write(duk_hthread *thr, duk_hobject
 	(void) duk_to_number_m1(thr);
 
 	our_rc = duk_hbufobj_validate_and_write_top(thr, h, idx);
-	duk_pop_2_unsafe(thr);
+	duk_pop_2_known(thr);
 	return our_rc;
 }
 
@@ -1086,7 +1086,7 @@ DUK_LOCAL duk_small_int_t duk__prop_defown_idxkey_stringobj(duk_hthread *thr,
 
 				duk_prop_push_plainstr_idx(thr, h, idx);
 				match = duk_samevalue(thr, idx_desc, -1);
-				duk_pop_unsafe(thr);
+				duk_pop_known(thr);
 				if (!match) {
 					goto fail_invalid_desc;
 				}
@@ -1147,7 +1147,7 @@ DUK_LOCAL DUK_NOINLINE duk_bool_t duk__prop_defown_idxkey_arguments(duk_hthread 
 		DUK_D(DUK_DPRINT("write protecting arguments mapped idxkey with no [[Value]], force current variable value"));
 		(void) duk_js_getvar_envrec(thr, env, varname, 1 /*throw*/); /* -> [ ... value this_binding ] */
 		rc_ordinary = duk__prop_defown_idxkey_array(thr, obj, idx, duk_get_top(thr) - 2, modified_flags);
-		duk_pop_2_unsafe(thr);
+		duk_pop_2_known(thr);
 	} else {
 		rc_ordinary = duk__prop_defown_idxkey_array(thr, obj, idx, idx_desc, defprop_flags);
 	}
@@ -1177,7 +1177,7 @@ DUK_LOCAL DUK_NOINLINE duk_bool_t duk__prop_defown_idxkey_arguments(duk_hthread 
 				DUK_DD(DUK_DDPRINT("update variable after arguments defprop, index %ld", (long) idx));
 				duk_dup(thr, idx_desc);
 				duk_js_putvar_envrec(thr, env, varname, DUK_GET_TVAL_NEGIDX(thr, -1), 0 /*throw_flag*/);
-				duk_pop_unsafe(thr);
+				duk_pop_known(thr);
 			}
 			if ((defprop_flags & (DUK_DEFPROP_HAVE_WRITABLE | DUK_DEFPROP_WRITABLE)) == DUK_DEFPROP_HAVE_WRITABLE) {
 				DUK_D(DUK_DPRINT("delete arguments mapping for index %ld because setting writable=false",
@@ -1187,8 +1187,8 @@ DUK_LOCAL DUK_NOINLINE duk_bool_t duk__prop_defown_idxkey_arguments(duk_hthread 
 		}
 		if (delete_mapping) {
 			duk_push_hobject(thr, map);
-			(void) duk_prop_delete_idxkey(thr, duk_get_top_index(thr), idx, 0 /*delprop_flags*/);
-			duk_pop_unsafe(thr);
+			(void) duk_prop_delete_idxkey(thr, duk_get_top_index_known(thr), idx, 0 /*delprop_flags*/);
+			duk_pop_known(thr);
 		}
 	}
 
@@ -1334,7 +1334,7 @@ retry_target:
 
 check_rc:
 	if (side_effect_safe) {
-		duk_pop_unsafe(thr);
+		duk_pop_known(thr);
 	}
 	if (DUK_UNLIKELY(rc == 0)) {
 		return duk__prop_defown_error_obj_idxkey(thr, target, idx, defprop_flags);
@@ -1418,7 +1418,7 @@ duk_prop_defown_idxkey(duk_hthread *thr, duk_hobject *obj, duk_uarridx_t idx, du
 		DUK_DD(DUK_DDPRINT("corner case, input idx 0xffffffff is not an arridx, must coerce to string"));
 		key = duk_push_u32_tohstring(thr, idx);
 		rc = duk__prop_defown_strkey_unsafe(thr, obj, key, idx_desc, defprop_flags);
-		duk_pop_unsafe(thr);
+		duk_pop_known(thr);
 		DUK_ASSERT(duk_get_top(thr) == entry_top);
 		return rc;
 	}
@@ -1506,7 +1506,7 @@ duk_prop_defown(duk_hthread *thr, duk_hobject *obj, duk_tval *tv_key, duk_idx_t 
 	key = duk_to_property_key_hstring(thr, -1);
 	DUK_ASSERT(key != NULL);
 	rc = duk_prop_defown_strkey(thr, obj, key, idx_desc, defprop_flags);
-	duk_pop_unsafe(thr);
+	duk_pop_known(thr);
 	DUK_ASSERT(duk_get_top(thr) == entry_top);
 	return rc;
 

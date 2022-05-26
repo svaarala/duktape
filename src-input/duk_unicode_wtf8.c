@@ -664,10 +664,10 @@ DUK_LOCAL duk_int_t duk__unicode_wtf8_search_forwards_reference(duk_hthread *thr
 
 			/* Rely on string interning! */
 			if (h_tmp == h_search) {
-				duk_pop_unsafe(thr);
+				duk_pop_known(thr);
 				return (duk_int_t) charoff;
 			}
-			duk_pop_unsafe(thr);
+			duk_pop_known(thr);
 		}
 	}
 	return -1;
@@ -801,10 +801,10 @@ DUK_LOCAL duk_int_t duk__unicode_wtf8_search_backwards_reference(duk_hthread *th
 
 			/* Rely on string interning! */
 			if (h_tmp == h_search) {
-				duk_pop_unsafe(thr);
+				duk_pop_known(thr);
 				return (duk_int_t) charoff;
 			}
-			duk_pop_unsafe(thr);
+			duk_pop_known(thr);
 		}
 	}
 	return -1;

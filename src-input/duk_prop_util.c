@@ -128,7 +128,7 @@ DUK_LOCAL duk_bool_t duk__prop_has_get_prop_stridx_toboolean(duk_hthread *thr,
 		return 0;
 	}
 	*out_bool = duk_to_boolean(thr, -1);
-	duk_pop_unsafe(thr);
+	duk_pop_known(thr);
 	return 1;
 }
 

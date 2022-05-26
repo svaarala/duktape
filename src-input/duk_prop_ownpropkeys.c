@@ -410,7 +410,7 @@ DUK_LOCAL void duk__prop_ownpropkeys_proxy_policy(duk_hthread *thr, duk_hobject 
 		continue;
 
 	skip_key:
-		duk_pop_unsafe(thr);
+		duk_pop_known(thr);
 		continue;
 	}
 

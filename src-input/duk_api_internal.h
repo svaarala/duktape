@@ -97,6 +97,7 @@ DUK_INTERNAL_DECL duk_tval *duk_get_tval_or_unused(duk_hthread *thr, duk_idx_t i
 DUK_INTERNAL_DECL duk_tval *duk_require_tval(duk_hthread *thr, duk_idx_t idx);
 DUK_INTERNAL_DECL void duk_push_tval(duk_hthread *thr, duk_tval *tv);
 DUK_INTERNAL_DECL void duk_push_tval_unsafe(duk_hthread *thr, duk_tval *tv);
+DUK_INTERNAL_DECL void duk_push_tval_unsafe_noincref(duk_hthread *thr, duk_tval *tv);
 DUK_INTERNAL_DECL void duk_push_undefined_unsafe(duk_hthread *thr);
 
 /* Push the current 'this' binding; throw TypeError if binding is not object
@@ -202,8 +203,8 @@ DUK_INTERNAL_DECL duk_bool_t duk_to_boolean_top_pop(duk_hthread *thr);
 #if defined(DUK_USE_DEBUGGER_SUPPORT) /* only needed by debugger for now */
 DUK_INTERNAL_DECL duk_hstring *duk_safe_to_hstring(duk_hthread *thr, duk_idx_t idx);
 #endif
-DUK_INTERNAL_DECL void duk_push_class_string_tval(duk_hthread *thr, duk_tval *tv, duk_bool_t avoid_side_effects);
-DUK_INTERNAL_DECL void duk_push_class_string_hobject(duk_hthread *thr, duk_hobject *obj, duk_bool_t avoid_side_effects);
+DUK_INTERNAL_DECL void duk_push_objproto_tostring_tval(duk_hthread *thr, duk_tval *tv, duk_bool_t avoid_side_effects);
+DUK_INTERNAL_DECL void duk_push_objproto_tostring_hobject(duk_hthread *thr, duk_hobject *obj, duk_bool_t avoid_side_effects);
 
 DUK_INTERNAL_DECL duk_int_t duk_to_int_clamped_raw(duk_hthread *thr,
                                                    duk_idx_t idx,
@@ -382,16 +383,16 @@ DUK_INTERNAL_DECL void duk_push_symbol_descriptive_string(duk_hthread *thr, duk_
 DUK_INTERNAL_DECL void duk_resolve_nonbound_function(duk_hthread *thr);
 
 DUK_INTERNAL_DECL duk_idx_t duk_get_top_require_min(duk_hthread *thr, duk_idx_t min_top);
-DUK_INTERNAL_DECL duk_idx_t duk_get_top_index_unsafe(duk_hthread *thr);
+DUK_INTERNAL_DECL duk_idx_t duk_get_top_index_known(duk_hthread *thr);
 
-DUK_INTERNAL_DECL void duk_pop_n_unsafe(duk_hthread *thr, duk_idx_t count);
-DUK_INTERNAL_DECL void duk_pop_unsafe(duk_hthread *thr);
-DUK_INTERNAL_DECL void duk_pop_2_unsafe(duk_hthread *thr);
-DUK_INTERNAL_DECL void duk_pop_3_unsafe(duk_hthread *thr);
-DUK_INTERNAL_DECL void duk_pop_n_nodecref_unsafe(duk_hthread *thr, duk_idx_t count);
-DUK_INTERNAL_DECL void duk_pop_nodecref_unsafe(duk_hthread *thr);
-DUK_INTERNAL_DECL void duk_pop_2_nodecref_unsafe(duk_hthread *thr);
-DUK_INTERNAL_DECL void duk_pop_3_nodecref_unsafe(duk_hthread *thr);
+DUK_INTERNAL_DECL void duk_pop_n_known(duk_hthread *thr, duk_idx_t count);
+DUK_INTERNAL_DECL void duk_pop_known(duk_hthread *thr);
+DUK_INTERNAL_DECL void duk_pop_2_known(duk_hthread *thr);
+DUK_INTERNAL_DECL void duk_pop_3_known(duk_hthread *thr);
+DUK_INTERNAL_DECL void duk_pop_n_nodecref_known(duk_hthread *thr, duk_idx_t count);
+DUK_INTERNAL_DECL void duk_pop_nodecref_known(duk_hthread *thr);
+DUK_INTERNAL_DECL void duk_pop_2_nodecref_known(duk_hthread *thr);
+DUK_INTERNAL_DECL void duk_pop_3_nodecref_known(duk_hthread *thr);
 DUK_INTERNAL_DECL void duk_pop_undefined(duk_hthread *thr);
 
 DUK_INTERNAL_DECL void duk_compact_m1(duk_hthread *thr);
