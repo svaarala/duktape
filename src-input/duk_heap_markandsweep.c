@@ -34,7 +34,7 @@ DUK_LOCAL void duk__mark_hobject(duk_heap *heap, duk_hobject *h) {
 
 	/* XXX: use advancing pointers instead of index macros -> faster and smaller? */
 
-	for (i = 0; i < (duk_uint_fast32_t) DUK_HOBJECT_GET_ENEXT(h); i++) {
+	for (i = 0; i < (duk_uint_fast32_t) duk_hobject_get_enext(h); i++) {
 		duk_hstring *key = DUK_HOBJECT_E_GET_KEY(heap, h, i);
 		if (key == NULL) {
 			continue;
@@ -49,9 +49,11 @@ DUK_LOCAL void duk__mark_hobject(duk_heap *heap, duk_hobject *h) {
 	}
 
 	{
-		duk_propvalue *val_base = (duk_propvalue *) (void *) h->idx_props;
-		duk_uarridx_t *key_base = (duk_uarridx_t *) (void *) (val_base + h->i_size);
-		duk_uint8_t *attr_base = (duk_uint8_t *) (void *) (key_base + h->i_size);
+		duk_propvalue *val_base;
+		duk_uarridx_t *key_base;
+		duk_uint8_t *attr_base;
+
+		duk_hobject_get_idxprops_key_attr(heap, h, &val_base, &key_base, &attr_base);
 
 		for (i = 0; i < (duk_uint_fast32_t) h->i_next; i++) {
 			duk_propvalue *pv = val_base + i;
@@ -353,7 +355,7 @@ DUK_LOCAL void duk__mark_finalizable(duk_heap *heap) {
 		 */
 
 		if (!DUK_HEAPHDR_HAS_REACHABLE(hdr) && DUK_HEAPHDR_IS_ANY_OBJECT(hdr) && !DUK_HEAPHDR_HAS_FINALIZED(hdr) &&
-		    DUK_HOBJECT_HAS_FINALIZER_FAST(heap, (duk_hobject *) hdr)) {
+		    duk_hobject_has_finalizer_fast_raw(heap, (duk_hobject *) hdr)) {
 			/* heaphdr:
 			 *  - is not reachable
 			 *  - is an object

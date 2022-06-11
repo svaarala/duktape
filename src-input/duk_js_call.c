@@ -486,7 +486,7 @@ DUK_INTERNAL void duk_call_construct_postprocess(duk_hthread *thr, duk_small_uin
 	} else {
 		if (DUK_UNLIKELY(proxy_invariant != 0U)) {
 			/* Proxy 'construct' return value invariant violated. */
-			DUK_ERROR_TYPE_INVALID_TRAP_RESULT(thr);
+			DUK_ERROR_TYPE_PROXY_REJECTED(thr);
 			DUK_WO_NORETURN(return;);
 		}
 		/* XXX: direct value stack access */

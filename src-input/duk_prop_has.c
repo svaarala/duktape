@@ -218,19 +218,11 @@ DUK_LOCAL duk_small_int_t duk__prop_hasown_idxkey(duk_hthread *thr, duk_hobject 
 	return duk__prop_hasown_idxkey_ordinary(thr, obj, idx);
 }
 
-DUK_LOCAL duk_bool_t duk__prop_has_proxy_tail(duk_hthread *thr) {
-	duk_bool_t rc;
+#if defined(DUK_USE_PROXY_POLICY)
+DUK_LOCAL void duk__prop_has_proxy_policy(duk_hthread *thr, duk_bool_t trap_rc) {
+	/* [ ... target key result ] */
 
-	/* [ ... trap handler target key ] */
-	duk_dup_top(thr);
-	duk_insert(thr, -5); /* [ ... key trap handler target key ] */
-	duk_dup_m2(thr);
-	duk_insert(thr, -6); /* [ ... target key trap handler target key ] */
-
-	duk_call_method(thr, 2); /* [ ... target key trap handler target key ] -> [ ... target key result ] */
-	rc = duk_to_boolean(thr, -1);
-
-	if (!rc) {
+	if (!trap_rc) {
 		duk_small_int_t attrs;
 
 		attrs = duk_prop_getowndesc_obj_tvkey(thr, duk_require_hobject(thr, -3), duk_require_tval(thr, -2));
@@ -247,15 +239,35 @@ DUK_LOCAL duk_bool_t duk__prop_has_proxy_tail(duk_hthread *thr) {
 			}
 		}
 	}
+	return;
+
+invalid_result:
+	DUK_ERROR_TYPE_PROXY_REJECTED(thr);
+}
+#endif
+
+DUK_LOCAL duk_bool_t duk__prop_has_proxy_tail(duk_hthread *thr) {
+	duk_bool_t rc;
+
+	/* [ ... trap handler target key ] */
+	duk_dup_top(thr);
+	duk_insert(thr, -5); /* [ ... key trap handler target key ] */
+	duk_dup_m2(thr);
+	duk_insert(thr, -6); /* [ ... target key trap handler target key ] */
+
+	duk_call_method(thr, 2); /* [ ... target key trap handler target key ] -> [ ... target key result ] */
+	rc = duk_to_boolean(thr, -1);
+
+#if defined(DUK_USE_PROXY_POLICY)
+	duk__prop_has_proxy_policy(thr, rc);
+#else
+	DUK_DD(DUK_DDPRINT("proxy policy check for 'has' trap disabled in configuration"));
+#endif
 
 	duk_pop_3_known(thr);
 	DUK_ASSERT(DUK__HASOWN_NOTFOUND == 0 && DUK__HASOWN_FOUND == 1);
 	DUK_ASSERT(rc == DUK__HASOWN_NOTFOUND || rc == DUK__HASOWN_FOUND);
 	return rc;
-
-invalid_result:
-	DUK_ERROR_TYPE(thr, DUK_STR_INVALID_TRAP_RESULT);
-	DUK_WO_NORETURN(return 0;);
 }
 
 DUK_LOCAL DUK_ALWAYS_INLINE duk_bool_t duk__prop_has_obj_stroridx_helper(duk_hthread *thr,

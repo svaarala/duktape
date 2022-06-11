@@ -156,7 +156,7 @@ DUK_LOCAL duk_uint8_t *duk__dump_varmap(duk_hthread *thr, duk_uint8_t *p, duk_bu
 		 * values are numbers; assert for these.  GC and finalizers
 		 * shouldn't affect _Varmap so side effects should be fine.
 		 */
-		for (i = 0; i < (duk_uint_fast32_t) DUK_HOBJECT_GET_ENEXT(h); i++) {
+		for (i = 0; i < (duk_uint_fast32_t) duk_hobject_get_enext(h); i++) {
 			duk_hstring *key;
 			duk_tval *tv_val;
 			duk_uint32_t val;
@@ -596,7 +596,7 @@ static const duk_uint8_t *duk__load_func(duk_hthread *thr, const duk_uint8_t *p,
 		DUK_ASSERT(new_env->regbase_byteoff == 0);
 		DUK_HDECENV_ASSERT_VALID(new_env);
 		DUK_ASSERT(duk_hobject_get_proto_raw(thr->heap, (duk_hobject *) new_env) == NULL);
-		DUK_HOBJECT_SET_PROTOTYPE(thr->heap, (duk_hobject *) new_env, func_env);
+		duk_hobject_set_proto_raw(thr->heap, (duk_hobject *) new_env, func_env);
 		DUK_HOBJECT_INCREF(thr, func_env);
 
 		func_env = (duk_hobject *) new_env;

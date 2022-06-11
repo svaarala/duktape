@@ -4,7 +4,6 @@ DUK_INTERNAL duk_bool_t duk_hobject_lookup_strprop_index(duk_hthread *thr,
                                                          duk_hobject *obj,
                                                          duk_hstring *key,
                                                          duk_uint_fast32_t *out_idx) {
-	duk_tval *tv;
 #if defined(DUK_USE_HOBJECT_HASH_PART)
 	duk_uint32_t *hash;
 #endif
@@ -17,19 +16,19 @@ DUK_INTERNAL duk_bool_t duk_hobject_lookup_strprop_index(duk_hthread *thr,
 	DUK_ASSERT(key != NULL);
 	DUK_ASSERT(out_idx != NULL);
 
-	val_base = duk_hobject_get_props(thr->heap, obj);
+	val_base = duk_hobject_get_strprops(thr->heap, obj);
 	key_base = (duk_hstring **) (void *) (val_base + duk_hobject_get_esize(obj));
 	/* attr_base not needed */
 
 #if defined(DUK_USE_HOBJECT_HASH_PART)
-	hash = DUK_HOBJECT_GET_HASH(heap, obj);
+	hash = duk_hobject_get_strhash(thr->heap, obj);
 	if (DUK_LIKELY(hash == NULL))
 #endif
 	{
 		duk_uint_fast32_t i;
 		duk_uint_fast32_t n;
 
-		n = DUK_HOBJECT_GET_ENEXT(obj);
+		n = duk_hobject_get_enext(obj);
 		for (i = 0; i < n; i++) {
 			if (key_base[i] == key) {
 				*out_idx = i;
@@ -56,12 +55,12 @@ DUK_INTERNAL duk_bool_t duk_hobject_lookup_strprop_index(duk_hthread *thr,
 			DUK_ASSERT(i < n);
 			t = hash[i];
 			DUK_ASSERT(t == DUK_HOBJECT_HASHIDX_UNUSED || t == DUK_HOBJECT_HASHIDX_DELETED ||
-			           (t < DUK_HOBJECT_GET_ESIZE(obj))); /* t >= 0 always true, unsigned */
+			           (t < duk_hobject_get_esize(obj))); /* t >= 0 always true, unsigned */
 			DUK_ASSERT(DUK_HOBJECT_HASHIDX_UNUSED > DUK_HOBJECT_HASHIDX_DELETED);
 			DUK_ASSERT(DUK_HOBJECT_HASHIDX_DELETED >= 0x80000000UL);
 
 			if (DUK_LIKELY(t < 0x80000000UL)) {
-				DUK_ASSERT(t < DUK_HOBJECT_GET_ESIZE(obj));
+				DUK_ASSERT(t < duk_hobject_get_esize(obj));
 				if (DUK_LIKELY(key_base[t] == key)) {
 					*out_idx = t;
 					return 1;
@@ -88,7 +87,6 @@ DUK_INTERNAL duk_bool_t duk_hobject_lookup_strprop_val_attrs(duk_hthread *thr,
                                                              duk_hstring *key,
                                                              duk_propvalue **out_valptr,
                                                              duk_uint8_t *out_attrs) {
-	duk_tval *tv;
 #if defined(DUK_USE_HOBJECT_HASH_PART)
 	duk_uint32_t *hash;
 #endif
@@ -103,18 +101,18 @@ DUK_INTERNAL duk_bool_t duk_hobject_lookup_strprop_val_attrs(duk_hthread *thr,
 	DUK_ASSERT(out_valptr != NULL);
 	DUK_ASSERT(out_attrs != NULL);
 
-	val_base = duk_hobject_get_props(thr->heap, obj);
+	val_base = duk_hobject_get_strprops(thr->heap, obj);
 	key_base = (duk_hstring **) (void *) (val_base + duk_hobject_get_esize(obj));
 
 #if defined(DUK_USE_HOBJECT_HASH_PART)
-	hash = DUK_HOBJECT_GET_HASH(heap, obj);
+	hash = duk_hobject_get_strhash(thr->heap, obj);
 	if (DUK_LIKELY(hash == NULL))
 #endif
 	{
 		duk_uint_fast32_t i;
 		duk_uint_fast32_t n;
 
-		n = DUK_HOBJECT_GET_ENEXT(obj);
+		n = duk_hobject_get_enext(obj);
 		for (i = 0; i < n; i++) {
 			if (key_base[i] == key) {
 				attr_base = (duk_uint8_t *) (void *) (key_base + duk_hobject_get_esize(obj));
@@ -143,12 +141,12 @@ DUK_INTERNAL duk_bool_t duk_hobject_lookup_strprop_val_attrs(duk_hthread *thr,
 			DUK_ASSERT(i < n);
 			t = hash[i];
 			DUK_ASSERT(t == DUK_HOBJECT_HASHIDX_UNUSED || t == DUK_HOBJECT_HASHIDX_DELETED ||
-			           (t < DUK_HOBJECT_GET_ESIZE(obj))); /* t >= 0 always true, unsigned */
+			           (t < duk_hobject_get_esize(obj))); /* t >= 0 always true, unsigned */
 			DUK_ASSERT(DUK_HOBJECT_HASHIDX_UNUSED > DUK_HOBJECT_HASHIDX_DELETED);
 			DUK_ASSERT(DUK_HOBJECT_HASHIDX_DELETED >= 0x80000000UL);
 
 			if (DUK_LIKELY(t < 0x80000000UL)) {
-				DUK_ASSERT(t < DUK_HOBJECT_GET_ESIZE(obj));
+				DUK_ASSERT(t < duk_hobject_get_esize(obj));
 				if (DUK_LIKELY(key_base[t] == key)) {
 					attr_base = (duk_uint8_t *) (void *) (key_base + duk_hobject_get_esize(obj));
 					*out_valptr = val_base + t;
@@ -178,7 +176,6 @@ DUK_INTERNAL duk_bool_t duk_hobject_lookup_strprop_indices(duk_hthread *thr,
                                                            duk_hstring *key,
                                                            duk_uint_fast32_t *out_idx,
                                                            duk_int_fast32_t *out_hashidx) {
-	duk_tval *tv;
 #if defined(DUK_USE_HOBJECT_HASH_PART)
 	duk_uint32_t *hash;
 #endif
@@ -190,7 +187,7 @@ DUK_INTERNAL duk_bool_t duk_hobject_lookup_strprop_indices(duk_hthread *thr,
 	DUK_ASSERT(out_idx != NULL);
 
 #if defined(DUK_USE_HOBJECT_HASH_PART)
-	hash = DUK_HOBJECT_GET_HASH(heap, obj);
+	hash = duk_hobject_get_strhash(thr->heap, obj);
 	if (DUK_LIKELY(hash == NULL))
 #endif
 	{
@@ -198,8 +195,8 @@ DUK_INTERNAL duk_bool_t duk_hobject_lookup_strprop_indices(duk_hthread *thr,
 		duk_uint_fast32_t n;
 		duk_hstring **key_base;
 
-		key_base = DUK_HOBJECT_E_GET_KEY_BASE(thr->heap, obj);
-		n = DUK_HOBJECT_GET_ENEXT(obj);
+		key_base = duk_hobject_get_strprops_keys(thr->heap, obj);
+		n = duk_hobject_get_enext(obj);
 		for (i = 0; i < n; i++) {
 			if (key_base[i] == key) {
 				*out_idx = i;
@@ -221,7 +218,7 @@ DUK_INTERNAL duk_bool_t duk_hobject_lookup_strprop_indices(duk_hthread *thr,
 		i = duk_hstring_get_hash(key) & mask;
 		step = 1; /* Cache friendly but clustering prone. */
 
-		key_base = DUK_HOBJECT_E_GET_KEY_BASE(thr->heap, obj);
+		key_base = duk_hobject_get_strprops_keys(thr->heap, obj);
 
 		for (;;) {
 			duk_uint32_t t;
@@ -230,12 +227,12 @@ DUK_INTERNAL duk_bool_t duk_hobject_lookup_strprop_indices(duk_hthread *thr,
 			DUK_ASSERT(i < n);
 			t = hash[i];
 			DUK_ASSERT(t == DUK_HOBJECT_HASHIDX_UNUSED || t == DUK_HOBJECT_HASHIDX_DELETED ||
-			           (t < DUK_HOBJECT_GET_ESIZE(obj))); /* t >= 0 always true, unsigned */
+			           (t < duk_hobject_get_esize(obj))); /* t >= 0 always true, unsigned */
 			DUK_ASSERT(DUK_HOBJECT_HASHIDX_UNUSED > DUK_HOBJECT_HASHIDX_DELETED);
 			DUK_ASSERT(DUK_HOBJECT_HASHIDX_DELETED >= 0x80000000UL);
 
 			if (t < 0x80000000UL) {
-				DUK_ASSERT(t < DUK_HOBJECT_GET_ESIZE(obj));
+				DUK_ASSERT(t < duk_hobject_get_esize(obj));
 				if (key_base[t] == key) {
 					*out_idx = t;
 					*out_hashidx = i;
@@ -528,8 +525,8 @@ DUK_INTERNAL duk_hobject *duk_hobject_lookup_strprop_known_hobject(duk_hthread *
 		return NULL;
 	}
 
-	pv = DUK_HOBJECT_E_GET_VALUE_BASE(thr->heap, obj) + ent_idx;
-	DUK_ASSERT((DUK_HOBJECT_E_GET_FLAGS_BASE(thr->heap, obj)[ent_idx] & DUK_PROPDESC_FLAG_ACCESSOR) == 0);
+	pv = duk_hobject_get_strprops_values(thr->heap, obj) + ent_idx;
+	DUK_ASSERT((duk_hobject_get_strprops_attrs(thr->heap, obj)[ent_idx] & DUK_PROPDESC_FLAG_ACCESSOR) == 0);
 	tv_res = &pv->v;
 	DUK_ASSERT(DUK_TVAL_IS_OBJECT(tv_res));
 	res = DUK_TVAL_GET_OBJECT(tv_res);
@@ -541,8 +538,8 @@ DUK_INTERNAL duk_tval *duk_hobject_lookup_strprop_data_tvalptr(duk_hthread *thr,
 	duk_uint_fast32_t ent_idx;
 
 	if (duk_hobject_lookup_strprop_index(thr, obj, key, &ent_idx)) {
-		duk_propvalue *pv = DUK_HOBJECT_E_GET_VALUE_BASE(thr->heap, obj) + ent_idx;
-		duk_uint8_t attrs = *(DUK_HOBJECT_E_GET_FLAGS_BASE(thr->heap, obj) + ent_idx);
+		duk_propvalue *pv = duk_hobject_get_strprops_values(thr->heap, obj) + ent_idx;
+		duk_uint8_t attrs = *(duk_hobject_get_strprops_attrs(thr->heap, obj) + ent_idx);
 		if ((attrs & DUK_PROPDESC_FLAG_ACCESSOR) == 0) {
 			return &pv->v;
 		}

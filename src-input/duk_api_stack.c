@@ -4914,7 +4914,7 @@ DUK_INTERNAL duk_hobject *duk_push_object_helper(duk_hthread *thr,
 	/* object is now reachable */
 
 	if (prototype_bidx >= 0) {
-		DUK_HOBJECT_SET_PROTOTYPE_INIT_INCREF(thr, h, thr->builtins[prototype_bidx]);
+		duk_hobject_set_proto_init_incref(thr, h, thr->builtins[prototype_bidx]);
 	} else {
 		DUK_ASSERT(prototype_bidx == -1);
 		DUK_ASSERT(duk_hobject_get_proto_raw(thr->heap, h) == NULL);
@@ -4930,7 +4930,7 @@ DUK_INTERNAL duk_hobject *duk_push_object_helper_proto(duk_hthread *thr, duk_uin
 
 	h = duk_push_object_helper(thr, hobject_flags_and_class, -1);
 	DUK_ASSERT(h != NULL);
-	DUK_HOBJECT_SET_PROTOTYPE_INIT_INCREF(thr, h, proto);
+	duk_hobject_set_proto_init_incref(thr, h, proto);
 	return h;
 }
 
@@ -4958,7 +4958,7 @@ DUK_EXTERNAL duk_idx_t duk_push_array(duk_hthread *thr) {
 	obj = duk_harray_alloc(thr, flags);
 	DUK_ASSERT(obj != NULL);
 
-	DUK_HOBJECT_SET_PROTOTYPE_INIT_INCREF(thr, (duk_hobject *) obj, thr->builtins[DUK_BIDX_ARRAY_PROTOTYPE]);
+	duk_hobject_set_proto_init_incref(thr, (duk_hobject *) obj, thr->builtins[DUK_BIDX_ARRAY_PROTOTYPE]);
 
 	tv_slot = thr->valstack_top;
 	DUK_TVAL_SET_OBJECT(tv_slot, (duk_hobject *) obj);
@@ -5103,7 +5103,7 @@ DUK_INTERNAL duk_harray *duk_push_arguments_array_noinit(duk_hthread *thr, duk_u
 	obj = duk_harray_alloc(thr, flags);
 	DUK_ASSERT(obj != NULL);
 
-	DUK_HOBJECT_SET_PROTOTYPE_INIT_INCREF(thr, (duk_hobject *) obj, thr->builtins[DUK_BIDX_OBJECT_PROTOTYPE]);
+	duk_hobject_set_proto_init_incref(thr, (duk_hobject *) obj, thr->builtins[DUK_BIDX_OBJECT_PROTOTYPE]);
 
 	tv_slot = thr->valstack_top++;
 	DUK_TVAL_SET_OBJECT(tv_slot, (duk_hobject *) obj);
@@ -5165,7 +5165,7 @@ DUK_EXTERNAL duk_idx_t duk_push_thread_raw(duk_hthread *thr, duk_uint_t flags) {
 	}
 
 	/* default prototype */
-	DUK_HOBJECT_SET_PROTOTYPE_INIT_INCREF(thr, (duk_hobject *) obj, obj->builtins[DUK_BIDX_THREAD_PROTOTYPE]);
+	duk_hobject_set_proto_init_incref(thr, (duk_hobject *) obj, obj->builtins[DUK_BIDX_THREAD_PROTOTYPE]);
 
 	/* Initial stack size satisfies the stack slack constraints so there
 	 * is no need to require stack here.
@@ -5205,7 +5205,7 @@ DUK_INTERNAL duk_hcompfunc *duk_push_hcompfunc(duk_hthread *thr) {
 
 	/* default prototype */
 	DUK_ASSERT(duk_hobject_get_proto_raw(thr->heap, (duk_hobject *) obj) == NULL);
-	DUK_HOBJECT_SET_PROTOTYPE_INIT_INCREF(thr, (duk_hobject *) obj, thr->builtins[DUK_BIDX_FUNCTION_PROTOTYPE]);
+	duk_hobject_set_proto_init_incref(thr, (duk_hobject *) obj, thr->builtins[DUK_BIDX_FUNCTION_PROTOTYPE]);
 
 	return obj;
 }
@@ -5276,7 +5276,7 @@ duk__push_c_function_raw(duk_hthread *thr, duk_c_function func, duk_idx_t nargs,
 	thr->valstack_top++;
 
 	DUK_ASSERT_BIDX_VALID(proto_bidx);
-	DUK_HOBJECT_SET_PROTOTYPE_INIT_INCREF(thr, (duk_hobject *) obj, thr->builtins[proto_bidx]);
+	duk_hobject_set_proto_init_incref(thr, (duk_hobject *) obj, thr->builtins[proto_bidx]);
 	return ret;
 
 api_error:
@@ -5375,7 +5375,7 @@ DUK_INTERNAL duk_hbufobj *duk_push_bufobj_raw(duk_hthread *thr,
 	obj = duk_hbufobj_alloc(thr, hobject_flags_and_class);
 	DUK_ASSERT(obj != NULL);
 
-	DUK_HOBJECT_SET_PROTOTYPE_INIT_INCREF(thr, (duk_hobject *) obj, thr->builtins[prototype_bidx]);
+	duk_hobject_set_proto_init_incref(thr, (duk_hobject *) obj, thr->builtins[prototype_bidx]);
 	DUK_HBUFOBJ_ASSERT_VALID(obj);
 
 	tv_slot = thr->valstack_top;

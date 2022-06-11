@@ -24,8 +24,8 @@ DUK_LOCAL void duk__init_object_parts(duk_heap *heap, duk_uint_t hobject_flags, 
 	obj->hdr.h_flags = hobject_flags;
 
 #if defined(DUK_USE_EXPLICIT_NULL_INIT)
-	DUK_HOBJECT_SET_PROTOTYPE(heap, obj, NULL);
-	DUK_HOBJECT_SET_PROPS(heap, obj, NULL);
+	duk_hobject_set_proto_raw(heap, obj, NULL);
+	duk_hobject_set_strprops(heap, obj, NULL);
 #endif
 #if defined(DUK_USE_HEAPPTR16)
 	/* Zero encoded pointer is required to match NULL. */

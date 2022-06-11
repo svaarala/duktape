@@ -79,6 +79,7 @@ DUK_INTERNAL_DECL duk_bool_t duk_proxy_trap_check_idxkey(duk_hthread *thr,
                                                          duk_hproxy *h,
                                                          duk_uarridx_t idx,
                                                          duk_small_uint_t trap_stridx) {
+	DUK_UNREF(idx);
 	return duk_proxy_trap_check_nokey(thr, h, trap_stridx);
 }
 
@@ -147,6 +148,7 @@ DUK_INTERNAL duk_hobject *duk_hobject_resolve_proxy_target_autothrow(duk_hthread
 		return res;
 	} else {
 		DUK_ERROR_TYPE_PROXY_REVOKED(thr);
+		DUK_WO_NORETURN(return res;);
 	}
 }
 

@@ -256,152 +256,26 @@ DUK_INTERNAL_DECL void duk_hobject_assert_key_absent(duk_heap *heap, duk_hobject
  *  Macros to access the 'props' allocation.
  */
 
-#if defined(DUK_USE_HEAPPTR16)
-#define DUK_HOBJECT_GET_PROPS(heap, h) ((duk_uint8_t *) DUK_USE_HEAPPTR_DEC16((heap)->heap_udata, ((duk_heaphdr *) (h))->h_extra16))
-#define DUK_HOBJECT_SET_PROPS(heap, h, x) \
-	do { \
-		((duk_heaphdr *) (h))->h_extra16 = DUK_USE_HEAPPTR_ENC16((heap)->heap_udata, (void *) (x)); \
-	} while (0)
-#define DUK_HOBJECT_GET_HASH(heap, h) ((duk_uint8_t *) DUK_USE_HEAPPTR_DEC16((heap)->heap_udata, (h)->hash16))
-#define DUK_HOBJECT_SET_HASH(heap, h, x) \
-	do { \
-		(h)->hash16 = DUK_USE_HEAPPTR_ENC16((heap)->heap_udata, (void *) (x)); \
-	} while (0)
-#else
-#define DUK_HOBJECT_GET_PROPS(heap, h) ((h)->props)
-#define DUK_HOBJECT_SET_PROPS(heap, h, x) \
-	do { \
-		(h)->props = (duk_uint8_t *) (x); \
-	} while (0)
-#define DUK_HOBJECT_GET_HASH(heap, h) ((h)->hash)
-#define DUK_HOBJECT_SET_HASH(heap, h, x) \
-	do { \
-		(h)->hash = (duk_uint32_t *) (x); \
-	} while (0)
-
-#endif
-
-#define DUK_HOBJECT_E_GET_KEY_BASE(heap, h) \
-	((duk_hstring **) (void *) (DUK_HOBJECT_GET_PROPS((heap), (h)) + DUK_HOBJECT_GET_ESIZE((h)) * sizeof(duk_propvalue)))
-#define DUK_HOBJECT_E_GET_VALUE_BASE(heap, h) ((duk_propvalue *) (void *) (DUK_HOBJECT_GET_PROPS((heap), (h))))
-#define DUK_HOBJECT_E_GET_FLAGS_BASE(heap, h) \
-	((duk_uint8_t *) (void *) (DUK_HOBJECT_GET_PROPS((heap), (h)) + \
-	                           DUK_HOBJECT_GET_ESIZE((h)) * (sizeof(duk_propvalue) + sizeof(duk_hstring *))))
-#define DUK_HOBJECT_H_GET_BASE(heap, h)    ((duk_uint32_t *) (void *) (DUK_HOBJECT_GET_HASH((heap), (h))))
-#define DUK_HOBJECT_P_COMPUTE_SIZE(n_ent)  ((n_ent) * (sizeof(duk_propvalue) + sizeof(duk_hstring *) + sizeof(duk_uint8_t)))
-#define DUK_HOBJECT_H_COMPUTE_SIZE(n_hash) ((n_hash + 1) * (sizeof(duk_uint32_t)))
-
-#define DUK_HOBJECT_E_GET_KEY(heap, h, i)              (DUK_HOBJECT_E_GET_KEY_BASE((heap), (h))[(i)])
-#define DUK_HOBJECT_E_GET_KEY_PTR(heap, h, i)          (&DUK_HOBJECT_E_GET_KEY_BASE((heap), (h))[(i)])
-#define DUK_HOBJECT_E_GET_VALUE(heap, h, i)            (DUK_HOBJECT_E_GET_VALUE_BASE((heap), (h))[(i)])
-#define DUK_HOBJECT_E_GET_VALUE_PTR(heap, h, i)        (&DUK_HOBJECT_E_GET_VALUE_BASE((heap), (h))[(i)])
-#define DUK_HOBJECT_E_GET_VALUE_TVAL(heap, h, i)       (DUK_HOBJECT_E_GET_VALUE((heap), (h), (i)).v)
-#define DUK_HOBJECT_E_GET_VALUE_TVAL_PTR(heap, h, i)   (&DUK_HOBJECT_E_GET_VALUE((heap), (h), (i)).v)
-#define DUK_HOBJECT_E_GET_VALUE_GETTER(heap, h, i)     (DUK_HOBJECT_E_GET_VALUE((heap), (h), (i)).a.get)
-#define DUK_HOBJECT_E_GET_VALUE_GETTER_PTR(heap, h, i) (&DUK_HOBJECT_E_GET_VALUE((heap), (h), (i)).a.get)
-#define DUK_HOBJECT_E_GET_VALUE_SETTER(heap, h, i)     (DUK_HOBJECT_E_GET_VALUE((heap), (h), (i)).a.set)
-#define DUK_HOBJECT_E_GET_VALUE_SETTER_PTR(heap, h, i) (&DUK_HOBJECT_E_GET_VALUE((heap), (h), (i)).a.set)
-#define DUK_HOBJECT_E_GET_FLAGS(heap, h, i)            (DUK_HOBJECT_E_GET_FLAGS_BASE((heap), (h))[(i)])
-#define DUK_HOBJECT_E_GET_FLAGS_PTR(heap, h, i)        (&DUK_HOBJECT_E_GET_FLAGS_BASE((heap), (h))[(i)])
-#define DUK_HOBJECT_H_GET_INDEX(heap, h, i)            (DUK_HOBJECT_H_GET_BASE((heap), (h))[(i)])
-#define DUK_HOBJECT_H_GET_INDEX_PTR(heap, h, i)        (&DUK_HOBJECT_H_GET_BASE((heap), (h))[(i)])
+#define DUK_HOBJECT_E_GET_KEY(heap, h, i)            (duk_hobject_get_strprops_keys((heap), (h))[(i)])
+#define DUK_HOBJECT_E_GET_VALUE(heap, h, i)          (duk_hobject_get_strprops_values((heap), (h))[(i)])
+#define DUK_HOBJECT_E_GET_VALUE_PTR(heap, h, i)      (&duk_hobject_get_strprops_values((heap), (h))[(i)])
+#define DUK_HOBJECT_E_GET_VALUE_TVAL(heap, h, i)     (DUK_HOBJECT_E_GET_VALUE((heap), (h), (i)).v)
+#define DUK_HOBJECT_E_GET_VALUE_TVAL_PTR(heap, h, i) (&DUK_HOBJECT_E_GET_VALUE((heap), (h), (i)).v)
+#define DUK_HOBJECT_E_GET_VALUE_GETTER(heap, h, i)   (DUK_HOBJECT_E_GET_VALUE((heap), (h), (i)).a.get)
+#define DUK_HOBJECT_E_GET_VALUE_SETTER(heap, h, i)   (DUK_HOBJECT_E_GET_VALUE((heap), (h), (i)).a.set)
+#define DUK_HOBJECT_E_GET_FLAGS(heap, h, i)          (duk_hobject_get_strprops_attrs((heap), (h))[(i)])
 
 #define DUK_HOBJECT_E_SET_KEY(heap, h, i, k) \
 	do { \
 		DUK_HOBJECT_E_GET_KEY((heap), (h), (i)) = (k); \
 	} while (0)
-#define DUK_HOBJECT_E_SET_VALUE(heap, h, i, v) \
-	do { \
-		DUK_HOBJECT_E_GET_VALUE((heap), (h), (i)) = (v); \
-	} while (0)
-#define DUK_HOBJECT_E_SET_VALUE_TVAL(heap, h, i, v) \
-	do { \
-		DUK_HOBJECT_E_GET_VALUE((heap), (h), (i)).v = (v); \
-	} while (0)
-#define DUK_HOBJECT_E_SET_VALUE_GETTER(heap, h, i, v) \
-	do { \
-		DUK_HOBJECT_E_GET_VALUE((heap), (h), (i)).a.get = (v); \
-	} while (0)
-#define DUK_HOBJECT_E_SET_VALUE_SETTER(heap, h, i, v) \
-	do { \
-		DUK_HOBJECT_E_GET_VALUE((heap), (h), (i)).a.set = (v); \
-	} while (0)
-#define DUK_HOBJECT_E_SET_FLAGS(heap, h, i, f) \
-	do { \
-		DUK_HOBJECT_E_GET_FLAGS((heap), (h), (i)) = (duk_uint8_t) (f); \
-	} while (0)
-#define DUK_HOBJECT_H_SET_INDEX(heap, h, i, v) \
-	do { \
-		DUK_HOBJECT_H_GET_INDEX((heap), (h), (i)) = (v); \
-	} while (0)
 
-#define DUK_HOBJECT_E_SET_FLAG_BITS(heap, h, i, mask) \
-	do { \
-		DUK_HOBJECT_E_GET_FLAGS_BASE((heap), (h))[(i)] |= (mask); \
-	} while (0)
-
-#define DUK_HOBJECT_E_CLEAR_FLAG_BITS(heap, h, i, mask) \
-	do { \
-		DUK_HOBJECT_E_GET_FLAGS_BASE((heap), (h))[(i)] &= ~(mask); \
-	} while (0)
-
-#define DUK_HOBJECT_E_SLOT_IS_WRITABLE(heap, h, i) ((DUK_HOBJECT_E_GET_FLAGS((heap), (h), (i)) & DUK_PROPDESC_FLAG_WRITABLE) != 0)
 #define DUK_HOBJECT_E_SLOT_IS_ENUMERABLE(heap, h, i) \
 	((DUK_HOBJECT_E_GET_FLAGS((heap), (h), (i)) & DUK_PROPDESC_FLAG_ENUMERABLE) != 0)
-#define DUK_HOBJECT_E_SLOT_IS_CONFIGURABLE(heap, h, i) \
-	((DUK_HOBJECT_E_GET_FLAGS((heap), (h), (i)) & DUK_PROPDESC_FLAG_CONFIGURABLE) != 0)
 #define DUK_HOBJECT_E_SLOT_IS_ACCESSOR(heap, h, i) ((DUK_HOBJECT_E_GET_FLAGS((heap), (h), (i)) & DUK_PROPDESC_FLAG_ACCESSOR) != 0)
-
-#define DUK_HOBJECT_E_SLOT_SET_WRITABLE(heap, h, i)   DUK_HOBJECT_E_SET_FLAG_BITS((heap), (h), (i), DUK_PROPDESC_FLAG_WRITABLE)
-#define DUK_HOBJECT_E_SLOT_SET_ENUMERABLE(heap, h, i) DUK_HOBJECT_E_SET_FLAG_BITS((heap), (h), (i), DUK_PROPDESC_FLAG_ENUMERABLE)
-#define DUK_HOBJECT_E_SLOT_SET_CONFIGURABLE(heap, h, i) \
-	DUK_HOBJECT_E_SET_FLAG_BITS((heap), (h), (i), DUK_PROPDESC_FLAG_CONFIGURABLE)
-#define DUK_HOBJECT_E_SLOT_SET_ACCESSOR(heap, h, i) DUK_HOBJECT_E_SET_FLAG_BITS((heap), (h), (i), DUK_PROPDESC_FLAG_ACCESSOR)
-
-#define DUK_HOBJECT_E_SLOT_CLEAR_WRITABLE(heap, h, i) DUK_HOBJECT_E_CLEAR_FLAG_BITS((heap), (h), (i), DUK_PROPDESC_FLAG_WRITABLE)
-#define DUK_HOBJECT_E_SLOT_CLEAR_ENUMERABLE(heap, h, i) \
-	DUK_HOBJECT_E_CLEAR_FLAG_BITS((heap), (h), (i), DUK_PROPDESC_FLAG_ENUMERABLE)
-#define DUK_HOBJECT_E_SLOT_CLEAR_CONFIGURABLE(heap, h, i) \
-	DUK_HOBJECT_E_CLEAR_FLAG_BITS((heap), (h), (i), DUK_PROPDESC_FLAG_CONFIGURABLE)
-#define DUK_HOBJECT_E_SLOT_CLEAR_ACCESSOR(heap, h, i) DUK_HOBJECT_E_CLEAR_FLAG_BITS((heap), (h), (i), DUK_PROPDESC_FLAG_ACCESSOR)
-
-#define DUK_PROPDESC_IS_WRITABLE(p)     (((p)->flags & DUK_PROPDESC_FLAG_WRITABLE) != 0)
-#define DUK_PROPDESC_IS_ENUMERABLE(p)   (((p)->flags & DUK_PROPDESC_FLAG_ENUMERABLE) != 0)
-#define DUK_PROPDESC_IS_CONFIGURABLE(p) (((p)->flags & DUK_PROPDESC_FLAG_CONFIGURABLE) != 0)
-#define DUK_PROPDESC_IS_ACCESSOR(p)     (((p)->flags & DUK_PROPDESC_FLAG_ACCESSOR) != 0)
 
 #define DUK_HOBJECT_HASHIDX_UNUSED  0xffffffffUL
 #define DUK_HOBJECT_HASHIDX_DELETED 0xfffffffeUL
-
-/*
- *  Macros for accessing size fields
- */
-
-#if defined(DUK_USE_OBJSIZES16)
-#define DUK_HOBJECT_GET_ESIZE(h) ((h)->e_size16)
-#define DUK_HOBJECT_SET_ESIZE(h, v) \
-	do { \
-		(h)->e_size16 = (v); \
-	} while (0)
-#define DUK_HOBJECT_GET_ENEXT(h) ((h)->e_next16)
-#define DUK_HOBJECT_SET_ENEXT(h, v) \
-	do { \
-		(h)->e_next16 = (v); \
-	} while (0)
-#define DUK_HOBJECT_POSTINC_ENEXT(h) ((h)->e_next16++)
-#else
-#define DUK_HOBJECT_GET_ESIZE(h) ((h)->e_size)
-#define DUK_HOBJECT_SET_ESIZE(h, v) \
-	do { \
-		(h)->e_size = (v); \
-	} while (0)
-#define DUK_HOBJECT_GET_ENEXT(h) ((h)->e_next)
-#define DUK_HOBJECT_SET_ENEXT(h, v) \
-	do { \
-		(h)->e_next = (v); \
-	} while (0)
-#define DUK_HOBJECT_POSTINC_ENEXT(h) ((h)->e_next++)
-#endif
 
 /*
  *  Misc
@@ -428,51 +302,6 @@ DUK_INTERNAL_DECL void duk_hobject_assert_key_absent(duk_heap *heap, duk_hobject
 
 /* Range check not necessary because all 6-bit values are mapped. */
 #define DUK_HOBJECT_HTYPE_TO_STRIDX(n) duk_htype_to_stridx[(n)]
-
-#define DUK_HOBJECT_GET_CLASS_STRING(heap, h) \
-	DUK_HEAP_GET_STRING((heap), DUK_HOBJECT_CLASS_NUMBER_TO_STRIDX(DUK_HOBJECT_GET_CLASS_NUMBER((h))))
-
-/*
- *  Macros for property handling
- */
-
-#if defined(DUK_USE_HEAPPTR16)
-#define DUK_HOBJECT_GET_PROTOTYPE(heap, h) ((duk_hobject *) DUK_USE_HEAPPTR_DEC16((heap)->heap_udata, (h)->prototype16))
-#define DUK_HOBJECT_SET_PROTOTYPE(heap, h, x) \
-	do { \
-		(h)->prototype16 = DUK_USE_HEAPPTR_ENC16((heap)->heap_udata, (void *) (x)); \
-	} while (0)
-#else
-#define DUK_HOBJECT_GET_PROTOTYPE(heap, h) ((h)->prototype)
-#define DUK_HOBJECT_SET_PROTOTYPE(heap, h, x) \
-	do { \
-		(h)->prototype = (x); \
-	} while (0)
-#endif
-
-/* Set initial prototype, assume NULL previous prototype, INCREF new value,
- * tolerate NULL.
- */
-#define DUK_HOBJECT_SET_PROTOTYPE_INIT_INCREF(thr, h, proto) \
-	do { \
-		duk_hthread *duk__thr = (thr); \
-		duk_hobject *duk__obj = (h); \
-		duk_hobject *duk__proto = (proto); \
-		DUK_UNREF(duk__thr); \
-		DUK_ASSERT(DUK_HOBJECT_GET_PROTOTYPE(duk__thr->heap, duk__obj) == NULL); \
-		DUK_HOBJECT_SET_PROTOTYPE(duk__thr->heap, duk__obj, duk__proto); \
-		DUK_HOBJECT_INCREF_ALLOWNULL(duk__thr, duk__proto); \
-	} while (0)
-
-/*
- *  Finalizer check
- */
-
-#if defined(DUK_USE_HEAPPTR16)
-#define DUK_HOBJECT_HAS_FINALIZER_FAST(heap, h) duk_hobject_has_finalizer_fast_raw((heap), (h))
-#else
-#define DUK_HOBJECT_HAS_FINALIZER_FAST(heap, h) duk_hobject_has_finalizer_fast_raw((h))
-#endif
 
 /*
  *  Resizing and hash behavior
@@ -626,11 +455,7 @@ DUK_INTERNAL_DECL duk_tval *duk_hobject_find_array_entry_tval_ptr(duk_heap *heap
 #define DUK_DELPROP_FLAG_THROW (1U << 0)
 #define DUK_DELPROP_FLAG_FORCE (1U << 1)
 DUK_INTERNAL_DECL duk_size_t duk_hobject_get_length(duk_hthread *thr, duk_hobject *obj);
-#if defined(DUK_USE_HEAPPTR16)
 DUK_INTERNAL_DECL duk_bool_t duk_hobject_has_finalizer_fast_raw(duk_heap *heap, duk_hobject *obj);
-#else
-DUK_INTERNAL_DECL duk_bool_t duk_hobject_has_finalizer_fast_raw(duk_hobject *obj);
-#endif
 
 /* Object built-in methods */
 DUK_INTERNAL_DECL void duk_hobject_object_seal_freeze_helper(duk_hthread *thr, duk_hobject *obj, duk_bool_t is_freeze);
@@ -663,9 +488,11 @@ DUK_INTERNAL_DECL duk_bool_t duk_proxy_trap_check_nokey(duk_hthread *thr, duk_hp
 #endif
 DUK_INTERNAL_DECL void duk_proxy_revoke(duk_hthread *thr, duk_hproxy *h);
 
-/* macros */
+/* prototype */
 DUK_INTERNAL_DECL duk_hobject *duk_hobject_get_proto_raw(duk_heap *heap, duk_hobject *h);
+DUK_INTERNAL_DECL void duk_hobject_set_proto_raw(duk_heap *heap, duk_hobject *h, duk_hobject *p);
 DUK_INTERNAL_DECL void duk_hobject_set_proto_raw_updref(duk_hthread *thr, duk_hobject *h, duk_hobject *p);
+DUK_INTERNAL_DECL void duk_hobject_set_proto_init_incref(duk_hthread *thr, duk_hobject *h, duk_hobject *p);
 
 /* pc2line */
 #if defined(DUK_USE_PC2LINE)
@@ -673,23 +500,74 @@ DUK_INTERNAL_DECL void duk_hobject_pc2line_pack(duk_hthread *thr, duk_compiler_i
 DUK_INTERNAL_DECL duk_uint_fast32_t duk_hobject_pc2line_query(duk_hthread *thr, duk_idx_t idx_func, duk_uint_fast32_t pc);
 #endif
 
+/* strprops */
+DUK_INTERNAL_DECL void duk_hobject_get_strprops_key_attr(duk_heap *heap,
+                                                         duk_hobject *obj,
+                                                         duk_propvalue **out_val_base,
+                                                         duk_hstring ***out_key_base,
+                                                         duk_uint8_t **out_attr_base);
+DUK_INTERNAL_DECL duk_propvalue *duk_hobject_get_strprops(duk_heap *heap, duk_hobject *h);
+DUK_INTERNAL_DECL duk_hstring **duk_hobject_get_strprops_keys(duk_heap *heap, duk_hobject *h);
+DUK_INTERNAL_DECL duk_propvalue *duk_hobject_get_strprops_values(duk_heap *heap, duk_hobject *h);
+DUK_INTERNAL_DECL duk_uint8_t *duk_hobject_get_strprops_attrs(duk_heap *heap, duk_hobject *h);
+DUK_INTERNAL_DECL void duk_hobject_set_strprops(duk_heap *heap, duk_hobject *h, duk_uint8_t *props);
+DUK_INTERNAL_DECL duk_uint32_t *duk_hobject_get_strhash(duk_heap *heap, duk_hobject *h);
+DUK_INTERNAL_DECL void duk_hobject_set_strhash(duk_heap *heap, duk_hobject *h, duk_uint32_t *v);
+DUK_INTERNAL_DECL duk_uint32_t duk_hobject_get_esize(duk_hobject *h);
+DUK_INTERNAL_DECL void duk_hobject_set_esize(duk_hobject *h, duk_uint32_t v);
+DUK_INTERNAL_DECL duk_uint32_t duk_hobject_get_enext(duk_hobject *h);
+DUK_INTERNAL_DECL void duk_hobject_set_enext(duk_hobject *h, duk_uint32_t v);
+DUK_INTERNAL_DECL duk_uint32_t duk_hobject_postinc_enext(duk_hobject *h);
+DUK_INTERNAL_DECL duk_size_t duk_hobject_compute_strprops_size(duk_uint32_t n_ent);
+DUK_INTERNAL_DECL duk_size_t duk_hobject_compute_strhash_size(duk_uint32_t n_hash);
+DUK_INTERNAL_DECL duk_size_t duk_hobject_get_ebytes(duk_hobject *h);
+DUK_INTERNAL_DECL duk_bool_t duk_hobject_lookup_strprop_index(duk_hthread *thr,
+                                                              duk_hobject *obj,
+                                                              duk_hstring *key,
+                                                              duk_uint_fast32_t *out_idx);
+DUK_INTERNAL_DECL duk_bool_t duk_hobject_lookup_strprop_indices(duk_hthread *thr,
+                                                                duk_hobject *obj,
+                                                                duk_hstring *key,
+                                                                duk_uint_fast32_t *out_idx,
+                                                                duk_int_fast32_t *out_hashidx);
+DUK_INTERNAL_DECL duk_bool_t duk_hobject_lookup_strprop_val_attrs(duk_hthread *thr,
+                                                                  duk_hobject *obj,
+                                                                  duk_hstring *key,
+                                                                  duk_propvalue **out_valptr,
+                                                                  duk_uint8_t *out_attrs);
+
+/* idxprops */
+DUK_INTERNAL_DECL void duk_hobject_get_idxprops_key_attr(duk_heap *heap,
+                                                         duk_hobject *obj,
+                                                         duk_propvalue **out_val_base,
+                                                         duk_uarridx_t **out_key_base,
+                                                         duk_uint8_t **out_attr_base);
+DUK_INTERNAL_DECL duk_propvalue *duk_hobject_get_idxprops(duk_heap *heap, duk_hobject *h);
+DUK_INTERNAL_DECL duk_uint32_t duk_hobject_get_isize(duk_hobject *h);
+DUK_INTERNAL_DECL duk_uint32_t duk_hobject_get_inext(duk_hobject *h);
+DUK_INTERNAL_DECL duk_size_t duk_hobject_get_ibytes(duk_hobject *h);
+DUK_INTERNAL_DECL duk_size_t duk_hobject_compute_idxprops_size(duk_uint32_t n_ent);
+DUK_INTERNAL_DECL duk_size_t duk_hobject_compute_idxhash_size(duk_uint32_t n_hash);
+DUK_INTERNAL_DECL duk_bool_t duk_hobject_lookup_idxprop_index(duk_hthread *thr,
+                                                              duk_hobject *obj,
+                                                              duk_uarridx_t idx,
+                                                              duk_uint_fast32_t *out_idx);
+DUK_INTERNAL_DECL duk_bool_t duk_hobject_lookup_idxprop_indices(duk_hthread *thr,
+                                                                duk_hobject *obj,
+                                                                duk_uarridx_t idx,
+                                                                duk_uint_fast32_t *out_idx,
+                                                                duk_int_fast32_t *out_hashidx);
+DUK_INTERNAL_DECL duk_bool_t duk_hobject_lookup_idxprop_val_attrs(duk_hthread *thr,
+                                                                  duk_hobject *obj,
+                                                                  duk_uarridx_t idx,
+                                                                  duk_propvalue **out_valptr,
+                                                                  duk_uint8_t *out_attrs);
+
 /* misc */
 DUK_INTERNAL_DECL duk_bool_t duk_hobject_prototype_chain_contains(duk_hthread *thr,
                                                                   duk_hobject *h,
                                                                   duk_hobject *p,
                                                                   duk_bool_t ignore_loop);
-DUK_INTERNAL_DECL void duk_hobject_get_props_key_attr(duk_heap *heap,
-                                                      duk_hobject *obj,
-                                                      duk_propvalue **out_val_base,
-                                                      duk_hstring ***out_key_base,
-                                                      duk_uint8_t **out_attr_base);
-DUK_INTERNAL_DECL duk_propvalue *duk_hobject_get_props(duk_heap *heap, duk_hobject *h);
-DUK_INTERNAL_DECL duk_uint32_t duk_hobject_get_esize(duk_hobject *h);
-DUK_INTERNAL_DECL duk_uint32_t duk_hobject_get_enext(duk_hobject *h);
-DUK_INTERNAL_DECL duk_size_t duk_hobject_get_ebytes(duk_hobject *h);
-DUK_INTERNAL_DECL duk_uint32_t duk_hobject_get_isize(duk_hobject *h);
-DUK_INTERNAL_DECL duk_uint32_t duk_hobject_get_inext(duk_hobject *h);
-DUK_INTERNAL_DECL duk_size_t duk_hobject_get_ibytes(duk_hobject *h);
 DUK_INTERNAL_DECL duk_uint32_t duk_hobject_get_hsize(duk_heap *heap, duk_hobject *h);
 DUK_INTERNAL_DECL duk_size_t duk_hobject_get_hbytes(duk_heap *heap, duk_hobject *h);
 DUK_INTERNAL_DECL duk_uint32_t duk_hobject_get_asize(duk_hobject *h);
@@ -697,7 +575,7 @@ DUK_INTERNAL_DECL duk_size_t duk_hobject_get_abytes(duk_hobject *h);
 
 #if !defined(DUK_USE_OBJECT_BUILTIN)
 /* These declarations are needed when related built-in is disabled and
- * genbuiltins.py won't automatically emit the declerations.
+ * configure tooling won't automatically emit the declarations.
  */
 DUK_INTERNAL_DECL duk_ret_t duk_bi_object_prototype_to_string(duk_hthread *thr);
 DUK_INTERNAL_DECL duk_ret_t duk_bi_function_prototype(duk_hthread *thr);
@@ -716,36 +594,6 @@ DUK_INTERNAL_DECL duk_tval *duk_harray_append_reserve_items(duk_hthread *thr,
                                                             duk_harray *a,
                                                             duk_uarridx_t start_idx,
                                                             duk_uint32_t count);
-
-DUK_INTERNAL_DECL duk_bool_t duk_hobject_lookup_strprop_index(duk_hthread *thr,
-                                                              duk_hobject *obj,
-                                                              duk_hstring *key,
-                                                              duk_uint_fast32_t *out_idx);
-DUK_INTERNAL_DECL duk_bool_t duk_hobject_lookup_strprop_indices(duk_hthread *thr,
-                                                                duk_hobject *obj,
-                                                                duk_hstring *key,
-                                                                duk_uint_fast32_t *out_idx,
-                                                                duk_int_fast32_t *out_hashidx);
-DUK_INTERNAL_DECL duk_bool_t duk_hobject_lookup_strprop_val_attrs(duk_hthread *thr,
-                                                                  duk_hobject *obj,
-                                                                  duk_hstring *key,
-                                                                  duk_propvalue **out_valptr,
-                                                                  duk_uint8_t *out_attrs);
-
-DUK_INTERNAL_DECL duk_bool_t duk_hobject_lookup_idxprop_index(duk_hthread *thr,
-                                                              duk_hobject *obj,
-                                                              duk_uarridx_t idx,
-                                                              duk_uint_fast32_t *out_idx);
-DUK_INTERNAL_DECL duk_bool_t duk_hobject_lookup_idxprop_indices(duk_hthread *thr,
-                                                                duk_hobject *obj,
-                                                                duk_uarridx_t idx,
-                                                                duk_uint_fast32_t *out_idx,
-                                                                duk_int_fast32_t *out_hashidx);
-DUK_INTERNAL_DECL duk_bool_t duk_hobject_lookup_idxprop_val_attrs(duk_hthread *thr,
-                                                                  duk_hobject *obj,
-                                                                  duk_uarridx_t idx,
-                                                                  duk_propvalue **out_valptr,
-                                                                  duk_uint8_t *out_attrs);
 
 DUK_INTERNAL_DECL duk_hobject *duk_hobject_lookup_strprop_known_hobject(duk_hthread *thr, duk_hobject *obj, duk_hstring *key);
 DUK_INTERNAL_DECL duk_tval *duk_hobject_lookup_strprop_data_tvalptr(duk_hthread *thr, duk_hobject *obj, duk_hstring *key);

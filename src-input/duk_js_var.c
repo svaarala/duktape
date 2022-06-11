@@ -254,7 +254,7 @@ void duk_js_push_closure(duk_hthread *thr,
 			duk_push_hobject(thr, (duk_hobject *) new_env);
 
 			DUK_ASSERT(duk_hobject_get_proto_raw(thr->heap, (duk_hobject *) new_env) == NULL);
-			DUK_HOBJECT_SET_PROTOTYPE(thr->heap, (duk_hobject *) new_env, proto);
+			duk_hobject_set_proto_raw(thr->heap, (duk_hobject *) new_env, proto);
 			DUK_HOBJECT_INCREF_ALLOWNULL(thr, proto);
 
 			DUK_ASSERT(new_env->thread == NULL); /* Closed. */
@@ -510,7 +510,7 @@ void duk_js_push_closure(duk_hthread *thr,
 DUK_LOCAL void duk__preallocate_env_entries(duk_hthread *thr, duk_hobject *varmap, duk_hobject *env) {
 	duk_uint_fast32_t i;
 
-	for (i = 0; i < (duk_uint_fast32_t) DUK_HOBJECT_GET_ENEXT(varmap); i++) {
+	for (i = 0; i < (duk_uint_fast32_t) duk_hobject_get_enext(varmap); i++) {
 		duk_hstring *key;
 
 		key = DUK_HOBJECT_E_GET_KEY(thr->heap, varmap, i);
@@ -560,7 +560,7 @@ duk_hobject *duk_create_activation_environment_record(duk_hthread *thr, duk_hobj
 	duk_push_hobject(thr, (duk_hobject *) env);
 
 	DUK_ASSERT(duk_hobject_get_proto_raw(thr->heap, (duk_hobject *) env) == NULL);
-	DUK_HOBJECT_SET_PROTOTYPE(thr->heap, (duk_hobject *) env, parent);
+	duk_hobject_set_proto_raw(thr->heap, (duk_hobject *) env, parent);
 	DUK_HOBJECT_INCREF_ALLOWNULL(thr, parent); /* parent env is the prototype */
 
 	/* open scope information, for compiled functions only */
@@ -686,7 +686,7 @@ DUK_INTERNAL void duk_js_close_environment_record(duk_hthread *thr, duk_hobject 
 	 *  - having correct value types
 	 */
 
-	DUK_DDD(DUK_DDDPRINT("copying bound register values, %ld bound regs", (long) DUK_HOBJECT_GET_ENEXT(varmap)));
+	DUK_DDD(DUK_DDDPRINT("copying bound register values, %ld bound regs", (long) duk_hobject_get_enext(varmap)));
 
 	/* Copy over current variable values from value stack to the
 	 * environment record.  The scope object is empty but may
@@ -697,7 +697,7 @@ DUK_INTERNAL void duk_js_close_environment_record(duk_hthread *thr, duk_hobject 
 	 * Hash part would need special treatment however (maybe copy, and
 	 * then realloc with hash part if large enough).
 	 */
-	for (i = 0; i < (duk_uint_fast32_t) DUK_HOBJECT_GET_ENEXT(varmap); i++) {
+	for (i = 0; i < (duk_uint_fast32_t) duk_hobject_get_enext(varmap); i++) {
 		duk_size_t regbase_byteoff;
 
 		key = DUK_HOBJECT_E_GET_KEY(thr->heap, varmap, i);
@@ -1539,7 +1539,6 @@ duk_bool_t duk__declvar_helper(duk_hthread *thr,
 	duk_hobject *holder;
 	duk_bool_t parents;
 	duk__id_lookup_result ref;
-	duk_tval *tv;
 
 	DUK_DDD(DUK_DDDPRINT("declvar: thr=%p, env=%p, name=%!O, val=%!T, prop_flags=0x%08lx, is_func_decl=%ld "
 	                     "(env -> %!iO)",

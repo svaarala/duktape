@@ -2532,7 +2532,7 @@ DUK_LOCAL duk_bool_t duk__json_stringify_fast_value(duk_json_enc_ctx *js_ctx, du
 		if (c_bit & c_object) {
 			/* All other object types. */
 			duk_propvalue *idx_pv_base;
-			duk_uint32_t *idx_pk_base;
+			duk_uarridx_t *idx_pk_base;
 			duk_uint8_t *idx_attr_base;
 
 			DUK__EMIT_1(js_ctx, DUK_ASC_LCURLY);
@@ -2543,7 +2543,7 @@ DUK_LOCAL duk_bool_t duk__json_stringify_fast_value(duk_json_enc_ctx *js_ctx, du
 				goto abort_fastpath;
 			}
 
-			for (i = 0; i < (duk_uint_fast32_t) DUK_HOBJECT_GET_ENEXT(obj); i++) {
+			for (i = 0; i < (duk_uint_fast32_t) duk_hobject_get_enext(obj); i++) {
 				duk_hstring *k;
 				duk_size_t prev_size;
 

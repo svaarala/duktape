@@ -40,9 +40,27 @@ DUK_INTERNAL duk_bool_t duk_hobject_prototype_chain_contains(duk_hthread *thr,
 }
 
 DUK_INTERNAL duk_hobject *duk_hobject_get_proto_raw(duk_heap *heap, duk_hobject *h) {
-	DUK_UNREF(heap);
 	DUK_ASSERT(h != NULL);
-	return DUK_HOBJECT_GET_PROTOTYPE(heap, h);
+
+#if defined(DUK_USE_HEAPPTR16)
+	DUK_ASSERT(heap != NULL);
+	return (duk_hobject *) DUK_USE_HEAPPTR_DEC16(heap->heap_udata, h->prototype16);
+#else
+	DUK_UNREF(heap);
+	return h->prototype;
+#endif
+}
+
+DUK_INTERNAL void duk_hobject_set_proto_raw(duk_heap *heap, duk_hobject *h, duk_hobject *p) {
+	DUK_ASSERT(h != NULL);
+
+#if defined(DUK_USE_HEAPPTR16)
+	DUK_ASSERT(heap != NULL);
+	h->prototype16 = DUK_USE_HEAPPTR_ENC16(heap->heap_udata, (void *) p);
+#else
+	DUK_UNREF(heap);
+	h->prototype = p;
+#endif
 }
 
 DUK_INTERNAL void duk_hobject_set_proto_raw_updref(duk_hthread *thr, duk_hobject *h, duk_hobject *p) {
@@ -51,26 +69,37 @@ DUK_INTERNAL void duk_hobject_set_proto_raw_updref(duk_hthread *thr, duk_hobject
 
 	DUK_ASSERT(h);
 	tmp = duk_hobject_get_proto_raw(thr->heap, h);
-	DUK_HOBJECT_SET_PROTOTYPE(thr->heap, h, p);
+	duk_hobject_set_proto_raw(thr->heap, h, p);
 	DUK_HOBJECT_INCREF_ALLOWNULL(thr, p); /* avoid problems if p == h->prototype */
 	DUK_HOBJECT_DECREF_ALLOWNULL(thr, tmp);
 #else
 	DUK_ASSERT(h);
 	DUK_UNREF(thr);
-	DUK_HOBJECT_SET_PROTOTYPE(thr->heap, h, p);
+	duk_hobject_set_proto_raw(thr->heap, h, p);
 #endif
 }
 
-DUK_INTERNAL void duk_hobject_get_props_key_attr(duk_heap *heap,
-                                                 duk_hobject *obj,
-                                                 duk_propvalue **out_val_base,
-                                                 duk_hstring ***out_key_base,
-                                                 duk_uint8_t **out_attr_base) {
+DUK_INTERNAL void duk_hobject_set_proto_init_incref(duk_hthread *thr, duk_hobject *h, duk_hobject *p) {
+	DUK_ASSERT(thr != NULL);
+	DUK_ASSERT(duk_hobject_get_proto_raw(thr->heap, h) == NULL);
+
+	DUK_UNREF(thr);
+	duk_hobject_set_proto_raw(thr->heap, h, p);
+#if defined(DUK_USE_REFERENCE_COUNTING)
+	DUK_HOBJECT_INCREF_ALLOWNULL(thr, p);
+#endif
+}
+
+DUK_INTERNAL void duk_hobject_get_strprops_key_attr(duk_heap *heap,
+                                                    duk_hobject *obj,
+                                                    duk_propvalue **out_val_base,
+                                                    duk_hstring ***out_key_base,
+                                                    duk_uint8_t **out_attr_base) {
 	duk_propvalue *val_base;
 	duk_hstring **key_base;
 	duk_uint8_t *attr_base;
 
-	val_base = duk_hobject_get_props(heap, obj);
+	val_base = duk_hobject_get_strprops(heap, obj);
 	key_base = (duk_hstring **) (void *) (val_base + duk_hobject_get_esize(obj));
 	attr_base = (duk_uint8_t *) (void *) (key_base + duk_hobject_get_esize(obj));
 
@@ -79,27 +108,144 @@ DUK_INTERNAL void duk_hobject_get_props_key_attr(duk_heap *heap,
 	*out_attr_base = attr_base;
 }
 
-DUK_INTERNAL duk_propvalue *duk_hobject_get_props(duk_heap *heap, duk_hobject *obj) {
+DUK_INTERNAL duk_propvalue *duk_hobject_get_strprops(duk_heap *heap, duk_hobject *h) {
+	DUK_ASSERT(h != NULL);
+
 #if defined(DUK_USE_HEAPPTR16)
-	return (duk_propvalue *) DUK_USE_HEAPPTR_DEC16(thr->heap->heap_udata, obj->hdr.h_extra16);
+	DUK_ASSERT(heap != NULL);
+	return (duk_propvalue *) DUK_USE_HEAPPTR_DEC16(heap->heap_udata, h->hdr.h_extra16);
 #else
-	return (duk_propvalue *) (void *) obj->props;
+	DUK_UNREF(heap);
+	return (duk_propvalue *) (void *) h->props;
+#endif
+}
+
+DUK_INTERNAL duk_hstring **duk_hobject_get_strprops_keys(duk_heap *heap, duk_hobject *h) {
+	return (duk_hstring **) (void *) (duk_hobject_get_strprops(heap, h) + duk_hobject_get_esize(h));
+}
+
+DUK_INTERNAL duk_propvalue *duk_hobject_get_strprops_values(duk_heap *heap, duk_hobject *h) {
+	return (duk_propvalue *) (void *) duk_hobject_get_strprops(heap, h);
+}
+
+DUK_INTERNAL duk_uint8_t *duk_hobject_get_strprops_attrs(duk_heap *heap, duk_hobject *h) {
+	return (duk_uint8_t *) (void *) ((duk_uint8_t *) duk_hobject_get_strprops(heap, h) +
+	                                 duk_hobject_get_esize(h) * (sizeof(duk_propvalue) + sizeof(duk_hstring *)));
+}
+
+DUK_INTERNAL void duk_hobject_set_strprops(duk_heap *heap, duk_hobject *h, duk_uint8_t *props) {
+	DUK_ASSERT(h != NULL);
+
+#if defined(DUK_USE_HEAPPTR16)
+	DUK_ASSERT(heap != NULL);
+	((duk_heaphdr *) h)->h_extra16 = DUK_USE_HEAPPTR_ENC16(heap->heap_udata, (void *) props);
+#else
+	DUK_UNREF(heap);
+	h->props = props;
+#endif
+}
+
+DUK_INTERNAL duk_uint32_t *duk_hobject_get_strhash(duk_heap *heap, duk_hobject *h) {
+	DUK_ASSERT(h != NULL);
+
+#if defined(DUK_USE_HOBJECT_HASH_PART)
+#if defined(DUK_USE_HEAPPTR16)
+	DUK_ASSERT(heap != NULL);
+	return (duk_uint8_t *) DUK_USE_HEAPPTR_DEC16(heap->heap_udata, h->hash16);
+#else
+	DUK_UNREF(heap);
+	return h->hash;
+#endif
+#else
+	DUK_UNREF(heap);
+	DUK_UNREF(h);
+	return NULL;
+#endif
+}
+
+DUK_INTERNAL void duk_hobject_set_strhash(duk_heap *heap, duk_hobject *h, duk_uint32_t *v) {
+	DUK_ASSERT(h != NULL);
+
+#if defined(DUK_USE_HOBJECT_HASH_PART)
+#if defined(DUK_USE_HEAPPTR16)
+	DUK_ASSERT(heap != NULL);
+	h->hash16 = DUK_USE_HEAPPTR_ENC16(heap->heap_udata, (void *) v);
+#else
+	DUK_UNREF(heap);
+	h->hash = v;
+#endif
+#else
+	DUK_UNREF(heap);
+	DUK_UNREF(h);
+	DUK_UNREF(v);
+	DUK_ASSERT(0);
 #endif
 }
 
 DUK_INTERNAL duk_uint32_t duk_hobject_get_esize(duk_hobject *h) {
 	DUK_ASSERT(h != NULL);
-	return DUK_HOBJECT_GET_ESIZE(h);
+
+#if defined(DUK_USE_OBJSIZES16)
+	return h->e_size16;
+#else
+	return h->e_size;
+#endif
+}
+
+DUK_INTERNAL void duk_hobject_set_esize(duk_hobject *h, duk_uint32_t v) {
+	DUK_ASSERT(h != NULL);
+
+#if defined(DUK_USE_OBJSIZES16)
+	DUK_ASSERT(v <= DUK_UINT16_MAX);
+	h->e_size16 = v;
+#else
+	h->e_size = v;
+#endif
 }
 
 DUK_INTERNAL duk_uint32_t duk_hobject_get_enext(duk_hobject *h) {
 	DUK_ASSERT(h != NULL);
-	return DUK_HOBJECT_GET_ENEXT(h);
+
+#if defined(DUK_USE_OBJSIZES16)
+	return h->e_next16;
+#else
+	return h->e_next;
+#endif
+}
+
+DUK_INTERNAL void duk_hobject_set_enext(duk_hobject *h, duk_uint32_t v) {
+	DUK_ASSERT(h != NULL);
+
+#if defined(DUK_USE_OBJSIZES16)
+	DUK_ASSERT(v <= DUK_UINT16_MAX);
+	h->e_next16 = v;
+#else
+	h->e_next = v;
+#endif
+}
+
+DUK_INTERNAL duk_uint32_t duk_hobject_postinc_enext(duk_hobject *h) {
+#if defined(DUK_USE_OBJSIZES16)
+	DUK_ASSERT(h->e_next16 != DUK_UINT16_MAX);
+	return h->e_next16++;
+#else
+	DUK_ASSERT(h->e_next != DUK_UINT32_MAX);
+	return h->e_next++;
+#endif
+}
+
+DUK_INTERNAL duk_size_t duk_hobject_compute_strprops_size(duk_uint32_t n_ent) {
+	return n_ent * (sizeof(duk_propvalue) + sizeof(duk_hstring *) + sizeof(duk_uint8_t));
+}
+
+DUK_INTERNAL duk_size_t duk_hobject_compute_strhash_size(duk_uint32_t n_hash) {
+	return (n_hash + 1) * sizeof(duk_uint32_t);
 }
 
 DUK_INTERNAL duk_size_t duk_hobject_get_ebytes(duk_hobject *h) {
 	DUK_ASSERT(h != NULL);
-	return DUK_HOBJECT_P_COMPUTE_SIZE(DUK_HOBJECT_GET_ESIZE(h));
+
+	return duk_hobject_compute_strprops_size(duk_hobject_get_esize(h));
 }
 
 DUK_INTERNAL duk_uint32_t duk_hobject_get_isize(duk_hobject *h) {
@@ -107,23 +253,58 @@ DUK_INTERNAL duk_uint32_t duk_hobject_get_isize(duk_hobject *h) {
 	return h->i_size;
 }
 
+DUK_INTERNAL void duk_hobject_get_idxprops_key_attr(duk_heap *heap,
+                                                    duk_hobject *obj,
+                                                    duk_propvalue **out_val_base,
+                                                    duk_uarridx_t **out_key_base,
+                                                    duk_uint8_t **out_attr_base) {
+	duk_propvalue *val_base;
+	duk_uarridx_t *key_base;
+	duk_uint8_t *attr_base;
+
+	val_base = (duk_propvalue *) (void *) obj->idx_props;
+	key_base = (duk_uarridx_t *) (void *) (val_base + obj->i_size);
+	attr_base = (duk_uint8_t *) (void *) (key_base + obj->i_size);
+
+	*out_val_base = val_base;
+	*out_key_base = key_base;
+	*out_attr_base = attr_base;
+}
+
+DUK_INTERNAL duk_propvalue *duk_hobject_get_idxprops(duk_heap *heap, duk_hobject *h) {
+	DUK_ASSERT(h != NULL);
+	DUK_UNREF(heap);
+	/* heap may be NULL, e.g. for debug code in non-pointer-compressed build */
+
+	return (duk_propvalue *) h->idx_props;
+}
+
 DUK_INTERNAL duk_uint32_t duk_hobject_get_inext(duk_hobject *h) {
 	DUK_ASSERT(h != NULL);
+
 	return h->i_next;
+}
+
+DUK_INTERNAL_DECL duk_size_t duk_hobject_compute_idxprops_size(duk_uint32_t n_ent) {
+	return n_ent * (sizeof(duk_propvalue) + sizeof(duk_uint32_t) + sizeof(duk_uint8_t));
+}
+
+DUK_INTERNAL_DECL duk_size_t duk_hobject_compute_idxhash_size(duk_uint32_t n_hash) {
+	return (n_hash + 1) * sizeof(duk_uint32_t);
 }
 
 DUK_INTERNAL duk_size_t duk_hobject_get_ibytes(duk_hobject *h) {
 	DUK_ASSERT(h != NULL);
-	return sizeof(duk_propvalue) * (h->i_size);
+
+	return duk_hobject_compute_idxprops_size(duk_hobject_get_isize(h));
 }
 
 DUK_INTERNAL duk_uint32_t duk_hobject_get_hsize(duk_heap *heap, duk_hobject *h) {
 	duk_uint32_t *hash;
 
 	DUK_ASSERT(h != NULL);
-	DUK_UNREF(heap);
 #if defined(DUK_USE_HOBJECT_HASH_PART)
-	hash = DUK_HOBJECT_GET_HASH(heap, h);
+	hash = duk_hobject_get_strhash(heap, h);
 	if (hash != NULL) {
 		return hash[0];
 	} else {
@@ -139,9 +320,8 @@ DUK_INTERNAL_DECL size_t duk_hobject_get_hbytes(duk_heap *heap, duk_hobject *h) 
 	duk_uint32_t *hash;
 
 	DUK_ASSERT(h != NULL);
-	DUK_UNREF(heap);
 #if defined(DUK_USE_HOBJECT_HASH_PART)
-	hash = DUK_HOBJECT_GET_HASH(heap, h);
+	hash = duk_hobject_get_strhash(heap, h);
 	if (hash != NULL) {
 		DUK_ASSERT(hash[0] + 1U >= hash[0]);
 		return (hash[0] + 1U) * sizeof(duk_uint32_t);
@@ -159,11 +339,13 @@ DUK_INTERNAL duk_uint32_t duk_harray_get_active_items_length(duk_harray *a) {
 	 * at least.
 	 */
 	DUK_ASSERT(a != NULL);
+
 	return DUK_HARRAY_GET_ITEMS_LENGTH(a);
 }
 
 DUK_INTERNAL duk_uint32_t duk_hobject_get_asize(duk_hobject *h) {
 	DUK_ASSERT(h != NULL);
+
 	if (DUK_HOBJECT_HAS_ARRAY_ITEMS(h)) {
 		DUK_ASSERT(DUK_HOBJECT_IS_HARRAY(h));
 		return DUK_HARRAY_GET_ITEMS_LENGTH((duk_harray *) h);
@@ -174,6 +356,7 @@ DUK_INTERNAL duk_uint32_t duk_hobject_get_asize(duk_hobject *h) {
 
 DUK_INTERNAL duk_size_t duk_hobject_get_abytes(duk_hobject *h) {
 	DUK_ASSERT(h != NULL);
+
 	if (DUK_HOBJECT_HAS_ARRAY_ITEMS(h)) {
 		DUK_ASSERT(DUK_HOBJECT_IS_HARRAY(h));
 		return sizeof(duk_tval) * (duk_size_t) DUK_HARRAY_GET_ITEMS_LENGTH((duk_harray *) h);

@@ -98,7 +98,7 @@ DUK_LOCAL duk_small_int_t duk__prop_getown_proxy_policy(duk_hthread *thr, duk_ho
 	return attrs;
 
 fail:
-	DUK_ERROR_TYPE(thr, DUK_STR_INVALID_TRAP_RESULT);
+	DUK_ERROR_TYPE_PROXY_REJECTED(thr);
 	DUK_WO_NORETURN(return 0;);
 }
 #endif
@@ -138,7 +138,7 @@ DUK_LOCAL duk_small_int_t duk__prop_getown_proxy_tail(duk_hthread *thr, duk_hobj
 	return attrs;
 
 invalid_result:
-	DUK_ERROR_TYPE(thr, DUK_STR_INVALID_TRAP_RESULT);
+	DUK_ERROR_TYPE_PROXY_REJECTED(thr);
 	DUK_WO_NORETURN(return 0;);
 }
 

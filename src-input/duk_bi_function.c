@@ -267,7 +267,7 @@ DUK_INTERNAL duk_ret_t duk_bi_function_prototype_bind(duk_hthread *thr) {
 		 * in place.
 		 */
 		bound_proto = duk_hobject_get_proto_raw(thr->heap, h_target);
-		DUK_HOBJECT_SET_PROTOTYPE_INIT_INCREF(thr, (duk_hobject *) h_bound, bound_proto);
+		duk_hobject_set_proto_init_incref(thr, (duk_hobject *) h_bound, bound_proto);
 
 		/* The 'strict' flag is copied to get the special [[Get]] of E5.1
 		 * Section 15.3.5.4 to apply when a 'caller' value is a strict bound
@@ -305,7 +305,7 @@ DUK_INTERNAL duk_ret_t duk_bi_function_prototype_bind(duk_hthread *thr) {
 		DUK_ASSERT(DUK_TVAL_IS_LIGHTFUNC(tv_tmp));
 		DUK_HOBJECT_SET_STRICT((duk_hobject *) h_bound);
 		bound_proto = thr->builtins[DUK_BIDX_FUNCTION_PROTOTYPE];
-		DUK_HOBJECT_SET_PROTOTYPE_INIT_INCREF(thr, (duk_hobject *) h_bound, bound_proto);
+		duk_hobject_set_proto_init_incref(thr, (duk_hobject *) h_bound, bound_proto);
 	}
 
 	DUK_TVAL_INCREF(thr, &h_bound->target); /* old values undefined, no decref needed */

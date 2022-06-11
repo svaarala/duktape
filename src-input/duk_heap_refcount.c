@@ -250,7 +250,7 @@ DUK_INTERNAL DUK_HOT void duk_hobject_refcount_finalize_norz(duk_heap *heap, duk
 	duk_propvalue *p_val;
 	duk_tval *p_tv;
 	duk_hstring **p_key;
-	duk_uint8_t *p_flag;
+	duk_uint8_t *p_attr;
 	duk_hobject *h_proto;
 
 	DUK_ASSERT(heap != NULL);
@@ -261,10 +261,8 @@ DUK_INTERNAL DUK_HOT void duk_hobject_refcount_finalize_norz(duk_heap *heap, duk
 	thr = heap->heap_thread;
 	DUK_ASSERT(thr != NULL);
 
-	p_key = DUK_HOBJECT_E_GET_KEY_BASE(heap, h);
-	p_val = DUK_HOBJECT_E_GET_VALUE_BASE(heap, h);
-	p_flag = DUK_HOBJECT_E_GET_FLAGS_BASE(heap, h);
-	n = DUK_HOBJECT_GET_ENEXT(h);
+	duk_hobject_get_strprops_key_attr(heap, h, &p_val, &p_key, &p_attr);
+	n = duk_hobject_get_enext(h);
 	while (n-- > 0) {
 		duk_hstring *key;
 
@@ -273,7 +271,7 @@ DUK_INTERNAL DUK_HOT void duk_hobject_refcount_finalize_norz(duk_heap *heap, duk
 			continue;
 		}
 		DUK_HSTRING_DECREF_NORZ(thr, key);
-		if (DUK_UNLIKELY(p_flag[n] & DUK_PROPDESC_FLAG_ACCESSOR)) {
+		if (DUK_UNLIKELY(p_attr[n] & DUK_PROPDESC_FLAG_ACCESSOR)) {
 			duk_hobject *h_getset;
 			h_getset = p_val[n].a.get;
 			DUK_ASSERT(h_getset == NULL || DUK_HEAPHDR_IS_ANY_OBJECT((duk_heaphdr *) h_getset));
@@ -289,9 +287,11 @@ DUK_INTERNAL DUK_HOT void duk_hobject_refcount_finalize_norz(duk_heap *heap, duk
 	}
 
 	{
-		duk_propvalue *val_base = (duk_propvalue *) (void *) h->idx_props;
-		duk_uarridx_t *key_base = (duk_uarridx_t *) (void *) (val_base + h->i_size);
-		duk_uint8_t *attr_base = (duk_uint8_t *) (void *) (key_base + h->i_size);
+		duk_propvalue *val_base;
+		duk_uarridx_t *key_base;
+		duk_uint8_t *attr_base;
+
+		duk_hobject_get_idxprops_key_attr(heap, h, &val_base, &key_base, &attr_base);
 
 		n = h->i_next;
 		while (n-- > 0) {
@@ -463,7 +463,7 @@ DUK_LOCAL DUK_INLINE void duk__refcount_refzero_hobject(duk_heap *heap, duk_hobj
 	/* This finalizer check MUST BE side effect free.  It should also be
 	 * as fast as possible because it's applied to every object freed.
 	 */
-	if (DUK_UNLIKELY(DUK_HOBJECT_HAS_FINALIZER_FAST(heap, (duk_hobject *) hdr) != 0U)) {
+	if (DUK_UNLIKELY(duk_hobject_has_finalizer_fast_raw(heap, (duk_hobject *) hdr) != 0U)) {
 		/* Special case: FINALIZED may be set if mark-and-sweep queued
 		 * object for finalization, the finalizer was executed (and
 		 * FINALIZED set), mark-and-sweep hasn't yet processed the

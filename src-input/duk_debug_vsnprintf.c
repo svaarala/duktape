@@ -59,7 +59,7 @@
 /* Needed for pointer compression, but we don't have a caller-given heap/thr
  * pointer for debug logs now.
  */
-DUK_LOCAL duk__debug_get_heap(void) {
+DUK_LOCAL duk_heap *duk__debug_get_heap(void) {
 #if defined(DUK_USE_DEBUG) && (defined(DUK_USE_HEAPPTR_ENC16) || defined(DUK_USE_DATAPTR_ENC16) || defined(DUK_USE_FUNCPTR_ENC16))
 	return duk_debug_global_heap_singleton;
 #else
@@ -418,7 +418,7 @@ DUK_LOCAL void duk__print_hobject(duk__dprint_state *st, duk_hobject *h) {
 			duk__print_tval(st, tv);
 		}
 	}
-	if (h->idx_props != NULL) {
+	if (duk_hobject_get_idxprops(duk__debug_get_heap(), h) != NULL) {
 		for (i = 0; i < h->i_next; i++) {
 			duk_propvalue *val_base;
 			duk_uarridx_t *key_base;
@@ -427,9 +427,7 @@ DUK_LOCAL void duk__print_hobject(duk__dprint_state *st, duk_hobject *h) {
 			duk_uarridx_t idx;
 			duk_uint8_t attrs;
 
-			val_base = (duk_propvalue *) (void *) h->idx_props;
-			key_base = (duk_uarridx_t *) (void *) (val_base + h->i_size);
-			attr_base = (duk_uint8_t *) (void *) (key_base + h->i_size);
+			duk_hobject_get_idxprops_key_attr(duk__debug_get_heap(), h, &val_base, &key_base, &attr_base);
 			pv = val_base + i;
 			idx = key_base[i];
 			attrs = attr_base[i];
@@ -451,8 +449,8 @@ DUK_LOCAL void duk__print_hobject(duk__dprint_state *st, duk_hobject *h) {
 			}
 		}
 	}
-	if (DUK_HOBJECT_GET_PROPS(duk__debug_get_heap(), h)) {
-		for (i = 0; i < DUK_HOBJECT_GET_ENEXT(h); i++) {
+	if (duk_hobject_get_strprops(duk__debug_get_heap(), h)) {
+		for (i = 0; i < duk_hobject_get_enext(h); i++) {
 			key = DUK_HOBJECT_E_GET_KEY(duk__debug_get_heap(), h, i);
 			if (!key) {
 				continue;
@@ -723,7 +721,7 @@ DUK_LOCAL void duk__print_hobject(duk__dprint_state *st, duk_hobject *h) {
 		duk_uint32_t hsize = duk_hobject_get_hsize(duk__debug_get_heap(), h);
 		duk_fb_put_byte(fb, (duk_uint8_t) DUK_ASC_LANGLE);
 		for (i = 0; i < hsize; i++) {
-			duk_uint_t h_idx = DUK_HOBJECT_H_GET_INDEX(duk__debug_get_heap(), h, i);
+			duk_uint_t h_idx = duk_hobject_get_strhash(duk__debug_get_heap(), h)[i];
 			if (i > 0) {
 				duk_fb_put_byte(fb, (duk_uint8_t) DUK_ASC_COMMA);
 			}

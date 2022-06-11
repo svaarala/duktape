@@ -9,8 +9,8 @@ DUK_LOCAL duk_uint32_t duk__count_used_e_keys(duk_hthread *thr, duk_hobject *obj
 	DUK_ASSERT(obj != NULL);
 	DUK_UNREF(thr);
 
-	e = DUK_HOBJECT_E_GET_KEY_BASE(thr->heap, obj);
-	for (i = 0; i < DUK_HOBJECT_GET_ENEXT(obj); i++) {
+	e = duk_hobject_get_strprops_keys(thr->heap, obj);
+	for (i = 0; i < duk_hobject_get_enext(obj); i++) {
 		if (DUK_LIKELY(*e++ != NULL)) {
 			n++;
 		}
@@ -248,11 +248,9 @@ DUK_LOCAL DUK_ALWAYS_INLINE duk_uint32_t duk__hobject_realloc_strprops_copykeys(
 
 	DUK_UNREF(thr);
 
-	key_base = DUK_HOBJECT_E_GET_KEY_BASE(thr->heap, obj);
-	val_base = DUK_HOBJECT_E_GET_VALUE_BASE(thr->heap, obj);
-	attr_base = DUK_HOBJECT_E_GET_FLAGS_BASE(thr->heap, obj);
+	duk_hobject_get_strprops_key_attr(thr->heap, obj, &val_base, &key_base, &attr_base);
 
-	for (i = 0; i < DUK_HOBJECT_GET_ENEXT(obj); i++) {
+	for (i = 0; i < duk_hobject_get_enext(obj); i++) {
 		duk_hstring *key;
 
 		key = key_base[i];
@@ -296,7 +294,7 @@ DUK_INTERNAL void duk_hobject_realloc_strprops(duk_hthread *thr, duk_hobject *ob
 
 	DUK_ASSERT(thr != NULL);
 	DUK_ASSERT(obj != NULL);
-	DUK_ASSERT(DUK_HOBJECT_GET_PROPS(thr->heap, obj) != NULL || DUK_HOBJECT_GET_ESIZE(obj) == 0);
+	DUK_ASSERT(duk_hobject_get_strprops(thr->heap, obj) != NULL || duk_hobject_get_esize(obj) == 0);
 	DUK_ASSERT(!DUK_HEAPHDR_HAS_READONLY((duk_heaphdr *) obj));
 	DUK_ASSERT_VALSTACK_SPACE(thr, DUK_HOBJECT_PROP_VALSTACK_SPACE);
 
@@ -317,11 +315,11 @@ DUK_INTERNAL void duk_hobject_realloc_strprops(duk_hthread *thr, duk_hobject *ob
 	                     "from {p=%p,e_size=%ld,e_next=%ld,h_size=%ld} to "
 	                     "{e_size=%ld,h_size=%ld}",
 	                     (void *) obj,
-	                     (long) DUK_HOBJECT_P_COMPUTE_SIZE(duk_hobject_get_esize(obj)),
-	                     (long) DUK_HOBJECT_P_COMPUTE_SIZE(new_e_size),
-	                     (long) DUK_HOBJECT_H_COMPUTE_SIZE(duk_hobject_get_hsize(thr->heap, obj)),
-	                     (long) DUK_HOBJECT_H_COMPUTE_SIZE(new_h_size),
-	                     (void *) DUK_HOBJECT_GET_PROPS(thr->heap, obj),
+	                     (long) duk_hobject_compute_strprops_size(duk_hobject_get_esize(obj)),
+	                     (long) duk_hobject_compute_strprops_size(new_e_size),
+	                     (long) duk_hobject_compute_strhash_size(duk_hobject_get_hsize(thr->heap, obj)),
+	                     (long) duk_hobject_compute_strhash_size(new_h_size),
+	                     (void *) duk_hobject_get_strprops(thr->heap, obj),
 	                     (long) duk_hobject_get_esize(obj),
 	                     (long) duk_hobject_get_enext(obj),
 	                     (long) duk_hobject_get_hsize(thr->heap, obj),
@@ -368,7 +366,7 @@ DUK_INTERNAL void duk_hobject_realloc_strprops(duk_hthread *thr, duk_hobject *ob
 		 *
 		 * Alloc size wrapping prevented by maximum property count.
 		 */
-		new_p_alloc_size = DUK_HOBJECT_P_COMPUTE_SIZE(new_e_size);
+		new_p_alloc_size = duk_hobject_compute_strprops_size(new_e_size);
 		DUK_ASSERT(new_p_alloc_size > 0U);
 		new_p = (duk_uint8_t *) DUK_ALLOC(thr->heap, new_p_alloc_size);
 		if (new_p == NULL) {
@@ -384,7 +382,7 @@ DUK_INTERNAL void duk_hobject_realloc_strprops(duk_hthread *thr, duk_hobject *ob
 		new_h_alloc_size = 0;
 	} else {
 		/* Alloc size wrapping prevented by maximum property count. */
-		new_h_alloc_size = DUK_HOBJECT_H_COMPUTE_SIZE(new_h_size);
+		new_h_alloc_size = duk_hobject_compute_strhash_size(new_h_size);
 		DUK_ASSERT(new_h_alloc_size > 0U);
 		new_h = (duk_uint32_t *) DUK_ALLOC(thr->heap, new_h_alloc_size);
 		if (new_h == NULL) {
@@ -423,16 +421,16 @@ DUK_INTERNAL void duk_hobject_realloc_strprops(duk_hthread *thr, duk_hobject *ob
 	/* All done, switch props and hash allocation to new one.  Free old
 	 * allocations, including duk_harray .items if abandoned array.
 	 */
-	DUK_FREE_CHECKED(thr, DUK_HOBJECT_GET_PROPS(thr->heap, obj));
+	DUK_FREE_CHECKED(thr, duk_hobject_get_strprops(thr->heap, obj));
 #if defined(DUK_USE_HOBJECT_HASH_PART)
-	DUK_FREE_CHECKED(thr, DUK_HOBJECT_GET_HASH(thr->heap, obj));
+	DUK_FREE_CHECKED(thr, duk_hobject_get_strhash(thr->heap, obj));
 #endif
-	DUK_HOBJECT_SET_PROPS(thr->heap, obj, new_p);
+	duk_hobject_set_strprops(thr->heap, obj, new_p);
 #if defined(DUK_USE_HOBJECT_HASH_PART)
-	DUK_HOBJECT_SET_HASH(thr->heap, obj, (duk_uint32_t *) (void *) new_h);
+	duk_hobject_set_strhash(thr->heap, obj, (duk_uint32_t *) (void *) new_h);
 #endif
-	DUK_HOBJECT_SET_ESIZE(obj, new_e_size);
-	DUK_HOBJECT_SET_ENEXT(obj, new_e_next);
+	duk_hobject_set_esize(obj, new_e_size);
+	duk_hobject_set_enext(obj, new_e_next);
 
 	DUK_DDD(DUK_DDDPRINT("resize result: %!O", (duk_heaphdr *) obj));
 
@@ -484,8 +482,8 @@ DUK_INTERNAL void duk_hobject_abandon_array_items(duk_hthread *thr, duk_hobject 
 	/* When a linear array items part exists, the index part must
 	 * be missing, which makes abandoning easier.
 	 */
-	DUK_ASSERT(obj->idx_props == NULL);
-	DUK_ASSERT(obj->i_size == 0);
+	DUK_ASSERT(duk_hobject_get_idxprops(thr->heap, obj) == NULL);
+	DUK_ASSERT(duk_hobject_get_isize(obj) == 0);
 
 	a = (duk_harray *) obj;
 	new_i_size_minimum = duk_harray_count_used_items(thr->heap, a);
@@ -507,9 +505,7 @@ DUK_INTERNAL void duk_hobject_abandon_array_items(duk_hthread *thr, duk_hobject 
 	 * can insert them all without side effects.  Steal refcounts.
 	 */
 
-	val_base = (duk_propvalue *) (void *) obj->idx_props;
-	key_base = (duk_uarridx_t *) (void *) (val_base + obj->i_size);
-	attr_base = (duk_uint8_t *) (void *) (key_base + obj->i_size);
+	duk_hobject_get_idxprops_key_attr(thr->heap, obj, &val_base, &key_base, &attr_base);
 	tv_base = DUK_HARRAY_GET_ITEMS(thr->heap, a);
 
 	out_i = 0;
@@ -607,9 +603,7 @@ DUK_LOCAL DUK_ALWAYS_INLINE duk_uint32_t duk__hobject_realloc_idxprops_copykeys(
 
 	DUK_UNREF(thr);
 
-	val_base = (duk_propvalue *) (void *) obj->idx_props;
-	key_base = (duk_uarridx_t *) (void *) (val_base + obj->i_size);
-	attr_base = (duk_uint8_t *) (void *) (key_base + obj->i_size);
+	duk_hobject_get_idxprops_key_attr(thr->heap, obj, &val_base, &key_base, &attr_base);
 
 	for (i = 0; i < obj->i_next; i++) {
 		duk_uint32_t key;
@@ -707,7 +701,7 @@ DUK_INTERNAL void duk_hobject_realloc_idxprops(duk_hthread *thr, duk_hobject *ob
 		 *
 		 * Alloc size wrapping prevented by maximum property count.
 		 */
-		new_p_alloc_size = (sizeof(duk_propvalue) + sizeof(duk_uint32_t) + sizeof(duk_uint8_t)) * new_i_size;
+		new_p_alloc_size = duk_hobject_compute_idxprops_size(new_i_size);
 		DUK_ASSERT(new_p_alloc_size > 0U);
 		new_p = (duk_uint8_t *) DUK_ALLOC(thr->heap, new_p_alloc_size);
 		if (new_p == NULL) {
@@ -722,7 +716,7 @@ DUK_INTERNAL void duk_hobject_realloc_idxprops(duk_hthread *thr, duk_hobject *ob
 		new_h_alloc_size = 0;
 	} else {
 		/* Alloc size wrapping prevented by maximum property count. */
-		new_h_alloc_size = sizeof(duk_uint32_t) * (new_h_size + 1);
+		new_h_alloc_size = duk_hobject_compute_idxhash_size(new_h_size);
 		DUK_ASSERT(new_h_alloc_size > 0U);
 		new_h = (duk_uint32_t *) DUK_ALLOC(thr->heap, new_h_alloc_size);
 		if (new_h == NULL) {
@@ -839,23 +833,23 @@ DUK_INTERNAL duk_int_t duk_hobject_alloc_strentry_checked(duk_hthread *thr, duk_
 	DUK_ASSERT(thr != NULL);
 	DUK_ASSERT(obj != NULL);
 	DUK_ASSERT(key != NULL);
-	DUK_ASSERT(DUK_HOBJECT_GET_ENEXT(obj) <= DUK_HOBJECT_GET_ESIZE(obj));
+	DUK_ASSERT(duk_hobject_get_enext(obj) <= duk_hobject_get_esize(obj));
 	DUK_HOBJECT_ASSERT_KEY_ABSENT(thr->heap, obj, key);
 
-	if (DUK_HOBJECT_GET_ENEXT(obj) >= DUK_HOBJECT_GET_ESIZE(obj)) {
+	if (duk_hobject_get_enext(obj) >= duk_hobject_get_esize(obj)) {
 		/* only need to guarantee 1 more slot, but allocation growth is in chunks */
 		DUK_DDD(DUK_DDDPRINT("strprops full, allocate space for one more entry"));
 		duk__grow_strprops_for_new_entry_item(thr, obj);
 	}
-	DUK_ASSERT(DUK_HOBJECT_GET_ENEXT(obj) < DUK_HOBJECT_GET_ESIZE(obj));
-	idx = DUK_HOBJECT_POSTINC_ENEXT(obj);
+	DUK_ASSERT(duk_hobject_get_enext(obj) < duk_hobject_get_esize(obj));
+	idx = duk_hobject_postinc_enext(obj);
 
 	/* previous value is assumed to be garbage, so don't touch it */
 	DUK_HOBJECT_E_SET_KEY(thr->heap, obj, idx, key);
 	DUK_HSTRING_INCREF(thr, key);
 
 #if defined(DUK_USE_HOBJECT_HASH_PART)
-	h_base = DUK_HOBJECT_GET_HASH(heap, obj);
+	h_base = duk_hobject_get_strhash(thr->heap, obj);
 	if (DUK_UNLIKELY(h_base != NULL)) {
 		duk_uint32_t n, mask;
 		duk_uint32_t i, step;
@@ -876,7 +870,7 @@ DUK_INTERNAL duk_int_t duk_hobject_alloc_strentry_checked(duk_hthread *thr, duk_
 				DUK_ASSERT_DISABLE(i >= 0); /* unsigned */
 				DUK_ASSERT(i < n);
 				DUK_ASSERT_DISABLE(idx >= 0);
-				DUK_ASSERT(idx < DUK_HOBJECT_GET_ESIZE(obj));
+				DUK_ASSERT(idx < duk_hobject_get_esize(obj));
 				h_base[i] = idx;
 				break;
 			}
@@ -893,8 +887,8 @@ DUK_INTERNAL duk_int_t duk_hobject_alloc_strentry_checked(duk_hthread *thr, duk_
 	 */
 
 	DUK_ASSERT_DISABLE(idx >= 0);
-	DUK_ASSERT(idx < DUK_HOBJECT_GET_ESIZE(obj));
-	DUK_ASSERT(idx < DUK_HOBJECT_GET_ENEXT(obj));
+	DUK_ASSERT(idx < duk_hobject_get_esize(obj));
+	DUK_ASSERT(idx < duk_hobject_get_enext(obj));
 	return (duk_int_t) idx;
 }
 
