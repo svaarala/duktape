@@ -62,6 +62,7 @@ static duk_ret_t runtests_alert(duk_context *ctx) {
 
 int main(int argc, char *argv[]) {
 \tduk_context *ctx = NULL;
+\t(void) argc; (void) argv;
 
 \tctx = duk_create_heap_default();
 \tif (!ctx) {
