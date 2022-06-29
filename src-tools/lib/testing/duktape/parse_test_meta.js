@@ -9,7 +9,7 @@ function parseTestcaseMetadata({ sourceString }) {
     var dummy = sourceString.replace(/\/\*---\n^((.|\r|\n)*?)^---\*\//gm, (m, a) => {
         let doc = parseYaml(a);
         Object.assign(meta, doc);
-        meta.foundMetadataBlocks = true;
+        meta.found_metadata_blocks = true;
         return '';
     });
     void dummy;
@@ -18,7 +18,7 @@ function parseTestcaseMetadata({ sourceString }) {
     // .use_strict flag.
     sourceString.split('\n').forEach((line) => {
         if (line.startsWith('"use strict"') || line.startsWith("'use strict'")) {
-            meta.autoDetectedUseStrict = true;
+            meta.auto_detected_use_strict = true;
         }
     });
 

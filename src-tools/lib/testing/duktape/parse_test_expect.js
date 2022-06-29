@@ -14,7 +14,7 @@ function parseTestcaseExpectedResult({ sourceString }) {
         if (a !== void 0) {
             res.push(a);
         } else if (b !== void 0) {
-            res.push(b + '\n');  // single-line shorthand
+            res.push(b + '\n'); // single-line shorthand
         } else {
             assert(false);
         }

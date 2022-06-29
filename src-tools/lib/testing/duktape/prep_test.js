@@ -10,6 +10,7 @@ const { ecmascriptTestFrameworkSource } = require('./ecma_test_framework');
 const { cTestFrameworkSource, cTestcaseMain } = require('./c_test_framework');
 const { readFileUtf8, pathJoin, dirname } = require('../../util/fs');
 const { parseTestcaseMetadata } = require('./parse_test_meta');
+const { logInfo, logDebug } = require('../../util/logging');
 
 function prepareCTestcase({ sourceString }) {
     assert(typeof sourceString === 'string');
@@ -87,11 +88,12 @@ function prepareEcmascriptTestcase({ sourceString, includeDirectory, testcaseMet
         parts.push(' } /* TRY-CATCH WRAPPER END */');
     }
 
-    return parts.join('');
+    let result = parts.join('');
+    return result;
 }
 exports.prepareEcmascriptTestcase = prepareEcmascriptTestcase;
 
-function prepareTestcase({ testcaseFilename, testcaseType, testcaseSource, testcaseMetadata, includeDirectory, polyfillFilenames, promiseHack=true, tryCatchWrapper=true, tryCatchRethrow=false, uglifyJsExePath, uglifyJs2ExePath, closureJarPath }) {
+function prepareTestcase({ testcaseFilename, testcaseType, testcaseSource, testcaseMetadata, repoDirectory, includeDirectory, polyfillFilenames = [], promiseHack = true, tryCatchWrapper = true, tryCatchRethrow = false, uglifyJsExePath, uglifyJs2ExePath, closureJarPath }) {
     if (testcaseFilename) {
         assert(typeof testcaseFilename === 'string');
         if (testcaseFilename.endsWith('.js')) {
@@ -111,6 +113,17 @@ function prepareTestcase({ testcaseFilename, testcaseType, testcaseSource, testc
         throw new TypeError('must provide testcaseFilename or testcaseSource and testcaseType');
     }
 
+    let pfNames = [... polyfillFilenames];
+    if (testcaseMetadata.duktape_polyfills) {
+        let pfMap = testcaseMetadata.duktape_polyfills;
+        for (let polyfillName of Object.getOwnPropertyNames(pfMap)) {
+            if (polyfillName === 'promise' && pfMap[polyfillName] === true) {
+                logInfo('add polyfill based on test metadata:', polyfillName);
+                pfNames.push(pathJoin(repoDirectory, 'polyfills', 'promise.js'));
+            }
+        }
+    }
+
     var preparedSource;
     testcaseMetadata = testcaseMetadata || parseTestcaseMetadata({ sourceString: testcaseSource });
     if (testcaseType === 'ecmascript') {
@@ -118,7 +131,7 @@ function prepareTestcase({ testcaseFilename, testcaseType, testcaseSource, testc
             sourceString: testcaseSource,
             includeDirectory,
             testcaseMetadata,
-            polyfillFilenames,
+            polyfillFilenames: pfNames,
             promiseHack,
             tryCatchWrapper,
             tryCatchRethrow,

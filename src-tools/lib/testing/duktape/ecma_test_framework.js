@@ -8,6 +8,7 @@ exports.ecmascriptTestFrameworkSource = `\
     var Test = {};
     var G = new Function('return this')();
 
+    // Engine detection.
     if (typeof G.Duktape === 'object' && G.Duktape !== null) {
         Test.isDuktape = true;
         Test.engine = 'duktape';
@@ -21,6 +22,7 @@ exports.ecmascriptTestFrameworkSource = `\
         Test.engine = 'unknown';
     }
 
+    // Ensure print() binding exists.
     if (typeof G.print !== 'function') {
         if (G.process && G.process.stdout && typeof G.process.stdout.write === 'function') {
             G.print = function print() {
@@ -33,10 +35,16 @@ exports.ecmascriptTestFrameworkSource = `\
         }
     }
 
-    if (Test.engine === 'duktape' && typeof G.console === 'undefined') {
-        G.console = {
-            log: print
-        };
+    // Ensure console and console.log() exist.
+    if (typeof G.console === 'undefined') {
+        G.console = {};
+    }
+    if (typeof G.console === 'object' && G.console !== null) {
+        if (typeof G.console.log !== 'function') {
+            if (typeof G.print === 'function') {
+                G.console.log = G.print;
+            }
+        }
     }
 })();
 /* END TEST INIT */
