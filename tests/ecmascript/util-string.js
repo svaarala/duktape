@@ -43,7 +43,8 @@ function safePrintString(s) {
 }
 
 function sanitizeTraceback(x) {
-    x = x.replace(/\(.*?test-.*?\.js:/g, '(TESTCASE:');
+    x = x.replace(/\(.*?test-.*?\.js:\d+/g, '(TESTCASE:NNN');
+    x = x.replace(/\(.*?\.c:\d+/g, '(SOURCE:NNN');
     x = x.replace(/:\d+/g, ':NNN');
     x = x.replace(/\/\*/g, '(*').replace(/\*\u002f/g, '*)');
     x = x.replace(/light_[0-9a-fA-F]+_/g, 'light_PTR_', x);

@@ -2,6 +2,12 @@
  *  duk_debugger_notify()
  */
 
+/*---
+duktape_config:
+  DUK_USE_INTERRUPT_COUNTER: true
+  DUK_USE_DEBUGGER_SUPPORT: true
+---*/
+
 /*===
 *** test_notify_not_attached (duk_safe_call)
 top: 0

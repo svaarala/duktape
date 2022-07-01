@@ -2,9 +2,8 @@
 // Test for both callable and non-callable handler.
 
 /*---
-{
-    "skip": true
-}
+duktape_polyfills:
+  promise: true
 ---*/
 
 /*@include util-promise.js@*/

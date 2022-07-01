@@ -21,10 +21,9 @@
 /*@include util-object.js@*/
 
 /*---
-{
-    "custom": true,
-    "specialoptions": "requires DUK_USE_FASTINT"
-}
+custom: true
+duktape_config:
+  DUK_USE_FASTINT: true
 ---*/
 
 var MIN_FASTINT = -140737488355328;

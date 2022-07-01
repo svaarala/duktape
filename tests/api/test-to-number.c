@@ -24,9 +24,9 @@ index 19, number: nan
 index 20, number: inf
 index 21, number: nan
 index 22, number: nan
-index 23, number: 0.000000
+index 23, number: nan
 index 24, number: nan
-index 25, number: 0.000000
+index 25, number: nan
 index 26, number: nan
 index 27, number: 0.000000
 index 28, number: 1.000000

@@ -9,9 +9,10 @@
  */
 
 /*---
-{
-    "custom": true
-}
+custom: true
+duktape_config:
+  DUK_USE_INTERRUPT_COUNTER: true
+  DUK_USE_DEBUGGER_SUPPORT: true
 ---*/
 
 /*===

@@ -5,9 +5,8 @@
 // handle callbacks.
 
 /*---
-{
-    "skip": true
-}
+duktape_polyfills:
+  promise: true
 ---*/
 
 /*@include util-promise.js@*/

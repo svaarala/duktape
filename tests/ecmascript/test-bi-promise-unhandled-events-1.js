@@ -1,10 +1,9 @@
 // Test the Duktape (polyfill) specific unhandled rejection events in detail.
 
 /*---
-{
-    "custom": true,
-    "skip": true
-}
+custom: true
+duktape_polyfills:
+  promise: true
 ---*/
 
 /*===

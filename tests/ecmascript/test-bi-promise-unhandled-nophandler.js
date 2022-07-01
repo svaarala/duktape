@@ -1,9 +1,8 @@
 // A nop handler ('Thrower') doesn't count as being handled.
 
 /*---
-{
-    "skip": true
-}
+duktape_polyfills:
+  promise: true
 ---*/
 
 /*@include util-promise.js@*/

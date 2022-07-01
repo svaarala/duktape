@@ -3,9 +3,8 @@
 // https://www.ecma-international.org/ecma-262/6.0/#sec-performpromisethen
 
 /*---
-{
-    "skip": true
-}
+duktape_polyfills:
+  promise: true
 ---*/
 
 /*===

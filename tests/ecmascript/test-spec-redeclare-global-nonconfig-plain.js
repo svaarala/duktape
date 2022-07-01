@@ -8,9 +8,7 @@
  */
 
 /*---
-{
-    "intended_uncaught": true
-}
+intended_uncaught: true
 ---*/
 
 /* XXX: how to better test this so that the TypeError could be

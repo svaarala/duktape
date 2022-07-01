@@ -6,9 +6,7 @@ b called
 ===*/
 
 /*---
-{
-    "use_strict": true
-}
+use_strict: true
 ---*/
 
 'use strict';

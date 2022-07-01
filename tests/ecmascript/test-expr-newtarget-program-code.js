@@ -4,9 +4,7 @@
  */
 
 /*---
-{
-    "intended_uncaught": true
-}
+intended_uncaught: true
 ---*/
 
 /*===
