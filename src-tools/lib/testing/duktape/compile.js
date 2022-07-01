@@ -1,6 +1,6 @@
 'use strict';
 
-const { pathJoin, dirname, basename, mkdir, createTempDir } = require('../../util/fs');
+const { pathJoin, dirname, basename, mkdir } = require('../../util/fs');
 const { asyncExecStdoutUtf8 } = require('../../util/exec');
 const { configureSources } = require('../../configure/configure_sources');
 const { getNowMillis } = require('../../util/time');
@@ -140,7 +140,8 @@ async function compileDuktapeCommand({ repoDirectory, prepDirectory, tempDirecto
         compileEndTime = getNowMillis();
         logInfo(e);
     }
-    return { dukCommandFilename: outputFilename };
+
+    return { dukCommandFilename: outputFilename, prepDirectory };
 }
 
 async function compileDuktapeLibrary({ repoDirectory, prepDirectory, tempDirectory, outputFilename }) {
@@ -170,19 +171,21 @@ async function compileDuktapeLibrary({ repoDirectory, prepDirectory, tempDirecto
         compileEndTime = getNowMillis();
         logInfo(e);
     }
-    return { dukLibraryFilename: outputFilename };
+
+    return { dukLibraryFilename: outputFilename, prepDirectory };
 }
 
-async function compileCTestcase({ preparedFilename, dukLibraryFilename, tempDirectory, duktapeDirectory }) {
+async function compileCTestcase({ preparedFilename, dukLibraryFilename, prepDirectory, tempDirectory }) {
     assert(preparedFilename);
     assert(tempDirectory);
-    assert(duktapeDirectory);
 
     var exeFilename = pathJoin(tempDirectory, 'testbinary');
     var cmd;
     var stdout, stderr;
     var startTime;
     var endTime;
+    var exeFilename = pathJoin(tempDirectory, 'testbinary');
+    var cmd;
 
     cmd = [];
     cmd.push('gcc');
@@ -191,11 +194,11 @@ async function compileCTestcase({ preparedFilename, dukLibraryFilename, tempDire
     cmd.push('-std=c99');
     cmd.push('-Wall');
     cmd.push('-Wextra');
-    cmd.push('-I' + duktapeDirectory);
+    cmd.push('-I' + prepDirectory);
     if (dukLibraryFilename) {
         cmd.push('-L' + dirname(dukLibraryFilename));
     } else {
-        cmd.push(pathJoin(duktapeDirectory, 'duktape.c'));
+        cmd.push(pathJoin(prepDirectory, 'duktape.c'));
     }
     cmd.push(preparedFilename);
     if (dukLibraryFilename) {
@@ -222,6 +225,7 @@ async function compileDukCommandCached({ repoDirectory, tempDirectory, testcaseM
     var cacheKey = computeCacheKey({ forcedOptions });
 
     var dukCommandPromise = testRunState.dukCommandCache[cacheKey];
+
     if (dukCommandPromise) {
         logDebug('use cached duk command, key:', cacheKey, '->', await dukCommandPromise);
         return await dukCommandPromise;

@@ -5,36 +5,36 @@ const { createBareObject } = require('../util/bare');
 const { isWholeFinite } = require('../util/double');
 
 const mathOneargMagic = createBareObject({
-    fabs: 0,    // BI_MATH_FABS_IDX
-    acos: 1,    // BI_MATH_ACOS_IDX
-    asin: 2,    // BI_MATH_ASIN_IDX
-    atan: 3,    // BI_MATH_ATAN_IDX
-    ceil: 4,    // BI_MATH_CEIL_IDX
-    cos: 5,     // BI_MATH_COS_IDX
-    exp: 6,     // BI_MATH_EXP_IDX
-    floor: 7,   // BI_MATH_FLOOR_IDX
-    log: 8,     // BI_MATH_LOG_IDX
-    round: 9,   // BI_MATH_ROUND_IDX
-    sin: 10,    // BI_MATH_SIN_IDX
-    sqrt: 11,   // BI_MATH_SQRT_IDX
-    tan: 12,    // BI_MATH_TAN_IDX
-    cbrt: 13,   // BI_MATH_CBRT_IDX
-    log2: 14,   // BI_MATH_LOG2_IDX
-    log10: 15,  // BI_MATH_LOG10_IDX
-    trunc: 16   // BI_MATH_TRUNC_IDX
+    fabs: 0, // BI_MATH_FABS_IDX
+    acos: 1, // BI_MATH_ACOS_IDX
+    asin: 2, // BI_MATH_ASIN_IDX
+    atan: 3, // BI_MATH_ATAN_IDX
+    ceil: 4, // BI_MATH_CEIL_IDX
+    cos: 5, // BI_MATH_COS_IDX
+    exp: 6, // BI_MATH_EXP_IDX
+    floor: 7, // BI_MATH_FLOOR_IDX
+    log: 8, // BI_MATH_LOG_IDX
+    round: 9, // BI_MATH_ROUND_IDX
+    sin: 10, // BI_MATH_SIN_IDX
+    sqrt: 11, // BI_MATH_SQRT_IDX
+    tan: 12, // BI_MATH_TAN_IDX
+    cbrt: 13, // BI_MATH_CBRT_IDX
+    log2: 14, // BI_MATH_LOG2_IDX
+    log10: 15, // BI_MATH_LOG10_IDX
+    trunc: 16 // BI_MATH_TRUNC_IDX
 });
 
 const mathTwoargMagic = createBareObject({
-    atan2: 0,  // BI_MATH_ATAN2_IDX
-    pow: 1     // BI_MATH_POW_IDX
+    atan2: 0, // BI_MATH_ATAN2_IDX
+    pow: 1 // BI_MATH_POW_IDX
 });
 
 const arrayIterMagic = createBareObject({
-    every: 0,    // BI_ARRAY_ITER_EVERY
-    some: 1,     // BI_ARRAY_ITER_SOME
-    forEach: 2,  // BI_ARRAY_ITER_FOREACH
-    map: 3,      // BI_ARRAY_ITER_MAP
-    filter: 4    // BI_ARRAY_ITER_FILTER
+    every: 0, // BI_ARRAY_ITER_EVERY
+    some: 1, // BI_ARRAY_ITER_SOME
+    forEach: 2, // BI_ARRAY_ITER_FOREACH
+    map: 3, // BI_ARRAY_ITER_MAP
+    filter: 4 // BI_ARRAY_ITER_FILTER
 });
 
 // Magic value for typedarray/node.js buffer read field operations.

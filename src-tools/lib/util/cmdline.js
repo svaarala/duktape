@@ -26,7 +26,12 @@ function createCommandHelp(spec, command, commandSpec) {
     var res = [];
     res.push('Command: ' + command);
     res.push('');
-    let columns = [ [], [], [], [] ];
+    let columns = [
+        [],
+        [],
+        [],
+        []
+    ];
     for (let k of Object.getOwnPropertyNames(commandSpec.options).sort()) {
         let v = commandSpec.options[k];
         columns[0].push('--' + k + (v.short ? '/-' + v.short : ''));
@@ -48,7 +53,10 @@ function createGenericHelp(spec) {
     var res = [];
     res.push('Commands:');
     res.push('');
-    let columns = [ [], [] ];
+    let columns = [
+        [],
+        []
+    ];
     for (let k of Object.getOwnPropertyNames(spec.commands).sort()) {
         let v = spec.commands[k];
         columns[0].push(k);
@@ -216,7 +224,7 @@ function parseCommandLine(argv, argSpec) {
         let t = argv[i];
         if (t === '--help' || t === '-h') {
             let help = (command ? createCommandHelp(argSpec, command, commandSpec) :
-                                  createGenericHelp(argSpec));
+                createGenericHelp(argSpec));
             return { help };
         }
         if (t.startsWith('--')) {

@@ -28,7 +28,7 @@ function parseCodepointSequence(v) {
 // and SpecialCasing.txt.  See https://www.unicode.org/Public/12.1.0/ucd/.
 function parseUnicodeText(unicodeData, specialCasing) {
     var haveFirst = null;
-    var cpMap = [];  // Gappy array result, codepoint => entry.
+    var cpMap = []; // Gappy array result, codepoint => entry.
     var startTime = Date.now();
     var endTime;
 
@@ -142,7 +142,7 @@ function parseUnicodeText(unicodeData, specialCasing) {
         if (!ent) {
             throw new TypeError('unexpected special casing for non-existent codepoint');
         }
-        if (parts[4] !== '') {  // special conditions, drop
+        if (parts[4] !== '') { // special conditions, drop
             return;
         }
         if (lower) {

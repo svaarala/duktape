@@ -5,17 +5,17 @@ const { createBareObject } = require('../../util/bare');
 // Property attributes lookup, map metadata attribute string into a
 // C initializer.  Repeated a lot of times so use a short define.
 const propAttrLookup = createBareObject({
-    '':    'DUK__PDF_NONE',
-    'w':   'DUK__PDF_W',
-    'e':   'DUK__PDF_E',
-    'c':   'DUK__PDF_C',
-    'we':  'DUK__PDF_WE',
-    'wc':  'DUK__PDF_WC',
-    'ec':  'DUK__PDF_EC',
+    '': 'DUK__PDF_NONE',
+    'w': 'DUK__PDF_W',
+    'e': 'DUK__PDF_E',
+    'c': 'DUK__PDF_C',
+    'we': 'DUK__PDF_WE',
+    'wc': 'DUK__PDF_WC',
+    'ec': 'DUK__PDF_EC',
     'wec': 'DUK__PDF_WEC',
-    'a':   'DUK__PDF_A',
-    'ea':  'DUK__PDF_EA',
-    'ca':  'DUK__PDF_CA',
+    'a': 'DUK__PDF_A',
+    'ea': 'DUK__PDF_EA',
+    'ca': 'DUK__PDF_CA',
     'eca': 'DUK__PDF_ECA'
 });
 exports.propAttrLookup = propAttrLookup;

@@ -4,7 +4,7 @@
 const classToHtypeNum = {
     'Array': 8,
     'Object': 10,
-    'Function': 13,  // natfunc, assumes built-ins are native for now.
+    'Function': 13, // natfunc, assumes built-ins are native for now.
     'Boolean': 16,
     'Date': 17,
     'Error': 18,

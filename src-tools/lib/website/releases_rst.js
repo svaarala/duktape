@@ -5,6 +5,7 @@ const { readFileYaml } = require('../util/fs');
 function releasesYamlToRst(fn) {
     var doc = readFileYaml(fn);
     var res = [];
+    var convertGhLinks = true;
 
     res.push('================');
     res.push('Duktape releases');
@@ -16,10 +17,37 @@ function releasesYamlToRst(fn) {
         return x;
     }
 
+    function convertGithubIssueLinks(x) {
+        return x.replace(/GH-(\d+)/g, function (c, issueNumber) {
+            var ghLink = 'https://github.com/svaarala/duktape/issues/' + issueNumber; // Works for both pulls and issues.
+            return '`' + c + ' <' + ghLink + '>`_';
+        });
+    }
+
+    function emitWrappedRstBullet(x) {
+        x = x.trim().replace(/_/g, '\\_');
+        if (convertGhLinks) {
+            x = convertGithubIssueLinks(x);
+        }
+        var parts = x.split(/ (?!<)/g); // Avoid splitting inline links.
+        var lines = ['*'];
+        var wrapLimit = 80;
+        while (parts.length > 0) {
+            let currLine = lines[lines.length - 1];
+            if (currLine.length > 0 && currLine.length + parts[0].length >= wrapLimit) {
+                lines.push(' ');
+            }
+            lines[lines.length - 1] += ' ' + parts[0];
+            void parts.shift();
+        }
+        lines = lines.map((line) => line.replace(/\s+$/, ''));
+        lines.forEach((line) => { res.push(line) });
+    }
+
     function emitChange(change) {
         let changeDesc = typeof change === 'string' ? change : change.description;
         res.push('');
-        res.push('* ' + rstEscape(changeDesc));
+        emitWrappedRstBullet(rstEscape(changeDesc));
     }
 
     function emitReleases(released) {

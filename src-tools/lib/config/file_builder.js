@@ -10,19 +10,19 @@ const { Snippet } = require('./snippet');
  * bogus but ignored.
  */
 function FileBuilder(baseDirectory, opts) {
-    this.vals = [];  // snippets
+    this.vals = []; // snippets
     this.baseDirectory = baseDirectory;
     this.useCppWarning = !!opts.useCppWarning;
 }
 FileBuilder.prototype.line = function line(x) {
-    this.vals.push(new Snippet([ x ]));
+    this.vals.push(new Snippet([x]));
 };
 FileBuilder.prototype.lines = function lines(x) {
-    x = stripLastNewline(x);  // Strip last newline to avoid empty line
+    x = stripLastNewline(x); // Strip last newline to avoid empty line
     this.vals.push(new Snippet(x.split('\n')));
 };
 FileBuilder.prototype.empty = function empty() {
-    this.vals.push(new Snippet([ '' ]));
+    this.vals.push(new Snippet(['']));
 };
 FileBuilder.prototype.rstHeading = function rstHeading(title, ch, doubled) {
     var tmp = [];
@@ -41,16 +41,16 @@ FileBuilder.prototype.snippetAbsolute = function snippetAbsolute(fn) {
 };
 FileBuilder.prototype.cppError = function cppError(msg) {
     // Assumes no newlines etc.
-    this.vals.push(new Snippet([ '#error ' + msg ]));
+    this.vals.push(new Snippet(['#error ' + msg]));
 };
 FileBuilder.prototype.cppWarning = function cppWarning(msg) {
     // Assumes no newlines etc.
     if (this.useCppWarning) {
         // C preprocessor '#warning' is often supported.
         // XXX: Support compiler specific warning mechanisms.
-        this.vals.push(new Snippet([ '#warning ' + msg ]));
+        this.vals.push(new Snippet(['#warning ' + msg]));
     } else {
-        this.vals.push(new Snippet([ '/* WARNING: ' + msg + ' */' ]));
+        this.vals.push(new Snippet(['/* WARNING: ' + msg + ' */']));
     }
 };
 FileBuilder.prototype.cppWarningOrError = function cppWarningOrError(msg, isError) {
@@ -61,7 +61,7 @@ FileBuilder.prototype.cppWarningOrError = function cppWarningOrError(msg, isErro
     }
 };
 FileBuilder.prototype.chdrCommentLine = function chdrCommentLine(msg) {
-    this.vals.push(new Snippet([ '/* ' + msg + ' */' ]));
+    this.vals.push(new Snippet(['/* ' + msg + ' */']));
 };
 FileBuilder.prototype.chdrBlockHeading = function chdrBlockHeading(msg) {
     var tmp = [];

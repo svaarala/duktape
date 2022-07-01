@@ -17,7 +17,7 @@ const { emitPropAttrDefines } = require('./initdata/property_attributes');
 
 // Base value for compressed ROM pointers, used range is [ROMPTR_FIRST,0xffff].
 // Must match DUK_USE_ROM_PTRCOMP_FIRST (generated header checks).
-const ROMPTR_FIRST = 0xf800;  // 2048 pointers; now around ~1000 used
+const ROMPTR_FIRST = 0xf800; // 2048 pointers; now around ~1000 used
 exports.ROMPTR_FIRST = ROMPTR_FIRST;
 
 // ROM string table size.
@@ -25,7 +25,7 @@ const ROMSTR_LOOKUP_SIZE = 256;
 exports.ROMSTR_LOOKUP_SIZE = ROMSTR_LOOKUP_SIZE;
 
 function getStringRomHash(v) {
-    assert(ROMSTR_LOOKUP_SIZE === 256);  // for now
+    assert(ROMSTR_LOOKUP_SIZE === 256); // for now
     if (v.length > 0) {
         return (v.charCodeAt(0) + (v.length << 4)) & 0xff;
     } else {
@@ -34,7 +34,7 @@ function getStringRomHash(v) {
 }
 
 function emitNativeFunctionDeclarationsHeader(genc, meta) {
-    var emitted = createBareObject({});  // suppress duplicates
+    var emitted = createBareObject({}); // suppress duplicates
     var funcList = [];
 
     function emitFunc(fname) {
@@ -59,7 +59,7 @@ function emitNativeFunctionDeclarationsHeader(genc, meta) {
         // Visibility depends on whether the function is Duktape internal or user.
         // Use a simple prefix for now.
         genc.emitLine((fname.startsWith('duk_') ? 'DUK_INTERNAL_DECL' : 'extern') +
-                      ' duk_ret_t ' + fname + '(duk_context *ctx);');
+            ' duk_ret_t ' + fname + '(duk_context *ctx);');
     }
 }
 exports.emitNativeFunctionDeclarationsHeader = emitNativeFunctionDeclarationsHeader;
@@ -70,7 +70,7 @@ exports.emitNativeFunctionDeclarationsHeader = emitNativeFunctionDeclarationsHea
 function emitStringsSource(genc, meta) {
     // Write built-in strings as code section initializers.
 
-    var strs = meta._strings_plain;  // all strings, plain versions
+    var strs = meta._strings_plain; // all strings, plain versions
     var reservedWords = meta._is_plain_reserved_word;
     var strictReservedWords = meta._is_plain_strict_reserved_word;
     var strsNeedingStridx = meta.strings_stridx;
@@ -81,11 +81,11 @@ function emitStringsSource(genc, meta) {
     emitStringInitMacro(genc);
 
     // Create ROM string table, using plain strings here.
-    assert(ROMSTR_LOOKUP_SIZE === 256);  // currently hardcoded
+    assert(ROMSTR_LOOKUP_SIZE === 256); // currently hardcoded
     var { romstrHash, romstrNext, romstrChainLens } = createRomStringTable(strs, ROMSTR_LOOKUP_SIZE, getStringRomHash);
     console.debug(romstrChainLens);
 
-    var biStrMap = createBareObject({});  // string -> initializer variable name
+    var biStrMap = createBareObject({}); // string -> initializer variable name
     strs.forEach((v, idx) => {
         biStrMap[v] = 'duk_str_' + idx;
     });
@@ -123,10 +123,11 @@ function emitStringsSource(genc, meta) {
     //
     // cdecl > explain const int * const foo;
     // declare foo as const pointer to const int
+
     genc.emitLine('');
     genc.emitLine('DUK_INTERNAL const duk_hstring * const duk_rom_strings_stridx[' + strsNeedingStridx.length + '] = {');
     for (let v of strsNeedingStridx) {
-        genc.emitLine('\t(const duk_hstring *) &' + biStrMap[v.str] + ',');  // strs_needing_stridx is a list of objects, not plain strings
+        genc.emitLine('\t(const duk_hstring *) &' + biStrMap[v.str] + ','); // strs_needing_stridx is a list of objects, not plain strings
     }
     genc.emitLine('};');
 
@@ -136,7 +137,7 @@ exports.emitStringsSource = emitStringsSource;
 
 // Emit ROM strings header.
 function emitStringsHeader(genc, meta) {
-    genc.emitLine('#if !defined(DUK_SINGLE_FILE)');  // C++ static const workaround
+    genc.emitLine('#if !defined(DUK_SINGLE_FILE)'); // C++ static const workaround
     genc.emitLine('DUK_INTERNAL_DECL const duk_hstring * const duk_rom_strings_lookup[' + ROMSTR_LOOKUP_SIZE + '];');
     genc.emitLine('DUK_INTERNAL_DECL const duk_hstring * const duk_rom_strings_stridx[' + meta.strings_stridx.length + '];');
     genc.emitLine('#endif');
@@ -191,7 +192,7 @@ function emitObjectDefinitions(genc, meta, objs, biObjMap, compressRomPtr) {
         }
         if (propDefault(o, 'callable', false)) {
             flags.push('DUK_HOBJECT_FLAG_CALLABLE');
-         }
+        }
         if (propDefault(o, 'constructable', false)) {
             flags.push('DUK_HOBJECT_FLAG_CONSTRUCTABLE');
         }
@@ -203,7 +204,7 @@ function emitObjectDefinitions(genc, meta, objs, biObjMap, compressRomPtr) {
         }
         flags.push('DUK_HEAPHDR_HTYPE_AS_FLAGS(' + classToHtypeNumber(o.class) + ')');
 
-        var refcount = 1;  // refcount is faked to be always 1
+        var refcount = 1; // refcount is faked to be always 1
 
         var props = (numProps > 0 ? '&duk_prop_' + idx : 'NULL');
         var propsEnc16 = compressRomPtr(props);
@@ -213,8 +214,8 @@ function emitObjectDefinitions(genc, meta, objs, biObjMap, compressRomPtr) {
 
         var eSize = numProps;
         var eNext = eSize;
-        var aSize = 0;  // never an array part for now
-        var hSize = 0;  // never a hash for now; not appropriate for perf relevant builds
+        var aSize = 0; // never an array part for now
+        var hSize = 0; // never a hash for now; not appropriate for perf relevant builds
 
         var nativeFunc;
         var nargs;
@@ -265,8 +266,7 @@ function emitObjectDefinitions(genc, meta, objs, biObjMap, compressRomPtr) {
                 objenvTarget, objenvHasThis
             ]).join(',') + ');');
         } else {
-            parts.push('DUK__ROMOBJ_INIT(' + sharedFields.concat([
-            ]).join(',') + ');');
+            parts.push('DUK__ROMOBJ_INIT(' + sharedFields.concat([]).join(',') + ');');
         }
 
         genc.emitLine(parts.join(''));
@@ -317,13 +317,13 @@ function emitCompressedPointersTable(genc, meta, romptrCompressList) {
     var romptrLowest = ROMPTR_FIRST;
     var romptrHighest = ROMPTR_FIRST + romptrCompressList.length - 1;
     var spaceLeft = 0xffff - romptrHighest;
-    genc.emitLine('\tNULL');  // for convenience
+    genc.emitLine('\tNULL'); // for convenience
     genc.emitLine('};');
     genc.emitLine('#endif');
 
     console.debug('' + romptrCompressList.length + ' compressed rom pointers, used range is ' +
-                  '[0x' + romptrLowest.toString(16) + ',0x' + romptrHighest.toString(16) + '], ' +
-                  spaceLeft + ' space left');
+        '[0x' + romptrLowest.toString(16) + ',0x' + romptrHighest.toString(16) + '], ' +
+        spaceLeft + ' space left');
 }
 
 // Emit ROM objects source: the object/function headers themselves, property
@@ -334,7 +334,7 @@ function emitObjectsSource(genc, meta, biStrMap) {
 
     // Need string and object maps (id -> C symbol name) early.
 
-    var biObjMap = createBareObject({});  // object id -> initializer variable name
+    var biObjMap = createBareObject({}); // object id -> initializer variable name
     objs.forEach((o, idx) => {
         biObjMap[o.id] = 'duk_obj_' + idx;
     });
@@ -344,14 +344,17 @@ function emitObjectsSource(genc, meta, biStrMap) {
     // referenced (all objects, strings, and property tables at least).
 
     var romptrCompressList = [];
+    var romptrCompressIndex = createBareObject({}); // string -> index
     function compressRomPtr(x) {
         var idx, res;
         assert(typeof x === 'string');
         if (x === 'NULL') {
+            // NULL <=> 0 assumed for pointer compression.
             return 0;
         }
-        idx = romptrCompressList.indexOf(x);
-        if (idx < 0) {
+        idx = romptrCompressIndex[x]; // romptrCompressList.indexOf(x);
+        if (idx === void 0) {
+            romptrCompressIndex[x] = romptrCompressList.length;
             romptrCompressList.push(x);
             res = ROMPTR_FIRST + romptrCompressList.length - 1;
         } else {
@@ -422,6 +425,7 @@ function emitObjectsHeader(genc, meta) {
         if (propDefault(o, 'bidx_used', false)) {
             // For this we want the toplevel objects only.
             genc.emitDefine(objIdToDefname(o.id), bidx);
+            assert(bidx == o.bidx);
             bidx++;
         }
     }
@@ -431,7 +435,7 @@ function emitObjectsHeader(genc, meta) {
     genc.emitDefine('DUK_NUM_BIDX_BUILTINS', countBidx);
     genc.emitDefine('DUK_NUM_ALL_BUILTINS', objs.length);
     genc.emitLine('');
-    genc.emitLine('#if !defined(DUK_SINGLE_FILE)');  // C++ static const workaround
+    genc.emitLine('#if !defined(DUK_SINGLE_FILE)'); // C++ static const workaround
     genc.emitLine('DUK_INTERNAL_DECL const duk_hobject * const duk_rom_builtins_bidx[' + countBidx + '];');
     genc.emitLine('#endif');
 }
@@ -444,7 +448,7 @@ function emitStridxDefinesHeader(gcHdr, meta) {
         let defName;
 
         gcHdr.emitDefine(s.define, idx, jsonStringifyAscii(s.str));
-        defName = s.define.replace('_STRIDX','_HEAP_STRING');
+        defName = s.define.replace('_STRIDX', '_HEAP_STRING');
         gcHdr.emitDefine(defName + '(heap)', 'DUK_HEAP_GET_STRING((heap),' + s.define + ')');
         defName = s.define.replace('_STRIDX', '_HTHREAD_STRING');
         gcHdr.emitDefine(defName + '(thr)', 'DUK_HTHREAD_GET_STRING((thr),' + s.define + ')');

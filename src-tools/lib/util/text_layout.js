@@ -16,7 +16,10 @@ function layoutTextColumns(columns) {
 
     columns.forEach((column) => {
         let maxlen = 0;
-        column.forEach((x) => { assert(typeof x === 'string'); maxlen = Math.max(maxlen, x.length); });
+        column.forEach((x) => {
+            assert(typeof x === 'string');
+            maxlen = Math.max(maxlen, x.length);
+        });
         maxlens.push(maxlen);
         maxlines = Math.max(maxlines, column.length);
     });
@@ -25,7 +28,7 @@ function layoutTextColumns(columns) {
     for (let i = 0; i < maxlines; i++) {
         let parts = [];
         for (let j = 0; j < columns.length; j++) {
-            let needPad = j < columns.length - 1;  // don't pad last column
+            let needPad = j < columns.length - 1; // don't pad last column
             let text = columns[j][i] || '';
             parts.push(needPad ? rightPad(text, maxlens[j]) : text);
         }

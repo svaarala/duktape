@@ -11,6 +11,7 @@ const {
     walkObjectsAndProperties,
     propDefault
 } = require('./util');
+const { logDebug } = require('../../util/logging');
 const { createBareObject } = require('../../util/bare');
 
 // Mark objects with 'bidx' forcibly reachable.
@@ -127,8 +128,8 @@ function removeUnreachableObjectsAndStrings(meta) {
     });
 
     if (numDeleted > 0 || numDeletedStrings > 0) {
-        console.log('deleted ' + numDeleted + ' unreachable objects, ' +
-                    numDeletedStrings + ' unreachable strings');
+        logDebug('deleted ' + numDeleted + ' unreachable objects, ' +
+            numDeletedStrings + ' unreachable strings');
     }
 }
 exports.removeUnreachableObjectsAndStrings = removeUnreachableObjectsAndStrings;

@@ -20,13 +20,13 @@ function codepointSequenceToRanges(seq) {
         } else if (end + 1 === cp) {
             end = cp;
         } else {
-            res.push([ start, end ]);
+            res.push([start, end]);
             start = cp;
             end = cp;
         }
     }
     if (start !== void 0) {
-        res.push([ start, end ]);
+        res.push([start, end]);
     }
     return res;
 }

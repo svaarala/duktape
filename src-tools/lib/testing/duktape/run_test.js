@@ -19,7 +19,7 @@ const { analyzeTestcaseResult } = require('./analyze_result');
 async function runTestcase({ repoDirectory, testcaseFilename, knownIssues, ignoreExpect, ignoreSkip, polyfillFilenames, uglifyJsExePath, uglifyJs2ExePath, closureJarPath, dukCommandFilename, dukLibraryFilename, testRunState }) {
     var testcaseFilename = assert(testcaseFilename);
     var includeDirectory = pathJoin(repoDirectory, 'tests', 'ecmascript');
-    var duktapeDirectory = pathJoin(repoDirectory, 'prep', 'nondebug');
+    var prepDirectory;
     var testResult;
     var cmd;
 
@@ -75,14 +75,14 @@ async function runTestcase({ repoDirectory, testcaseFilename, knownIssues, ignor
     // or compiled multiple times if test cases have forced Duktape options.  Compiled
     // binaries and libraries are cached.
     if (!dukCommandFilename && testcaseType === 'ecmascript') {
-        ({ dukCommandFilename } = await compileDukCommandCached({ repoDirectory, tempDirectory, testcaseMetadata, testRunState }));
+        ({ dukCommandFilename, prepDirectory } = await compileDukCommandCached({ repoDirectory, tempDirectory, testcaseMetadata, testRunState }));
     }
     if (!dukLibraryFilename && testcaseType === 'c') {
-        ({ dukLibraryFilename } = await compileDukLibraryCached({ repoDirectory, tempDirectory, testcaseMetadata, testRunState }));
+        ({ dukLibraryFilename, prepDirectory } = await compileDukLibraryCached({ repoDirectory, tempDirectory, testcaseMetadata, testRunState }));
     }
 
     // Execute testcase.
-    var { execResult, execDurations } = await executeTestcase({ testcaseType, dukCommandFilename, dukLibraryFilename, preparedFilename, duktapeDirectory, tempDirectory });
+    var { execResult, execDurations } = await executeTestcase({ testcaseType, dukCommandFilename, dukLibraryFilename, prepDirectory, preparedFilename, tempDirectory });
 
     // Test result analysis.
     var { analysisResult } = analyzeTestcaseResult({ execResult, testcaseMetadata, testcaseExpect, ignoreExpect, knownIssues });
@@ -105,10 +105,8 @@ async function runParallel({ jobs, numThreads, progressCallback, logFileCallback
     var duration;
     var prevProgressTime = 0;
     var prevProgressPercentage = -100;
-    //var progressMinInterval = 10e3;
-    var progressMinInterval = 1e3;
-    //var progressMinPercentage = 5;
-    var progressMinPercentage = 1;
+    var progressMinInterval = 10e3;
+    var progressMinPercentage = 5;
 
     function getJob() {
         if (jobIndex < jobs.length) {
@@ -216,7 +214,7 @@ async function runMultipleTests({ repoDirectory, knownIssuesDirectory, filenames
     testRunState.dukLibraryCache = createBareObject({});
 
     let knownIssues = parseKnownIssues({ knownIssuesDirectory });
-    logInfo(knownIssues.length, 'known issues');
+    logDebug(knownIssues.length, 'known issues');
 
     var filenames = filenames.filter((fn) => fn.endsWith('.js') || fn.endsWith('.c'));
     if (typeof testHashMin === 'number' && typeof testHashMax === 'number') {

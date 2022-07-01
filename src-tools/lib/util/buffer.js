@@ -13,3 +13,14 @@ function bufferToUint8Array(buf) {
     return new Uint8Array(bufferToArrayBuffer(buf));
 }
 exports.bufferToUint8Array = bufferToUint8Array;
+
+function ensureUint8ArrayOrNullish(x) {
+    if (x instanceof Buffer) {
+        return bufferToUint8Array(x);
+    } else if (x instanceof Uint8Array) {
+        return x;
+    }
+    assert(x === void 0 || x === null);
+    return x;
+}
+exports.ensureUint8ArrayOrNullish = ensureUint8ArrayOrNullish;

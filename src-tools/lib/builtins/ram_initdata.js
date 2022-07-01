@@ -73,7 +73,7 @@ function getRamobjNativeFuncMaps(meta) {
     var nativeFuncs = [];
     var natfuncNameToNatidx = {};
 
-    nativeFuncs.push(null);  // natidx 0 is reserved for NULL
+    nativeFuncs.push(null); // natidx 0 is reserved for NULL
 
     walkObjectsAndProperties(meta, (o) => {
         if (typeof o.native !== 'undefined') {
@@ -86,22 +86,21 @@ function getRamobjNativeFuncMaps(meta) {
             switch (val.type) {
             case 'accessor':
                 if (typeof val.getter_id !== 'undefined') {
-                        let getter = findObjectById(meta, val.getter_id);
-                        nativeFound[getter.native] = true;
+                    let getter = findObjectById(meta, val.getter_id);
+                    nativeFound[getter.native] = true;
                 }
                 if (typeof val.setter_id !== 'undefined') {
-                        let setter = findObjectById(meta, val.setter_id);
-                        nativeFound[setter.native] = true;
+                    let setter = findObjectById(meta, val.setter_id);
+                    nativeFound[setter.native] = true;
                 }
                 break;
-            case 'object':
-                {
-                    let target = findObjectById(meta, val.id);
-                    if (typeof target.native !== 'undefined') {
-                        nativeFound[target.native] = true;
-                    }
+            case 'object': {
+                let target = findObjectById(meta, val.id);
+                if (typeof target.native !== 'undefined') {
+                    nativeFound[target.native] = true;
                 }
-                break;
+            }
+            break;
             case 'lightfunc':
                 // No lightfunc support for RAM initializer now.
                 break;
@@ -112,7 +111,7 @@ function getRamobjNativeFuncMaps(meta) {
     Object.keys(nativeFound).sort().forEach((k, idx) => {
         void idx;
         natfuncNameToNatidx[k] = nativeFuncs.length;
-        nativeFuncs.push(k);  // native func names
+        nativeFuncs.push(k); // native func names
     });
 
     return { nativeFuncs, natfuncNameToNatidx };
@@ -146,9 +145,9 @@ function generateRamStringInitDataBitpacked(meta) {
     let res = be.getBytes();
 
     console.debug(meta.strings_stridx.length + ' ram strings, ' + stats.numInputBytes + ' input data bytes, ' +
-                  res.length + ' bytes of string init data, ' + maxLen + ' maximum string length, ' +
-                  (res.length * 8 / stats.numInputBytes) + ' bits/char, ' +
-                  'encoding stats: ' + JSON.stringify(stats));
+        res.length + ' bytes of string init data, ' + maxLen + ' maximum string length, ' +
+        (res.length * 8 / stats.numInputBytes) + ' bits/char, ' +
+        'encoding stats: ' + JSON.stringify(stats));
 
     return { data: res, maxLen: maxLen };
 }
@@ -178,6 +177,7 @@ function generateRamObjectInitDataForObject(meta, be, obj, stringToStridx, natfu
         be.varuint(stridx);
     }
     void emitStridx;
+
     function emitStridxOrString(strval) {
         var stridx = stringToStridx[strval];
         if (typeof stridx === 'number') {
@@ -187,6 +187,7 @@ function generateRamObjectInitDataForObject(meta, be, obj, stringToStridx, natfu
             bitpack5BitBstr(be, strval, null);
         }
     }
+
     function emitNatidx(nativeName) {
         var natidx = natfuncNameToNatidx[nativeName];
         be.varuint(natidx);
@@ -195,7 +196,7 @@ function generateRamObjectInitDataForObject(meta, be, obj, stringToStridx, natfu
     var htype = classToHtypeNumber(obj.class);
     be.varuint(htype);
 
-    var props = shallowCloneArray(obj.properties);  // Clone so we can steal.
+    var props = shallowCloneArray(obj.properties); // Clone so we can steal.
 
     var propProto = stealProp(props, 'prototype', { allowAccessor: false });
     void propProto;
@@ -204,14 +205,14 @@ function generateRamObjectInitDataForObject(meta, be, obj, stringToStridx, natfu
     var propName = stealProp(props, 'name', { allowAccessor: false });
     var propLength = stealProp(props, 'length', { allowAccessor: false });
 
-    var length = -1;  // default value, signifies varargs
+    var length = -1; // default value, signifies varargs
     if (propLength) {
         assert(typeof propLength.value === 'number');
         length = propLength.value;
-        be.bits(1, 1);  // flag: have length
+        be.bits(1, 1); // flag: have length
         be.bits(length, LENGTH_PROP_BITS);
     } else {
-        be.bits(0, 1);  // flag: no length
+        be.bits(0, 1); // flag: no length
     }
 
     // The attributes for 'length' are standard ("none") except for
@@ -224,7 +225,7 @@ function generateRamObjectInitDataForObject(meta, be, obj, stringToStridx, natfu
     }
     if (lenAttrs !== LENGTH_PROPERTY_ATTRIBUTES) {
         // Attributes are assumed to be the same, except for Array.prototype.
-        if (obj.class !== 'Array') {  // Array.prototype is the only one with this class
+        if (obj.class !== 'Array') { // Array.prototype is the only one with this class
             throw new TypeError('non-default length attributes for unexpected object');
         }
     }
@@ -239,14 +240,14 @@ function generateRamObjectInitDataForObject(meta, be, obj, stringToStridx, natfu
 
         // Nargs.
         if (propDefault(obj, 'varargs', false)) {
-            be.bits(1, 1);  // flag: non-default nargs
-            be.bits(NARGS_VARARGS_MARKER, NARGS_BITS);  // varargs
+            be.bits(1, 1); // flag: non-default nargs
+            be.bits(NARGS_VARARGS_MARKER, NARGS_BITS); // varargs
         } else if (typeof obj.nargs === 'number' && obj.nargs !== length) {
-            be.bits(1, 1);  // flag: non-default nargs
+            be.bits(1, 1); // flag: non-default nargs
             be.bits(obj.nargs, NARGS_BITS);
         } else {
             assert(typeof length === 'number');
-            be.bits(0, 1);  // flag: default nargs is OK
+            be.bits(0, 1); // flag: default nargs is OK
         }
 
         // Function .name.
@@ -259,9 +260,9 @@ function generateRamObjectInitDataForObject(meta, be, obj, stringToStridx, natfu
         // [[Construct]]).  Flag that.
         assert(obj.callable === true);
         if (propDefault(obj, 'constructable', false)) {
-            be.bits(1, 1);  // flag: constructable
+            be.bits(1, 1); // flag: constructable
         } else {
-            be.bits(0, 1);  // flag: not constructable
+            be.bits(0, 1); // flag: not constructable
         }
         // DUK_HOBJECT_FLAG_SPECIAL_CALL is handled at runtime without init data.
 
@@ -282,6 +283,7 @@ function generateRamObjectInitDataForProps(meta, be, obj, stringToStridx, natfun
     function emitBidx(bi_id) {
         be.varuint(objIdToBidx[bi_id]);
     }
+
     function emitBidxOrNone(bi_id) {
         if (typeof bi_id === 'string') {
             be.varuint(objIdToBidx[bi_id] + 1);
@@ -289,10 +291,12 @@ function generateRamObjectInitDataForProps(meta, be, obj, stringToStridx, natfun
             be.varuint(0);
         }
     }
+
     function emitStridx(strval) {
         var stridx = stringToStridx[strval];
         be.varuint(stridx);
     }
+
     function emitStridxOrString(strval) {
         var stridx = stringToStridx[strval];
         if (typeof stridx === 'number') {
@@ -302,17 +306,18 @@ function generateRamObjectInitDataForProps(meta, be, obj, stringToStridx, natfun
             bitpack5BitBstr(be, strval, null);
         }
     }
+
     function emitNatidx(nativeName) {
         var natidx;
         if (typeof nativeName === 'string') {
             natidx = natfuncNameToNatidx[nativeName];
         } else {
-            natidx = 0;  // 0 is NULL in the native functions table, denotes missing function.
+            natidx = 0; // 0 is NULL in the native functions table, denotes missing function.
         }
         be.varuint(natidx);
     }
 
-    var props = shallowCloneArray(obj.properties);  // Clone so we can steal.
+    var props = shallowCloneArray(obj.properties); // Clone so we can steal.
 
     // Internal prototype: not an actual property so not in property list.
     emitBidxOrNone(obj.internal_prototype);
@@ -367,8 +372,8 @@ function generateRamObjectInitDataForProps(meta, be, obj, stringToStridx, natfun
         if (typeof prop.value === 'object' && prop.value !== null && prop.value.type === 'object') {
             var target = findObjectById(meta, prop.value.id);
             assert(target);
-            if (typeof target.native === 'string' &&   // native function
-                typeof target.bidx === 'undefined') {  // but not a top level built-in
+            if (typeof target.native === 'string' && // native function
+                typeof target.bidx === 'undefined') { // but not a top level built-in
                 functions.push(prop);
                 return;
             }
@@ -395,13 +400,13 @@ function generateRamObjectInitDataForProps(meta, be, obj, stringToStridx, natfun
         // default).
         var defaultAttrs = DEFAULT_DATA_PROPERTY_ATTRIBUTES;
         var attrs = propDefault(prop, 'attributes', defaultAttrs);
-        attrs = attrs.replace('a', '');  // RAM bitstream doesn't encode the 'accessor' attribute.
+        attrs = attrs.replace('a', ''); // RAM bitstream doesn't encode the 'accessor' attribute.
         if (attrs !== defaultAttrs) {
             console.debug('non-default attributes for ' + prop.key + ': ' + attrs + ' vs ' + defaultAttrs);
-            be.bits(1, 1);  // flag: have custom attributes
+            be.bits(1, 1); // flag: have custom attributes
             be.bits(encodePropertyFlags(attrs), PROP_FLAGS_BITS);
         } else {
-            be.bits(0, 1);  // flag: no custom attributes
+            be.bits(0, 1); // flag: no custom attributes
         }
 
         // Value.
@@ -422,7 +427,7 @@ function generateRamObjectInitDataForProps(meta, be, obj, stringToStridx, natfun
             } else {
                 let tmpAb = new ArrayBuffer(8);
                 let tmpDv = new DataView(tmpAb);
-                tmpDv.setFloat64(0, val);  // big endian
+                tmpDv.setFloat64(0, val); // big endian
                 val = new Uint8Array(tmpAb);
             }
             assert(val instanceof Uint8Array);
@@ -457,7 +462,8 @@ function generateRamObjectInitDataForProps(meta, be, obj, stringToStridx, natfun
             } else if (val.type === 'accessor') {
                 be.bits(PROP_TYPE_ACCESSOR, PROP_TYPE_BITS);
                 let getterNatfun, setterNatfun;
-                let getterMagic = 0, setterMagic = 0;
+                let getterMagic = 0,
+                    setterMagic = 0;
                 if (typeof val.getter_id === 'string') {
                     let getterFn = findObjectById(meta, val.getter_id);
                     getterNatfun = getterFn.native;
@@ -512,13 +518,13 @@ function generateRamObjectInitDataForProps(meta, be, obj, stringToStridx, natfun
 
         // Nargs.
         if (propDefault(funObj, 'varargs', false)) {
-            be.bits(1, 1);  // flag: non-default nargs
+            be.bits(1, 1); // flag: non-default nargs
             be.bits(NARGS_VARARGS_MARKER, NARGS_BITS);
         } else if (typeof funObj.nargs === 'number' && funObj.nargs !== length) {
-            be.bits(1, 1);  // flag: non-default nargs
+            be.bits(1, 1); // flag: non-default nargs
             be.bits(funObj.nargs, NARGS_BITS);
         } else {
-            be.bits(0, 1);  // flag: default nargs OK
+            be.bits(0, 1); // flag: default nargs OK
         }
 
         // Magic.
@@ -532,13 +538,13 @@ function generateRamObjectInitDataForProps(meta, be, obj, stringToStridx, natfun
         // Property attributes.
         var defaultAttrs = DEFAULT_FUNC_PROPERTY_ATTRIBUTES;
         var attrs = propDefault(prop, 'attributes', defaultAttrs);
-        attrs = attrs.replace('a', '');  // RAM bitstream doesn't encode the 'accessor' attribute.
+        attrs = attrs.replace('a', ''); // RAM bitstream doesn't encode the 'accessor' attribute.
         if (attrs !== defaultAttrs) {
             console.debug('non-default attributes for ' + prop.key + ': ' + attrs + ' vs ' + defaultAttrs);
-            be.bits(1, 1);  // flag: have custom attributes
+            be.bits(1, 1); // flag: have custom attributes
             be.bits(encodePropertyFlags(attrs), PROP_FLAGS_BITS);
         } else {
-            be.bits(0, 1);  // flag: no custom attributes
+            be.bits(0, 1); // flag: no custom attributes
         }
     });
 
@@ -574,7 +580,7 @@ function generateRamObjectInitDataBitpacked(meta, nativeFuncs, natfuncNameToNati
     console.debug('RAM object init data: ' + be.getStatsString());
 
     console.debug(countBuiltins + ' ram builtins, ' + countNormalProps + ' normal properties, ' +
-                  countFunctionProps + ' function properties, ' + data.length + ' bytes of RAM object init data');
+        countFunctionProps + ' function properties, ' + data.length + ' bytes of RAM object init data');
 
     return { data };
 }
@@ -662,12 +668,12 @@ exports.emitRamStringInitData = emitRamStringInitData;
 function emitRamObjectHeader(gcHdr, meta) {
     var objList = meta.objects_bidx;
     objList.forEach((obj, idx) => {
-        var tmp = obj.id.toUpperCase().split('_').slice(1).join('_');  // bi_foo_bar -> FOO_BAR
+        var tmp = obj.id.toUpperCase().split('_').slice(1).join('_'); // bi_foo_bar -> FOO_BAR
         var defName = 'DUK_BIDX_' + tmp;
         gcHdr.emitDefine(defName, idx);
     });
     gcHdr.emitDefine('DUK_NUM_BUILTINS', objList.length);
-    gcHdr.emitDefine('DUK_NUM_BIDX_BUILTINS', objList.length);  // Objects with 'bidx'
-    gcHdr.emitDefine('DUK_NUM_ALL_BUILTINS', meta.objects_ram_toplevel.length);  // Objects with 'bidx' + temps needed in init.
+    gcHdr.emitDefine('DUK_NUM_BIDX_BUILTINS', objList.length); // Objects with 'bidx'
+    gcHdr.emitDefine('DUK_NUM_ALL_BUILTINS', meta.objects_ram_toplevel.length); // Objects with 'bidx' + temps needed in init.
 }
 exports.emitRamObjectHeader = emitRamObjectHeader;

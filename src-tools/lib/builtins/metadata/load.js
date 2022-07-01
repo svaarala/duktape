@@ -10,8 +10,7 @@
 
 'use strict';
 
-const { readFileUtf8 } = require('../../extbindings/fileio');
-const { parse: parseYaml } = require('../../util/yaml');
+const { readFileYaml } = require('../../util/fs');
 const { assert } = require('../../util/assert');
 const { createBareObject } = require('../../util/bare');
 const { resolveMagic } = require('../magic');
@@ -33,6 +32,7 @@ const { markStridxStringsReachable, markBidxObjectsReachable, removeUnreachableO
 const { jsonDeepClone } = require('../../util/clone');
 const { validateStringsAreBstrRecursive } = require('../../util/bstr');
 const { isWholeFinite } = require('../../util/double');
+const { logDebug } = require('../../util/logging');
 
 // Delete dangling references to removed/missing objects.
 function deleteDanglingReferencesToObject(meta, objId) {
@@ -49,16 +49,16 @@ function deleteDanglingReferencesToObject(meta, objId) {
                 delProp = true;
             }
             if (ptype === 'accessor' && v.getter_id === objId) {
-                console.log('delete getter, points to deleted object ' + objId);
+                logDebug('delete getter, points to deleted object ' + objId);
                 delete v.getter_id;
             }
             if (ptype === 'accessor' && v.setter_id === objId) {
-                console.log('delete setter, points to deleted object ' + objId);
+                logDebug('delete setter, points to deleted object ' + objId);
                 delete v.setter_id;
             }
             if (delProp) {
-                console.log('deleted property ' + p.key + ' of object ' + o.id +
-                            ', points to deleted object ' + objId);
+                logDebug('deleted property ' + p.key + ' of object ' + o.id +
+                    ', points to deleted object ' + objId);
             } else {
                 newProps.push(p);
             }
@@ -73,7 +73,7 @@ function mergeMetadata(meta, newMeta) {
 
     propDefault(newMeta, 'objects', []).forEach((o) => {
         assert(o.disable !== true);
-        var [ targ, targIdx ] = findObjectAndIndexById(meta, o.id);
+        var [targ, targIdx] = findObjectAndIndexById(meta, o.id);
         var action;
 
         // Action to be taken for object.  Default is 'add', which is applied
@@ -106,7 +106,7 @@ function mergeMetadata(meta, newMeta) {
         if (action === 'replace') {
             console.debug('replace object ' + o.id);
             if (!targ) {
-                console.log('object to be replaced does not exist, append new object');
+                logDebug('object to be replaced does not exist, append new object');
                 meta.objects.push(o);
             } else {
                 meta.objects[targIdx] = o;
@@ -141,7 +141,7 @@ function mergeMetadata(meta, newMeta) {
         // Handle properties.
         propDefault(o, 'properties', []).forEach((p) => {
             assert(p.disable !== true);
-            var [ prop, propIdx ] = findPropertyAndIndexByKey(targ, p.key);
+            var [prop, propIdx] = findPropertyAndIndexByKey(targ, p.key);
             if (prop) {
                 if (propDefault(p, 'delete', false)) {
                     console.debug('delete property ' + p.key + ' of ' + o.id);
@@ -153,7 +153,7 @@ function mergeMetadata(meta, newMeta) {
             } else {
                 if (propDefault(p, 'delete', false)) {
                     console.debug('deleting property ' + p.key + ' of ' + o.id +
-                                  ': does not exist, nop');
+                        ': does not exist, nop');
                 } else {
                     console.debug('add property ' + p.key + ' of ' + o.id);
                     targ.properties.push(p);
@@ -202,7 +202,7 @@ function removeInactive(meta, activeOpts) {
         if (typeof pi === 'undefined') {
             return true;
         } else if (typeof pi === 'string') {
-            pi = [ pi ];
+            pi = [pi];
         }
         if (!Array.isArray(pi)) {
             throw new TypeError('invalid present_if syntax');
@@ -249,8 +249,8 @@ function removeInactive(meta, activeOpts) {
     let totalCount = countUnneededObject + countDroppedProperty + countUnneededProperty;
     if (totalCount > 0) {
         console.debug('removed ' + countUnneededObject + ' unneeded objects, ' +
-                      countDroppedProperty + ' dropped properties (owning object dropped), ' +
-                      countUnneededProperty + ' unneeded properties');
+            countDroppedProperty + ' dropped properties (owning object dropped), ' +
+            countUnneededProperty + ' unneeded properties');
     }
 }
 
@@ -290,7 +290,7 @@ function dateToGMTStringReplacement(meta) {
         return;
     }
 
-    console.log('clone Date.prototype.toUTCString to Date.prototype.toGMTString');
+    logDebug('clone Date.prototype.toUTCString to Date.prototype.toGMTString');
     var newProp = jsonDeepClone(obj.properties[utcIndex]);
     newProp.key = 'toGMTString';
     obj.properties[gmtIndex] = newProp;
@@ -337,7 +337,7 @@ function convertLightfuncs(meta) {
         }
         let targ = findObjectById(meta, v.id);
         if (!targ) {
-            console.log('target object ' + v.id + ' not found in lightfunc conversion check, ignoring');
+            logDebug('target object ' + v.id + ' not found in lightfunc conversion check, ignoring');
             return;
         }
         let reasons = [];
@@ -380,11 +380,11 @@ function convertLightfuncs(meta) {
                 // be resolved here yet, because the bidx map is not
                 // yet ready.  If so, reject the lightfunc conversion
                 // for now.  In practice this doesn't matter.
-                lfMagic = resolveMagic(targ.magic, {});  // {} = fake bidx map
+                lfMagic = resolveMagic(targ.magic, {}); // {} = fake bidx map
             } catch (e) {
                 console.debug('failed to resolve magic for ' + p.key + ', skipping lightfunc conversion: ' + e);
                 reasons.push('magic-resolve-failed');
-                lfMagic = 0xffffffff;  // dummy out of bounds value
+                lfMagic = 0xffffffff; // dummy out of bounds value
             }
         }
 
@@ -427,7 +427,7 @@ function convertLightfuncs(meta) {
         }
     });
 
-    console.log('converted ' + numConverted + ' built-in function properties to lightfuncs, ' + numSkipped + ' skipped as non-eligible');
+    logDebug('converted ' + numConverted + ' built-in function properties to lightfuncs, ' + numSkipped + ' skipped as non-eligible');
 }
 
 // Prepare a list of built-in objects which need a runtime 'bidx'.
@@ -481,8 +481,8 @@ function addStringDefineNames(meta) {
             v = v.substring(1, v.length - 1);
         }
         // No support for other forms of Symbols above.
-        let t = v.replace(/([a-z0-9])([A-Z])/g, (match, cap1, cap2) => cap1 + '_' + cap2);  // add underscores: aB -> a_B
-        t = t.replace('.', '_');  // replace . with _, e.g. Symbol.iterator
+        let t = v.replace(/([a-z0-9])([A-Z])/g, (match, cap1, cap2) => cap1 + '_' + cap2); // add underscores: aB -> a_B
+        t = t.replace('.', '_'); // replace . with _, e.g. Symbol.iterator
         s.define = pfx + t.toUpperCase();
     });
 }
@@ -538,11 +538,12 @@ function orderBuiltinStrings(meta) {
     // Sort the strings by category number; within category keep
     // previous order.
 
-    strs.forEach((s, idx) => { s._idx = idx; });  // for ensuring stable sort
+    strs.forEach((s, idx) => { s._idx = idx; }); // for ensuring stable sort
 
     function req8Bit(s) {
-        return propDefault(s, 'class_name', false);  // currently just class names
+        return propDefault(s, 'class_name', false); // currently just class names
     }
+
     function getCat(s) {
         var req8 = req8Bit(s);
         if (propDefault(s, 'reserved_word', false)) {
@@ -564,7 +565,7 @@ function orderBuiltinStrings(meta) {
         var bCat = getCat(b);
         if (aCat > bCat) { return 1; }
         if (aCat < bCat) { return -1; }
-        if (a._idx > b._idx) { return 1; }  // These guarantee stable sort.
+        if (a._idx > b._idx) { return 1; } // These guarantee stable sort.
         if (a._idx < b._idx) { return -1; }
         return 0;
     }
@@ -598,10 +599,10 @@ function addStringUsedStridx(meta, usedStridxEtcMeta) {
 
     // strings whose define is referenced
     meta.strings.forEach((s) => {
-        if (s.define !== 'undefined' && defsNeeded[s.define]) {
+        if (typeof s.define !== 'undefined' && defsNeeded[s.define]) {
             s.stridx_used = true;
             defsFound[s.define] = true;
-            //console.log(s);
+            //logDebug(s);
         }
     });
 
@@ -614,7 +615,7 @@ function addStringUsedStridx(meta, usedStridxEtcMeta) {
     });
 
     // ensure all needed defines are provided
-    defsFound.DUK_STRIDX_START_RESERVED = true;  // special defines provided automatically
+    defsFound.DUK_STRIDX_START_RESERVED = true; // special defines provided automatically
     defsFound.DUK_STRIDX_START_STRICT_RESERVED = true;
     defsFound.DUK_STRIDX_END_RESERVED = true;
     defsFound.DUK_STRIDX_TO_TOK = true;
@@ -666,7 +667,7 @@ function addRamFilteredObjectList(meta) {
     });
 
     console.debug('filtered RAM object list: ' + meta.objects_bidx.length + ' objects with bidx, ' +
-                  objList.length + ' total top level objects');
+        objList.length + ' total top level objects');
 
     meta.objects_ram_toplevel = objList;
 }
@@ -689,19 +690,19 @@ function bidxSanityCheck(meta) {
 // (These should be removed and handled inline in the ROM/RAM code.)
 function createHelperProperties(meta) {
     Object.assign(meta, {
-        _strings_plain: [],  // ROM
-        _plain_to_stridx: {},  // RAM
-        _is_plain_reserved_word: {},  // ROM
-        _is_plain_strict_reserved_word: {},  // ROM
-        _objid_to_bidx: {},  // ROM
-        _objid_to_ramidx: {}   // RAM
+        _strings_plain: [], // ROM
+        _plain_to_stridx: {}, // RAM
+        _is_plain_reserved_word: {}, // ROM
+        _is_plain_strict_reserved_word: {}, // ROM
+        _objid_to_bidx: {}, // ROM
+        _objid_to_ramidx: {} // RAM
     });
 
     meta.strings.forEach((s) => {
         assert(meta._strings_plain.indexOf(s.str) < 0);
         meta._strings_plain.push(s.str);
         if (propDefault(s, 'reserved_word', false)) {
-            meta._is_plain_reserved_word[s['str']] = true;  // includes also strict reserved words
+            meta._is_plain_reserved_word[s['str']] = true; // includes also strict reserved words
         }
         if (propDefault(s, 'future_reserved_word_strict', false)) {
             meta._is_plain_strict_reserved_word[s['str']] = true;
@@ -711,6 +712,11 @@ function createHelperProperties(meta) {
     meta.strings_stridx.forEach((s, idx) => {
         assert(propDefault(s, 'stridx_used', false) === true);
         meta._plain_to_stridx[s.str] = idx;
+    });
+
+    meta.objects.forEach((o, idx) => {
+        void o;
+        void idx;
     });
 
     meta.objects_bidx.forEach((o, idx) => {
@@ -770,14 +776,14 @@ function dumpStats(meta, romBuild) {
         }
     });
     stats.countAdd = stats.countAddRef + stats.countAddUser;
-    console.log('prepared ' + (romBuild ? 'ROM' : 'RAM') + ' metadata: ' +
-                meta.objects.length + ' objects, ' +
-                meta.objects_bidx.length + ' objects with bidx, ' +
-                meta.strings.length + ' strings, ' +
-                meta.strings_stridx.length + ' strings with stridx, ' +
-                stats.countAdd + ' strings added (' +
-                stats.countAddRef + ' property key references, ' +
-                stats.countAddUser + ' user strings)');
+    logDebug('prepared ' + (romBuild ? 'ROM' : 'RAM') + ' metadata: ' +
+        meta.objects.length + ' objects, ' +
+        meta.objects_bidx.length + ' objects with bidx, ' +
+        meta.strings.length + ' strings, ' +
+        meta.strings_stridx.length + ' strings with stridx, ' +
+        stats.countAdd + ' strings added (' +
+        stats.countAddRef + ' property key references, ' +
+        stats.countAddUser + ' user strings)');
 }
 
 // Resolve magic values into final integer values.
@@ -812,17 +818,17 @@ function loadMetadata(args) {
     // Load built-in strings and objects.  Merge strings and objects
     // metadata as simple top level key merge.
     var meta = createBareObject({});
-    var objectsMetadata = parseYaml(readFileUtf8(objectsMetadataFilename));
-    var stringsMetadata = parseYaml(readFileUtf8(stringsMetadataFilename));
+    var objectsMetadata = readFileYaml(objectsMetadataFilename);
+    var stringsMetadata = readFileYaml(stringsMetadataFilename);
     Object.assign(meta, objectsMetadata);
     Object.assign(meta, stringsMetadata);
     normalizeMetadata(meta);
 
     // Add user objects.
     (userBuiltinFiles || []).forEach((fn) => {
-        console.log('merging user built-in metadata file ' + fn);
-        let userMeta = parseYaml(readFileUtf8(fn));
-        normalizeMetadata(userMeta, activeOpts);
+        logDebug('merging user built-in metadata file ' + fn);
+        let userMeta = readFileYaml(fn);
+        normalizeMetadata(userMeta);
         mergeMetadata(meta, userMeta);
     });
 

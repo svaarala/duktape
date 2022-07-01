@@ -44,6 +44,7 @@ function prepareBytecodeJumps(doc, opts) {
         return true;
 
     }
+
     function overlaps(level, jump) {
         for (let i = 0; i < level.length; i++) {
             if (jumpsOverlap(level[i], jump)) {
@@ -112,7 +113,7 @@ function drawBytecodeJumps(levels, numLines) {
                     lines[jump.source][levOff + 2] = '-';
                     for (let pc = jump.source + 1; pc <= jump.target - 1; pc++) {
                         lines[pc][levOff + 0] = ' ';
-                        lines[pc][levOff + 1] = ':';  // forward jump
+                        lines[pc][levOff + 1] = ':'; // forward jump
                         lines[pc][levOff + 2] = ' ';
                     }
                     lines[jump.target][levOff + 0] = ' ';
@@ -124,7 +125,7 @@ function drawBytecodeJumps(levels, numLines) {
                     lines[jump.source][levOff + 2] = '-';
                     for (let pc = jump.source - 1; pc >= jump.target + 1; pc--) {
                         lines[pc][levOff + 0] = ' ';
-                        lines[pc][levOff + 1] = '|';  // backward jump
+                        lines[pc][levOff + 1] = '|'; // backward jump
                         lines[pc][levOff + 2] = ' ';
                     }
                     lines[jump.target][levOff + 0] = ' ';
@@ -136,7 +137,7 @@ function drawBytecodeJumps(levels, numLines) {
     });
 
     // Get final jump lines, strip off leading space.
-    var jumpLines = lines.map((line) => { return line.join('').substring(1); });
+    var jumpLines = lines.map((line) => line.join('').substring(1));
     return jumpLines;
 }
 

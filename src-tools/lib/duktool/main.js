@@ -13,18 +13,25 @@ const { distCommand, distCommandSpec } = require('../command/dist');
 const { decodeBytecodeCommand, decodeBytecodeCommandSpec } = require('../command/decode_bytecode');
 const { dumpBytecodeCommand, dumpBytecodeCommandSpec } = require('../command/dump_bytecode');
 const { generateReleasesRstCommand, generateReleasesRstCommandSpec } = require('../command/generate_releases_rst');
+const { prepTestCommand, prepTestCommandSpec } = require('../command/prep_test');
+const { runTestsCommand, runTestsCommandSpec } = require('../command/run_tests');
+const { tokenizeCommand, tokenizeCommandSpec } = require('../command/tokenize');
+const { disableConsoleDebug } = require('../util/console');
+const { logInfo, logDebug } = require('../util/logging');
 
 // Command line parsing spec.
 
 const commandSpec = {
-    options: createBareObject({
-    }),
+    options: createBareObject({}),
     commands: createBareObject({
         ['configure']: configureCommandSpec,
         ['dist']: distCommandSpec,
         ['decode-bytecode']: decodeBytecodeCommandSpec,
         ['dump-bytecode']: dumpBytecodeCommandSpec,
-        ['generate-releases-rst']: generateReleasesRstCommandSpec
+        ['generate-releases-rst']: generateReleasesRstCommandSpec,
+        ['prep-test']: prepTestCommandSpec,
+        ['run-tests']: runTestsCommandSpec,
+        ['tokenize']: tokenizeCommandSpec
     })
 };
 
@@ -35,7 +42,7 @@ function locateDuktapeRoot() {
         return;
     }
     var currDir = dirname(module.filename);
-    for (let i = 0; i < 5; i++) {  // sanity max levels
+    for (let i = 0; i < 5; i++) { // sanity max levels
         console.debug('locate duktape root, currDir:', currDir);
         if (currDir === '') {
             break;
@@ -49,13 +56,15 @@ function locateDuktapeRoot() {
     }
 }
 
-function main() {
+async function main() {
     const enableDebug = false;
 
     if (!enableDebug) {
-        console.debug = function nop() {};
-        console.trace = function nop() {};
+        disableConsoleDebug();
     }
+
+    // Locate Duktape root (used as a default by some commands).
+    var autoDuktapeRoot = locateDuktapeRoot();
 
     var args = getArgs();
     console.debug('args: ' + JSON.stringify(args));
@@ -64,43 +73,51 @@ function main() {
 
     // Command line --help handling.
     if (cmdline.help) {
-        console.log(cmdline.help);
+        logInfo(cmdline.help);
         return;
     }
-
-    // Locate Duktape root (used as a default by some commands).
-    var autoDuktapeRoot = locateDuktapeRoot();
 
     // Commands.
     var commandMap = createBareObject({
         // Main commands: configure and prepare sources, dist.
         ['configure']: () => {
-            configureCommand(cmdline, autoDuktapeRoot);
+            return configureCommand(cmdline, autoDuktapeRoot);
         },
         ['dist']: () => {
-            distCommand(cmdline, autoDuktapeRoot);
+            return distCommand(cmdline, autoDuktapeRoot);
         },
         ['decode-bytecode']: () => {
-            decodeBytecodeCommand(cmdline, autoDuktapeRoot);
+            return decodeBytecodeCommand(cmdline, autoDuktapeRoot);
         },
         ['dump-bytecode']: () => {
-            dumpBytecodeCommand(cmdline, autoDuktapeRoot);
+            return dumpBytecodeCommand(cmdline, autoDuktapeRoot);
         },
         ['generate-releases-rst']: () => {
-            generateReleasesRstCommand(cmdline, autoDuktapeRoot);
+            return generateReleasesRstCommand(cmdline, autoDuktapeRoot);
+        },
+        ['prep-test']: () => {
+            return prepTestCommand(cmdline, autoDuktapeRoot);
+        },
+        ['run-tests']: () => {
+            return runTestsCommand(cmdline, autoDuktapeRoot);
+        },
+        ['tokenize']: () => {
+            return tokenizeCommand(cmdline, autoDuktapeRoot);
         }
     });
 
     // Command switch.
     var commandString = cmdline.command;
     if (!commandString) {
-        console.log('Missing command, see --help');
+        logInfo('Missing command, see --help');
     } else {
         var command = commandMap[commandString];
         if (command) {
-            command();
+            logDebug('command start');
+            await command();
+            logDebug('command end');
         } else {
-            console.log('UNKNOWN COMMAND: ' + commandString);
+            logInfo('UNKNOWN COMMAND: ' + commandString);
         }
     }
 }

@@ -14,6 +14,7 @@ const {
     writeFileJsonPretty,
     readFileYaml
 } = require('../util/fs');
+const { execStdoutUtf8 } = require('../util/exec');
 const { getDukVersion } = require('../configure/duk_version');
 const { getGitInfo } = require('../configure/git_info');
 const { cStrEncode } = require('../util/cquote');
@@ -34,7 +35,7 @@ function copyListCompare(a, b) {
 }
 
 function straightCopy(filenames, source, target) {
-    target = target || source;  // default target dir from source
+    target = target || source; // default target dir from source
     return filenames.map((fn) => {
         return { relativeSource: pathJoin(source, fn), relativeTarget: pathJoin(target, fn) };
     });
@@ -56,7 +57,7 @@ function getSourceFiles() {
     res = res.concat(straightCopy(sourceFiles, 'src-input'));
 
     res = res.concat(straightCopy([
-        'duktape.h.in',  // excluded from sourceFiles
+        'duktape.h.in', // excluded from sourceFiles
         'builtins.yaml',
         'strings.yaml',
         'SpecialCasing.txt',
@@ -92,7 +93,7 @@ function getConfigFiles(args) {
         'examples'
     ].forEach((dir) => {
         res = res.concat(straightCopyFlatDir(pathJoin(repoDirectory, 'config', dir),
-                                             pathJoin(outputDirectory, 'config', dir)));
+            pathJoin(outputDirectory, 'config', dir)));
     });
 
     return res;
@@ -101,21 +102,13 @@ function getConfigFiles(args) {
 function getToolsFiles() {
     return straightCopy([
         'configure.py',
-        'combine_src.py',
-        'create_spdx_license.py',
         'duk_meta_to_strarray.py',
         'dukutil.py',
         'dump_bytecode.py',
-        'extract_caseconv.py',
-        'extract_chars.py',
         'extract_unique_options.py',
-        'genbuiltins.py',
-        'genconfig.py',
         'merge_debug_meta.py',
-        'prepare_unicode_data.py',
         'resolve_combined_lineno.py',
-        'scan_strings.py',
-        'scan_used_stridx_bidx.py',
+        'scan_strings.py'
     ], 'tools');
 }
 
@@ -427,19 +420,22 @@ function createDistCopyList(args) {
     // Special files prepared through temp files (absolute paths).
     res.push({
         source: pathJoin(distTempDirectory, 'Makefile.sharedlibrary'),
-        target: pathJoin(outputDirectory, 'Makefile.sharedlibrary')
+        target: pathJoin(outputDirectory, 'Makefile.sharedlibrary'),
+        ignoreGitCheck: true
     });
     res.push({
         source: pathJoin(distTempDirectory, 'README.rst'),
-        target: pathJoin(outputDirectory, 'README.rst')
+        target: pathJoin(outputDirectory, 'README.rst'),
+        ignoreGitCheck: true
     });
     res.push({
         source: pathJoin(distTempDirectory, 'duk_debug_meta.json'),
-        target: pathJoin(outputDirectory, 'debugger', 'duk_debug_meta.json')
+        target: pathJoin(outputDirectory, 'debugger', 'duk_debug_meta.json'),
+        ignoreGitCheck: true
     });
 
-    // RELEASES.rst is only updated in master.  It's not included in the dist to
-    // make maintenance fixes easier to make.
+    // Releases metadata is only updated in master.  It's not included in the
+    // dist to make maintenance fixes easier to make.
 
     return res;
 }
@@ -461,6 +457,7 @@ function convertPathsToAbsolute(copyList, repoDirectory, outputDirectory) {
         } else {
             throw new TypeError('missing .target or .relativeTarget');
         }
+        res.ignoreGitCheck = ent.ignoreGitCheck;
         return res;
     });
 }
@@ -490,22 +487,22 @@ function createTempFiles(args) {
     var dukVersion = args.dukVersion;
 
     copyFileUtf8AtSignReplace(pathJoin(repoDirectory, 'dist-files', 'Makefile.sharedlibrary'),
-                              pathJoin(distTempDirectory, 'Makefile.sharedlibrary'), {
-                                  DUK_VERSION: String(dukVersion),
-                                  DUK_VERSION_FORMATTED: String(args.dukVersionFormatted),
-                                  SONAME_VERSION: String(Math.floor(dukVersion / 100))  // 10500 -> 105
-                              });
+        pathJoin(distTempDirectory, 'Makefile.sharedlibrary'), {
+            DUK_VERSION: String(dukVersion),
+            DUK_VERSION_FORMATTED: String(args.dukVersionFormatted),
+            SONAME_VERSION: String(Math.floor(dukVersion / 100)) // 10500 -> 105
+        });
 
     copyFileUtf8AtSignReplace(pathJoin(repoDirectory, 'dist-files', 'README.rst'),
-                              pathJoin(distTempDirectory, 'README.rst'), {
-                                  DUK_VERSION_FORMATTED: args.dukVersionFormatted,
-                                  DUK_MAJOR: String(args.dukMajor),
-                                  DUK_MINOR: String(args.dukMinor),
-                                  DUK_PATCH: String(args.dukPatch),
-                                  GIT_COMMIT: args.gitCommit,
-                                  GIT_DESCRIBE: args.gitDescribe,
-                                  GIT_BRANCH: args.gitBranch
-                              });
+        pathJoin(distTempDirectory, 'README.rst'), {
+            DUK_VERSION_FORMATTED: args.dukVersionFormatted,
+            DUK_MAJOR: String(args.dukMajor),
+            DUK_MINOR: String(args.dukMinor),
+            DUK_PATCH: String(args.dukPatch),
+            GIT_COMMIT: args.gitCommit,
+            GIT_DESCRIBE: args.gitDescribe,
+            GIT_BRANCH: args.gitBranch
+        });
 
     var debugMeta = createBareObject({});
     [
@@ -519,8 +516,27 @@ function createTempFiles(args) {
             debugMeta[k] = doc[k];
         }
     });
-    debugMeta = sortObjectKeysRecursive(debugMeta);  // normalize order
+    debugMeta = sortObjectKeysRecursive(debugMeta); // normalize order
     writeFileJsonPretty(pathJoin(distTempDirectory, 'duk_debug_meta.json'), debugMeta);
+}
+
+function validateCopyList(copyListAbsolute, distTempDirectory) {
+    void distTempDirectory;
+    copyListAbsolute.forEach((ent) => {
+        if (ent.ignoreGitCheck) {
+            return;
+        }
+        let fn = assert(ent.source);
+        //console.log(fn);
+        let out = execStdoutUtf8(['git', 'log', '-n', '1', fn]);
+        if (out.indexOf('commit') < 0) {
+            throw new TypeError('refuse to dist file not tracked by git: ' + fn);
+        }
+        out = execStdoutUtf8(['git', 'diff', fn]);
+        if (out.trim() !== '') {
+            throw new TypeError('refuse to dist file with diff: ' + fn);
+        }
+    });
 }
 
 function copyDistFiles(copyList) {
@@ -536,12 +552,14 @@ function distSources(args) {
     var outputDirectory = assert(args.outputDirectory);
     var tempDirectory = assert(args.tempDirectory);
     var distTempDirectory = pathJoin(tempDirectory, 'dist-tmp');
+    var configTempDirectory = pathJoin(tempDirectory, 'config-tmp');
     var dukVersion, dukMajor, dukMinor, dukPatch, dukVersionFormatted;
     var gitCommit = args.gitCommit;
     var gitDescribe = args.gitDescribe;
     var gitBranch = args.gitBranch;
     var autoGitCommit, autoGitDescribe, autoGitBranch;
     var gitCommitCString, gitDescribeCString, gitBranchCString;
+    var validateGit = args.validateGit;
     var entryCwd = getCwd();
     void entryCwd;
 
@@ -560,12 +578,19 @@ function distSources(args) {
     gitCommitCString = cStrEncode(gitCommit);
     gitBranchCString = cStrEncode(gitBranch);
     gitDescribeCString = cStrEncode(gitDescribe);
-    console.debug({ gitCommit, gitDescribe, gitBranch,
-                    gitCommitCString, gitDescribeCString, gitBranchCString });
+    console.debug({
+        gitCommit,
+        gitDescribe,
+        gitBranch,
+        gitCommitCString,
+        gitDescribeCString,
+        gitBranchCString
+    });
 
     // Create dist directory structure and copy files.
     mkdir(outputDirectory);
     mkdir(distTempDirectory);
+    mkdir(configTempDirectory);
 
     createTempFiles({
         repoDirectory,
@@ -588,6 +613,10 @@ function distSources(args) {
     var copyListAbsolute = convertPathsToAbsolute(copyListRelative, repoDirectory, outputDirectory).sort(copyListCompare);
     var dirList = getDistDirectories(copyListAbsolute);
     createDistDirectories(dirList);
+    if (validateGit) {
+        // This takes a long time.
+        validateCopyList(copyListAbsolute, distTempDirectory);
+    }
     copyDistFiles(copyListAbsolute);
 
     // Build preconfigured source(s).
@@ -595,7 +624,7 @@ function distSources(args) {
         sourceDirectory: pathJoin(repoDirectory, 'src-input'),
         outputDirectory: pathJoin(outputDirectory, 'src'),
         configDirectory: pathJoin(repoDirectory, 'config'),
-        tempDirectory: tempDirectory,
+        tempDirectory: configTempDirectory,
         licenseFile: pathJoin(repoDirectory, 'LICENSE.txt'),
         authorsFile: pathJoin(repoDirectory, 'AUTHORS.rst'),
         unicodeDataFile: pathJoin(repoDirectory, 'src-input', 'UnicodeData.txt'),

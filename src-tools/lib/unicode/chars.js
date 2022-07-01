@@ -44,7 +44,7 @@ function filterCpMap(cpMap, includeList, excludeList) {
         if (typeof cat === 'number') {
             excludeCpMap[cat] = true;
         } else if (typeof cat === 'string') {
-            excludeCatMap[cat] = true;  // includes ASCII and NONBMP, does not matter
+            excludeCatMap[cat] = true; // includes ASCII and NONBMP, does not matter
         } else {
             throw new TypeError('invalid excludeList entry: ' + cat);
         }
@@ -77,7 +77,7 @@ exports.filterCpMap = filterCpMap;
 // variants, see old Python tooling.
 function generateMatchTable3(ranges) {
     var be = new BitEncoder();
-    var freq = [];  // informative
+    var freq = []; // informative
     while (freq.length < 0x110000) {
         freq.push(0);
     }
@@ -126,9 +126,9 @@ function generateMatchTable3(ranges) {
     for (let i = 0; i < ranges.length; i++) {
         let rangeStart = ranges[i][0];
         let rangeEnd = ranges[i][1];
-        let r1 = rangeStart - prevRangeEnd;  // 1 or above (no unjoined ranges)
+        let r1 = rangeStart - prevRangeEnd; // 1 or above (no unjoined ranges)
         assert(r1 >= 1);
-        let r2 = rangeEnd - rangeStart;  // 0 or above
+        let r2 = rangeEnd - rangeStart; // 0 or above
         assert(r2 >= 0);
 
         // r1 is >= 1, so r1 == 0 is used as an end marker.  Encoding an

@@ -15,7 +15,7 @@ function generateReCanonDirectLookup(convmap) {
     var countNonId = 0;
 
     for (let cp = 0; cp < 65536; cp++) {
-        let resCp = cp;  // default to as is
+        let resCp = cp; // default to as is
         if (convmap[cp]) {
             // If multiple codepoints in result, ignore.
             if (convmap[cp].length === 1) {
@@ -79,7 +79,7 @@ function generateReCanonRanges(canontab) {
     function mergeCompatibleNogap(rng1, rng2) {
         if (rng1[0] + rng1[2] === rng2[0] &&
             rng1[1] + rng1[2] === rng2[1]) {
-            return [ rng1[0], rng1[1], rng1[2] + rng2[2] ];
+            return [rng1[0], rng1[1], rng1[2] + rng2[2]];
         }
     }
 
@@ -107,7 +107,7 @@ function generateReCanonRanges(canontab) {
 
     // Start with 1 codepoint ranges at first.
     for (let cp = 0; cp < 65536; cp++) {
-        res.push([ cp, canontab[cp], 1 ]);  // [ in, out, len ]
+        res.push([cp, canontab[cp], 1]); // [ in, out, len ]
     }
 
     // Merge adjacent ranges until no more ranges can be merged.
@@ -140,7 +140,7 @@ function generateReCanonNeedCheck(canontab) {
     // at a certain codepoint.
     function generateStraight() {
         var res = [];
-        assert(canontab[0] === 0);  // can start from in == out == 0
+        assert(canontab[0] === 0); // can start from in == out == 0
         var prevIn = -1;
         var prevOut = -1;
         for (let i = 0; i < 65536; i++) {
@@ -165,7 +165,7 @@ function generateReCanonNeedCheck(canontab) {
         data.forEach((needcheck) => {
             if (prev === void 0 || prev !== needcheck) {
                 if (prev !== void 0) {
-                    res.push([ prev, count ]);
+                    res.push([prev, count]);
                 }
                 prev = needcheck;
                 count = 1;
@@ -174,7 +174,7 @@ function generateReCanonNeedCheck(canontab) {
             }
         });
         if (prev !== void 0) {
-            res.push([ prev, count ]);
+            res.push([prev, count]);
         }
         return res;
 
@@ -194,8 +194,8 @@ function generateReCanonNeedCheck(canontab) {
                 if (r1[0] === true && r2[0] === false && r3[0] === true &&
                     r2[1] <= falseLimit) {
                     //console.debug('fillin ' + r2[1] + ' falses');
-                    void res.splice(i + 1, 2);  // remove r2 and r3
-                    res[i] = [ true, r1[1] + r2[1] + r3[1] ];
+                    void res.splice(i + 1, 2); // remove r2 and r3
+                    res[i] = [true, r1[1] + r2[1] + r3[1]];
                     found = true;
                     break;
                 }
@@ -243,10 +243,10 @@ function generateReCanonBitmap(canontab) {
             let baseOut = canontab[baseIn];
             let lower, upper;
             if (checkContinuity) {
-                lower = -1;  // [-1, blockSize]
+                lower = -1; // [-1, blockSize]
                 upper = blockSize + 1;
             } else {
-                lower = 0;   // [0, blockSize-1]
+                lower = 0; // [0, blockSize-1]
                 upper = blockSize;
             }
             for (let j = lower; j < upper; j++) {
@@ -254,7 +254,7 @@ function generateReCanonBitmap(canontab) {
                 let cpOut = canontab[cpIn];
                 let expectOut = baseOut + j;
                 if (cpIn >= 0x0000 && cpIn <= 0xffff && cpOut != expectOut) {
-                    res[i] = false;  // block is not continuous
+                    res[i] = false; // block is not continuous
                 }
             }
         }
@@ -298,7 +298,7 @@ function generateReCanonBitmap(canontab) {
                 mask = 0x01;
             }
         });
-        assert(mask === 0x01);  // no leftover
+        assert(mask === 0x01); // no leftover
         return res;
     }
 
@@ -323,8 +323,15 @@ function generateReCanonBitmap(canontab) {
 
     compareBits(bitsNoContinuity, bitsContinuity);
 
-    return { blockShift, blockSize, blockMask, numBlocks,
-             bitsNoContinuity, bitsContinuity,
-             bitmapNoContinuity, bitmapContinuity };
+    return {
+        blockShift,
+        blockSize,
+        blockMask,
+        numBlocks,
+        bitsNoContinuity,
+        bitsContinuity,
+        bitmapNoContinuity,
+        bitmapContinuity
+    };
 }
 exports.generateReCanonBitmap = generateReCanonBitmap;

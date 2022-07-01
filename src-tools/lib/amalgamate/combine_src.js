@@ -85,10 +85,10 @@ function CombineSource(includePaths, includeExcluded) {
     });
 }
 CombineSource.prototype.lookupInclude = function lookupInclude(incFileName) {
-    var incComponents = incFileName.split(/\/|\\/g);  // Split include path, support forward slash and backslash
+    var incComponents = incFileName.split(/\/|\\/g); // Split include path, support forward slash and backslash
 
     for (let path of this.includePaths) {
-        let fn = pathJoin.apply(null, [ path ].concat(incComponents));
+        let fn = pathJoin.apply(null, [path].concat(incComponents));
         if (fileExists(fn)) {
             return fn;
         }
@@ -131,12 +131,12 @@ CombineSource.prototype.addAutomaticUndefs = function addAutomaticUndefs(f) {
 CombineSource.prototype.combineFiles = function combineFiles(files, prologueFileName, lineDirectives) {
     var _self = this;
     var res = [];
-    var lineMap = [];  // indicate combined source lines where uncombined file/line would change
+    var lineMap = []; // indicate combined source lines where uncombined file/line would change
     var metadata = {
         line_map: lineMap
     }
     var currFileName, currLineNo;
-    var included = createBareObject({});  // headers already included
+    var included = createBareObject({}); // headers already included
 
     function emit(line) {
         if (typeof line === 'string') {
@@ -147,9 +147,11 @@ CombineSource.prototype.combineFiles = function combineFiles(files, prologueFile
                 if (lineDirectives) {
                     res.push('#line ' + line.lineNo + ' ' + cStrEncode(line.fileName));
                 }
-                lineMap.push({ original_file: line.fileName,
-                               original_line: line.lineNo,
-                               combined_line: res.length + 1 });
+                lineMap.push({
+                    original_file: line.fileName,
+                    original_line: line.lineNo,
+                    combined_line: res.length + 1
+                });
             }
             res.push(line.data);
             currFileName = line.fileName;
@@ -201,7 +203,7 @@ CombineSource.prototype.combineFiles = function combineFiles(files, prologueFile
                 processFile(readFile(incFile));
             } else {
                 console.debug('include considered external: ' + line.data);
-                emit(line);  // keep as is
+                emit(line); // keep as is
             }
         });
     }

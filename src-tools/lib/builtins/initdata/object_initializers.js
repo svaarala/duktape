@@ -47,32 +47,32 @@ function emitObjectInitializersPtrComp(genc) {
     //genc.emitLine('#endif');
 
     genc.emitLine('#define DUK__ROMOBJ_INIT(heaphdr_flags,refcount,props,props_enc16,iproto,iproto_enc16,esize,enext,asize,hsize) ' +
-                  ' { { { (heaphdr_flags), DUK__REFCINIT((refcount)), 0, 0, (props_enc16) }, NULL, NULL, 0, 0, (iproto_enc16), (esize), (enext) } }');
+        ' { { { (heaphdr_flags), DUK__REFCINIT((refcount)), 0, 0, (props_enc16) }, NULL, NULL, 0, 0, (iproto_enc16), (esize), (enext) } }');
 
     // XXX: Only zero-length Array actually supported now.
     genc.emitLine('#define DUK__ROMARR_INIT(heaphdr_flags,refcount,props,props_enc16,iproto,iproto_enc16,esize,enext,asize,hsize,length) ' +
-                  ' { { { { (heaphdr_flags), DUK__REFCINIT((refcount)), 0, 0, (props_enc16) }, NULL, NULL, 0, 0, (iproto_enc16), (esize), (enext) }, 0, (length), (length), 0 /*length_nonwritable*/ } }');
+        ' { { { { (heaphdr_flags), DUK__REFCINIT((refcount)), 0, 0, (props_enc16) }, NULL, NULL, 0, 0, (iproto_enc16), (esize), (enext) }, 0, (length), (length), 0 /*length_nonwritable*/ } }');
 
     genc.emitLine('#define DUK__ROMFUN_INIT(heaphdr_flags,refcount,props,props_enc16,iproto,iproto_enc16,esize,enext,asize,hsize,nativefunc,nargs,magic) ' +
-                  ' { { { { (heaphdr_flags), DUK__REFCINIT((refcount)), 0, 0, (props_enc16) }, NULL, NULL, 0, 0, (iproto_enc16), (esize), (enext) }, (nativefunc), (duk_int16_t) (nargs), (duk_int16_t) (magic) } }');
+        ' { { { { (heaphdr_flags), DUK__REFCINIT((refcount)), 0, 0, (props_enc16) }, NULL, NULL, 0, 0, (iproto_enc16), (esize), (enext) }, (nativefunc), (duk_int16_t) (nargs), (duk_int16_t) (magic) } }');
 
     genc.emitLine('#define DUK__ROMOBJENV_INIT(heaphdr_flags,refcount,props,props_enc16,iproto,iproto_enc16,esize,enext,asize,hsize,target,has_this) ' +
-                  ' { { { { (heaphdr_flags), DUK__REFCINIT((refcount)), 0, 0, (props_enc16) }, NULL, NULL, 0, 0, (iproto_enc16), (esize), (enext) }, (duk_hobject *) DUK_LOSE_CONST(target), (has_this) } }');
+        ' { { { { (heaphdr_flags), DUK__REFCINIT((refcount)), 0, 0, (props_enc16) }, NULL, NULL, 0, 0, (iproto_enc16), (esize), (enext) }, (duk_hobject *) DUK_LOSE_CONST(target), (has_this) } }');
 }
 
 function emitObjectInitializersNoPtrComp(genc) {
     genc.emitLine('#define DUK__ROMOBJ_INIT(heaphdr_flags,refcount,props,props_enc16,iproto,iproto_enc16,esize,enext,asize,hsize) ' +
-                  ' { { { (heaphdr_flags), DUK__REFCINIT((refcount)), NULL, NULL }, (duk_uint8_t *) DUK_LOSE_CONST(props), NULL, NULL, NULL, 0, 0, (duk_hobject *) DUK_LOSE_CONST(iproto), (esize), (enext) } }');
+        ' { { { (heaphdr_flags), DUK__REFCINIT((refcount)), NULL, NULL }, (duk_uint8_t *) DUK_LOSE_CONST(props), NULL, NULL, NULL, 0, 0, (duk_hobject *) DUK_LOSE_CONST(iproto), (esize), (enext) } }');
 
     // XXX: Only zero-length Array actually supported now.
     genc.emitLine('#define DUK__ROMARR_INIT(heaphdr_flags,refcount,props,props_enc16,iproto,iproto_enc16,esize,enext,asize,hsize,length) ' +
-                  ' { { { { (heaphdr_flags), DUK__REFCINIT((refcount)), NULL, NULL }, (duk_uint8_t *) DUK_LOSE_CONST(props), NULL, NULL, NULL, 0, 0, (duk_hobject *) DUK_LOSE_CONST(iproto), (esize), (enext) }, NULL, (length), (length), 0 /*length_nonwritable*/ } }');
+        ' { { { { (heaphdr_flags), DUK__REFCINIT((refcount)), NULL, NULL }, (duk_uint8_t *) DUK_LOSE_CONST(props), NULL, NULL, NULL, 0, 0, (duk_hobject *) DUK_LOSE_CONST(iproto), (esize), (enext) }, NULL, (length), (length), 0 /*length_nonwritable*/ } }');
 
     genc.emitLine('#define DUK__ROMFUN_INIT(heaphdr_flags,refcount,props,props_enc16,iproto,iproto_enc16,esize,enext,asize,hsize,nativefunc,nargs,magic) ' +
-                  ' { { { { (heaphdr_flags), DUK__REFCINIT((refcount)), NULL, NULL }, (duk_uint8_t *) DUK_LOSE_CONST(props), NULL, NULL, NULL, 0, 0, (duk_hobject *) DUK_LOSE_CONST(iproto), (esize), (enext) }, (nativefunc), (duk_int16_t) (nargs), (duk_int16_t) (magic) } }');
+        ' { { { { (heaphdr_flags), DUK__REFCINIT((refcount)), NULL, NULL }, (duk_uint8_t *) DUK_LOSE_CONST(props), NULL, NULL, NULL, 0, 0, (duk_hobject *) DUK_LOSE_CONST(iproto), (esize), (enext) }, (nativefunc), (duk_int16_t) (nargs), (duk_int16_t) (magic) } }');
 
     genc.emitLine('#define DUK__ROMOBJENV_INIT(heaphdr_flags,refcount,props,props_enc16,iproto,iproto_enc16,esize,enext,asize,hsize,target,has_this) ' +
-                  ' { { { { (heaphdr_flags), DUK__REFCINIT((refcount)), NULL, NULL }, (duk_uint8_t *) DUK_LOSE_CONST(props), NULL, NULL, NULL, 0, 0, (duk_hobject *) DUK_LOSE_CONST(iproto), (esize), (enext) }, (duk_hobject *) DUK_LOSE_CONST(target), (has_this) } }');
+        ' { { { { (heaphdr_flags), DUK__REFCINIT((refcount)), NULL, NULL }, (duk_uint8_t *) DUK_LOSE_CONST(props), NULL, NULL, NULL, 0, 0, (duk_hobject *) DUK_LOSE_CONST(iproto), (esize), (enext) }, (duk_hobject *) DUK_LOSE_CONST(target), (has_this) } }');
 }
 
 function emitObjectInitializers(genc) {
@@ -138,11 +138,12 @@ function emitTvalStructsPackedTval(genc) {
 }
 
 function emitTvalStructsUnpackedTval(genc) {
-    genc.emitLine('#if defined(DUK_USE_UNION_INITIALIZERS)');
-
     // For C99 and C++20, preferred because involves no memory layout hacks.
     // Many (most?) C++ compilers support designated initializer syntax
     // before C++20.
+
+    genc.emitLine('#if defined(DUK_USE_UNION_INITIALIZERS)');
+
     genc.emitLine('typedef duk_tval duk_rom_tval_undefined;');
     genc.emitLine('typedef duk_tval duk_rom_tval_null;');
     genc.emitLine('typedef duk_tval duk_rom_tval_boolean;');
@@ -202,7 +203,6 @@ function emitTvalStructs(genc) {
 function emitDoubleInitializer(genc) {
     // Double initializer byte shuffle macro to handle byte orders
     // without duplicating the entire initializers.
-
     genc.emitLine('#if defined(DUK_USE_DOUBLE_LE)');
     genc.emitLine('#define DUK__DBLBYTES(a,b,c,d,e,f,g,h) { (h), (g), (f), (e), (d), (c), (b), (a) }');
     genc.emitLine('#elif defined(DUK_USE_DOUBLE_BE)');
@@ -216,7 +216,7 @@ function emitDoubleInitializer(genc) {
 }
 
 function emitTvalInitializersPackedTval(genc) {
-    genc.emitLine('#define DUK__TVAL_NUMBER(hostbytes) { hostbytes }');  // bytes already in host order
+    genc.emitLine('#define DUK__TVAL_NUMBER(hostbytes) { hostbytes }'); // bytes already in host order
     genc.emitLine('#if defined(DUK_USE_DOUBLE_LE)');
     genc.emitLine('#define DUK__TVAL_UNDEFINED() { (const void *) NULL, (DUK_TAG_UNDEFINED << 16) }');
     genc.emitLine('#define DUK__TVAL_NULL() { (const void *) NULL, (DUK_TAG_NULL << 16) }');
@@ -247,7 +247,7 @@ function emitTvalInitializersPackedTval(genc) {
 function emitTvalInitializersUnpackedTval(genc) {
     genc.emitLine('#if defined(DUK_USE_UNION_INITIALIZERS)');
 
-    genc.emitLine('#define DUK__TVAL_NUMBER(hostbytes) { .t=DUK_TAG_NUMBER, .v_extra=0, .v={ .bytes=hostbytes } }');  // bytes already in host order
+    genc.emitLine('#define DUK__TVAL_NUMBER(hostbytes) { .t=DUK_TAG_NUMBER, .v_extra=0, .v={ .bytes=hostbytes } }'); // bytes already in host order
     genc.emitLine('#define DUK__TVAL_UNDEFINED() { .t=DUK_TAG_UNDEFINED, .v_extra=0, .v={ .bytes={0,0,0,0,0,0,0,0} } }');
     genc.emitLine('#define DUK__TVAL_NULL() { .t=DUK_TAG_NULL, .v_extra=0, .v={ .bytes={0,0,0,0,0,0,0,0} } }');
     genc.emitLine('#define DUK__TVAL_BOOLEAN(bval) { .t=DUK_TAG_BOOLEAN, .v_extra=0, .v={ .i=(bval) } }');
@@ -258,7 +258,7 @@ function emitTvalInitializersUnpackedTval(genc) {
 
     genc.emitLine('#else  /* DUK_USE_UNION_INITIALIZERS */');
 
-    genc.emitLine('#define DUK__TVAL_NUMBER(hostbytes) { DUK_TAG_NUMBER, 0, hostbytes }');  // bytes already in host order
+    genc.emitLine('#define DUK__TVAL_NUMBER(hostbytes) { DUK_TAG_NUMBER, 0, hostbytes }'); // bytes already in host order
     genc.emitLine('#define DUK__TVAL_UNDEFINED() { DUK_TAG_UNDEFINED, 0, {0,0,0,0,0,0,0,0} }');
     genc.emitLine('#define DUK__TVAL_NULL() { DUK_TAG_NULL, 0, {0,0,0,0,0,0,0,0} }');
     genc.emitLine('#define DUK__TVAL_BOOLEAN(bval) { DUK_TAG_BOOLEAN, 0, (bval), 0 }');
@@ -300,7 +300,7 @@ exports.emitInitializerTypesAndMacrosSource = emitInitializerTypesAndMacrosSourc
 // Portable and exact float initializer.
 function getDoubleBytesInitializer(val) {
     assert(typeof val === 'string' && val.length == 16);
-    var arr = [... hexDecode(val)];
+    var arr = [...hexDecode(val)];
     var tmp = arr.map((t) => '' + t + 'U');
     return 'DUK__DBLBYTES(' + tmp.join(',') + ')';
 }
@@ -397,7 +397,7 @@ function getValueInitializer(meta, p, biStrMap, biObjMap) {
             }
 
             if (propDefault(v, 'varargs', true)) {
-                lfNargs = 15;  // varargs marker
+                lfNargs = 15; // varargs marker
             } else if (typeof v.nargs !== 'undefined') {
                 assert(typeof v.nargs === 'number' && v.nargs >= 0 && v.nargs <= 14);
                 lfNargs = Math.floor(v.nargs);
@@ -407,7 +407,7 @@ function getValueInitializer(meta, p, biStrMap, biObjMap) {
 
             if (typeof v.magic !== 'undefined') {
                 assert(typeof v.magic === 'number' && v.magic >= -0x80 && v.magic <= 0x7f);
-                lfMagic = Math.floor(v.magic) & 0xff;  // convert to 0x00-0xff
+                lfMagic = Math.floor(v.magic) & 0xff; // convert to 0x00-0xff
             } else {
                 lfMagic = 0;
             }
