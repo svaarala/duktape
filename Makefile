@@ -654,28 +654,46 @@ releasetest: configuretest xmldoctest closuretest bluebirdtest luajstest jsinter
 	@echo ""
 	@echo "### Release tests successful!"  # These tests now have output checks.
 
-# Runtests-based ECMAScript and API tests.
-.PHONY: runtestsdeps
-runtestsdeps: | runtests/node_modules deps/UglifyJS
-runtests/node_modules:
-	@echo "Installing required NodeJS modules for runtests"
-	@cd runtests; npm install
+# ECMAScript, API, and perf tests.
 .PHONY: ecmatest
-ecmatest: runtestsdeps build/duk | tmp
+ecmatest: prep-duktool | tmp deps/UglifyJS
 	@echo "### ecmatest"
-	"$(NODEJS)" runtests/runtests.js $(RUNTESTSOPTS) --run-duk --cmd-duk=$(shell pwd)/build/duk --num-threads 16 --log-file=tmp/duk-test.log tests/ecmascript/
+	"$(NODEJS)" src-tools/index.js run-tests --uglifyjs-bin deps/UglifyJS/bin/uglifyjs --test-log-file tmp/duk-test.log tests/ecmascript/
 .PHONY: ecmatest-comparison
 ecmatest-comparison: runtestsdeps build/duk | tmp
 	@echo "### ecmatest"
 	"$(NODEJS)" runtests/runtests.js $(RUNTESTSOPTS) --run-duk --cmd-duk=$(shell pwd)/build/duk --report-diff-to-other --run-nodejs --run-rhino --num-threads 16 --log-file=tmp/duk-test.log tests/ecmascript/
+
 .PHONY: apitest
 ifeq ($(DETECTED_OS),Darwin)
-apitest: runtestsdeps build/libduktape.1.0.0.so | tmp
+apitest: prep-duktool | tmp deps/UglifyJS
 else
-apitest: runtestsdeps build/libduktape.so.1.0.0 | tmp
+apitest: prep-duktool | tmp deps/UglifyJS
 endif
 	@echo "### apitest"
-	"$(NODEJS)" runtests/runtests.js $(RUNTESTSOPTS) --num-threads 1 --log-file=tmp/duk-api-test.log tests/api/
+	"$(NODEJS)" src-tools/index.js run-tests --uglifyjs-bin deps/UglifyJS/bin/uglifyjs --test-log-file tmp/duk-api-test.log tests/api/
+
+TEST_ALL_DIRS=tests/api/ tests/ecmascript/ tests/configure/ tests/perf/
+.PHONY: test-all
+test-all: prep-duktool | tmp deps/UglifyJS
+	"$(NODEJS)" src-tools/index.js run-tests --uglifyjs-bin deps/UglifyJS/bin/uglifyjs --test-log-file tmp/test-all.log $(TEST_ALL_DIRS)
+.PHONY: test-all-1
+test-all-1: prep-duktool | tmp deps/UglifyJS
+	"$(NODEJS)" src-tools/index.js run-tests --uglifyjs-bin deps/UglifyJS/bin/uglifyjs --test-log-file tmp/test-all-1.log --test-hash-min 0 --test-hash-max 63 $(TEST_ALL_DIRS)
+.PHONY: test-all-2
+test-all-2: prep-duktool | tmp deps/UglifyJS
+	"$(NODEJS)" src-tools/index.js run-tests --uglifyjs-bin deps/UglifyJS/bin/uglifyjs --test-log-file tmp/test-all-2.log --test-hash-min 64 --test-hash-max 127 $(TEST_ALL_DIRS)
+.PHONY: test-all-3
+test-all-3: prep-duktool | tmp deps/UglifyJS
+	"$(NODEJS)" src-tools/index.js run-tests --uglifyjs-bin deps/UglifyJS/bin/uglifyjs --test-log-file tmp/test-all-3.log --test-hash-min 128 --test-hash-max 191 $(TEST_ALL_DIRS)
+.PHONY: test-all-4
+test-all-4: prep-duktool | tmp deps/UglifyJS
+	"$(NODEJS)" src-tools/index.js run-tests --uglifyjs-bin deps/UglifyJS/bin/uglifyjs --test-log-file tmp/test-all-4.log --test-hash-min 192 --test-hash-max 255 $(TEST_ALL_DIRS)
+
+.PHONY: perftest
+perftest: prep-duktool | tmp deps/UglifyJS
+	@echo "### perftest"
+	"$(NODEJS)" src-tools/index.js run-tests --uglifyjs-bin deps/UglifyJS/bin/uglifyjs --num-threads 1 --test-log-file tmp/duk-perf-test.log tests/perf/
 
 # Configure tests.
 .PHONY: configuretest
@@ -949,14 +967,13 @@ deps/closure-compiler/build/compiler.jar: | deps/closure-compiler
 deps/closure-compiler.jar: deps/closure-compiler/build/compiler.jar
 	cp $< $@
 	touch $@
-deps/uglifyjs-v3.9.2.tar.gz: | deps
-	@# https://github.com/mishoo/UglifyJS
-	@# Don't use this because it's a moving dependency
-	@#$(GIT) clone -q --depth 1 https://github.com/mishoo/UglifyJS2.git
-	$(WGET) -q https://github.com/svaarala/UglifyJS/archive/v3.9.2.tar.gz -O $@
-deps/UglifyJS: deps/uglifyjs-v3.9.2.tar.gz | deps tmp
+deps/uglifyjs-v3.15.0.tar.gz: | deps
+	#$(WGET) -q https://github.com/mishoo/UglifyJS/archive/refs/tags/v3.15.0.tar.gz -O $@
+	$(WGET) -q https://github.com/svaarala/UglifyJS/archive/refs/tags/v3.15.0.tar.gz -O $@
+	touch $@
+deps/UglifyJS: deps/uglifyjs-v3.15.0.tar.gz | deps tmp
 	tar -C tmp -x -z -f $<
-	mv tmp/UglifyJS-3.9.2 $@
+	mv tmp/UglifyJS-3.15.0 $@
 	cd $@ && npm install
 	touch $@
 deps/coffee-script: | deps
@@ -1031,8 +1048,8 @@ doc/%.html: doc/%.txt
 	rst2html $< $@
 
 # Source distributable for end users.
-dist/source: prep-duktool | codepolicycheck dist
-	$(PYTHON) util/dist.py --output-directory $@
+dist/source: build/duktool.js prep-duktool | codepolicycheck dist
+	$(NODEJS) $< dist --validate-git --repo-directory . --output-directory $@
 	cp src-tools/duktool.js $@/tools/
 dist/duktape-$(DUK_VERSION_FORMATTED).tar: dist/source | dist
 	rm -rf dist/duktape-$(DUK_VERSION_FORMATTED) dist/duktape-$(DUK_VERSION_FORMATTED).*

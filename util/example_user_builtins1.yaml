@@ -8,9 +8,9 @@
 #
 #  See examples below for details on how to use these.
 #
-#  Note that genbuiltins.py and configure.py accept multiple user built-in
-#  YAML files, so that you can manage your custom strings and objects in
-#  individual YAML files for modularity.
+#  Note that configure tooling accepts multiple user built-in YAML files,
+#  so that you can manage your custom strings and objects in individual
+#  YAML files for modularity.
 #
 #  When using pointer compression, all ROM strings and objects need a number
 #  from the ROM pointer compression range (e.g. [0xf800,0xffff]).  By default
@@ -46,6 +46,10 @@ add_forced_strings:
   - str: "7"
   - str: "8"
   - str: "9"
+  - str:
+      type: symbol
+      variant: hidden
+      string: "Fixme"
 
   # Non-ascii strings: encode into UTF-8, map bytes to U+0000...U+00FF.
   # This encoding approach ensures byte purity which is important to allow
@@ -235,8 +239,8 @@ objects:
           type: object
           id: bi_circular1
 
-  # Example of unreachable objects; these will be dropped by genbuiltins.py
-  # with a note in the build log.
+  # Example of unreachable objects; these will be dropped by configure
+  # tooling with a note in the build log.
 
   - id: my_unreachable_object1
     add: true
