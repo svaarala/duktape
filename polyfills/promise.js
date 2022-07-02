@@ -28,6 +28,8 @@
  */
 
 (function () {
+    'use strict';
+
     if (typeof Promise !== 'undefined') { return; }
 
     // As far as the specification goes, almost all Promise settling is via
@@ -256,7 +258,7 @@
         // not always necessary.  There's also no need for alreadySettled
         // protections for the optimized cases either.
         var job = dequeueJob();
-        var tmp;
+        var tmp, res;
         if (!job) { return false; }
         if (job.then) {
             // PromiseResolveThenableJob
@@ -577,7 +579,7 @@
 
     // Define visible objects and properties.
     (function () {
-        def(this, 'Promise', cons);
+        def(new Function('return this')(), 'Promise', cons);
         def(cons, 'resolve', resolve);
         def(cons, 'reject', reject);
         def(cons, 'all', all);
