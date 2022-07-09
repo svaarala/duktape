@@ -2,15 +2,19 @@ name: Build
 on: [push, pull_request]
 jobs:
   build_duk_ubuntu:
-    name: Duk Ubuntu 18.04
-    runs-on: ubuntu-18.04
+    name: Duk Ubuntu 22.04
+    runs-on: ubuntu-22.04
     steps:
       - name: Checkout code
         uses: actions/checkout@v2
       - name: Install packages
         run: |
           sudo apt -qqy update
-          sudo apt -qqy install build-essential make python python-yaml bc git
+          sudo apt -qqy install build-essential make python3 python3-yaml bc git
+      - name: Install Node.js
+        uses: actions/setup-node@v3
+        with:
+          node-version: 16
       - name: Build
         run: |
           make build/duk build/dukd build/duk-g++ build/duk-clang build/duk-fuzzilli
@@ -20,14 +24,18 @@ jobs:
           build/duk dist-files/mandel.js
           build/duk-g++ dist-files/mandel.js
   build_duk_macos:
-    name: Duk macOS 10.15
-    runs-on: macos-10.15
+    name: Duk macOS 12
+    runs-on: macos-12
     steps:
       - name: Checkout code
         uses: actions/checkout@v2
       - name: Install packages
         run: |
           python2 -m pip install PyYAML
+      - name: Install Node.js
+        uses: actions/setup-node@v3
+        with:
+          node-version: 16
       - name: Build
         run: |
           make build/duk
@@ -36,8 +44,8 @@ jobs:
           build/duk -e "print(Duktape.env); print('Hello world!');"
           build/duk dist-files/mandel.js
   build_duk_windows:
-    name: Duk VS2019
-    runs-on: windows-2019
+    name: Duk VS2022
+    runs-on: windows-2022
     strategy:
       matrix:
         architecture: [ 'x86', 'amd64' ]
@@ -47,8 +55,8 @@ jobs:
       - name: Build
         shell: cmd
         run: |
-          REM call "C:\Program Files (x86)\Microsoft Visual Studio\2019\Enterprise\VC\Auxiliary\Build\vcvars64.bat"
-          call "C:\Program Files (x86)\Microsoft Visual Studio\2019\Enterprise\VC\Auxiliary\Build\vcvarsall.bat" ${{matrix.architecture}}
+          REM call "C:\Program Files\Microsoft Visual Studio\2022\Enterprise\VC\Auxiliary\Build\vcvars64.bat"
+          call "C:\Program Files\Microsoft Visual Studio\2022\Enterprise\VC\Auxiliary\Build\vcvarsall.bat" ${{matrix.architecture}}
           REM cl /?
           REM python2 -m pip install PyYAML
           REM python2 tools\configure.py --line-directives --output-directory prep-nondll --source-directory src-input --config-metadata config

@@ -3,46 +3,58 @@ on: [push, pull_request]
 jobs:
   ecmatest:
     name: Ecmatest
-    runs-on: ubuntu-18.04
+    runs-on: ubuntu-22.04
     steps:
       - name: Checkout code
         uses: actions/checkout@v2
       - name: Install packages
         run: |
           sudo apt -qqy update
-          sudo apt -qqy install build-essential make python python-yaml bc git nodejs
+          sudo apt -qqy install build-essential make python3 python3-yaml bc git
+      - name: Install Node.js
+        uses: actions/setup-node@v3
+        with:
+          node-version: 16
       - name: Build
         run: |
           make build/duk
       - name: Ecmatest
         run: |
-          make ecmatest
+          TZ=Europe/Helsinki make ecmatest
   apitest:
     name: Apitest
-    runs-on: ubuntu-18.04
+    runs-on: ubuntu-22.04
     steps:
       - name: Checkout code
         uses: actions/checkout@v2
       - name: Install packages
         run: |
           sudo apt -qqy update
-          sudo apt -qqy install build-essential make python python-yaml bc git nodejs
+          sudo apt -qqy install build-essential make python3 python3-yaml bc git
+      - name: Install Node.js
+        uses: actions/setup-node@v3
+        with:
+          node-version: 16
       - name: Build
         run: |
           make build/duk
       - name: Apitest
         run: |
-          make apitest
+          TZ=Europe/Helsinki make apitest
   misctests:
     name: Misc tests
-    runs-on: ubuntu-18.04
+    runs-on: ubuntu-22.04
     steps:
       - name: Checkout code
         uses: actions/checkout@v2
       - name: Install packages
         run: |
           sudo apt -qqy update
-          sudo apt -qqy install build-essential make python python-yaml bc git nodejs valgrind
+          sudo apt -qqy install build-essential make python2 python3 python3-yaml bc git valgrind
+      - name: Install Node.js
+        uses: actions/setup-node@v3
+        with:
+          node-version: 16
       - name: Configure test
         run: |
           make configuretest
@@ -51,14 +63,18 @@ jobs:
           make errorinjecttest
   lint:
     name: Lint
-    runs-on: ubuntu-18.04
+    runs-on: ubuntu-22.04
     steps:
       - name: Checkout code
         uses: actions/checkout@v2
       - name: Install packages
         run: |
           sudo apt -qqy update
-          sudo apt -qqy install build-essential make python python-yaml bc git tidy
+          sudo apt -qqy install build-essential make python2 python3 python3-yaml bc git tidy
+      - name: Install Node.js
+        uses: actions/setup-node@v3
+        with:
+          node-version: 16
       - name: Codepolicycheck
         run: |
           CI=1 make codepolicycheck
@@ -67,14 +83,18 @@ jobs:
           make tidy-site
   sourceformat:
     name: Source format
-    runs-on: ubuntu-20.04
+    runs-on: ubuntu-22.04
     steps:
       - name: Checkout code
         uses: actions/checkout@v2
       - name: Install packages
         run: |
           sudo apt -qqy update
-          sudo apt -qqy install make python zip unzip
+          sudo apt -qqy install make python3 python3-yaml zip unzip
+      - name: Install Node.js
+        uses: actions/setup-node@v3
+        with:
+          node-version: 16
       - name: Build clang-format docker image
         run: |
           make docker-image-clang-format
