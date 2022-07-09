@@ -71,6 +71,7 @@ and agreed to irrevocably license their contributions under the Duktape
 * Sam Hellawell (https://github.com/samhellawell)
 * Vladislavs Sokurenko (https://github.com/sokurenko)
 * Luca Boccassi (https://github.com/bluca)
+* Radu Rendec (https://github.com/rrendec)
 
 Other contributions
 ===================
