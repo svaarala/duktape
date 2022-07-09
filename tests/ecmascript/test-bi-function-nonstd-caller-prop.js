@@ -13,9 +13,8 @@
  */
 
 /*---
-{
-    "nonstandard": true
-}
+nonstandard: true
+skip: true
 ---*/
 
 function summarizeCaller(f) {

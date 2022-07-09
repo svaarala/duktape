@@ -5,6 +5,12 @@
  *  data etc.
  */
 
+/*---
+duktape_config:
+  DUK_USE_INTERRUPT_COUNTER: true
+  DUK_USE_DEBUGGER_SUPPORT: true
+---*/
+
 #define MANDELBROT ( \
 	"function mandel() {\n" \
 	"    var w = 76, h = 28, iter = 100;\n" \

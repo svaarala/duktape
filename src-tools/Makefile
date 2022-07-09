@@ -14,6 +14,7 @@ clean:
 cleanall: clean
 	-@rm -rf js-yaml
 	-@rm -rf from-xml
+	-@rm -rf lib/extdeps
 	-@rm -rf node_modules
 
 .PHONY: reformat

@@ -14,9 +14,9 @@
 /*@include util-object.js@*/
 
 /*---
-{
-    "custom": true
-}
+custom: true
+duktape_config:
+  DUK_USE_LIGHTFUNC_BUILTINS: true
 ---*/
 
 /*===

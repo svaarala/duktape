@@ -2,6 +2,11 @@
  *  Current CBOR decode fastint behavior.
  */
 
+/*---
+duktape_config:
+  DUK_USE_FASTINT: true
+---*/
+
 /*===
 - top level integer
 17 fastint

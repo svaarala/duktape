@@ -22,10 +22,11 @@ const LOOKUP1 = 26;
 const LOOKUP2 = 27;
 const SWITCH1 = 28;
 const SWITCH = 29;
-const UNUSED1 = 30; void UNUSED1;
+const UNUSED1 = 30;
+void UNUSED1;
 const EIGHTBIT = 31;
 
-const charLookup = '0123456789_ \x82\x80"{';  // special characters
+const charLookup = '0123456789_ \x82\x80"{'; // special characters
 
 function isCodepointLower(cp) {
     return (cp >= 0x61 && cp <= 0x7a);
@@ -136,9 +137,11 @@ function test() {
     var u8 = be.getBytes();
     // From Python genbuiltins.py:
     // acc929f2538a1a6d1d2d3d4d5d6d7d8d9d0f9080
-    var expectU8 = new Uint8Array([ 0xac, 0xc9, 0x29, 0xf2, 0x53, 0x8a, 0x1a, 0x6d, 0x1d,
-                                    0x2d, 0x3d, 0x4d, 0x5d, 0x6d, 0x7d, 0x8d, 0x9d, 0x0f,
-                                    0x90, 0x80 ]);
+    var expectU8 = new Uint8Array([
+        0xac, 0xc9, 0x29, 0xf2, 0x53, 0x8a, 0x1a, 0x6d, 0x1d,
+        0x2d, 0x3d, 0x4d, 0x5d, 0x6d, 0x7d, 0x8d, 0x9d, 0x0f,
+        0x90, 0x80
+    ]);
     assert(u8.length === expectU8.length);
     for (let i = 0; i < u8.length; i++) {
         assert(u8[i] === expectU8[i]);

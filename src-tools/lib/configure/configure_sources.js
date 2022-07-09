@@ -61,8 +61,8 @@ function createSourcePrologue(args) {
 // Create duktape.h, using @KEYWORD@ replacements.
 function createDuktapeH(inputDirectory, outputDirectory, tempDirectory, replacements) {
     copyFileUtf8AtSignReplace(pathJoin(inputDirectory, 'duktape.h.in'),
-                              pathJoin(outputDirectory, 'duktape.h'),
-                              replacements);
+        pathJoin(outputDirectory, 'duktape.h'),
+        replacements);
 }
 
 // Extract a matcher for a codepoint set.
@@ -71,7 +71,8 @@ function extractChars(cpMap, includeList, excludeList) {
     var codepoints = numericSort(filteredCpMap.map((ent) => Number(ent.cp)));
     var ranges = codepointSequenceToRanges(codepoints);
     var { data, nbits, freq } = generateMatchTable3(ranges);
-    void nbits; void freq;
+    void nbits;
+    void freq;
     return { data, ranges };
 }
 
@@ -110,10 +111,10 @@ function generateUnicodeFiles(unicodeDataFile, specialCasingFile, tempDirectory,
     //console.log(needcheck);
 
     // Category helpers for matchers.
-    var catsWs = [ 'Zs' ];
-    var catsLetter = [ 'Lu', 'Ll', 'Lt', 'Lm', 'Lo' ];
-    var catsIdStart = [ 'Lu', 'Ll', 'Lt', 'Lm', 'Lo', 'Nl', 0x0024, 0x005f ];
-    var catsIdPart = [ 'Lu', 'Ll', 'Lt', 'Lm', 'Lo', 'Nl', 0x0024, 0x005f, 'Mn', 'Mc', 'Nd', 'Pc', 0x200c, 0x200d ];
+    var catsWs = ['Zs'];
+    var catsLetter = ['Lu', 'Ll', 'Lt', 'Lm', 'Lo'];
+    var catsIdStart = ['Lu', 'Ll', 'Lt', 'Lm', 'Lo', 'Nl', 0x0024, 0x005f];
+    var catsIdPart = ['Lu', 'Ll', 'Lt', 'Lm', 'Lo', 'Nl', 0x0024, 0x005f, 'Mn', 'Mc', 'Nd', 'Pc', 0x200c, 0x200d];
 
     // Matchers for various codepoint sets.
     var matchWs = extractChars(cpMap, catsWs, []);
@@ -121,14 +122,14 @@ function generateUnicodeFiles(unicodeDataFile, specialCasingFile, tempDirectory,
     //var matchLetterNoa = extractChars(cpMap, catsLetter, [ 'ASCII' ]);
     //var matchLetterNoabmp = extractChars(cpMap, catsLetter, [ 'ASCII', 'NONBMP' ]);
     //var matchIdStart = extractChars(cpMap, catsIdStart, []);
-    var matchIdStartNoa = extractChars(cpMap, catsIdStart, [ 'ASCII' ]);
-    var matchIdStartNoabmp = extractChars(cpMap, catsIdStart, [ 'ASCII', 'NONBMP' ]);
+    var matchIdStartNoa = extractChars(cpMap, catsIdStart, ['ASCII']);
+    var matchIdStartNoabmp = extractChars(cpMap, catsIdStart, ['ASCII', 'NONBMP']);
     //var matchIdStartMinusLetter = extractChars(cpMap, catsIdStart, catsLetter);
-    var matchIdStartMinusLetterNoa = extractChars(cpMap, catsIdStart, catsLetter.concat([ 'ASCII' ]));
-    var matchIdStartMinusLetterNoabmp = extractChars(cpMap, catsIdStart, catsLetter.concat([ 'ASCII', 'NONBMP' ]));
+    var matchIdStartMinusLetterNoa = extractChars(cpMap, catsIdStart, catsLetter.concat(['ASCII']));
+    var matchIdStartMinusLetterNoabmp = extractChars(cpMap, catsIdStart, catsLetter.concat(['ASCII', 'NONBMP']));
     //var matchIdPartMinusIdStart = extractChars(cpMap, catsIdPart, catsIdStart);
-    var matchIdPartMinusIdStartNoa = extractChars(cpMap, catsIdPart, catsIdStart.concat([ 'ASCII' ]));
-    var matchIdPartMinusIdStartNoabmp = extractChars(cpMap, catsIdPart, catsIdStart.concat([ 'ASCII', 'NONBMP' ]));
+    var matchIdPartMinusIdStartNoa = extractChars(cpMap, catsIdPart, catsIdStart.concat(['ASCII']));
+    var matchIdPartMinusIdStartNoabmp = extractChars(cpMap, catsIdPart, catsIdStart.concat(['ASCII', 'NONBMP']));
 
     // Generate C/H files.
 
@@ -232,7 +233,7 @@ function generateUnicodeFiles(unicodeDataFile, specialCasingFile, tempDirectory,
     }
 
     emitCaseconvTables(convUcNoa, convLcNoa);
-    emitMatchTable(matchWs, 'duk_unicode_ws');  // not used runtime, but dump is useful
+    emitMatchTable(matchWs, 'duk_unicode_ws'); // not used runtime, but dump is useful
     emitMatchTable(matchIdStartNoa, 'duk_unicode_ids_noa');
     emitMatchTable(matchIdStartNoabmp, 'duk_unicode_ids_noabmp');
     emitMatchTable(matchIdStartMinusLetterNoa, 'duk_unicode_ids_m_let_noa');
@@ -299,8 +300,14 @@ function configureSources(args) {
     gitCommitCString = cStrEncode(gitCommit);
     gitBranchCString = cStrEncode(gitBranch);
     gitDescribeCString = cStrEncode(gitDescribe);
-    console.debug({ gitCommit, gitDescribe, gitBranch,
-                    gitCommitCString, gitDescribeCString, gitBranchCString });
+    console.debug({
+        gitCommit,
+        gitDescribe,
+        gitBranch,
+        gitCommitCString,
+        gitDescribeCString,
+        gitBranchCString
+    });
 
     // Create output directory.
     mkdir(outputDirectory);
@@ -361,9 +368,14 @@ function configureSources(args) {
 
     // Generate strings and built-in files from YAML metadata.
     var {
-        preparedRomMetadata, unaugmentedRomMetadata, prettyRomMetadata,
-        preparedRamMetadata, unaugmentedRamMetadata, prettyRamMetadata,
-        sourceString: biSrc, headerString: biHdr,
+        preparedRomMetadata,
+        unaugmentedRomMetadata,
+        prettyRomMetadata,
+        preparedRamMetadata,
+        unaugmentedRamMetadata,
+        prettyRamMetadata,
+        sourceString: biSrc,
+        headerString: biHdr,
         builtinsMetadata
     } = generateBuiltins({
         objectsMetadataFile: pathJoin(sourceDirectory, 'builtins.yaml'),
@@ -374,7 +386,8 @@ function configureSources(args) {
         activeOpts: cfgres.activeOpts,
         romAutoLightFunc,
     });
-    void preparedRomMetadata; void preparedRamMetadata;
+    void preparedRomMetadata;
+    void preparedRamMetadata;
     writeFileYamlPretty(pathJoin(tempDirectory, 'rom_meta_unaugmented.yaml'), unaugmentedRomMetadata);
     writeFileUtf8(pathJoin(tempDirectory, 'rom_meta_pretty.txt'), prettyRomMetadata + '\n');
     writeFileYamlPretty(pathJoin(tempDirectory, 'ram_meta_unaugmented.yaml'), unaugmentedRamMetadata);
@@ -386,19 +399,24 @@ function configureSources(args) {
     generateUnicodeFiles(unicodeDataFile, specialCasingFile, tempDirectory, srcGenDirectory);
 
     // Generate source prologue.
-    var prologueData = createSourcePrologue({ dukVersionFormatted, gitCommit, gitDescribe, gitBranch,
-                                              licenseFile: pathJoin(tempDirectory, 'LICENSE.txt.tmp'),
-                                              authorsFile: pathJoin(tempDirectory, 'AUTHORS.rst.tmp') });
+    var prologueData = createSourcePrologue({
+        dukVersionFormatted,
+        gitCommit,
+        gitDescribe,
+        gitBranch,
+        licenseFile: pathJoin(tempDirectory, 'LICENSE.txt.tmp'),
+        authorsFile: pathJoin(tempDirectory, 'AUTHORS.rst.tmp')
+    });
     writeFileUtf8(pathJoin(tempDirectory, 'prologue.tmp'), prologueData);
 
     // Combine sources,including autogenerated Unicode tables.
-    var tmpSourceFiles = sourceFiles.concat([ 'duk_builtins.c' ]);
+    var tmpSourceFiles = sourceFiles.concat(['duk_builtins.c']);
     var sourceList = selectCombinedSources(tmpSourceFiles, srcTempDirectory);
     var combinedSource, combinedMetadata;
     ({ combinedSource: combinedSource, metadata: combinedMetadata } = combineSources({
         sourceFiles: sourceList,
-        includeExcluded: [ 'duk_config.h', 'duktape.h' ],
-        includePaths: [ srcTempDirectory, srcGenDirectory ],
+        includeExcluded: ['duk_config.h', 'duktape.h'],
+        includePaths: [srcTempDirectory, srcGenDirectory],
         prologueFileName: pathJoin(tempDirectory, 'prologue.tmp'),
         lineDirectives
     }));

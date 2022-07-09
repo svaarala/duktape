@@ -4,27 +4,27 @@ const path = require('path');
 const nodeExternals = require('webpack-node-externals');
 
 module.exports = {
-    entry: './index.js',
+    entry: ['./index.js'],
+    //entry: [ 'babel-polyfill', './index.js' ],
     mode: 'development',
     output: {
         path: path.resolve(__dirname),
         filename: 'duktool.js'
     },
     target: 'node',
-    externals: [ nodeExternals() ],
+    externals: [nodeExternals()],
     module: {
-        rules: [
-            {
-                test: /\.m?js$/,
-                exclude: /(node_modules|bower_components)/,
-                use: {
-                    loader: "babel-loader",
-                    options: {
-                        presets: [ '@babel/preset-env' ]
-                    }
+        rules: [{
+            test: /\.m?js$/,
+            exclude: /bower_components/,
+            //exclude: /(node_modules|bower_components)/,
+            use: {
+                loader: "babel-loader",
+                options: {
+                    presets: ['@babel/preset-env']
                 }
             }
-        ]
+        }]
     },
     /*
     node: {

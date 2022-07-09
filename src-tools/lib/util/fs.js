@@ -81,7 +81,7 @@ function listDir(dir) {
         const fs = require('fs');
         return fs.readdirSync(dir);
     } else if (isDuktape()) {
-        return execStdoutUtf8([ 'ls', '-a', dir ]).split('\n').filter((fn) => {
+        return execStdoutUtf8(['ls', '-a', dir]).split('\n').filter((fn) => {
             return fn !== '' && fn !== '.' && fn !== '..';
         });
     } else {
@@ -94,7 +94,7 @@ function getCwd() {
     if (isNodejs()) {
         return process.cwd();
     } else if (isDuktape()) {
-        return execStdoutUtf8([ 'pwd' ]).split('\n')[0];
+        return execStdoutUtf8(['pwd']).split('\n')[0];
     } else {
         throw new TypeError('no provider for getCwd');
     }
@@ -113,7 +113,7 @@ function dirname(pathArg) {
     } else if (isDuktape()) {
         let parts = pathArg.replace(/\/+/g, '/').split('/');
         if (parts.length >= 1 && parts[parts.length - 1] === '') {
-            parts.pop();  // strip trailing slash
+            parts.pop(); // strip trailing slash
         }
         if (parts.length >= 1) {
             parts.pop();
@@ -159,7 +159,7 @@ function basename(pathArg) {
     } else if (isDuktape()) {
         let parts = pathArg.replace(/\/+/g, '/').split('/');
         if (parts.length >= 1 && parts[parts.length - 1] === '') {
-            parts.pop();  // strip trailing slash
+            parts.pop(); // strip trailing slash
         }
         if (parts.length >= 1) {
             return parts[parts.length - 1];
@@ -216,7 +216,7 @@ function pathExists(path) {
         const fs = require('fs');
         return fs.existsSync(path);
     } else if (isDuktape()) {
-        let res = exec([ 'test', '-e', path ]);
+        let res = exec(['test', '-e', path]);
         return !res.error;
     } else {
         throw new TypeError('no provider for pathExists');
@@ -229,7 +229,7 @@ function fileExists(path) {
         const fs = require('fs');
         return fs.existsSync(path) && fs.lstatSync(path).isFile();
     } else if (isDuktape()) {
-        let res = exec([ 'test', '-f', path ]);
+        let res = exec(['test', '-f', path]);
         return !res.error;
     } else {
         throw new TypeError('no provider for fileExists');
@@ -242,7 +242,7 @@ function dirExists(path) {
         const fs = require('fs');
         return fs.existsSync(path) && fs.lstatSync(path).isDirectory();
     } else if (isDuktape()) {
-        let res = exec([ 'test', '-d', path ]);
+        let res = exec(['test', '-d', path]);
         return !res.error;
     } else {
         throw new TypeError('no provider for dirExists');
@@ -280,7 +280,7 @@ function mkdir(pathArg) {
         const fs = require('fs');
         fs.mkdirSync(pathArg);
     } else if (isDuktape()) {
-        void execStdoutUtf8([ 'mkdir', pathArg ]);
+        void execStdoutUtf8(['mkdir', pathArg]);
     } else {
         throw new TypeError('no provider for mkdir');
     }
@@ -288,27 +288,64 @@ function mkdir(pathArg) {
 exports.mkdir = mkdir;
 
 // Get a time-based path component, should be filename safe and sort nicely.
+var tempCounter = 0;
+
 function getTimeBasedPathComponent() {
-    return Date.now().toString(36);
+    return Date.now().toString(36) + '-' + (++tempCounter);
+}
+
+const tempDirsCreated = [];
+
+function deleteTempDirectories() {
+    while (tempDirsCreated.length > 0) {
+        let path = tempDirsCreated.pop();
+        if (path.indexOf('tmp.duk-') < 0 || !path.startsWith('/tmp')) {
+            console.warn('ignoring unsafe looking temp path:', path);
+            return;
+        }
+        if (isNodejs()) {
+            console.debug('deleting temp directory:', path);
+            require('fs').rmSync(path, { recursive: true }); // Recursive as of Node.js 12.10.0
+        } else if (isDuktape()) {
+            console.debug('deleting temp directory:', path);
+            let cmd = ['rm', '-rf', path];
+            //console.log(cmd);
+            void execStdoutUtf8(cmd);
+        } else {
+            console.log('unknown engine, not deleting:', path);
+        }
+    }
+    tempDirsCreated.length = 0;
+}
+exports.deleteTempDirectories = deleteTempDirectories;
+
+if (isNodejs()) {
+    process.on('beforeExit', (code) => {
+        deleteTempDirectories();
+    });
 }
 
 function createTempDir(args) {
     var timeComp = getTimeBasedPathComponent();
-    void args;
+    var res;
+    args = args || {};
 
     if (isNodejs()) {
         const os = require('os');
         const fs = require('fs');
         const path = require('path');
-        let res = fs.mkdtempSync(path.join(os.tmpdir(), 'tmp.duk-' + timeComp + '-'));
-        console.log('created temp directory:', res);
-        return res;
+        res = fs.mkdtempSync(path.join(os.tmpdir(), 'tmp.duk-' + timeComp + '-'));
+        console.debug('created temp directory:', res);
     } else if (isDuktape()) {
-        let res = execStdoutUtf8([ 'mktemp', '-d', '-q', '/tmp/tmp.duk-' + timeComp + '-XXXXXX' ]).trim();
-        console.log('created temp directory:', res);
-        return res;
+        res = execStdoutUtf8(['mktemp', '-d', '-q', '/tmp/tmp.duk-' + timeComp + '-XXXXXX']).trim();
+        console.debug('created temp directory:', res);
     } else {
         throw new TypeError('no provider for mkdir');
     }
+
+    if (!args.keep) {
+        tempDirsCreated.push(res);
+    }
+    return res;
 }
 exports.createTempDir = createTempDir;

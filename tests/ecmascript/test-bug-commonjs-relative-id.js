@@ -5,9 +5,9 @@
  */
 
 /*---
-{
-    "custom": true
-}
+custom: true
+duktape_extras:
+  module-duktape: true
 ---*/
 
 /*===

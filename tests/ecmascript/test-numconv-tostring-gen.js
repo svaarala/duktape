@@ -29581,12 +29581,6 @@ function test() {
 }
 
 try {
-    if (this.__engine__ === 'rhino') {
-        // Rhino 1.7 release 3 2012 02 16
-        print('Rhino infinite loops on some denormals, so skip test entirely.');
-        throw new Error('Rhino execution skipped');
-    }
-
     test();
 } catch (e) {
     print(e);

@@ -5,7 +5,7 @@ const { createBareObject } = require('../util/bare');
 const { stripLastNewline } = require('../util/string_util');
 
 const re_line_provides = /^#(?:define|undef)\s+(\w+).*$/g;
-const re_line_requires = /(DUK_[A-Z0-9_]+)/g;  // uppercase only, don't match 'DUK_USE_xxx' for example
+const re_line_requires = /(DUK_[A-Z0-9_]+)/g; // uppercase only, don't match 'DUK_USE_xxx' for example
 
 /* Strip C/C++ comments of any DUK_ prefixed text to avoid incorrect
  * requires/provides detection.  Other comment text is kept.
@@ -34,14 +34,14 @@ function Snippet(arg) {
         this.lines = arg;
     } else if (typeof arg === 'string') {
         filename = arg;
-        let data = stripLastNewline(readFileUtf8(arg));  // Strip last newline to avoid empty line.
+        let data = stripLastNewline(readFileUtf8(arg)); // Strip last newline to avoid empty line.
         this.lines = data.split('\n');
     } else {
         throw new TypeError('invalid argument');
     }
 
     if (filename) {
-        let snippetDir = pathJoin(filename, '..', '..', 'header-snippets');  // This hardcoding is awkward.
+        let snippetDir = pathJoin(filename, '..', '..', 'header-snippets'); // This hardcoding is awkward.
         this.lines = this.lines.flatMap((line) => {
             if (line.startsWith('#snippet')) {
                 let m = /#snippet\s+"(.*?)"/.exec(line);

@@ -10,7 +10,7 @@ function formatSymbol(sym) {
         return '\x81' + sym.string + '\xff';
     case 'userhidden':
         return '\xff' + sym.string;
-    case 'hidden':  // Duktape hidden Symbol
+    case 'hidden': // Duktape hidden Symbol
         return '\x82' + sym.string;
     }
 

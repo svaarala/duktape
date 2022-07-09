@@ -14,9 +14,8 @@
 // P5: created by P1 unhandled rejection, handled by P3 unhandled rejection
 
 /*---
-{
-    "skip": true
-}
+duktape_polyfills:
+  promise: true
 ---*/
 
 /*@include util-promise.js@*/

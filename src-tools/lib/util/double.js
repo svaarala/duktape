@@ -70,9 +70,9 @@ function shuffleDoubleBytesFromBigEndian(src, dst, doubleByteOrder) {
     assert(typeof doubleByteOrder === 'string');
 
     var indexList = ({
-        big:    [ 0, 1, 2, 3, 4, 5, 6, 7 ],
-        little: [ 7, 6, 5, 4, 3, 2, 1, 0 ],
-        mixed:  [ 3, 2, 1, 0, 7, 6, 5, 4 ]
+        big: [0, 1, 2, 3, 4, 5, 6, 7],
+        little: [7, 6, 5, 4, 3, 2, 1, 0],
+        mixed: [3, 2, 1, 0, 7, 6, 5, 4]
     })[doubleByteOrder];
     assert(indexList);
 

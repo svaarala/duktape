@@ -79,10 +79,6 @@ function buildNumber(exp) {
 function expOverflowUnderflowTest() {
     var i, str, radix, t, val;
 
-    if (this.__engine__ === 'rhino') {
-        throw new Error("Rhino forever loops on some exponents, so skip test on Rhino");
-    }
-
     for (radix = 2; radix <= 36; radix++) {
         // These limits are enough for binary radix too: they cover the
         // valid range (about +/- 1000) and go over enough to hit the

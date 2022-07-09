@@ -47,7 +47,7 @@ async function executeCTestcase({ cExeFilename }) {
     return { stdout, startTime, endTime };
 }
 
-async function executeTestcase({ testcaseType, dukCommandFilename, dukLibraryFilename, preparedFilename, duktapeDirectory, tempDirectory }) {
+async function executeTestcase({ testcaseType, dukCommandFilename, dukLibraryFilename, prepDirectory, preparedFilename, tempDirectory }) {
     var count = 1;
     var results = [];
     var durations = [];
@@ -56,7 +56,7 @@ async function executeTestcase({ testcaseType, dukCommandFilename, dukLibraryFil
     var cExeFilename;
     if (testcaseType === 'c') {
         ({ cExeFilename } = await compileCTestcase({
-            duktapeDirectory,
+            prepDirectory,
             tempDirectory,
             preparedFilename,
             dukLibraryFilename

@@ -57,6 +57,7 @@ exports.hashBytes = hashBytes;
 const DUK__STRHASH_SHORTSTRING = 4096;
 const DUK__STRHASH_MEDIUMSTRING = 256 * 1024;
 const DUK__STRHASH_BLOCKSIZE = 256;
+
 function hashStringDense(x, hash_seed, big_endian, strhash16) {
     if (typeof x === 'string') {
         x = bstrToUint8Array(x);
@@ -97,7 +98,7 @@ exports.hashStringDense = hashStringDense;
 
 // Compute a string hash identical to duk_heap_hashstring() when sparse
 // hashing is enabled.
-const DUK__STRHASH_SKIP_SHIFT = 5;  // assumes default value
+const DUK__STRHASH_SKIP_SHIFT = 5; // assumes default value
 
 function hashStringSparse(x, hash_seed, strhash16) {
     if (typeof x === 'string') {

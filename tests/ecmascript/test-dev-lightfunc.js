@@ -19,9 +19,10 @@
 /*@include util-object.js@*/
 
 /*---
-{
-    "custom": true
-}
+custom: true
+duktape_config:
+  DUK_USE_FASTINT: true
+  DUK_USE_LIGHTFUNC_BUILTINS: true
 ---*/
 
 /* Some additional Function.prototype properties expected by tests below. */
@@ -543,7 +544,7 @@ caching: false
 length: 2 2
 name: light_PTR_002f light_PTR_002f
 typeof: function function
-internal prototype is Function.prototype: true true
+internal prototype is NativeFunction prototype, inheriting from Function.prototype: true true
 external prototype is not set: true
 internal prototypes match: true
 external prototypes match (do not exist): true
@@ -572,9 +573,9 @@ function toObjectTest() {
     print('length:', lightFunc.length, normalFunc.length);
     print('name:', sanitizeLfunc(lightFunc.name), sanitizeLfunc(normalFunc.name));
     print('typeof:', typeof lightFunc, typeof normalFunc);
-    print('internal prototype is Function.prototype:',
-          Object.getPrototypeOf(lightFunc) === Function.prototype,
-          Object.getPrototypeOf(normalFunc) === Function.prototype);
+    print('internal prototype is NativeFunction prototype, inheriting from Function.prototype:',
+          Object.getPrototypeOf(Object.getPrototypeOf(lightFunc)) === Function.prototype,
+          Object.getPrototypeOf(Object.getPrototypeOf(normalFunc)) === Function.prototype);
     print('external prototype is not set:',
           lightFunc.prototype === undefined);
     print('internal prototypes match:',
@@ -1177,8 +1178,8 @@ toString coerced object (return "length")
 read from length -> 2
 read from testWritable -> 123
 read from testNonWritable -> 234
-read from call -> function light_PTR_001f() { [lightfunc code] }
-read from apply -> function light_PTR_0022() { [lightfunc code] }
+read from call -> function call() { [native code] }
+read from apply -> function apply() { [native code] }
 read from nonexistent -> undefined
 ===*/
 
@@ -1350,23 +1351,23 @@ try {
 
 /*===
 property delete test
-delete: length -> false
+delete: length -> true
 delete: prototype -> true
-delete: name -> false
+delete: name -> true
 toString coerced object (return "length")
 toString coerced object (return "length")
-delete: length -> false
+delete: length -> true
 delete: testWritable -> true
 delete: testNonWritable -> true
 delete: call -> true
 delete: apply -> true
 delete: nonexistent -> true
-delete: length -> TypeError
+delete: length -> true
 delete: prototype -> true
-delete: name -> TypeError
+delete: name -> true
 toString coerced object (return "length")
 toString coerced object (return "length")
-delete: length -> TypeError
+delete: length -> true
 delete: testWritable -> true
 delete: testNonWritable -> true
 delete: call -> true
@@ -1380,16 +1381,12 @@ function propertyDeleteTest() {
     var lightFunc = getLightFunc();
 
     /*
-     *  Property deletions only affect own properties.  Since all lightfunc
-     *  virtual properties are non-configurable:
-     *
-     *    - Own (virtual) property: not configurable
-     *    - Non-existent property: silent success
+     *  Property deletions only affect own properties.
      */
 
     // existence for own properties and a few inherited
     var testKeys = [
-      'length', 'prototype', 'name', // own
+      'length', 'prototype', 'name', // (sometimes) own
       objLengthKey,                  // own, object coerces to 'length'
       'testWritable',                // inherited
       'testNonWritable',             // inherited
@@ -1629,7 +1626,7 @@ try {
 /*===
 traceback test
 URIError: invalid input
-    at [anon] (duk_bi_global.c:NNN) internal
+    at [anon] (SOURCE:NNN) internal
     at light_PTR_0011 light strict preventsyield
     at tracebackTest (TESTCASE:NNN)
     at global (TESTCASE:NNN) preventsyield
@@ -1789,8 +1786,7 @@ try {
 
 /*===
 getOwnPropertyNames() test
-length,name
-length
+name
 name
 ===*/
 
@@ -1818,12 +1814,9 @@ key: name
 value: string light_PTR_0511
 writable: boolean false
 enumerable: boolean false
-configurable: boolean false
+configurable: boolean true
 key: length
-value: number 1
-writable: boolean false
-enumerable: boolean false
-configurable: boolean false
+no descriptor
 key: nonExistent
 no descriptor
 ===*/
@@ -1856,7 +1849,7 @@ try {
 /*===
 hasOwnProperty() test
 true
-true
+false
 false
 false
 ===*/
@@ -1904,7 +1897,7 @@ try {
 /*===
 defineProperty() test
 nonexistent: success
-name: TypeError
+name: success
 length: success
 ===*/
 
@@ -1975,7 +1968,7 @@ function definePropertyTest() {
         print('nonexistent:', e.name);
     }
 
-    // Existing non-configurable property with a different value: rejected
+    // Existing configurable property with a different value: allowed
     // as part of normal defineProperty() handling.
     try {
         Object.defineProperty(lf, 'name', {
@@ -1986,8 +1979,7 @@ function definePropertyTest() {
         print('name:', e.name);
     }
 
-    // Existing non-configurable property with same value as before: accepted
-    // as part of normal defineProperty() handling.
+    // Non-existent own property: accepted.
     try {
         Object.defineProperty(lf, 'length', {
             value: 2, writable: false, enumerable: false, configurable: false
@@ -2008,7 +2000,7 @@ try {
 /*===
 defineProperties() test
 nonexistent: success
-name: TypeError
+name: success
 length: success
 ===*/
 
@@ -2030,7 +2022,7 @@ function definePropertiesTest() {
         print('nonexistent:', e.name);
     }
 
-    // Existing non-configurable property, different value
+    // Existing configurable property, different value, accepted.
     try {
         Object.defineProperties(lf, { name: {
             value: 123, writable: true, enumerable: true, configurable: true
@@ -2040,7 +2032,7 @@ function definePropertiesTest() {
         print('name:', e.name);
     }
 
-    // Existing non-configurable property, same value
+    // Non-existent property.
     try {
         Object.defineProperties(lf, { length: {
             value: 2, writable: false, enumerable: false, configurable: false
@@ -2060,6 +2052,8 @@ try {
 
 /*===
 getPrototypeOf() test
+false
+false
 true
 true
 ===*/
@@ -2069,6 +2063,8 @@ function getPrototypeOfTest() {
 
     print(Object.getPrototypeOf(lfunc) === Function.prototype);
     print(lfunc.__proto__ === Function.prototype);
+    print(Object.getPrototypeOf(Object.getPrototypeOf(lfunc)) === Function.prototype);
+    print(lfunc.__proto__.__proto__ === Function.prototype);
 }
 
 try {
@@ -2665,7 +2661,8 @@ try {
 Object built-in test
 Object: function {_func:true}
 new Object: function {_func:true}
-getPrototypeOf: function {_func:true}
+getPrototypeOf: object {}
+getPrototypeOf*2: function {_func:true}
 setPrototypeOf: TypeError
 seal: function {_func:true}
 freeze: function {_func:true}
@@ -2692,6 +2689,7 @@ function objectBuiltinTest() {
 
     testTypedJx(function () { return new Object(lfunc); }, 'new Object');
     testTypedJx(function () { return Object.getPrototypeOf(lfunc); }, 'getPrototypeOf');
+    testTypedJx(function () { return Object.getPrototypeOf(Object.getPrototypeOf(lfunc)); }, 'getPrototypeOf*2');
     testTypedJx(function () { return Object.setPrototypeOf(lfunc, {}); }, 'setPrototypeOf');
     testTypedJx(function () { return Object.seal(lfunc); }, 'seal');
     testTypedJx(function () { return Object.freeze(lfunc); }, 'freeze');
@@ -2825,7 +2823,7 @@ RegExp: object {}
 new RegExp: object {}
 exec: TypeError
 test: TypeError
-toString: TypeError
+toString: string "/undefined/undefined"
 valueOf: function {_func:true}
 ===*/
 

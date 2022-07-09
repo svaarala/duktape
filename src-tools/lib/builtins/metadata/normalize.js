@@ -62,7 +62,7 @@ function mergeStringEntries(meta) {
     // "win" and keep its place (this matters for reserved words).
 
     var strs = [];
-    var strMap = createBareObject({});   // plain string -> object in strs[]
+    var strMap = createBareObject({}); // plain string -> object in strs[]
     var numDuplicates = 0;
 
     for (let i = meta.strings.length - 1; i >= 0; i--) {
@@ -83,7 +83,7 @@ function mergeStringEntries(meta) {
             }
             numDuplicates++;
         } else {
-            strs.push(s);  // reverse order at this point
+            strs.push(s); // reverse order at this point
             strMap[s.str] = s;
         }
     }
@@ -139,7 +139,7 @@ function normalizePropertyAttributes(meta) {
         // If missing, set default attributes.
         let attrs = origAttrs;
         if (typeof attrs === 'undefined') {
-            attrs = (isAccessor ? 'ca' : 'wc');  // accessor: configurable; data: writable+configurable
+            attrs = (isAccessor ? 'ca' : 'wc'); // accessor: configurable; data: writable+configurable
         }
 
         // Decode flags to normalize their order in the end.
@@ -152,9 +152,9 @@ function normalizePropertyAttributes(meta) {
 
         // Normalize order and write back.
         attrs = (writable ? 'w' : '') +
-                (enumerable ? 'e' : '') +
-                (configurable ? 'c' : '') +
-                (accessor ? 'a' : '');
+            (enumerable ? 'e' : '') +
+            (configurable ? 'c' : '') +
+            (accessor ? 'a' : '');
         p.attributes = attrs;
 
         if (origAttrs !== attrs) {
@@ -199,8 +199,8 @@ function normalizePropertyShorthand(meta) {
             special_call: propDefault(val, 'special_call', false)
         });
         let funName = (typeof val.name !== 'undefined' ? val.name : funProp.key);
-        props.push({ key: 'length', value: val.length, attributes: 'c' });  // Configurable in ES2015
-        props.push({ key: 'name', value: funName, attributes: 'c' });  // Configurable in ES2015
+        props.push({ key: 'length', value: val.length, attributes: 'c' }); // Configurable in ES2015
+        props.push({ key: 'name', value: funName, attributes: 'c' }); // Configurable in ES2015
         return obj;
     }
 
@@ -297,7 +297,7 @@ function normalizePropertyShorthand(meta) {
         });
 
         void val;
-        throw new TypeError('shorthand arrays not supported');  // XXX: add structured array support
+        throw new TypeError('shorthand arrays not supported'); // XXX: add structured array support
     }
 
     // Decode structured JSON-like values into objects.
@@ -310,7 +310,6 @@ function normalizePropertyShorthand(meta) {
     // but omitting e.g. value.
     function clonePropShared(prop) {
         let res = jsonDeepClone(prop);
-        delete res.value;
         return res;
     }
 
@@ -333,7 +332,7 @@ function normalizePropertyShorthand(meta) {
                 newProp.value = { type: 'object', id: subFun['id'] };
                 replProps.push(newProp);
             } else if (typeof prop.value === 'object' && prop.value !== null && prop.value.type === 'accessor' &&
-               ('getter' in prop.value || 'setter' in prop.value)) {
+                ('getter' in prop.value || 'setter' in prop.value)) {
                 // Accessor normal and shorthand forms both use the type 'accessor',
                 // but are differentiated by properties.
                 let subGetter = decodeGetterShorthand(prop.key, prop);
@@ -346,7 +345,7 @@ function normalizePropertyShorthand(meta) {
                 if (subSetter) {
                     newProp.value.setter_id = subSetter['id'];
                 }
-                assert(newProp.attributes.indexOf('a') >= 0);  // If missing, weird things happen runtime.
+                assert(newProp.attributes.indexOf('a') >= 0); // If missing, weird things happen runtime.
                 replProps.push(newProp);
             } else if (typeof prop.value === 'object' && prop.value !== null && prop.value.type === 'structured') {
                 let subVal = decodeStructuredShorthand(prop);
@@ -410,8 +409,8 @@ function removeDisabled(meta) {
     let totalCount = countDisabledObject + countDroppedProperty + countDisabledProperty;
     if (totalCount > 0) {
         console.debug('removed ' + countDisabledObject + ' disabled objects, ' +
-                      countDroppedProperty + ' dropped properties (owning object dropped), ' +
-                      countDisabledProperty + ' disabled properties');
+            countDroppedProperty + ' dropped properties (owning object dropped), ' +
+            countDisabledProperty + ' disabled properties');
     }
 }
 

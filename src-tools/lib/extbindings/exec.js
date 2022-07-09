@@ -34,10 +34,9 @@ function exec(cmdArg, opts) {
         // Duktape
         sysExecute('rm -f /tmp/duk-stdout /tmp/duk-stderr');
         let cmdline = cmdArg[0] + ' ' + cmdArg.slice(1).map(execEscape).join(' ') + ' >/tmp/duk-stdout 2>/tmp/duk-stderr';
-        //console.log('EXECUTE: ' + cmdline);
         let error;
         try {
-             sysExecute(cmdline);
+            sysExecute(cmdline);
         } catch (e) {
             error = e;
         }
@@ -50,14 +49,32 @@ function exec(cmdArg, opts) {
         const child_process = require('child_process');
         let args = cmdArg.slice(1);
         let cmd = cmdArg[0];
-        let res = child_process.spawnSync(cmd, args, {});
-        return {
+        let res;
+        try {
+            res = child_process.spawnSync(cmd, args, {});
+        } catch (e) {
+            return {
+                stdout: new Uint8Array(0),
+                stderr: new Uint8Array(0),
+                status: 1,
+                error: e
+            };
+        }
+        let result = {
             stdout: bufConvert(res.stdout),
             stderr: bufConvert(res.stderr),
             status: res.status,
             signal: res.signal,
             error: res.error
         };
+        if (res.error) {
+            result.error = res.error;
+        } else if (res.status !== 0) {
+            let err = new TypeError('command failed with status ' + res.status);
+            err.stack += '\n\n' + (res.stderr ? res.stderr.toString('utf-8') : '(no stderr)');
+            result.error = err;
+        }
+        return result;
     }
 }
 exports.exec = exec;
@@ -74,3 +91,55 @@ function execStdoutUtf8(cmdArg, opts) {
     return utf8Uint8ArrayToString(u8);
 }
 exports.execStdoutUtf8 = execStdoutUtf8;
+
+async function asyncExecStdoutUtf8(cmdArg) {
+    // Node.js
+
+    return await new Promise((resolve, reject) => {
+        const child_process = require('child_process');
+        let args = cmdArg.slice(1);
+        let cmd = cmdArg[0];
+        let proc;
+        try {
+            proc = child_process.spawn(cmd, args, {});
+        } catch (e) {
+            reject(e);
+            return;
+        }
+        let stdoutChunks = [];
+        let stderrChunks = [];
+        let timeout = 900e3;
+        let timerId = typeof timeout === 'number' ? setTimeout(() => {
+            proc.kill('SIGKILL');
+            timerId = null;
+        }, timeout) : null;
+        proc.stdout.on('data', (data) => {
+            stdoutChunks.push(data);
+        });
+        proc.stderr.on('data', (data) => {
+            stderrChunks.push(data);
+        });
+        proc.on('error', (err) => {
+            reject(err);
+        });
+        proc.on('close', (code) => {
+            let stdout = Buffer.concat(stdoutChunks).toString('utf-8');
+            let stderr = Buffer.concat(stderrChunks).toString('utf-8');
+            if (timerId !== null) {
+                clearTimeout(timerId);
+                timerId = null;
+            }
+            if (code !== 0) {
+                let err = new TypeError('command failed with exit code ' + code);
+                err.stack = 'COMMAND:\n' + JSON.stringify(cmdArg) + '\n\nSTDOUT:\n' + stdout + '\n\nSTDERR:\n' + stderr;
+                err.stdout = stdout;
+                err.stderr = stderr;
+                reject(err);
+            } else {
+                resolve({ stdout, stderr });
+            }
+        });
+    });
+}
+
+exports.asyncExecStdoutUtf8 = asyncExecStdoutUtf8;

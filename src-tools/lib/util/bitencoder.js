@@ -76,28 +76,28 @@ BitEncoder.prototype.varuint = function varuint(x) {
     this.varuintCount++;
 
     if (x === 0) {
-        this.bits(0, 2);   // 0b00
+        this.bits(0, 2); // 0b00
         this.varuintBits += 2;
         this.varuintCats[0]++;
     } else if (x <= 4) {
-        this.bits(1, 2);   // 0b01
+        this.bits(1, 2); // 0b01
         this.bits(x - 1, 2);
         this.varuintBits += 2 + 2;
         this.varuintCats[1]++;
     } else if (x <= 36) {
-        this.bits(2, 2);   // 0b10
+        this.bits(2, 2); // 0b10
         this.bits(x - 5, 5);
         this.varuintBits += 2 + 5;
         this.varuintCats[2]++;
     } else if (x <= 163) {
-        this.bits(3, 2);   // 0b11
-        this.bits(x - 37 + 1, 7);  // 7-bit: [1,127]
+        this.bits(3, 2); // 0b11
+        this.bits(x - 37 + 1, 7); // 7-bit: [1,127]
         this.varuintBits += 2 + 7;
         this.varuintCats[3]++;
     } else if (x <= 1048575) {
-        this.bits(3, 2);   // 0b11
-        this.bits(0, 7);   // 7-bit: 0, marker
-        this.bits(x, 20);  // 20-bit value
+        this.bits(3, 2); // 0b11
+        this.bits(0, 7); // 7-bit: 0, marker
+        this.bits(x, 20); // 20-bit value
         this.varuintBits += 2 + 7 + 20;
         this.varuintCats[4]++;
     } else {
@@ -163,8 +163,8 @@ BitEncoder.prototype.getStats = function getStats() {
 BitEncoder.prototype.getStatsString = function getStatsString() {
     var st = this.getStats();
     var msg = 'BitEncoder: ' + st.numBits + ' bits, ' + st.numBytes + ' bytes, ' +
-              st.encVaruintCount + ' varuints, ' + st.encVaruintBitsPerField +
-              ' bits/varuint, varuint categories: ' + JSON.stringify(st.encVaruintCats);
+        st.encVaruintCount + ' varuints, ' + st.encVaruintBitsPerField +
+        ' bits/varuint, varuint categories: ' + JSON.stringify(st.encVaruintCats);
     return msg;
 };
 
@@ -182,8 +182,10 @@ function test() {
     //console.log('getStatsString: ' + be.getStatsString());
     var u8 = be.getBytes();
     // From dukutil.BitEncoder: f6ccdedffcc4c2e4dd7c007d0000
-    var expectU8 = new Uint8Array([ 0xf6, 0xcc, 0xde, 0xdf, 0xfc, 0xc4, 0xc2, 0xe4,
-                                    0xdd, 0x7c, 0x00, 0x7d, 0x00, 0x00 ]);
+    var expectU8 = new Uint8Array([
+        0xf6, 0xcc, 0xde, 0xdf, 0xfc, 0xc4, 0xc2, 0xe4,
+        0xdd, 0x7c, 0x00, 0x7d, 0x00, 0x00
+    ]);
     assert(u8.length === expectU8.length);
     for (let i = 0; i < u8.length; i++) {
         assert(u8[i] === expectU8[i]);

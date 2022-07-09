@@ -19,7 +19,7 @@ function createRomStringTable(strs, lookupSize, hashFunc) {
     assert(typeof hashFunc === 'function');
     assert(isPowerOfTwo(lookupSize));
 
-    var romstrHash = [];  // top level table -> chains, plain strings
+    var romstrHash = []; // top level table -> chains, plain strings
     while (romstrHash.length < lookupSize) {
         romstrHash.push([]);
     }
@@ -30,7 +30,7 @@ function createRomStringTable(strs, lookupSize, hashFunc) {
         romstrHash[idx].push(v);
     }
 
-    var romstrNext = createBareObject({});  // plain string -> next link (also plain string)
+    var romstrNext = createBareObject({}); // plain string -> next link (also plain string)
     for (let lst of romstrHash) {
         let prev = null;
         for (let v of lst) {

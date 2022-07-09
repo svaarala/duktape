@@ -1,3 +1,8 @@
+/*---
+duktape_config:
+  DUK_USE_FASTINT: true
+---*/
+
 /*===
 *** test_1 (duk_safe_call)
 after definition, top=0

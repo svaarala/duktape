@@ -85,10 +85,10 @@ function findObjectAndIndexById(meta, objId) {
     for (let i = 0; i < meta.objects.length; i++) {
         let o = meta.objects[i];
         if (o.id === objId) {
-            return [ o, i ];
+            return [o, i];
         }
     }
-    return [ void 0, void 0 ];
+    return [void 0, void 0];
 }
 exports.findObjectAndIndexById = findObjectAndIndexById;
 
@@ -106,10 +106,10 @@ function findPropertyAndIndexByKey(o, key) {
     for (let i = 0; i < o.properties.length; i++) {
         let p = o.properties[i];
         if (p.key === key) {
-            return [ p, i ];
+            return [p, i];
         }
     }
-    return [ void 0, void 0 ];
+    return [void 0, void 0];
 }
 exports.findPropertyAndIndexByKey = findPropertyAndIndexByKey;
 

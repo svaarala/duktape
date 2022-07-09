@@ -23,7 +23,7 @@ const { jsonDeepClone } = require('../util/clone');
 const { numericSort } = require('../util/sort');
 const { assert } = require('../util/assert');
 
-const SKIP_MAX = 6;  // Skips 1...6 are useful at least.
+const SKIP_MAX = 6; // Skips 1...6 are useful at least.
 
 // Remove ASCII case conversion parts, as they are handled by C fast path.
 function removeConversionMapAscii(convmap) {
@@ -36,9 +36,9 @@ exports.removeConversionMapAscii = removeConversionMapAscii;
 // Create lowercase, uppercase, and titlecase conversion maps from
 // parsed Unicode data.
 function createConversionMaps(cpMap) {
-    var uc = [];  // uppercase, codepoint number -> codepoint array
-    var lc = [];  // lowercase
-    var tc = [];  // titlecase
+    var uc = []; // uppercase, codepoint number -> codepoint array
+    var lc = []; // lowercase
+    var tc = []; // titlecase
 
     cpMap.forEach(function (v) {
         if (!v) {
@@ -144,9 +144,9 @@ function findFirstRangeWithSkip(convmap, skip) {
 function scanCaseconvTables(convmap) {
     console.debug('scan caseconv tables');
 
-    var ranges = [];   // range mappings (2 or more consecutive mappings with a certain skip)
-    var singles = [];  // 1:1 character mappings
-    var multis = [];   // 1:n character mappings
+    var ranges = []; // range mappings (2 or more consecutive mappings with a certain skip)
+    var singles = []; // 1:1 character mappings
+    var multis = []; // 1:n character mappings
 
     // Ranges with skips.
 
@@ -240,7 +240,7 @@ function bitpackCaseconvTables(ranges, singles, multis) {
             be.bits(r.count, 7);
         });
     }
-    be.bits(0x3f, 6);  // end of skip ranges
+    be.bits(0x3f, 6); // end of skip ranges
 
     count = singles.length;
     be.bits(count, 7);
@@ -255,7 +255,7 @@ function bitpackCaseconvTables(ranges, singles, multis) {
         let cp_i = m.cp_i;
         let cpseq_o = m.cpseq_o;
         be.bits(cp_i, 16);
-        be.bits(cpseq_o.length, 2);  // At most 3 codepoints.
+        be.bits(cpseq_o.length, 2); // At most 3 codepoints.
         for (let i = 0; i < cpseq_o.length; i++) {
             be.bits(cpseq_o[i], 16);
         }

@@ -11,7 +11,7 @@ function extractCategories(cpMap) {
             categories[ent.gc].push(ent.cp);
         }
     });
-    var res = {};  // sorted keys
+    var res = {}; // sorted keys
     Object.getOwnPropertyNames(categories).sort().forEach((gc) => {
         res[gc] = categories[gc];
     });

@@ -8,9 +8,8 @@
 // (At least in Node.js.)
 
 /*---
-{
-    "skip": true
-}
+duktape_polyfills:
+  promise: true
 ---*/
 
 /*@include util-promise.js@*/

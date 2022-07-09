@@ -13,7 +13,7 @@
  *  compactness is most important.
  *
  *  The tables are matched using uni_range_match() and the format
- *  is described in tools/extract_chars.py.
+ *  is described in configure tooling.
  */
 
 #if defined(DUK_USE_SOURCE_NONBMP)
@@ -47,7 +47,7 @@
 #endif
 
 /*
- *  Case conversion tables generated using tools/extract_caseconv.py.
+ *  Case conversion tables generated using configure tooling.
  */
 
 /* duk_unicode_caseconv_uc[] */

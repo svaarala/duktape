@@ -51,7 +51,7 @@ function sortObjectKeysRecursive(root) {
                     res[i] = process(obj[i]);
                 }
                 for (let k of Object.getOwnPropertyNames(obj).sort()) {
-                    res[k] = process(obj[k]);  // assigns index keys again, but they're already established (and sorted in ES2015+)
+                    res[k] = process(obj[k]); // assigns index keys again, but they're already established (and sorted in ES2015+)
                 }
                 return res;
             } else {

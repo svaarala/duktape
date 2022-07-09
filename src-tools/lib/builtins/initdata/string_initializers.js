@@ -22,16 +22,16 @@ function getRomCharlen(v) {
 // Get string hash initializers; need to compute possible string hash variants
 // which will match runtime values.
 function getStrHash16Macro(val) {
-    var hash16le = hashStringDense(val, DUK__FIXED_HASH_SEED, false /*big_endian*/, true /*strhash16*/);
-    var hash16be = hashStringDense(val, DUK__FIXED_HASH_SEED, true /*big_endian*/, true /*strhash16*/);
-    var hash16sparse = hashStringSparse(val, DUK__FIXED_HASH_SEED, true /*strhash16*/);
+    var hash16le = hashStringDense(val, DUK__FIXED_HASH_SEED, false /*big_endian*/ , true /*strhash16*/ );
+    var hash16be = hashStringDense(val, DUK__FIXED_HASH_SEED, true /*big_endian*/ , true /*strhash16*/ );
+    var hash16sparse = hashStringSparse(val, DUK__FIXED_HASH_SEED, true /*strhash16*/ );
     return 'DUK__STRHASH16(' + hash16le + 'U,' + hash16be + 'U,' + hash16sparse + 'U)';
 }
 
 function getStrHash32Macro(val) {
-    var hash16le = hashStringDense(val, DUK__FIXED_HASH_SEED, false /*big_endian*/, false /*strhash16*/);
-    var hash16be = hashStringDense(val, DUK__FIXED_HASH_SEED, true /*big_endian*/, false /*strhash16*/);
-    var hash16sparse = hashStringSparse(val, DUK__FIXED_HASH_SEED, false /*strhash16*/);
+    var hash16le = hashStringDense(val, DUK__FIXED_HASH_SEED, false /*big_endian*/ , false /*strhash16*/ );
+    var hash16be = hashStringDense(val, DUK__FIXED_HASH_SEED, true /*big_endian*/ , false /*strhash16*/ );
+    var hash16sparse = hashStringSparse(val, DUK__FIXED_HASH_SEED, false /*strhash16*/ );
     return 'DUK__STRHASH32(' + hash16le + 'U,' + hash16be + 'U,' + hash16sparse + 'U)';
 }
 
@@ -70,14 +70,14 @@ function emitStringInitMacro(genc) {
     genc.emitLine('#endif');
     genc.emitLine('#if defined(DUK_USE_HSTRING_CLEN)');
     genc.emitLine('#define DUK__STRINIT(heaphdr_flags,refcount,hash32,hash16,blen,clen,next) ' +
-                  ' { { (heaphdr_flags), DUK__REFCINIT((refcount)), (blen), (duk_hstring *) DUK_LOSE_CONST((next)) }, (hash16), (clen) }');
+        ' { { (heaphdr_flags), DUK__REFCINIT((refcount)), (blen), (duk_hstring *) DUK_LOSE_CONST((next)) }, (hash16), (clen) }');
     genc.emitLine('#else  /* DUK_USE_HSTRING_CLEN */')
     genc.emitLine('#define DUK__STRINIT(heaphdr_flags,refcount,hash32,hash16,blen,clen,next) ' +
-                  ' { { (heaphdr_flags), DUK__REFCINIT((refcount)), (blen), (duk_hstring *) DUK_LOSE_CONST((next)) }, (hash16) }');
+        ' { { (heaphdr_flags), DUK__REFCINIT((refcount)), (blen), (duk_hstring *) DUK_LOSE_CONST((next)) }, (hash16) }');
     genc.emitLine('#endif  /* DUK_USE_HSTRING_CLEN */');
     genc.emitLine('#else  /* DUK_USE_HEAPPTR16 */');
     genc.emitLine('#define DUK__STRINIT(heaphdr_flags,refcount,hash32,hash16,blen,clen,next) ' +
-                  ' { { (heaphdr_flags), DUK__REFCINIT((refcount)), (duk_hstring *) DUK_LOSE_CONST((next)) }, (hash32), (blen), (clen) }');
+        ' { { (heaphdr_flags), DUK__REFCINIT((refcount)), (duk_hstring *) DUK_LOSE_CONST((next)) }, (hash32), (blen), (clen) }');
     genc.emitLine('#endif  /* DUK_USE_HEAPPTR16 */');
 }
 exports.emitStringInitMacro = emitStringInitMacro;
@@ -92,7 +92,7 @@ function emitStringDeclarations(genc, strs) {
 
     lens.forEach((len) => {
         genc.emitLine('typedef struct duk_romstr_' + len + ' duk_romstr_' + len + '; ' +
-                      'struct duk_romstr_' + len + ' { duk_hstring hdr; duk_uint8_t data[' + (len + 1) + ']; };');
+            'struct duk_romstr_' + len + ' { duk_hstring hdr; duk_uint8_t data[' + (len + 1) + ']; };');
     });
 }
 exports.emitStringDeclarations = emitStringDeclarations;
@@ -100,10 +100,12 @@ exports.emitStringDeclarations = emitStringDeclarations;
 function emitStringInitializer(genc, v, biStrMap, reservedWords, strictReservedWords, romstrNext) {
     let tmp = 'DUK_INTERNAL const duk_romstr_' + v.length + ' ' + biStrMap[v] + ' = {';
 
-    let flags = [ 'DUK_HTYPE_STRING_INTERNAL',
-                  'DUK_HEAPHDR_FLAG_READONLY',
-                  'DUK_HEAPHDR_FLAG_REACHABLE',
-                  'DUK_HSTRING_FLAG_PINNED_LITERAL' ];
+    let flags = [
+        'DUK_HTYPE_STRING_INTERNAL',
+        'DUK_HEAPHDR_FLAG_READONLY',
+        'DUK_HEAPHDR_FLAG_REACHABLE',
+        'DUK_HSTRING_FLAG_PINNED_LITERAL'
+    ];
 
     let isArridx = stringIsArridx(v);
     let blen = v.length;
@@ -115,7 +117,7 @@ function emitStringInitializer(genc, v, biStrMap, reservedWords, strictReservedW
     if (isArridx) {
         flags.push('DUK_HSTRING_FLAG_ARRIDX');
     }
-    if (false) {  // XXX
+    if (false) { // XXX
         flags.push('DUK_HSTRING_FLAG_CANNUM');
     }
     if (stringIsAnySymbol(v)) {
@@ -144,8 +146,8 @@ function emitStringInitializer(genc, v, biStrMap, reservedWords, strictReservedW
 
     let refcount = 1;
     tmp += 'DUK__STRINIT(' + flags.join('|') + ',' + refcount + ',' +
-           getStrHash32Macro(v) + ',' + getStrHash16Macro(v) + ',' +
-           blen + ',' + clen + ',' + h_next + ')';
+        getStrHash32Macro(v) + ',' + getStrHash16Macro(v) + ',' +
+        blen + ',' + clen + ',' + h_next + ')';
 
     let arr = bstrToArray(v);
     arr.push(0);

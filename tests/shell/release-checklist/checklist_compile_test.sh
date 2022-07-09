@@ -32,25 +32,25 @@ for compiler in gcc clang; do
 
 		echo "- single source, normal options"
 		cleanup
-		python2 tools/configure.py --output-directory tmp/checklist-compile/prep --source-directory ./src-input --config-metadata config --option-file tmp/checklist-compile/opts1.yaml
+		python3 tools/configure.py --output-directory tmp/checklist-compile/prep --source-directory ./src-input --config-metadata config --option-file tmp/checklist-compile/opts1.yaml
 		$compiler -o tmp/checklist-compile/duk $archopt -Os -pedantic -std=c99 -Wall -fstrict-aliasing -fomit-frame-pointer -DDUK_CMDLINE_PRINTALERT_SUPPORT -Itmp/checklist-compile/prep -Iextras/print-alert tmp/checklist-compile/prep/duktape.c examples/cmdline/duk_cmdline.c extras/print-alert/duk_print_alert.c -lm
 		tmp/checklist-compile/duk -e 'print(Duktape.env)' -e "$TESTCODE" mandel.js
 
 		echo "- single source, debug options"
 		cleanup
-		python2 tools/configure.py --output-directory tmp/checklist-compile/prep --source-directory ./src-input --config-metadata config --option-file tmp/checklist-compile/opts2.yaml
+		python3 tools/configure.py --output-directory tmp/checklist-compile/prep --source-directory ./src-input --config-metadata config --option-file tmp/checklist-compile/opts2.yaml
 		$compiler -o tmp/checklist-compile/duk $archopt -Os -pedantic -std=c99 -Wall -fstrict-aliasing -fomit-frame-pointer -DDUK_CMDLINE_PRINTALERT_SUPPORT -Itmp/checklist-compile/prep -Iextras/print-alert tmp/checklist-compile/prep/duktape.c examples/cmdline/duk_cmdline.c extras/print-alert/duk_print_alert.c -lm
 		tmp/checklist-compile/duk -e 'print(Duktape.env)' -e "$TESTCODE" mandel.js
 
 		echo "- separate sources, normal options"
 		cleanup
-		python2 tools/configure.py --output-directory tmp/checklist-compile/prep --source-directory ./src-input --config-metadata config --separate-sources --option-file tmp/checklist-compile/opts1.yaml
+		python3 tools/configure.py --output-directory tmp/checklist-compile/prep --source-directory ./src-input --config-metadata config --separate-sources --option-file tmp/checklist-compile/opts1.yaml
 		$compiler -o tmp/checklist-compile/duk $archopt -Os -pedantic -std=c99 -Wall -fstrict-aliasing -fomit-frame-pointer -DDUK_CMDLINE_PRINTALERT_SUPPORT -Itmp/checklist-compile/prep -Iextras/print-alert tmp/checklist-compile/prep/*.c examples/cmdline/duk_cmdline.c extras/print-alert/duk_print_alert.c -lm
 		tmp/checklist-compile/duk -e 'print(Duktape.env)' -e "$TESTCODE" mandel.js
 
 		echo "- separate sources, debug options"
 		cleanup
-		python2 tools/configure.py --output-directory tmp/checklist-compile/prep --source-directory ./src-input --config-metadata config --separate-sources --option-file tmp/checklist-compile/opts2.yaml
+		python3 tools/configure.py --output-directory tmp/checklist-compile/prep --source-directory ./src-input --config-metadata config --separate-sources --option-file tmp/checklist-compile/opts2.yaml
 		$compiler -o tmp/checklist-compile/duk $archopt -Os -pedantic -std=c99 -Wall -fstrict-aliasing -fomit-frame-pointer -DDUK_CMDLINE_PRINTALERT_SUPPORT -Itmp/checklist-compile/prep -Iextras/print-alert tmp/checklist-compile/prep/*.c examples/cmdline/duk_cmdline.c extras/print-alert/duk_print_alert.c -lm
 		tmp/checklist-compile/duk -e 'print(Duktape.env)' -e "$TESTCODE" mandel.js
 	done

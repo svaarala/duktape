@@ -73,7 +73,7 @@ function decodeFunction(dv, off, opts) {
 
     nregs = dv.getUint16(off);
     nargs = dv.getUint16(off + 2);
-    startLine = dv.getUint32(off + 4);  // if no debugger support, line numbers are present but 0
+    startLine = dv.getUint32(off + 4); // if no debugger support, line numbers are present but 0
     endLine = dv.getUint32(off + 8);
     off += 12;
 
@@ -92,10 +92,10 @@ function decodeFunction(dv, off, opts) {
         let constValue;
 
         switch (constType) {
-        case 0:  // string
+        case 0: // string
             [off, constValue] = decodeStringConst(dv, off, opts);
             break;
-        case 1:  // double
+        case 1: // double
             [off, constValue] = decodeDoubleConst(dv, off, opts);
             break;
         default:

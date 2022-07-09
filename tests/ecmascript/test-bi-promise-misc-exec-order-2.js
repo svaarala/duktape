@@ -10,9 +10,8 @@
 //                             P
 
 /*---
-{
-    "skip": true
-}
+duktape_polyfills:
+  promise: true
 ---*/
 
 /*===

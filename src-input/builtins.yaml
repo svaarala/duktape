@@ -12,7 +12,7 @@
 # Top level object format is mostly self explanatory, a few notes:
 #
 #    - The "id" string is used for referencing objects from property table
-#    - Class names must match array in genbuiltins.py
+#    - Class names must match that of the configure tooling
 #    - If the top level object is a function:
 #      - varargs: if true, function is vararg (nargs = DUK_VARARGS)
 #      - nargs: nargs (ignored if varargs true); if missing, default from 'length' property
@@ -131,6 +131,11 @@
 #        similarly to JSON.parse() results: properties will be
 #        writable, enumerable, and configurable, inherit from
 #        Object.prototype, etc.
+#    - Share property value with another property of the same object:
+#      - type: share_property_value
+#      - key: key of other property whose value to copy
+#      - NOTE: this is useful for sharing a shorthand value, e.g.
+#        for Date.prototype.toGMTString.
 #
 # Magic format:
 #
@@ -2068,16 +2073,11 @@ objects:
       #   Date.prototype.toGMTString === Date.prototype.toUTCString.
       #
       # This is currently handled using a small tweak in duk_hthread_builtins.c
-      # (for RAM objects) and genbuiltins.py (for ROM objects).
-      #
-      # Note that while Smjs respects the requirement in E5 Section B.2.6,
-      # V8 does not.
+      # for RAM objects and during metadata loading for ROM objects.
       - key: "toGMTString"
         value:
-          type: function
-          native: duk_bi_date_prototype_tostring_shared
-          length: 0
-          magic: 6
+          type: share_property_value
+          key: "toUTCString"
         section_b: true
 
       # Non-standard extensions: E5 Section B.2.4, B.2.5, B.2.6

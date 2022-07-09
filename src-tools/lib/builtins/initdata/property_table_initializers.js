@@ -106,7 +106,7 @@ function emitPropertyTableDefinitions(genc, meta, objs, biStrMap, biObjMap) {
 
         if (initList.length > 0) {
             genc.emitLine('DUK_EXTERNAL const duk_romprops_' + idx + ' duk_prop_' + idx +
-                          ' = {' + initList.join(',') + '};');
+                ' = {' + initList.join(',') + '};');
         }
     }
 

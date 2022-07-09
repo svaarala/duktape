@@ -1,7 +1,6 @@
 /*---
-{
-    "skip": true
-}
+duktape_polyfills:
+  promise: true
 ---*/
 
 /*@include util-base.js@*/

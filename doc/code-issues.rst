@@ -830,8 +830,8 @@ The ``DUK_INTERNAL_DECL`` idiom is::
   DUK_INTERNAL_DECL const char *duk_str_not_object;
   #endif /* !DUK_SINGLE_FILE */
 
-For this to work in the single file case, ``tools/combine_src.py`` must
-ensure that the symbol definition appears before its use.  This is currently
+For this to work in the single file case, configure tooling must ensure
+that the symbol definition appears before its use.  This is currently
 handled via manual file reordering.
 
 Concrete example

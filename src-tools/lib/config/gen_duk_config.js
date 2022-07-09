@@ -10,13 +10,14 @@ const { FileBuilder } = require('./file_builder');
 const { scanUseDefs } = require('./use_defs');
 const { cIntEncode, cStrEncode } = require('../util/cquote');
 const { createBareObject } = require('../util/bare');
+const { logDebug } = require('../util/logging');
 
 // Assume these provides (as well as anything not prefixed 'DUK_') come from outside of duk_config.h.
 const assumedProvides = {
-    DUK_SINGLE_FILE: true,            // compiling Duktape from a single source file (duktape.c) version
-    DUK_COMPILING_DUKTAPE: true,      // compiling Duktape (not user application)
-    DUK_CONFIG_H_INCLUDED: true,      // artifact, include guard
-    DUK_F_PACKED_TVAL_PROVIDED: true  // artifact, internal header signalling for DUK_USE_PACKED_TVAL
+    DUK_SINGLE_FILE: true, // compiling Duktape from a single source file (duktape.c) version
+    DUK_COMPILING_DUKTAPE: true, // compiling Duktape (not user application)
+    DUK_CONFIG_H_INCLUDED: true, // artifact, include guard
+    DUK_F_PACKED_TVAL_PROVIDED: true // artifact, internal header signalling for DUK_USE_PACKED_TVAL
 };
 
 const platformRequiredProvides = {
@@ -98,49 +99,49 @@ function fillDependenciesForSnippets(ret, idxDeps, baseDirectory) {
     }
 
     let snippetList = [];
- missing_loop:
-    for (;;) {
-        let missing = scanMissing();
-        let missingList = Object.keys(missing).sort();
-        if (missingList.length === 0) {
-            break;
-        }
-        for (let m of Object.keys(missing).sort()) {
-            for (let i = 0; i < helpers.length; i++) {
-                let sn = helpers[i];
-                if (sn.provides[m]) {
-                    snippetList.push(sn);
-                    for (let p of Object.keys(sn.provides).sort()) {
-                        provided[p] = true;
+    missing_loop:
+        for (;;) {
+            let missing = scanMissing();
+            let missingList = Object.keys(missing).sort();
+            if (missingList.length === 0) {
+                break;
+            }
+            for (let m of Object.keys(missing).sort()) {
+                for (let i = 0; i < helpers.length; i++) {
+                    let sn = helpers[i];
+                    if (sn.provides[m]) {
+                        snippetList.push(sn);
+                        for (let p of Object.keys(sn.provides).sort()) {
+                            provided[p] = true;
+                        }
+                        void helpers.splice(i, 1);
+                        continue missing_loop;
                     }
-                    void helpers.splice(i, 1);
-                    continue missing_loop;
                 }
             }
+            throw new TypeError('failed to find snippet providers, still missing: ' + missingList.join(','));
         }
-        throw new TypeError('failed to find snippet providers, still missing: ' + missingList.join(','));
-    }
 
     // Now we have a list of snippets we need to include.  Include snippets in
     // an order that avoids any use-before-define.  Specific order doesn't
     // matter otherwise, but aim for repeatable order.
 
- snippet_loop:
-    while (snippetList.length > 0) {
-        for (let i = 0; i < snippetList.length; i++) {
-            let sn = snippetList[i];
-            for (let p of Object.keys(sn.requires).sort()) {
-                if (!provided[p]) {
-                    continue;
+    snippet_loop:
+        while (snippetList.length > 0) {
+            for (let i = 0; i < snippetList.length; i++) {
+                let sn = snippetList[i];
+                for (let p of Object.keys(sn.requires).sort()) {
+                    if (!provided[p]) {
+                        continue;
+                    }
                 }
+                ret.vals.splice(idxDeps++, 0, sn);
+                ret.vals.splice(idxDeps++, 0, new Snippet([''])); // empty line
+                void snippetList.splice(i, 1);
+                continue snippet_loop;
             }
-            ret.vals.splice(idxDeps++, 0, sn);
-            ret.vals.splice(idxDeps++, 0, new Snippet([ '' ]));  // empty line
-            void snippetList.splice(i, 1);
-            continue snippet_loop;
+            throw new TypeError('failed to resolve snippet inclusion order');
         }
-        throw new TypeError('failed to resolve snippet inclusion order');
-    }
 }
 
 // If snippet provided (defined or undefined) DUK_USE_PACKED_TVAL,
@@ -381,7 +382,7 @@ function checkRecommendedOptions(ret, useDefs, forcedOpts) {
             if (doc.define === 'DUK_USE_FATAL_HANDLER' && typeof forcedOpts['DUK_USE_CPP_EXCEPTIONS'] !== 'undefined') {
                 /* nop */
             } else {
-                console.log('recommended config option ' + doc.define + ' not provided');
+                logDebug('recommended config option ' + doc.define + ' not provided');
                 ret.line('/* Recommended config option ' + doc.define + ' not provided */');
             }
         }
@@ -391,7 +392,7 @@ function checkRecommendedOptions(ret, useDefs, forcedOpts) {
 function generateDukConfigHeader(opts) {
     var configDirectory = opts.configDirectory;
     var forcedOpts = opts.forcedOpts || {};
-    Object.setPrototypeOf(forcedOpts, null);  // ensure bare
+    Object.setPrototypeOf(forcedOpts, null); // ensure bare
 
     var useDefs = scanUseDefs(pathJoin(configDirectory, 'config-options'));
     //var useDefsList = Object.keys(useDefs).sort();
@@ -463,7 +464,7 @@ function generateDukConfigHeader(opts) {
     }
     ret.empty();
 
-    var idxDeps = ret.vals.length;  // Position where to emit DUK_F_xxx dependencies later.
+    var idxDeps = ret.vals.length; // Position where to emit DUK_F_xxx dependencies later.
 
     if (typeof opts.platform === 'string') {
         emitPlatform(ret, configDirectory, opts.platform);
@@ -536,12 +537,12 @@ function generateDukConfigHeader(opts) {
     ret.snippetRelative('platform_fillins.h.in');
     ret.empty();
     ret.snippetRelative('architecture_fillins.h.in');
-    let emitByteOrderFillin = true;  // Could be omitted if byteorder provided by all active architecture files
+    let emitByteOrderFillin = true; // Could be omitted if byteorder provided by all active architecture files
     if (emitByteOrderFillin) {
         ret.empty();
         ret.snippetRelative('byteorder_fillin.h.in');
     }
-    let emitAlignmentFillin = true;  // Could be omitted if alignment provided by all active architecture files
+    let emitAlignmentFillin = true; // Could be omitted if alignment provided by all active architecture files
     if (emitAlignmentFillin) {
         ret.empty();
         ret.snippetRelative('alignment_fillin.h.in');
@@ -551,7 +552,7 @@ function generateDukConfigHeader(opts) {
     ret.empty();
     ret.snippetRelative('inline_workaround.h.in');
     ret.empty();
-    let emitPackedTvalFillin = true;  // Could be omitted if packed tval provided by all active architecture files
+    let emitPackedTvalFillin = true; // Could be omitted if packed tval provided by all active architecture files
     if (emitPackedTvalFillin) {
         ret.empty();
         ret.snippetRelative('packed_tval_fillin.h.in');
@@ -609,7 +610,7 @@ function generateDukConfigHeader(opts) {
 
     ret.line('#endif  /* DUK_CONFIG_H_INCLUDED */');
 
-    let hdrdata = ret.join().replace(/\n{2,}/g, '\n\n');  // squash multiple empty lines to one
+    let hdrdata = ret.join().replace(/\n{2,}/g, '\n\n'); // squash multiple empty lines to one
 
     return {
         configHeaderString: hdrdata,

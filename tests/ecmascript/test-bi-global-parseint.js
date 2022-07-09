@@ -25,7 +25,7 @@ var WHITESPACE_CODEPOINTS = [
 //  0x0020,    // 0020;SPACE;Zs;0;WS;;;;;N;;;;;
 //  0x00A0,    // 00A0;NO-BREAK SPACE;Zs;0;CS;<noBreak> 0020;;;;N;NON-BREAKING SPACE;;;;
     0x1680,    // 1680;OGHAM SPACE MARK;Zs;0;WS;;;;;N;;;;;
-    0x180E,    // 180E;MONGOLIAN VOWEL SEPARATOR;Zs;0;WS;;;;;N;;;;;
+//  0x180E,    // 180E;MONGOLIAN VOWEL SEPARATOR;Cf;0;BN;;;;;N;;;;;
     0x2000,    // 2000;EN QUAD;Zs;0;WS;2002;;;;N;;;;;
     0x2001,    // 2001;EM QUAD;Zs;0;WS;2003;;;;N;;;;;
     0x2002,    // 2002;EN SPACE;Zs;0;WS;<compat> 0020;;;;N;;;;;
@@ -44,10 +44,10 @@ var WHITESPACE_CODEPOINTS = [
     0x3000,    // 3000;IDEOGRAPHIC SPACE;Zs;0;WS;<wide> 0020;;;;N;;;;;
 
     // from LineTerminator production
-    0x000a,    // <LF>
-    0x000d,    // <CR>
+    0x000A,    // <LF>
+    0x000D,    // <CR>
     0x2028,    // <LS>
-    0x2029,    // <PS>
+    0x2029     // <PS>
 ];
 
 // indirect eval -> this is bound to the global object, E5 Section 10.4.2, step 1.a.

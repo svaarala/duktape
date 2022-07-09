@@ -5,10 +5,6 @@
   knownissue: "year 1970 deviates from expected, Duktape uses equiv. year for 1970 on purpose at the moment"
   # Moved
 -
-  test: "test-bi-global-parseint.js"
-  knownissue: "rounding differences for parsing integers larger than 2^53"
-  # Moved
--
   test: "test-bi-json-dec-types.js"
   knownissue: "'\\x' should be allowed by eval() but not by JSON.parse(), Duktape rejects '\\x' in both"
   # No longer relevant
@@ -67,10 +63,6 @@
 -
   test: "test-numconv-parse-misc.js"
   knownissue: "rounding corner case for 1e+23 (parses/prints as 1.0000000000000001e+23)"
-  # Moved
--
-  test: "test-numconv-tostring-gen.js"
-  knownissue: "rounding corner cases in number-to-string coercion"
   # Moved
 -
   test: "test-numconv-tostring-misc.js"
@@ -162,10 +154,6 @@
   specialoptions: "DUK_USE_LIGHTFUNC_BUILTINS"
   # Moved
 -
-  test: "test-dev-lightfunc.js"
-  specialoptions: "DUK_USE_LIGHTFUNC_BUILTINS"
-  # Moved
--
   test: "test-dev-logicalnot-refcount.js"
   specialoptions: "requires refcounting"
   # No longer relevant (at least with current test runs)
@@ -183,7 +171,3 @@
   # Moved
 
 # API testcase (tests/api/) known issues
-
--
-  test: "test-to-number.c"
-  knownissue: "number parsing bug for strings containing NUL characters (e.g. '\\u0000')"

@@ -31,7 +31,7 @@ function prettyValue(x) {
         }
         case 'accessor': {
             return 'get -> ' + (typeof x.getter_id === 'string' ? x.getter_id : 'null') +
-                   ', set -> ' + (typeof x.setter_id === 'string' ? x.setter_id : 'null');
+                ', set -> ' + (typeof x.setter_id === 'string' ? x.setter_id : 'null');
         }
         case 'double': {
             let u8 = hexDecode(x.bytes);

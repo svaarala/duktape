@@ -113,19 +113,20 @@ function prepareTestcase({ testcaseFilename, testcaseType, testcaseSource, testc
         throw new TypeError('must provide testcaseFilename or testcaseSource and testcaseType');
     }
 
-    let pfNames = [... polyfillFilenames];
+    let preparedSource;
+    testcaseMetadata = testcaseMetadata || parseTestcaseMetadata({ sourceString: testcaseSource });
+
+    let pfNames = [...polyfillFilenames];
     if (testcaseMetadata.duktape_polyfills) {
         let pfMap = testcaseMetadata.duktape_polyfills;
         for (let polyfillName of Object.getOwnPropertyNames(pfMap)) {
             if (polyfillName === 'promise' && pfMap[polyfillName] === true) {
-                logInfo('add polyfill based on test metadata:', polyfillName);
+                logDebug('add polyfill based on test metadata:', polyfillName);
                 pfNames.push(pathJoin(repoDirectory, 'polyfills', 'promise.js'));
             }
         }
     }
 
-    var preparedSource;
-    testcaseMetadata = testcaseMetadata || parseTestcaseMetadata({ sourceString: testcaseSource });
     if (testcaseType === 'ecmascript') {
         preparedSource = prepareEcmascriptTestcase({
             sourceString: testcaseSource,

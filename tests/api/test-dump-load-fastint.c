@@ -3,9 +3,9 @@
  */
 
 /*---
-{
-    "specialoptions": "requires DUK_USE_FASTINT"
-}
+specialoptions: "requires DUK_USE_FASTINT"
+duktape_config:
+  DUK_USE_FASTINT: true
 ---*/
 
 /*===

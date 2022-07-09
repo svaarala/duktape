@@ -153,6 +153,10 @@ function emitBuiltinsHeader(args) {
     gcHdr.emitLine('#endif  /* DUK_BUILTINS_H_INCLUDED */');
 }
 
+function createBuiltinsMetadata(meta) {
+    return {};
+}
+
 function generateBuiltins(args) {
     var usedStridxEtcMeta = args.usedStridxEtcMeta;
     var dukVersion = args.dukVersion;
@@ -213,7 +217,7 @@ function generateBuiltins(args) {
         ramObjDataLe,
         ramObjDataBe,
         ramObjDataMe
-    });  // duk_builtins.c
+    }); // duk_builtins.c
 
     var gcHdr = new GenerateC();
     emitBuiltinsHeader({
@@ -226,7 +230,9 @@ function generateBuiltins(args) {
         ramObjDataLe,
         ramObjDataBe,
         ramObjDataMe
-    });  // duk_builtins.h
+    }); // duk_builtins.h
+
+    var builtinsMetadata = createBuiltinsMetadata(ramMeta);
 
     return {
         preparedRomMetadata: romMeta,
@@ -236,7 +242,8 @@ function generateBuiltins(args) {
         unaugmentedRamMetadata: ramMetaUnaugmented,
         prettyRamMetadata: prettyRamMeta,
         sourceString: gcSrc.getString(),
-        headerString: gcHdr.getString()
+        headerString: gcHdr.getString(),
+        builtinsMetadata
     };
 }
 exports.generateBuiltins = generateBuiltins;

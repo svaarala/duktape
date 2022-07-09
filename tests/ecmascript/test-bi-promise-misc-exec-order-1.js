@@ -18,9 +18,8 @@
 // ordering guaranteed by ES2015.
 
 /*---
-{
-    "skip": true
-}
+duktape_polyfills:
+  promise: true
 ---*/
 
 /*===
