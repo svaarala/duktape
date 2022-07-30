@@ -2,8 +2,6 @@
  *  Basic property write performance for an inherited property
  */
 
-if (typeof print !== 'function') { print = console.log; }
-
 function test() {
     var root = {};
     var i;
@@ -32,9 +30,4 @@ function test() {
     print(ign);
 }
 
-try {
-    test();
-} catch (e) {
-    print(e.stack || e);
-    throw e;
-}
+test();

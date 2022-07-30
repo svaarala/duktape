@@ -1,5 +1,3 @@
-if (typeof print !== 'function') { print = console.log; }
-
 function mkobj(depth) {
     var res = { foo: [ 1, 2, 'bar' ], bar: Math.cos };
     var i;
@@ -27,9 +25,4 @@ function test() {
     print('done');
 }
 
-try {
-    test();
-} catch (e) {
-    print(e.stack || e);
-    throw e;
-}
+test();

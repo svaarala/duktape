@@ -3,8 +3,6 @@
  *  string implementation because every intermediate step is string interned.
  */
 
-if (typeof print !== 'function') { print = console.log; }
-
 function test() {
     var i, j;
     var t;
@@ -18,9 +16,4 @@ function test() {
     }
 }
 
-try {
-    test();
-} catch (e) {
-    print(e.stack || e);
-    throw e;
-}
+test();

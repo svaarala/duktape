@@ -2,8 +2,6 @@
  *  Reading a variable.
  */
 
-if (typeof print !== 'function') { print = console.log; }
-
 function test() {
     function outer() {
         var o = 123;
@@ -31,9 +29,4 @@ function test() {
     f();
 }
 
-try {
-    test();
-} catch (e) {
-    print(e.stack || e);
-    throw e;
-}
+test();

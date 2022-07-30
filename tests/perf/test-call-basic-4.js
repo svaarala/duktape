@@ -2,8 +2,6 @@
  *  Basic function call performance.
  */
 
-if (typeof print !== 'function') { print = console.log; }
-
 function func(a0, a1, a2, a3, a4, a5, a6, a7, a8, a9) {
     // allocate regs so that meaningful value stack resizes happen
     var x00, x01, x02, x03, x04, x05, x06, x07, x08, x09;
@@ -44,9 +42,4 @@ function test() {
     print((1e7 * 10 / (t2 - t1)) + ' calls per millisecond');
 }
 
-try {
-    test();
-} catch (e) {
-    print(e.stack || e);
-    throw e;
-}
+test();

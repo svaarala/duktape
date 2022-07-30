@@ -7,9 +7,7 @@
  */
 
 /*---
-{
-    "skip": true
-}
+skip: true
 ---*/
 
 #define  NONEXISTENT_FILE  "/tmp/this/file/does/not/exist"

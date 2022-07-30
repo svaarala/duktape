@@ -10,9 +10,7 @@
  */
 
 /*---
-{
-    "endianess": "little"
-}
+endianess: little
 ---*/
 
 /*

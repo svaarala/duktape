@@ -2,8 +2,6 @@
  *  Loading register to register.
  */
 
-if (typeof print !== 'function') { print = console.log; }
-
 function test() {
     var i;
     var t;
@@ -131,9 +129,4 @@ function test() {
     }
 }
 
-try {
-    test();
-} catch (e) {
-    print(e.stack || e);
-    throw e;
-}
+test();

@@ -1,5 +1,3 @@
-if (typeof print !== 'function') { print = console.log; }
-
 function build() {
     var obj = {};
     var ab = new Uint8Array(32);
@@ -28,9 +26,4 @@ function test() {
     //print(ignore);
 }
 
-try {
-    test();
-} catch (e) {
-    print(e.stack || e);
-    throw e;
-}
+test();

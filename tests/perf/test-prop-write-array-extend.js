@@ -2,8 +2,6 @@
  *  Basic property write performance, array index writes extending an array
  */
 
-if (typeof print !== 'function') { print = console.log; }
-
 function test() {
     var arr = [];
     var i;
@@ -25,9 +23,4 @@ function test() {
     code();
 }
 
-try {
-    test();
-} catch (e) {
-    print(e.stack || e);
-    throw e;
-}
+test();

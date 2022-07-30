@@ -26,9 +26,5 @@ function test() {
         t = re.exec(txt); t = re.exec(txt); t = re.exec(txt); t = re.exec(txt); t = re.exec(txt);
     }
 }
-try {
-    test();
-} catch (e) {
-    print(e.stack || e);
-    throw e;
-}
+
+test();

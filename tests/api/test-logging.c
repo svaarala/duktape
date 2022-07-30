@@ -1,8 +1,6 @@
 /* Built-in logging framework removed in Duktape 2.x. */
 /*---
-{
-    "skip": true
-}
+skip: true
 ---*/
 
 /*===

@@ -1,5 +1,3 @@
-if (typeof print !== 'function') { print = console.log; }
-
 function test() {
     var S1 = Symbol('s1');
     var S2 = Symbol('s2');
@@ -40,9 +38,5 @@ function test() {
         void Reflect.ownKeys(obj);
     }
 }
-try {
-    test();
-} catch (e) {
-    print(e.stack || e);
-    throw e;
-}
+
+test();

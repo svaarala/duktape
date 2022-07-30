@@ -1,6 +1,3 @@
-if (typeof print !== 'function') { print = console.log; }
-
-
 function test() {
     var i;  // is in outer scope, Duktape 2.x accesses using slow path
 
@@ -11,9 +8,4 @@ function test() {
     inner();
 }
 
-try {
-    test();
-} catch (e) {
-    print(e.stack || e);
-    throw e;
-}
+test();

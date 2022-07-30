@@ -4,8 +4,6 @@
  *  hashing but limited memory churn.
  */
 
-if (typeof print !== 'function') { print = console.log; }
-
 function test() {
     var buf = (Uint8Array.allocPlain || Duktape.Buffer)(2048);
     var ref;
@@ -24,9 +22,4 @@ function test() {
     }
 }
 
-try {
-    test();
-} catch (e) {
-    print(e.stack || e);
-    throw e;
-}
+test();

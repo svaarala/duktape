@@ -1,5 +1,3 @@
-if (typeof print !== 'function') { print = console.log; }
-
 function evolve(input, rule) {
     var res = [];
     var i;
@@ -64,9 +62,4 @@ function test() {
     print('done');
 }
 
-try {
-    test();
-} catch (e) {
-    print(e.stack || e);
-    throw e;
-}
+test();

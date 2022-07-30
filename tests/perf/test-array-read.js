@@ -2,8 +2,6 @@
  *  Basic array read performance
  */
 
-if (typeof print !== 'function') { print = console.log; }
-
 function test() {
     var arr = [ 1, 2, 3, 4, 5, 6, 7, 8, 9, 10 ];
     var i;
@@ -23,9 +21,4 @@ function test() {
     }
 }
 
-try {
-    test();
-} catch (e) {
-    print(e.stack || e);
-    throw e;
-}
+test();

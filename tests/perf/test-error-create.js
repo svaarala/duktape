@@ -2,8 +2,6 @@
  *  Create Error creation (tracedata)
  */
 
-if (typeof print !== 'function') { print = console.log; }
-
 // Avoid tailcalls on purpose to ensure traceback is reasonably long.
 
 function fun0() {
@@ -42,9 +40,4 @@ function test() {
     print(err.stack || err);
 }
 
-try {
-    test();
-} catch (e) {
-    print(e.stack || e);
-    throw e;
-}
+test();

@@ -5,8 +5,6 @@
  *  performance, and memory churn.
  */
 
-if (typeof print !== 'function') { print = console.log; }
-
 function test() {
     var buf = (Uint8Array.allocPlain || Duktape.Buffer)(2048);
     var i, j;
@@ -29,9 +27,4 @@ function test() {
     }
 }
 
-try {
-    test();
-} catch (e) {
-    print(e.stack || e);
-    throw e;
-}
+test();

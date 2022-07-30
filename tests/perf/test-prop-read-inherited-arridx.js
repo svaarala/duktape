@@ -2,8 +2,6 @@
  *  Basic property read performance for an inherited property
  */
 
-if (typeof print !== 'function') { print = console.log; }
-
 function test() {
     var root = { xxx1: 1, xxx2: 2, xxx3: 3, xxx4: 4, foo: 123, 1234: 'foo' };
     var i;
@@ -27,9 +25,4 @@ function test() {
     print(ign);
 }
 
-try {
-    test();
-} catch (e) {
-    print(e.stack || e);
-    throw e;
-}
+test();

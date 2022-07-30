@@ -2,8 +2,6 @@
  *  Basic array append-by-index performance
  */
 
-if (typeof print !== 'function') { print = console.log; }
-
 function test() {
     var arr;
     var i, j;
@@ -16,9 +14,4 @@ function test() {
     }
 }
 
-try {
-    test();
-} catch (e) {
-    print(e.stack || e);
-    throw e;
-}
+test();

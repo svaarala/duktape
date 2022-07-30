@@ -2,8 +2,6 @@
  *  Basic function call performance, call through a variable lookup.
  */
 
-if (typeof print !== 'function') { print = console.log; }
-
 var func;
 
 function test() {
@@ -32,9 +30,4 @@ function test() {
     print((4e5 * 100 / (t2 - t1)) + ' calls per millisecond');
 }
 
-try {
-    test();
-} catch (e) {
-    print(e.stack || e);
-    throw e;
-}
+test();

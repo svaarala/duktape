@@ -1,4 +1,7 @@
-if (typeof print !== 'function') { print = console.log; }
+/*---
+duktape_polyfills:
+  promise: true
+---*/
 
 var jobs = [];
 
@@ -50,16 +53,11 @@ function createMandelPromise() {
     return Promise.all(rows);
 }
 
-try {
-    createMandelPromise().then(function (rows) {
-        rows.forEach(function (row) {
-            print(row.join(''));
-        });
-    }, function (e) {
-        print(e);
+createMandelPromise().then(function (rows) {
+    rows.forEach(function (row) {
+        print(row.join(''));
     });
-    jobs.forEach(runJob);
-} catch (e) {
-    print(e.stack || e);
-    throw e;
-}
+}, function (e) {
+    print(e);
+});
+jobs.forEach(runJob);
