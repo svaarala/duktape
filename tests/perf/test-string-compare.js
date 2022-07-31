@@ -3,8 +3,6 @@
  *  not much going on here.
  */
 
-if (typeof print !== 'function') { print = console.log; }
-
 function test() {
     var a, b, c, d, e, f, g;
     var i;
@@ -63,9 +61,4 @@ function test() {
     }
 }
 
-try {
-    test();
-} catch (e) {
-    print(e.stack || e);
-    throw e;
-}
+test();

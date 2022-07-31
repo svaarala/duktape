@@ -1,5 +1,3 @@
-if (typeof print !== 'function') { print = console.log; }
-
 function test() {
     var obj = {};
     var i;
@@ -31,9 +29,5 @@ function test() {
         void Reflect.ownKeys(obj);
     }
 }
-try {
-    test();
-} catch (e) {
-    print(e.stack || e);
-    throw e;
-}
+
+test();

@@ -1,5 +1,3 @@
-if (typeof print !== 'function') { print = console.log; }
-
 function test() {
     var tmp1 = [];
     var tmp2 = [];
@@ -26,9 +24,4 @@ function test() {
     }
 }
 
-try {
-    test();
-} catch (e) {
-    print(e.stack || e);
-    throw e;
-}
+test();

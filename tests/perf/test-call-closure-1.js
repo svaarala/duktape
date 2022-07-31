@@ -3,8 +3,6 @@
  *  created and closed.
  */
 
-if (typeof print !== 'function') { print = console.log; }
-
 function func() {
     var v0 = true;
     var v1 = true;
@@ -40,9 +38,4 @@ function test() {
     }
 }
 
-try {
-    test();
-} catch (e) {
-    print(e.stack || e);
-    throw e;
-}
+test();

@@ -1,5 +1,3 @@
-if (typeof print !== 'function') { print = console.log; }
-
 function mandel() {
     var w = 76, h = 28, iter = 100000;
     var i, j, k, c;
@@ -35,9 +33,4 @@ function mandel() {
     }
 }
 
-try {
-    mandel();
-} catch (e) {
-    print(e.stack || e);
-    throw e;
-}
+mandel();

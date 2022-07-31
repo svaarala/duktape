@@ -1,5 +1,3 @@
-if (typeof print !== 'function') { print = console.log; }
-
 function test() {
     var x, y, z;
     var i, n;
@@ -21,9 +19,4 @@ function test() {
     }
 }
 
-try {
-    test();
-} catch (e) {
-    print(e.stack || e);
-    throw e;
-}
+test();

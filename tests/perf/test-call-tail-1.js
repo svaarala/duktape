@@ -2,8 +2,6 @@
  *  Basic tail call performance.
  */
 
-if (typeof print !== 'function') { print = console.log; }
-
 function test() {
     var i;
 
@@ -19,9 +17,4 @@ function test() {
     print((1e5 * 100 / (t2 - t1)) + ' calls per millisecond');
 }
 
-try {
-    test();
-} catch (e) {
-    print(e.stack || e);
-    throw e;
-}
+test();

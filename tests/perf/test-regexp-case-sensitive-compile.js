@@ -8,9 +8,5 @@ function test() {
     }
     print(((Date.now() - t1) / 1e6) + ' ms/test');
 }
-try {
-    test();
-} catch (e) {
-    print(e.stack || e);
-    throw e;
-}
+
+test();

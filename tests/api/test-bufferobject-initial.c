@@ -4,9 +4,7 @@
  */
 
 /*---
-{
-    "endianness": "little"
-}
+endianness: little
 ---*/
 
 /*===

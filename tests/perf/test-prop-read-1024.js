@@ -8,8 +8,6 @@
 // pseudorandom sequence (computed beforehand and reused?) which has
 // different cache behavior
 
-if (typeof print !== 'function') { print = console.log; }
-
 function test() {
     var obj = {};
     var i;
@@ -35,9 +33,4 @@ function test() {
     }
 }
 
-try {
-    test();
-} catch (e) {
-    print(e.stack || e);
-    throw e;
-}
+test();

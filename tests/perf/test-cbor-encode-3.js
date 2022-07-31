@@ -1,5 +1,3 @@
-if (typeof print !== 'function') { print = console.log; }
-
 function test() {
     var msg = [];
     while (msg.length < 1024) {
@@ -23,9 +21,4 @@ function test() {
     }
 }
 
-try {
-    test();
-} catch (e) {
-    print(e.stack || e);
-    throw e;
-}
+test();

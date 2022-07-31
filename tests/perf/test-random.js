@@ -2,8 +2,6 @@
  *  Math.random() test
  */
 
-if (typeof print !== 'function') { print = console.log; }
-
 function test() {
     var i;
     var rnd = Math.random;
@@ -22,9 +20,4 @@ function test() {
     }
 }
 
-try {
-    test();
-} catch (e) {
-    print(e.stack || e);
-    throw e;
-}
+test();

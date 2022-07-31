@@ -2,8 +2,6 @@
  *  Test duk_hstring arridx parsing.
  */
 
-if (typeof print !== 'function') { print = console.log; }
-
 function test() {
     var i;
     var tmp = '1234567';
@@ -24,9 +22,4 @@ function test() {
     }
 }
 
-try {
-    test();
-} catch (e) {
-    print(e.stack || e);
-    throw e;
-}
+test();

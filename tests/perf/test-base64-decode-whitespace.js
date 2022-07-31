@@ -1,5 +1,3 @@
-if (typeof print !== 'function') { print = console.log; }
-
 function test() {
     var tmp1 = [];
     var tmp2 = [];
@@ -41,9 +39,4 @@ function test() {
     print(((tmp2.length * loopCount) / (1024 * 1024)) / (t2 - t1) + ' megabytes/millisecond');
 }
 
-try {
-    test();
-} catch (e) {
-    print(e.stack || e);
-    throw e;
-}
+test();

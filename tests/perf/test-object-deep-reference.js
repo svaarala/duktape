@@ -2,8 +2,6 @@
 // references (not [[Prototype]]) which has no O(N^2) effect for
 // _Finalizer lookup.
 
-if (typeof print !== 'function') { print = console.log; }
-
 function mkObj(n) {
     var res = { foo: 123 };
     while (--n > 0) {
@@ -18,9 +16,4 @@ function test() {
     }
 }
 
-try {
-    test();
-} catch (e) {
-    print(e.stack || e);
-    throw e;
-}
+test();

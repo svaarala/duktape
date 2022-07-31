@@ -33,9 +33,4 @@ function test() {
     print((1e5 * 100 / (t2 - t1)) + ' calls per millisecond');
 }
 
-try {
-    test();
-} catch (e) {
-    print(e.stack || e);
-    throw e;
-}
+test();

@@ -1,4 +1,7 @@
-if (typeof print !== 'function') { print = console.log; }
+/*---
+duktape_polyfills:
+  promise: true
+---*/
 
 function mandel() {
     var w = 200, h = 200, iter = 10;
@@ -35,9 +38,4 @@ function mandel() {
     }
 }
 
-try {
-    mandel();
-} catch (e) {
-    print(e.stack || e);
-    throw e;
-}
+mandel();

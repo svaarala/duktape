@@ -2,8 +2,6 @@
  *  Basic array read performance for abandoned arrays
  */
 
-if (typeof print !== 'function') { print = console.log; }
-
 function test() {
     var arr = [];
     var i;
@@ -31,9 +29,4 @@ function test() {
     }
 }
 
-try {
-    test();
-} catch (e) {
-    print(e.stack || e);
-    throw e;
-}
+test();

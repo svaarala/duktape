@@ -6,8 +6,6 @@
  *  returns.
  */
 
-if (typeof print !== 'function') { print = console.log; }
-
 function test() {
     var S = String;
     var BP = Buffer.prototype;
@@ -27,9 +25,4 @@ function test() {
     }
 }
 
-try {
-    test();
-} catch (e) {
-    print(e.stack || e);
-    throw e;
-}
+test();

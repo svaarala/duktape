@@ -2,8 +2,6 @@
  *  Basic property has performance
  */
 
-if (typeof print !== 'function') { print = console.log; }
-
 function test() {
     var obj = {};
     var i;
@@ -28,9 +26,4 @@ function test() {
     }
 }
 
-try {
-    test();
-} catch (e) {
-    print(e.stack || e);
-    throw e;
-}
+test();

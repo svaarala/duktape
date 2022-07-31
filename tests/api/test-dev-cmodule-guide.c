@@ -7,9 +7,7 @@
 
 /* No longer applicable because module framework is no longer built in. */
 /*---
-{
-    "skip": true
-}
+skip: true
 ---*/
 
 static duk_ret_t my_print(duk_context *ctx) {

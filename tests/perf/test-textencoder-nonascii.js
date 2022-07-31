@@ -2,8 +2,6 @@
  *  TextEncoder with non-ASCII input
  */
 
-if (typeof print !== 'function') { print = console.log; }
-
 function test() {
     var block = 16777216;
     var loops = 50;
@@ -30,9 +28,4 @@ function test() {
     print((block * loops) / (t2 - t1) + ' codepoints / millisecond');
 }
 
-try {
-    test();
-} catch (e) {
-    print(e.stack || e);
-    throw e;
-}
+test();

@@ -1,6 +1,7 @@
 /*
  *  Fastint equality comparison.
  */
+
 function test() {
     var i, x, y;
 
@@ -38,9 +39,4 @@ function test() {
     }
 }
 
-try {
-    test();
-} catch (e) {
-    print(e.stack || e);
-    throw e;
-}
+test();

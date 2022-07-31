@@ -2,8 +2,6 @@
  *  Proxy 'get' trap performance.
  */
 
-if (typeof print !== 'function') { print = console.log; }
-
 function test() {
     var i;
     var proxy = new Proxy({}, {
@@ -35,9 +33,5 @@ function test() {
         void proxy.foo; void proxy.foo; void proxy.foo; void proxy.foo; void proxy.foo;
     }
 }
-try {
-    test();
-} catch (e) {
-    print(e.stack || e);
-    throw e;
-}
+
+test();

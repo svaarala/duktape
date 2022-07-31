@@ -16,9 +16,5 @@ function test() {
         b = t.bind('dummy-this', 1, 2);
     }
 }
-try {
-    test();
-} catch (e) {
-    print(e.stack || e);
-    throw e;
-}
+
+test();

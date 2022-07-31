@@ -5,6 +5,7 @@
  *  could be.  Basic test for case insensitive regexp character class worst
  *  case behavior.
  */
+
 function test() {
     var i;
     var t1 = Date.now();
@@ -15,9 +16,5 @@ function test() {
     }
     print(((Date.now() - t1) / 1e2) + ' ms/test');
 }
-try {
-    test();
-} catch (e) {
-    print(e.stack || e);
-    throw e;
-}
+
+test();

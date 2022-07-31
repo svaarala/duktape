@@ -10,9 +10,7 @@
 #include <unistd.h>
 
 /*---
-{
-    "pthread": true
-}
+pthread: true
 ---*/
 
 /*===

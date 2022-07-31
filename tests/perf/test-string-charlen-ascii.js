@@ -2,8 +2,6 @@
  *  Important fast path: character length for pure ASCII strings.
  */
 
-if (typeof print !== 'function') { print = console.log; }
-
 function test() {
     var str;
     var i, n;
@@ -19,9 +17,4 @@ function test() {
     }
 }
 
-try {
-    test();
-} catch (e) {
-    print(e.stack || e);
-    throw e;
-}
+test();

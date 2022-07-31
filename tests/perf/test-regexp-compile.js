@@ -26,9 +26,5 @@ function test() {
         re = new RegExp(src); re = new RegExp(src); re = new RegExp(src); re = new RegExp(src); re = new RegExp(src);
     }
 }
-try {
-    test();
-} catch (e) {
-    print(e.stack || e);
-    throw e;
-}
+
+test();

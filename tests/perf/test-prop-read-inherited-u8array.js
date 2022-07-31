@@ -2,8 +2,6 @@
  *  Basic property read performance for an inherited Uint8Array property
  */
 
-if (typeof print !== 'function') { print = console.log; }
-
 function test() {
     var root = new Uint8Array(10000);
     var i;
@@ -27,9 +25,4 @@ function test() {
     print(ign);
 }
 
-try {
-    test();
-} catch (e) {
-    print(e.stack || e);
-    throw e;
-}
+test();
