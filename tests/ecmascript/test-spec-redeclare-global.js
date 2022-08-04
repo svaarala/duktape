@@ -86,12 +86,8 @@ RegExp: typeof=function, writable=true, enumerable=true, configurable=true
 
 printProps('RegExp');
 
-try {
-    eval("function RegExp() { return 123; }");
-    print(RegExp());
-} catch (e) {
-    print(e.name);
-}
+eval("function RegExp() { return 123; }");
+print(RegExp());
 
 printProps('RegExp');
 
@@ -105,8 +101,8 @@ NaN: typeof=number, writable=false, enumerable=false, configurable=false
 
 printProps('NaN');
 
+// non-configurable and does not match requirements of step 5.e.iv -> TypeError */
 try {
-    // non-configurable and does not match requirements of step 5.e.iv -> TypeError */
     eval("function NaN() { return 234; }");
     print('never here');
 } catch (e) {
@@ -138,12 +134,8 @@ defineProp('configurableAccessor', {
 
 printProps('configurableAccessor');
 
-try {
-    eval("function configurableAccessor() { return 345; }");
-    print(configurableAccessor());
-} catch (e) {
-    print(e.name);
-}
+eval("function configurableAccessor() { return 345; }");
+print(configurableAccessor());
 
 printProps('configurableAccessor');
 

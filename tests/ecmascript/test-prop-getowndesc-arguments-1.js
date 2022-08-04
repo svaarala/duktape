@@ -25,29 +25,25 @@ function foo(a, b, c) {
     return { A: arguments, E: function (code) { return eval(code); } };
 }
 
-try {
-    var ret = foo(1, 2, 3);
-    print(ret.E('a'));
-    print(ret.E('b'));
-    print(ret.E('c'));
-    print(JSON.stringify(Object.getOwnPropertyDescriptor(ret.A, '0')));
-    print(JSON.stringify(Object.getOwnPropertyDescriptor(ret.A, '1')));
-    print(JSON.stringify(Object.getOwnPropertyDescriptor(ret.A, '2')));
-    print(ret.E('a = 100'));
-    print(ret.E('a'));
-    print(ret.E('b'));
-    print(ret.E('c'));
-    print(JSON.stringify(Object.getOwnPropertyDescriptor(ret.A, '0')));
-    print(JSON.stringify(Object.getOwnPropertyDescriptor(ret.A, '1')));
-    print(JSON.stringify(Object.getOwnPropertyDescriptor(ret.A, '2')));
-    Object.defineProperty(ret.A, '0', { writable: false });
-    print(ret.E('a = 200'));
-    print(ret.E('a'));
-    print(ret.E('b'));
-    print(ret.E('c'));
-    print(JSON.stringify(Object.getOwnPropertyDescriptor(ret.A, '0')));
-    print(JSON.stringify(Object.getOwnPropertyDescriptor(ret.A, '1')));
-    print(JSON.stringify(Object.getOwnPropertyDescriptor(ret.A, '2')));
-} catch (e) {
-    print(e.stack || e);
-}
+var ret = foo(1, 2, 3);
+print(ret.E('a'));
+print(ret.E('b'));
+print(ret.E('c'));
+print(JSON.stringify(Object.getOwnPropertyDescriptor(ret.A, '0')));
+print(JSON.stringify(Object.getOwnPropertyDescriptor(ret.A, '1')));
+print(JSON.stringify(Object.getOwnPropertyDescriptor(ret.A, '2')));
+print(ret.E('a = 100'));
+print(ret.E('a'));
+print(ret.E('b'));
+print(ret.E('c'));
+print(JSON.stringify(Object.getOwnPropertyDescriptor(ret.A, '0')));
+print(JSON.stringify(Object.getOwnPropertyDescriptor(ret.A, '1')));
+print(JSON.stringify(Object.getOwnPropertyDescriptor(ret.A, '2')));
+Object.defineProperty(ret.A, '0', { writable: false });
+print(ret.E('a = 200'));
+print(ret.E('a'));
+print(ret.E('b'));
+print(ret.E('c'));
+print(JSON.stringify(Object.getOwnPropertyDescriptor(ret.A, '0')));
+print(JSON.stringify(Object.getOwnPropertyDescriptor(ret.A, '1')));
+print(JSON.stringify(Object.getOwnPropertyDescriptor(ret.A, '2')));

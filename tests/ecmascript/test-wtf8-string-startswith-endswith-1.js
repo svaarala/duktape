@@ -19,8 +19,4 @@ function test() {
     print(str.endsWith('\udd8a'));
 }
 
-try {
-    test();
-} catch (e) {
-    print(e.stack || e);
-}
+test();

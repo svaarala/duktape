@@ -148,15 +148,7 @@ function reservedWordStrictTest() {
 }
 
 print('=== non-strict ===');
-try {
-    reservedWordNonStrictTest();
-} catch (e) {
-    print(e);
-}
+reservedWordNonStrictTest();
 
 print('=== strict ===');
-try {
-    reservedWordStrictTest();
-} catch (e) {
-    print(e);
-}
+reservedWordStrictTest();

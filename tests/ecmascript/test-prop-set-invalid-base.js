@@ -2,7 +2,6 @@
 TypeError
 TypeError
 TypeError
-done
 ===*/
 
 try {
@@ -26,5 +25,3 @@ try {
 } catch (e) {
     print(e.name);
 }
-
-print('done');

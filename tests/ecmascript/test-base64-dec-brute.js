@@ -5,6 +5,10 @@
 
 /*@include util-string.js@*/
 
+/*---
+custom: true
+---*/
+
 /*===
 concatenate
 358810080
@@ -861,12 +865,8 @@ function concatenateTest() {
     print(csum);
 }
 
-try {
-    print('concatenate');
-    concatenateTest();
-} catch (e) {
-    print(e.stack || e);
-}
+print('concatenate');
+concatenateTest();
 
 function whitespaceMutateTest() {
     var test = [].concat(testStrings);
@@ -905,9 +905,5 @@ function whitespaceMutateTest() {
     });
 }
 
-try {
-    print('whitespace and mutate test');
-    whitespaceMutateTest();
-} catch (e) {
-    print(e.stack || e);
-}
+print('whitespace and mutate test');
+whitespaceMutateTest();

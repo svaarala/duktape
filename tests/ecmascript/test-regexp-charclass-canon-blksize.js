@@ -9,10 +9,8 @@
 /*@include util-regexp.js@*/
 
 /*---
-{
-    "skip": true,
-    "slow": true
-}
+skip: true
+slow: true
 ---*/
 
 /*===
@@ -48,8 +46,4 @@ function test() {
     }
 }
 
-try {
-    test();
-} catch (e) {
-    print(e.stack || e);
-}
+test();

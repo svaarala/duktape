@@ -7,9 +7,7 @@
 
 // Behavior is custom because e.g. quantifier digit limits are Duktape specific.
 /*---
-{
-    "custom": true
-}
+custom: true
 ---*/
 
 var t;

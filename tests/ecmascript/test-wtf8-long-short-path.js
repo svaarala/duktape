@@ -43,8 +43,4 @@ function test() {
     dump(w + y + x + y + x);
 }
 
-try {
-    test();
-} catch (e) {
-    print(e.stack || e);
-}
+test();

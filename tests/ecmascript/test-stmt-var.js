@@ -112,8 +112,4 @@ function variableDeclarationTest() {
     test('var globalValue = "shadow"; var x = globalValue; print("x:", x, "globalValue:", globalValue);');
 }
 
-try {
-    variableDeclarationTest();
-} catch (e) {
-    print(e.stack || e);
-}
+variableDeclarationTest();

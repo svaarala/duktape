@@ -24,8 +24,4 @@ function test() {
     safePrintString(inp.replace(/\udca9/g, 'Z'));
 }
 
-try {
-    test();
-} catch (e) {
-    print(e.stack || e);
-}
+test();

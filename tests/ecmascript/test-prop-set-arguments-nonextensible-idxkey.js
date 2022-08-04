@@ -27,8 +27,4 @@ function test() {
     print(args.length, args[0], args[1], args[2]);
 }
 
-try {
-    test();
-} catch (e) {
-    print(e.stack || e);
-}
+test();

@@ -50,12 +50,7 @@ function basicTest() {
 }
 
 print('basic');
-
-try {
-    basicTest();
-} catch (e) {
-    print(e);
-}
+basicTest();
 
 /*===
 break and continue
@@ -120,13 +115,7 @@ function breakContinueTest() {
 }
 
 print('break and continue');
-
-try {
-    breakContinueTest();
-} catch (e) {
-    print(e);
-}
-
+breakContinueTest();
 
 /*===
 syntax errors

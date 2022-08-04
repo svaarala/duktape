@@ -6,6 +6,10 @@
 /*@include util-buffer.js@*/
 /*@include util-string.js@*/
 
+/*---
+custom: true
+---*/
+
 /*===
 AA==
 AQ==
@@ -360,8 +364,4 @@ function test() {
     print(csum);
 }
 
-try {
-    test();
-} catch (e) {
-    print(e.stack || e);
-}
+test();

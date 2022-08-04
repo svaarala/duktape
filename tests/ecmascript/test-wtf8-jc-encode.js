@@ -1,3 +1,7 @@
+/*---
+custom: true
+---*/
+
 /*===
 2
 56319 57052
@@ -15,8 +19,4 @@ function test() {
     print(Duktape.enc('jc', v));
 }
 
-try {
-    test();
-} catch (e) {
-    print(e.stack || e);
-}
+test();

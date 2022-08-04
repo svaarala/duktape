@@ -117,4 +117,5 @@ function test() {
     print(child[0], child[9], child[10], child['-0'], child['Infinity']);
     print(u8[0], u8[9], u8[10], u8['-0'], u8['Infinity']);
 }
+
 test();

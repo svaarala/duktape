@@ -59,8 +59,4 @@ function testCharacterClassMatches() {
     test(/[\W]/);
 }
 
-try {
-    testCharacterClassMatches();
-} catch (e) {
-    print(e.stack || e);
-}
+testCharacterClassMatches();

@@ -13,8 +13,4 @@ function test() {
     print(x.lastIndexOf('foo\u{d83f}'));
 }
 
-try {
-    test();
-} catch (e) {
-    print(e.stack || e);
-}
+test();

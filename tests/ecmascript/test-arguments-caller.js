@@ -61,8 +61,4 @@ function test() {
     print(a.caller.myName);
 }
 
-try {
-    test();
-} catch (e) {
-    print(e.name);
-}
+test();

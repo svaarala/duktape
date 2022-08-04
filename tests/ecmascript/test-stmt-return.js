@@ -53,11 +53,7 @@ function testReturnTypes() {
     });
 }
 
-try {
-    testReturnTypes();
-} catch (e) {
-    print(e.stack || e);
-}
+testReturnTypes();
 
 /*
  *  When parsing:
@@ -97,11 +93,7 @@ function testReturnLineTerm() {
     print(ret);
 }
 
-try {
-    testReturnLineTerm();
-} catch (e) {
-    print(e.stack || e);
-}
+testReturnLineTerm();
 
 /*
  *  SyntaxError outside of a function body, E5 Section 12.9.

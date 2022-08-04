@@ -1,3 +1,8 @@
+/*---
+duktape_polyfills:
+  promise: true
+---*/
+
 var jobs = [];
 
 function runJob(job) {

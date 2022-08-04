@@ -4,7 +4,6 @@ RangeError: aiee
 ["foo","bar","quux"]
 TypeError
 ["foo","bar","quux"]
-done
 ===*/
 
 function test() {
@@ -35,12 +34,6 @@ function test() {
         print(e.name);
     }
     print(JSON.stringify(A));
-
-    print('done');
 }
 
-try {
-    test();
-} catch (e) {
-    print(e.stack || e);
-}
+test();

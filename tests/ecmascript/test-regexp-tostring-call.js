@@ -32,62 +32,34 @@ var r;
 /fOO/i
 ===*/
 
-try {
-    r = new RegExp('');    /* empty regexp is a special case */
-    print(r.toString());
-} catch (e) {
-    print(e.name);
-}
+r = new RegExp('');    /* empty regexp is a special case */
+print(r.toString());
 
-try {
-    r = /^$\b\B(?=foo)(?!bar)/;
-    print(r.toString());
-} catch (e) {
-    print(e.name);
-}
+r = /^$\b\B(?=foo)(?!bar)/;
+print(r.toString());
 
-try {
-    r = /a*b*?c+d+?e?f??/;
-    print(r.toString());
-} catch (e) {
-    print(e.name);
-}
+r = /a*b*?c+d+?e?f??/;
+print(r.toString());
 
-try {
-    r = /a{3}b{3}?c{3,}d{3,}?e{3,10}f{3,10}?/;
-    print(r.toString());
-} catch (e) {
-    print(e.name);
-}
+r = /a{3}b{3}?c{3,}d{3,}?e{3,10}f{3,10}?/;
+print(r.toString());
 
-try {
-    /* '\cD' is a ControlLetter escape
-     *.
-     *  \= is an IdentityEscape, whose and should match '='.
-     * Note that an IdentityEscape cannot be an IdentifierPart
-     * (e.g. 'z').
-     */
-    r = /a.\0\cD\xde\u1234\u00de\=/;
-    print(r.toString());
-} catch (e) {
-    print(e.name);
-}
+/* '\cD' is a ControlLetter escape
+ *.
+ *  \= is an IdentityEscape, whose and should match '='.
+ * Note that an IdentityEscape cannot be an IdentifierPart
+ * (e.g. 'z').
+ */
+r = /a.\0\cD\xde\u1234\u00de\=/;
+print(r.toString());
 
-try {
-    /* XXX: much to expand here */
-    r = /[abc-d][^abc-d]/;
-    print(r.toString());
-} catch (e) {
-    print(e.name);
-}
+/* XXX: much to expand here */
+r = /[abc-d][^abc-d]/;
+print(r.toString());
 
-try {
-    /* case normalization would be allowed in pattern here */
-    r = /fOO/i;
-    print(r.toString());
-} catch (e) {
-    print(e.name);
-}
+/* case normalization would be allowed in pattern here */
+r = /fOO/i;
+print(r.toString());
 
 /*
  *  Flags
@@ -100,19 +72,15 @@ try {
 /foo/gim
 ===*/
 
-try {
-    r = /foo/g;
-    print(r.toString());
+r = /foo/g;
+print(r.toString());
 
-    r = /foo/i;
-    print(r.toString());
+r = /foo/i;
+print(r.toString());
 
-    r = /foo/m;
-    print(r.toString());
+r = /foo/m;
+print(r.toString());
 
-    /* Note: input flag order differs from -required- output (E5 Section 15.10.6.4) */
-    r = /foo/mig;
-    print(r.toString());
-} catch (e) {
-    print(e.name);
-}
+/* Note: input flag order differs from -required- output (E5 Section 15.10.6.4) */
+r = /foo/mig;
+print(r.toString());

@@ -10,8 +10,4 @@ loop
 false
 ===*/
 
-try {
-    print(eval("do{print('loop')}while(false)false"));
-} catch (e) {
-    print(e.name);
-}
+print(eval("do{print('loop')}while(false)false"));

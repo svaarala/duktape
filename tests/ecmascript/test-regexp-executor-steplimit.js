@@ -4,9 +4,7 @@
 
 /* Marked custom because limit is custom behavior. */
 /*---
-{
-    "custom": true
-}
+custom: true
 ---*/
 
 /*===
@@ -60,8 +58,4 @@ function test() {
     wrappedTest(1000);  // Causes a step limit RangeError
 }
 
-try {
-    test();
-} catch (e) {
-    print(e.stack || e);
-}
+test();

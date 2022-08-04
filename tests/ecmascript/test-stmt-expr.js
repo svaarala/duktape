@@ -25,8 +25,4 @@ function test() {
     print('eval -> ' + eval("345 + 456;"));
 }
 
-try {
-    test();
-} catch (e) {
-    print(e.stack || e);
-}
+test();

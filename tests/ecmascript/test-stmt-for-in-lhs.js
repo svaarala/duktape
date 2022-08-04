@@ -131,8 +131,4 @@ function lhsTest() {
     });
 }
 
-try {
-    lhsTest();
-} catch (e) {
-    print(e.name);
-}
+lhsTest();

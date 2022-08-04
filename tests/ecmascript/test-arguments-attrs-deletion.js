@@ -58,8 +58,4 @@ function test() {
     print(args.length);
 }
 
-try {
-    test('foo', 'bar', 'quux');
-} catch (e) {
-    print(e.stack || e);
-}
+test('foo', 'bar', 'quux');

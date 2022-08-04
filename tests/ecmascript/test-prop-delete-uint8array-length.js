@@ -1,7 +1,5 @@
 /*---
-{
-    "custom": true
-}
+custom: true
 ---*/
 
 /*===
@@ -15,11 +13,7 @@ false
 // is for the delete to succeed because no .length property exists; the
 // length can still be read however because .length is normally an inherited
 // getter which is not affected by the delete.
-try {
-    var u8 = new Uint8Array(10);
-    print(u8.length);
-    print(delete u8.length);
-} catch (e) {
-    print(e.name);
-}
+var u8 = new Uint8Array(10);
+print(u8.length);
+print(delete u8.length);
 print(u8.length);
