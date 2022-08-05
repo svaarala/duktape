@@ -3,9 +3,7 @@
  */
 
 /*---
-{
-    "skip": true
-}
+skip: true
 ---*/
 
 /* XXX: What to test which is not covered by other tests? */

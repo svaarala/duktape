@@ -7,9 +7,7 @@
  */
 
 /*---
-{
-    "skip": true
-}
+skip: true
 ---*/
 
 /* XXX */

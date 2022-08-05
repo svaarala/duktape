@@ -186,13 +186,9 @@ function forContinueTest4() {
 }
 
 
-try {
-    forContinueTest1a();
-    forContinueTest1b();
-    forContinueTest2a();
-    forContinueTest2b();
-    forContinueTest3();
-    forContinueTest4();
-} catch (e) {
-    print(e);
-}
+forContinueTest1a();
+forContinueTest1b();
+forContinueTest2a();
+forContinueTest2b();
+forContinueTest3();
+forContinueTest4();

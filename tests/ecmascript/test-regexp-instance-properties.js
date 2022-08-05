@@ -32,15 +32,11 @@ function getflags(r) {
 
 ===*/
 
-try {
-    t = new RegExp('');
-    print(t.source);
-    t = eval('/' + t.source + '/' + getflags(t));
-    t = t.exec('');
-    print(t[0]);
-} catch (e) {
-    print(e.name);
-}
+t = new RegExp('');
+print(t.source);
+t = eval('/' + t.source + '/' + getflags(t));
+t = t.exec('');
+print(t[0]);
 
 /*
  *  Forward slash
@@ -51,15 +47,11 @@ try {
 /
 ===*/
 
-try {
-    t = new RegExp('/');   /* matches one forward slash (only) */
-    print(t.source);
-    t = eval('/' + t.source + '/' + getflags(t));
-    t = t.exec('/');
-    print(t[0]);
-} catch (e) {
-    print(e.name);
-}
+t = new RegExp('/');   /* matches one forward slash (only) */
+print(t.source);
+t = eval('/' + t.source + '/' + getflags(t));
+t = t.exec('/');
+print(t[0]);
 
 /*
  *  Backslash
@@ -70,15 +62,11 @@ try {
 9
 ===*/
 
-try {
-    t = new RegExp('\\d');   /* matches a digit */
-    print(t.source);
-    t = eval('/' + t.source + '/' + getflags(t));
-    t = t.exec('9');
-    print(t[0]);
-} catch (e) {
-    print(e.name);
-}
+t = new RegExp('\\d');   /* matches a digit */
+print(t.source);
+t = eval('/' + t.source + '/' + getflags(t));
+t = t.exec('9');
+print(t[0]);
 
 /*
  *  Flags
@@ -94,34 +82,22 @@ foo false false true
 foo false false true
 ===*/
 
-try {
-    t = new RegExp('foo', 'i');
-    print(t.source, t.global, t.ignoreCase, t.multiline);
-    t = eval('/' + t.source + '/' + getflags(t));
-    print(t.source, t.global, t.ignoreCase, t.multiline);
-    t = t.exec('Foo');
-    print(t[0]);
-} catch (e) {
-    print(e.name);
-}
+t = new RegExp('foo', 'i');
+print(t.source, t.global, t.ignoreCase, t.multiline);
+t = eval('/' + t.source + '/' + getflags(t));
+print(t.source, t.global, t.ignoreCase, t.multiline);
+t = t.exec('Foo');
+print(t[0]);
 
-try {
-    t = new RegExp('foo', 'g');
-    print(t.source, t.global, t.ignoreCase, t.multiline);
-    t = eval('/' + t.source + '/' + getflags(t));
-    print(t.source, t.global, t.ignoreCase, t.multiline);
-} catch (e) {
-    print(e.name);
-}
+t = new RegExp('foo', 'g');
+print(t.source, t.global, t.ignoreCase, t.multiline);
+t = eval('/' + t.source + '/' + getflags(t));
+print(t.source, t.global, t.ignoreCase, t.multiline);
 
-try {
-    t = new RegExp('foo', 'm');
-    print(t.source, t.global, t.ignoreCase, t.multiline);
-    t = eval('/' + t.source + '/' + getflags(t));
-    print(t.source, t.global, t.ignoreCase, t.multiline);
-} catch (e) {
-    print(e.name);
-}
+t = new RegExp('foo', 'm');
+print(t.source, t.global, t.ignoreCase, t.multiline);
+t = eval('/' + t.source + '/' + getflags(t));
+print(t.source, t.global, t.ignoreCase, t.multiline);
 
 /*
  *  lastIndex
@@ -131,9 +107,5 @@ try {
 0
 ===*/
 
-try {
-    t = new RegExp('foo', 'i');
-    print(t.lastIndex);
-} catch (e) {
-    print(e.name);
-}
+t = new RegExp('foo', 'i');
+print(t.lastIndex);

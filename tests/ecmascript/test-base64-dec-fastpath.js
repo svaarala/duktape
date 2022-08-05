@@ -1,8 +1,13 @@
+/*---
+custom: true
+---*/
+
 /*===
 foobarfoobar
 foobarfoobar
 foobarbarfooffoobarfoobar
 ===*/
+
 [
     // Fast path: first pair (Zm9vYmFy) has two clean groups.
     // Second pair has a clean group + a non-clean group.

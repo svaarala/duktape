@@ -205,15 +205,7 @@ function testInherited() {
     print(A.length, JSON.stringify(A));
 }
 
-try {
-    print('direct');
-    testDirect();
-} catch (e) {
-    print(e.stack || e);
-}
-try {
-    print('inherited');
-    testInherited();
-} catch (e) {
-    print(e.stack || e);
-}
+print('direct');
+testDirect();
+print('inherited');
+testInherited();

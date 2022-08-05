@@ -72,14 +72,5 @@ function validDollarEscape() {
     print(typeof m, m[0]);
 }
 
-try {
-    invalidDollarEscape();
-} catch (e) {
-    print(e.name);
-}
-
-try {
-    validDollarEscape();
-} catch (e) {
-    print(e.name);
-}
+invalidDollarEscape();
+validDollarEscape();

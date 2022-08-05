@@ -121,11 +121,7 @@ function basicSyntaxTest() {
     print('done');
 }
 
-try {
-    basicSyntaxTest();
-} catch (e) {
-    print(e.stack || e);
-}
+basicSyntaxTest();
 
 /*===
 ok
@@ -162,11 +158,7 @@ function duplicateLabelTest() {
     });
 }
 
-try {
-    duplicateLabelTest();
-} catch (e) {
-    print(e.stack || e);
-}
+duplicateLabelTest();
 
 /* XXX: Add basic break/continue and label behavior tests.  These
  * are covered by other tests though.

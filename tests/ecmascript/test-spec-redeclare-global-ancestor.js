@@ -66,43 +66,27 @@ getter
 setter
 ===*/
 
-try {
-    eval("function test_configurable_function() { print('replacement'); }");
-    test_configurable_function();
-    Object.prototype.test_configurable_function();
-} catch (e) {
-    print(e.name);
-}
+eval("function test_configurable_function() { print('replacement'); }");
+test_configurable_function();
+Object.prototype.test_configurable_function();
 
-try {
-    eval("function test_configurable_value() { print('replacement'); }");
-    test_configurable_value();
-    print(Object.prototype.test_configurable_value);
-} catch (e) {
-    print(e.name);
-}
+eval("function test_configurable_value() { print('replacement'); }");
+test_configurable_value();
+print(Object.prototype.test_configurable_value);
 
-try {
-    eval("function test_configurable_accessor() { print('replacement'); }");
-    test_configurable_accessor();
-    tmp = Object.prototype.test_configurable_accessor;
-    Object.prototype.test_configurable_accessor = 1;
-} catch (e) {
-    print(e.name);
-}
+eval("function test_configurable_accessor() { print('replacement'); }");
+test_configurable_accessor();
+tmp = Object.prototype.test_configurable_accessor;
+Object.prototype.test_configurable_accessor = 1;
 
 /*===
 replacement
 321
 ===*/
 
-try {
-    eval("function test_nonconfigurable_compatible_value() { print('replacement'); }");
-    test_nonconfigurable_compatible_value();
-    print(Object.prototype.test_nonconfigurable_compatible_value);
-} catch (e) {
-    print(e.name);
-}
+eval("function test_nonconfigurable_compatible_value() { print('replacement'); }");
+test_nonconfigurable_compatible_value();
+print(Object.prototype.test_nonconfigurable_compatible_value);
 
 /*===
 replacement
@@ -119,26 +103,14 @@ setter
 
 // In ES2015+ none of these prevent redeclaring the global.
 
-try {
-    eval("function test_nonconfigurable_incompatible_value1() { print('replacement'); }");
-    test_nonconfigurable_incompatible_value1();
-} catch (e) {
-    print(e.name);
-}
+eval("function test_nonconfigurable_incompatible_value1() { print('replacement'); }");
+test_nonconfigurable_incompatible_value1();
 
-try {
-    eval("function test_nonconfigurable_incompatible_value2() { print('replacement'); }");
-    test_nonconfigurable_incompatible_value2();
-} catch (e) {
-    print(e.name);
-}
+eval("function test_nonconfigurable_incompatible_value2() { print('replacement'); }");
+test_nonconfigurable_incompatible_value2();
 
-try {
-    eval("function test_nonconfigurable_accessor() { print('replacement'); }");
-    test_nonconfigurable_accessor();
-} catch (e) {
-    print(e.name);
-}
+eval("function test_nonconfigurable_accessor() { print('replacement'); }");
+test_nonconfigurable_accessor();
 
 print(Object.getOwnPropertyDescriptor(GLOBAL, 'test_nonconfigurable_incompatible_value1') != null);
 print(Object.getOwnPropertyDescriptor(GLOBAL, 'test_nonconfigurable_incompatible_value2') != null);

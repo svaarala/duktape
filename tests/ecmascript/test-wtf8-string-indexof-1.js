@@ -21,8 +21,4 @@ function test() {
     print(str.indexOf('', -999));
 }
 
-try {
-    test();
-} catch (e) {
-    print(e.stack || e);
-}
+test();

@@ -26,7 +26,7 @@ function f() {
 
 try {
     f();
-    print("not thrown");
+    print('never here');
 } catch (e) {
     print(e.name);
 }

@@ -104,18 +104,14 @@ try {
     print(e.stack || e);
 }
 
-try {
-    [ mklogged('atrue', true), mklogged('afalse', false) ].forEach(function (a) {
-        [ mklogged('btrue', true), mklogged('bfalse', false) ].forEach(function (b) {
-            [ mklogged('ctrue', true), mklogged('cfalse', false) ].forEach(function (c) {
-                print('---');
-                testIfLadder(a, b, c);
-            });
+[ mklogged('atrue', true), mklogged('afalse', false) ].forEach(function (a) {
+    [ mklogged('btrue', true), mklogged('bfalse', false) ].forEach(function (b) {
+        [ mklogged('ctrue', true), mklogged('cfalse', false) ].forEach(function (c) {
+            print('---');
+            testIfLadder(a, b, c);
         });
     });
-} catch (e) {
-    print(e.stack || e);
-}
+});
 
 /*===
 0 else
@@ -152,8 +148,4 @@ function testIfCoercion() {
     });
 }
 
-try {
-    testIfCoercion();
-} catch (e) {
-    print(e.stack || e);
-}
+testIfCoercion();

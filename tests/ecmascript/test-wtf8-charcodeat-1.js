@@ -82,8 +82,4 @@ function test() {
     testOne(str, -1, 20);
 }
 
-try {
-    test();
-} catch (e) {
-    print(e.stack || e);
-}
+test();

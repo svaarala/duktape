@@ -28,7 +28,6 @@ try {
     print(e.name);
 }
 
-
 /*** INVALID ARGUMENT NAMES (NON-STRICT MODE) ***/
 
 /*===
@@ -70,7 +69,6 @@ try {
 
 function nonstrict_package(package) { print(package); }
 nonstrict_package(1);
-
 
 /*** INVALID ARGUMENT NAMES (STRICT MODE) ***/
 

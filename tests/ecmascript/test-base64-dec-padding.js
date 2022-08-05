@@ -4,6 +4,10 @@
  *  There's a lot of variance in base-64 decoders in dealing with padding.
  */
 
+/*---
+custom: true
+---*/
+
 /*===
 "" ""
 "==" ""
@@ -308,8 +312,4 @@ function test() {
     });
 }
 
-try {
-    test();
-} catch (e) {
-    print(e.stack || e);
-}
+test();

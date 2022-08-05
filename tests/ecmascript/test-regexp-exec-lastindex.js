@@ -30,20 +30,16 @@ var a, b;
 0
 ===*/
 
-try {
-    r = /foo/;
-    print(r.lastIndex);
-    t = r.exec('bar');      /* no match -> reset to zero (but stays the same here, since it is already 0) */
-    print(r.lastIndex);
-    t = r.exec('foo');      /* match -> don't touch */
-    print(r.lastIndex);
-    t = r.exec('foofoo');   /* match -> don't touch */
-    print(r.lastIndex);
-    t = r.exec('foofoo');   /* match -> don't touch */
-    print(r.lastIndex);
-} catch (e) {
-    print(e.name);
-}
+r = /foo/;
+print(r.lastIndex);
+t = r.exec('bar');      /* no match -> reset to zero (but stays the same here, since it is already 0) */
+print(r.lastIndex);
+t = r.exec('foo');      /* match -> don't touch */
+print(r.lastIndex);
+t = r.exec('foofoo');   /* match -> don't touch */
+print(r.lastIndex);
+t = r.exec('foofoo');   /* match -> don't touch */
+print(r.lastIndex);
 
 /*
  *  Non-global regexp, lastIndex should have no effect on matching
@@ -61,26 +57,21 @@ foo
 9999
 ===*/
 
-try {
-    r = /foo/;
-    print(r.lastIndex);
-    r.lastIndex = -1;
-    print(r.lastIndex);
-    t = r.exec('foo');   /* match -> don't touch */
-    print(t[0]);
-    print(r.lastIndex);
+r = /foo/;
+print(r.lastIndex);
+r.lastIndex = -1;
+print(r.lastIndex);
+t = r.exec('foo');   /* match -> don't touch */
+print(t[0]);
+print(r.lastIndex);
 
-    r = /foo/;
-    print(r.lastIndex);
-    r.lastIndex = 9999;
-    print(r.lastIndex);
-    t = r.exec('foo');   /* match -> don't touch */
-    print(t[0]);
-    print(r.lastIndex);
-} catch (e) {
-    print(e.name);
-}
-
+r = /foo/;
+print(r.lastIndex);
+r.lastIndex = 9999;
+print(r.lastIndex);
+t = r.exec('foo');   /* match -> don't touch */
+print(t[0]);
+print(r.lastIndex);
 
 /*
  *  Non-global regexp, lastIndex is not written to if a match is found,
@@ -106,33 +97,29 @@ try {
 true
 ===*/
 
-try {
-    r = /foo/;
-    print(r.lastIndex, typeof r.lastIndex);
-    r.lastIndex = "1";
-    print(r.lastIndex, typeof r.lastIndex);
-    r.exec('foo');
-    print(r.lastIndex, typeof r.lastIndex);
-    r.exec('foofoo');
-    print(r.lastIndex, typeof r.lastIndex);
-    r.exec('foofoo');
-    print(r.lastIndex, typeof r.lastIndex);
+r = /foo/;
+print(r.lastIndex, typeof r.lastIndex);
+r.lastIndex = "1";
+print(r.lastIndex, typeof r.lastIndex);
+r.exec('foo');
+print(r.lastIndex, typeof r.lastIndex);
+r.exec('foofoo');
+print(r.lastIndex, typeof r.lastIndex);
+r.exec('foofoo');
+print(r.lastIndex, typeof r.lastIndex);
 
-    r = /foo/;
-    print(r.lastIndex, typeof r.lastIndex);
-    a = new String("1");
-    r.lastIndex = a;
-    print(r.lastIndex, typeof r.lastIndex);
-    r.exec('foo');
-    print(r.lastIndex, typeof r.lastIndex);
-    r.exec('foofoo');
-    print(r.lastIndex, typeof r.lastIndex);
-    r.exec('foofoo');
-    print(r.lastIndex, typeof r.lastIndex);
-    print(r.lastIndex === a);   /* instance should still be the same */
-} catch (e) {
-    print(e.name);
-}
+r = /foo/;
+print(r.lastIndex, typeof r.lastIndex);
+a = new String("1");
+r.lastIndex = a;
+print(r.lastIndex, typeof r.lastIndex);
+r.exec('foo');
+print(r.lastIndex, typeof r.lastIndex);
+r.exec('foofoo');
+print(r.lastIndex, typeof r.lastIndex);
+r.exec('foofoo');
+print(r.lastIndex, typeof r.lastIndex);
+print(r.lastIndex === a);   /* instance should still be the same */
 
 /*
  *  Non-global regexp, more lastIndex behavior when match is found
@@ -157,66 +144,46 @@ try {
 ===*/
 
 /* match: zero is not written to */
-try {
-    r = /foo/;
-    print(r.lastIndex, typeof r.lastIndex);
-    t = r.exec('foobar');
-    print(r.lastIndex, typeof r.lastIndex);
-} catch (e) {
-    print(e.name);
-}
+r = /foo/;
+print(r.lastIndex, typeof r.lastIndex);
+t = r.exec('foobar');
+print(r.lastIndex, typeof r.lastIndex);
 
 /* match: string '1' is not written to, and is ignored */
-try {
-    r = /foo/;
-    print(r.lastIndex, typeof r.lastIndex);
-    r.lastIndex = '1';
-    print(r.lastIndex, typeof r.lastIndex);
-    t = r.exec('foobar');
-    print(r.lastIndex, typeof r.lastIndex);
-} catch (e) {
-    print(e.name);
-}
+r = /foo/;
+print(r.lastIndex, typeof r.lastIndex);
+r.lastIndex = '1';
+print(r.lastIndex, typeof r.lastIndex);
+t = r.exec('foobar');
+print(r.lastIndex, typeof r.lastIndex);
 
 /* match: number -1 is not written to, and is ignored */
-try {
-    r = /foo/;
-    print(r.lastIndex, typeof r.lastIndex);
-    r.lastIndex = -1;
-    print(r.lastIndex, typeof r.lastIndex);
-    t = r.exec('foobar');
-    print(r.lastIndex, typeof r.lastIndex);
-} catch (e) {
-    print(e.name);
-}
+r = /foo/;
+print(r.lastIndex, typeof r.lastIndex);
+r.lastIndex = -1;
+print(r.lastIndex, typeof r.lastIndex);
+t = r.exec('foobar');
+print(r.lastIndex, typeof r.lastIndex);
 
 /* match: a large number is not written to, and is ignored */
-try {
-    r = /foo/;
-    print(r.lastIndex, typeof r.lastIndex);
-    r.lastIndex = 1000000000000;  /* above 2^32 */
-    print(r.lastIndex, typeof r.lastIndex);
-    t = r.exec('foobar');
-    print(r.lastIndex, typeof r.lastIndex);
-} catch (e) {
-    print(e.name);
-}
+r = /foo/;
+print(r.lastIndex, typeof r.lastIndex);
+r.lastIndex = 1000000000000;  /* above 2^32 */
+print(r.lastIndex, typeof r.lastIndex);
+t = r.exec('foobar');
+print(r.lastIndex, typeof r.lastIndex);
 
 /* no match: previous value is overwritten with zero (step 9.a.i),
  * regardless of the global flag!
  *
  * Rhino and smjs fail this test.
  */
-try {
-    r = /foo/;
-    print(r.lastIndex, typeof r.lastIndex);
-    r.lastIndex = '1';
-    print(r.lastIndex, typeof r.lastIndex);
-    t = r.exec('bar');
-    print(r.lastIndex, typeof r.lastIndex);
-} catch (e) {
-    print(e.name);
-}
+r = /foo/;
+print(r.lastIndex, typeof r.lastIndex);
+r.lastIndex = '1';
+print(r.lastIndex, typeof r.lastIndex);
+t = r.exec('bar');
+print(r.lastIndex, typeof r.lastIndex);
 
 /*
  *  Global regexp, normal use.
@@ -239,33 +206,29 @@ null
 0
 ===*/
 
-try {
-    r = /foo/g;
-    print(r.lastIndex);
-    t = r.exec('foo');
-    print(t[0]);
-    print(r.lastIndex);
-    t = r.exec('foo');
-    print(t);
-    print(r.lastIndex);
+r = /foo/g;
+print(r.lastIndex);
+t = r.exec('foo');
+print(t[0]);
+print(r.lastIndex);
+t = r.exec('foo');
+print(t);
+print(r.lastIndex);
 
-    r = /foo/gi;
-    print(r.lastIndex);
-    t = r.exec('fooFooFOO');
-    print(t[0]);
-    print(r.lastIndex);
-    t = r.exec('fooFooFOO');
-    print(t[0]);
-    print(r.lastIndex);
-    t = r.exec('fooFooFOO');
-    print(t[0]);
-    print(r.lastIndex);
-    t = r.exec('fooFooFOO');
-    print(t);
-    print(r.lastIndex);
-} catch (e) {
-    print(e.name);
-}
+r = /foo/gi;
+print(r.lastIndex);
+t = r.exec('fooFooFOO');
+print(t[0]);
+print(r.lastIndex);
+t = r.exec('fooFooFOO');
+print(t[0]);
+print(r.lastIndex);
+t = r.exec('fooFooFOO');
+print(t[0]);
+print(r.lastIndex);
+t = r.exec('fooFooFOO');
+print(t);
+print(r.lastIndex);
 
 /*
  *  Global regexp, change input string while lastIndex changes,
@@ -282,24 +245,20 @@ null
 0
 ===*/
 
-try {
-    r = /foo/gi;
-    print(r.lastIndex);
+r = /foo/gi;
+print(r.lastIndex);
 
-    t = r.exec('foo');    /* match, leave at 3 */
-    print(t[0]);
-    print(r.lastIndex);
+t = r.exec('foo');    /* match, leave at 3 */
+print(t[0]);
+print(r.lastIndex);
 
-    t = r.exec('barFOO');
-    print(t[0]);
-    print(r.lastIndex);
+t = r.exec('barFOO');
+print(t[0]);
+print(r.lastIndex);
 
-    t = r.exec('foo');    /* starts at 6, out of bounds => null and 0 */
-    print(t);
-    print(r.lastIndex);
-} catch (e) {
-    print(e.name);
-}
+t = r.exec('foo');    /* starts at 6, out of bounds => null and 0 */
+print(t);
+print(r.lastIndex);
 
 /*
  *  Coercion and update of a non-number lastIndex.  Out of bounds lastIndex
@@ -322,35 +281,31 @@ Foo
 number
 ===*/
 
-try {
-    r = /foo/gi;
-    print(r.lastIndex);
+r = /foo/gi;
+print(r.lastIndex);
 
-    r.lastIndex = -1;
-    print(r.lastIndex);
-    t = r.exec('foo');
-    print(t);
-    print(r.lastIndex);
+r.lastIndex = -1;
+print(r.lastIndex);
+t = r.exec('foo');
+print(t);
+print(r.lastIndex);
 
-    r.lastIndex = 999;
-    print(r.lastIndex);
-    t = r.exec('foo');
-    print(t);
-    print(r.lastIndex);
+r.lastIndex = 999;
+print(r.lastIndex);
+t = r.exec('foo');
+print(t);
+print(r.lastIndex);
 
-    a = {};
-    a.valueOf = function() { return 2; };
-    r.lastIndex = a;
-    print(typeof r.lastIndex);
-    print(r.lastIndex.valueOf());
-    t = r.exec('fooFoo');   /* start matching at 2, find match at 3 for 'Foo' */
-    print(t[0]);
-    print(t.index);
-    print(r.lastIndex);
-    print(typeof r.lastIndex);
-} catch (e) {
-    print(e.name);
-}
+a = {};
+a.valueOf = function() { return 2; };
+r.lastIndex = a;
+print(typeof r.lastIndex);
+print(r.lastIndex.valueOf());
+t = r.exec('fooFoo');   /* start matching at 2, find match at 3 for 'Foo' */
+print(t[0]);
+print(t.index);
+print(r.lastIndex);
+print(typeof r.lastIndex);
 
 /*
  *  lastIndex is coerced with ToInteger() which -allows- values
@@ -368,34 +323,26 @@ null
 0 number
 ===*/
 
-try {
-    /* Non-global regexp: lastIndex is ignored (matching starts from char
-     * index 0) -> match.  lastIndex is not updated for non-global regexps
-     * when a match happens.
-     */
-    r = /foo/;
-    print(r.lastIndex, typeof r.lastIndex);
-    r.lastIndex = 4294967297.0;   /* 0x100000001 */
-    t = r.exec('foofoofoo');
-    print(t);
-    print(r.lastIndex, typeof r.lastIndex);
-} catch (e) {
-    print(e.name);
-}
+/* Non-global regexp: lastIndex is ignored (matching starts from char
+ * index 0) -> match.  lastIndex is not updated for non-global regexps
+ * when a match happens.
+ */
+r = /foo/;
+print(r.lastIndex, typeof r.lastIndex);
+r.lastIndex = 4294967297.0;   /* 0x100000001 */
+t = r.exec('foofoofoo');
+print(t);
+print(r.lastIndex, typeof r.lastIndex);
 
-try {
-    /* Global regexp: respects lastIndex -> no match.  On a non-match
-     * lastIndex is zeroed.
-     */
-    r = /foo/g;
-    print(r.lastIndex, typeof r.lastIndex);
-    r.lastIndex = 4294967297.0;   /* 0x100000001 */
-    t = r.exec('foofoofoo');   /* no match, lastIndex is reset to zero */
-    print(t);
-    print(r.lastIndex, typeof r.lastIndex);
-} catch (e) {
-    print(e.name);
-}
+/* Global regexp: respects lastIndex -> no match.  On a non-match
+ * lastIndex is zeroed.
+ */
+r = /foo/g;
+print(r.lastIndex, typeof r.lastIndex);
+r.lastIndex = 4294967297.0;   /* 0x100000001 */
+t = r.exec('foofoofoo');   /* no match, lastIndex is reset to zero */
+print(t);
+print(r.lastIndex, typeof r.lastIndex);
 
 /*
  *  lastIndex can be NAN or +/- Infinity.  These have well defined
@@ -424,35 +371,27 @@ null
 0 number Infinity
 ===*/
 
-try {
-    r = /foo/;
-    print(r.lastIndex, typeof r.lastIndex);
-    r.lastIndex = NaN;
-    print(r.lastIndex, typeof r.lastIndex);
-    t = r.exec('foo');   /* match -> don't update */
-    print(t[0]);
-    print(r.lastIndex, typeof r.lastIndex);
-    t = r.exec('bar');   /* no match -> overwrite with zero */
-    print(t);
-    print(r.lastIndex, typeof r.lastIndex, 1.0 / r.lastIndex);   /* check sign too */
-} catch (e) {
-    print(e.name);
-}
+r = /foo/;
+print(r.lastIndex, typeof r.lastIndex);
+r.lastIndex = NaN;
+print(r.lastIndex, typeof r.lastIndex);
+t = r.exec('foo');   /* match -> don't update */
+print(t[0]);
+print(r.lastIndex, typeof r.lastIndex);
+t = r.exec('bar');   /* no match -> overwrite with zero */
+print(t);
+print(r.lastIndex, typeof r.lastIndex, 1.0 / r.lastIndex);   /* check sign too */
 
-try {
-    r = /foo/g;
-    print(r.lastIndex, typeof r.lastIndex);
-    r.lastIndex = NaN;
-    print(r.lastIndex, typeof r.lastIndex);
-    t = r.exec('foo');   /* match -> update */
-    print(t[0]);
-    print(r.lastIndex, typeof r.lastIndex);
-    t = r.exec('bar');   /* no match -> overwrite with zero */
-    print(t);
-    print(r.lastIndex, typeof r.lastIndex, 1.0 / r.lastIndex);   /* check sign too */
-} catch (e) {
-    print(e.name);
-}
+r = /foo/g;
+print(r.lastIndex, typeof r.lastIndex);
+r.lastIndex = NaN;
+print(r.lastIndex, typeof r.lastIndex);
+t = r.exec('foo');   /* match -> update */
+print(t[0]);
+print(r.lastIndex, typeof r.lastIndex);
+t = r.exec('bar');   /* no match -> overwrite with zero */
+print(t);
+print(r.lastIndex, typeof r.lastIndex, 1.0 / r.lastIndex);   /* check sign too */
 
 /*===
 0 number
@@ -467,32 +406,24 @@ null
 0 number Infinity
 ===*/
 
-try {
-    r = /foo/;
-    print(r.lastIndex, typeof r.lastIndex);
-    r.lastIndex = Infinity;
-    print(r.lastIndex, typeof r.lastIndex);
-    t = r.exec('foo');   /* match -> don't update */
-    print(t[0]);
-    print(r.lastIndex, typeof r.lastIndex);
-    t = r.exec('bar');   /* no match -> overwrite with zero */
-    print(t);
-    print(r.lastIndex, typeof r.lastIndex, 1.0 / r.lastIndex);   /* check sign too */
-} catch (e) {
-    print(e.name);
-}
+r = /foo/;
+print(r.lastIndex, typeof r.lastIndex);
+r.lastIndex = Infinity;
+print(r.lastIndex, typeof r.lastIndex);
+t = r.exec('foo');   /* match -> don't update */
+print(t[0]);
+print(r.lastIndex, typeof r.lastIndex);
+t = r.exec('bar');   /* no match -> overwrite with zero */
+print(t);
+print(r.lastIndex, typeof r.lastIndex, 1.0 / r.lastIndex);   /* check sign too */
 
-try {
-    r = /foo/g;
-    print(r.lastIndex, typeof r.lastIndex);
-    r.lastIndex = Infinity;
-    print(r.lastIndex, typeof r.lastIndex);
-    t = r.exec('foo');   /* no match (since we start from after end of string -> overwrite */
-    print(t);
-    print(r.lastIndex, typeof r.lastIndex, 1.0 / r.lastIndex);   /* check sign too */
-} catch (e) {
-    print(e.name);
-}
+r = /foo/g;
+print(r.lastIndex, typeof r.lastIndex);
+r.lastIndex = Infinity;
+print(r.lastIndex, typeof r.lastIndex);
+t = r.exec('foo');   /* no match (since we start from after end of string -> overwrite */
+print(t);
+print(r.lastIndex, typeof r.lastIndex, 1.0 / r.lastIndex);   /* check sign too */
 
 /*===
 0 number
@@ -507,32 +438,24 @@ null
 0 number Infinity
 ===*/
 
-try {
-    r = /foo/;
-    print(r.lastIndex, typeof r.lastIndex);
-    r.lastIndex = -Infinity;
-    print(r.lastIndex, typeof r.lastIndex);
-    t = r.exec('foo');   /* match -> don't update */
-    print(t[0]);
-    print(r.lastIndex, typeof r.lastIndex);
-    t = r.exec('bar');   /* no match -> overwrite with zero */
-    print(t);
-    print(r.lastIndex, typeof r.lastIndex, 1.0 / r.lastIndex);   /* check sign too */
-} catch (e) {
-    print(e.name);
-}
+r = /foo/;
+print(r.lastIndex, typeof r.lastIndex);
+r.lastIndex = -Infinity;
+print(r.lastIndex, typeof r.lastIndex);
+t = r.exec('foo');   /* match -> don't update */
+print(t[0]);
+print(r.lastIndex, typeof r.lastIndex);
+t = r.exec('bar');   /* no match -> overwrite with zero */
+print(t);
+print(r.lastIndex, typeof r.lastIndex, 1.0 / r.lastIndex);   /* check sign too */
 
-try {
-    r = /foo/g;
-    print(r.lastIndex, typeof r.lastIndex);
-    r.lastIndex = -Infinity;
-    print(r.lastIndex, typeof r.lastIndex);
-    t = r.exec('foo');   /* no match (since we start from after end of string -> overwrite */
-    print(t);
-    print(r.lastIndex, typeof r.lastIndex, 1.0 / r.lastIndex);   /* check sign too */
-} catch (e) {
-    print(e.name);
-}
+r = /foo/g;
+print(r.lastIndex, typeof r.lastIndex);
+r.lastIndex = -Infinity;
+print(r.lastIndex, typeof r.lastIndex);
+t = r.exec('foo');   /* no match (since we start from after end of string -> overwrite */
+print(t);
+print(r.lastIndex, typeof r.lastIndex, 1.0 / r.lastIndex);   /* check sign too */
 
 /*===
 0 number Infinity
@@ -549,35 +472,27 @@ null
 0 number Infinity
 ===*/
 
-try {
-    r = /foo/;
-    print(r.lastIndex, typeof r.lastIndex, 1.0 / r.lastIndex);
-    r.lastIndex = -0.0;
-    print(r.lastIndex, typeof r.lastIndex, 1.0 / r.lastIndex);
-    t = r.exec('foo');   /* match -> don't update */
-    print(t[0]);
-    print(r.lastIndex, typeof r.lastIndex, 1.0 / r.lastIndex);
-    t = r.exec('bar');   /* no match -> overwrite with zero (positive) */
-    print(t);
-    print(r.lastIndex, typeof r.lastIndex, 1.0 / r.lastIndex);   /* check sign too */
-} catch (e) {
-    print(e.name);
-}
+r = /foo/;
+print(r.lastIndex, typeof r.lastIndex, 1.0 / r.lastIndex);
+r.lastIndex = -0.0;
+print(r.lastIndex, typeof r.lastIndex, 1.0 / r.lastIndex);
+t = r.exec('foo');   /* match -> don't update */
+print(t[0]);
+print(r.lastIndex, typeof r.lastIndex, 1.0 / r.lastIndex);
+t = r.exec('bar');   /* no match -> overwrite with zero (positive) */
+print(t);
+print(r.lastIndex, typeof r.lastIndex, 1.0 / r.lastIndex);   /* check sign too */
 
-try {
-    r = /foo/g;
-    print(r.lastIndex, typeof r.lastIndex, 1.0 / r.lastIndex);
-    r.lastIndex = -0.0;
-    print(r.lastIndex, typeof r.lastIndex, 1.0 / r.lastIndex);
-    t = r.exec('foo');   /* match -> update */
-    print(t[0]);
-    print(r.lastIndex, typeof r.lastIndex);
-    t = r.exec('bar');   /* no match -> overwrite with zero (positive) */
-    print(t);
-    print(r.lastIndex, typeof r.lastIndex, 1.0 / r.lastIndex);   /* check sign too */
-} catch (e) {
-    print(e.name);
-}
+r = /foo/g;
+print(r.lastIndex, typeof r.lastIndex, 1.0 / r.lastIndex);
+r.lastIndex = -0.0;
+print(r.lastIndex, typeof r.lastIndex, 1.0 / r.lastIndex);
+t = r.exec('foo');   /* match -> update */
+print(t[0]);
+print(r.lastIndex, typeof r.lastIndex);
+t = r.exec('bar');   /* no match -> overwrite with zero (positive) */
+print(t);
+print(r.lastIndex, typeof r.lastIndex, 1.0 / r.lastIndex);   /* check sign too */
 
 /*
  *  The lastIndex value is floored.
@@ -594,26 +509,18 @@ foo
 3 number
 ===*/
 
-try {
-    r = /foo/;
-    print(r.lastIndex, typeof r.lastIndex);
-    r.lastIndex = 0.9;
-    print(r.lastIndex, typeof r.lastIndex);
-    t = r.exec('foo');
-    print(t[0]);
-    print(r.lastIndex, typeof r.lastIndex);
-} catch (e) {
-    print(e.name);
-}
+r = /foo/;
+print(r.lastIndex, typeof r.lastIndex);
+r.lastIndex = 0.9;
+print(r.lastIndex, typeof r.lastIndex);
+t = r.exec('foo');
+print(t[0]);
+print(r.lastIndex, typeof r.lastIndex);
 
-try {
-    r = /foo/g;
-    print(r.lastIndex, typeof r.lastIndex);
-    r.lastIndex = 0.9;
-    print(r.lastIndex, typeof r.lastIndex);
-    t = r.exec('foo');
-    print(t[0]);
-    print(r.lastIndex, typeof r.lastIndex);
-} catch (e) {
-    print(e.name);
-}
+r = /foo/g;
+print(r.lastIndex, typeof r.lastIndex);
+r.lastIndex = 0.9;
+print(r.lastIndex, typeof r.lastIndex);
+t = r.exec('foo');
+print(t[0]);
+print(r.lastIndex, typeof r.lastIndex);

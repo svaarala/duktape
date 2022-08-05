@@ -537,8 +537,4 @@ function test() {
     testOne('\ufdca');
 }
 
-try {
-    test();
-} catch (e) {
-    print(e.stack || e);
-}
+test();

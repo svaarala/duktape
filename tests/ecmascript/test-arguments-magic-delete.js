@@ -78,10 +78,6 @@ function f3(x, y) {
     print(arguments[0], arguments[1]);
 }
 
-try {
-    f1(1,2);
-    f2(1,2);
-    f3(1,2);
-} catch (e) {
-    print(e);
-}
+f1(1,2);
+f2(1,2);
+f3(1,2);

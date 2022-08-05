@@ -5,9 +5,7 @@
 /*@include util-regexp.js@*/
 
 /*---
-{
-    "slow": true
-}
+slow: true
 ---*/
 
 /*===
@@ -214,8 +212,4 @@ function test() {
     });
 }
 
-try {
-    test();
-} catch (e) {
-    print(e.stack || e);
-}
+test();

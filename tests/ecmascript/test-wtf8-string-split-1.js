@@ -27,8 +27,4 @@ function test() {
     safePrintString(str.split('').join(','));
 }
 
-try {
-    test();
-} catch (e) {
-    print(e.stack || e);
-}
+test();

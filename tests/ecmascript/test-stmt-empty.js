@@ -18,11 +18,7 @@ function basicTest() {
     print(eval("if (1);else;"));
 }
 
-try {
-    basicTest();
-} catch (e) {
-    print(e.stack || e);
-}
+basicTest();
 
 /*===
 SyntaxError

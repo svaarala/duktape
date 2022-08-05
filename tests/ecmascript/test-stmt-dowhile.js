@@ -43,11 +43,7 @@ function basicTest() {
 }
 
 print('basic');
-try {
-    basicTest();
-} catch (e) {
-    print(e);
-}
+basicTest();
 
 /*===
 break
@@ -91,12 +87,7 @@ function breakTest() {
 }
 
 print('break');
-
-try {
-    breakTest();
-} catch (e) {
-    print(e);
-}
+breakTest();
 
 /*===
 continue
@@ -153,9 +144,4 @@ function continueTest() {
 }
 
 print('continue');
-
-try {
-    continueTest();
-} catch (e) {
-    print(e);
-}
+continueTest();

@@ -19,13 +19,9 @@ var i;
  *  both Rhino and V8).
  */
 
-try {
-    // wrap in eval because it's a SyntaxError
-    r = eval("/\\z/");
-    print(r.toString());
-} catch (e) {
-    print(e.name);
-}
+// wrap in eval because it's a SyntaxError
+r = eval("/\\z/");
+print(r.toString());
 
 /*===
 47
@@ -44,27 +40,19 @@ try {
  * Avoid printing the character explicitly.
  */
 
-try {
-    src = '\u200d';
-    r = new RegExp(src);
-    txt = r.toString();
-    for (i = 0; i < txt.length; i++) {
-        print(txt.charCodeAt(i));
-    }
-} catch (e) {
-    print(e.name);
+src = '\u200d';
+r = new RegExp(src);
+txt = r.toString();
+for (i = 0; i < txt.length; i++) {
+    print(txt.charCodeAt(i));
 }
 
-try {
-    // ZWJ in an identity escape
-    src = '\\' + '\u200d';
-    r = new RegExp(src);
-    txt = r.toString();
-    for (i = 0; i < txt.length; i++) {
-        print(txt.charCodeAt(i));
-    }
-} catch (e) {
-    print(e.name);
+// ZWJ in an identity escape
+src = '\\' + '\u200d';
+r = new RegExp(src);
+txt = r.toString();
+for (i = 0; i < txt.length; i++) {
+    print(txt.charCodeAt(i));
 }
 
 /*===
@@ -82,25 +70,17 @@ try {
  * http://en.wikipedia.org/wiki/Zero-width_non-joiner
  */
 
-try {
-    src = '\u200c';
-    r = new RegExp(src);
-    txt = r.toString();
-    for (i = 0; i < txt.length; i++) {
-        print(txt.charCodeAt(i));
-    }
-} catch (e) {
-    print(e.name);
+src = '\u200c';
+r = new RegExp(src);
+txt = r.toString();
+for (i = 0; i < txt.length; i++) {
+    print(txt.charCodeAt(i));
 }
 
-try {
-    // ZWNJ in an identity escape
-    src = '\\' + '\u200c';
-    r = new RegExp(src);
-    txt = r.toString();
-    for (i = 0; i < txt.length; i++) {
-        print(txt.charCodeAt(i));
-    }
-} catch (e) {
-    print(e.name);
+// ZWNJ in an identity escape
+src = '\\' + '\u200c';
+r = new RegExp(src);
+txt = r.toString();
+for (i = 0; i < txt.length; i++) {
+    print(txt.charCodeAt(i));
 }

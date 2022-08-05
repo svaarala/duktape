@@ -81,8 +81,4 @@ function basicTest() {
     }
 }
 
-try {
-    basicTest();
-} catch (e) {
-    print(e.stack || e);
-}
+basicTest();

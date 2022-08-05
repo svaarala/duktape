@@ -11,13 +11,9 @@ Foo
 fOO
 ===*/
 
-try {
-    r = /fOO/i;
-    t = r.exec('foo'); print(t);
-    t = r.exec('Foo'); print(t);
-    t = r.exec('fOO'); print(t);
-} catch (e) {
-    print(e.name);
-}
+r = /fOO/i;
+t = r.exec('foo'); print(t);
+t = r.exec('Foo'); print(t);
+t = r.exec('fOO'); print(t);
 
 /* XXX: add more cases */

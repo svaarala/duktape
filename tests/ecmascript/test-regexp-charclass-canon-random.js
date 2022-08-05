@@ -6,9 +6,7 @@
 /*@include util-regexp.js@*/
 
 /*---
-{
-    "slow": true
-}
+slow: true
 ---*/
 
 // Last updated for Unicode 12.1.
@@ -226,11 +224,7 @@ function test() {
     });
 }
 
-try {
-    test();
-} catch (e) {
-    print(e.stack || e);
-}
+test();
 
 /*
 var count = 0;

@@ -14,8 +14,4 @@ function test() {
     print(re.test('\u13d0'));
 }
 
-try {
-    test();
-} catch (e) {
-    print(e.stack || e);
-}
+test();

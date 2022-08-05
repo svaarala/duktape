@@ -1,3 +1,7 @@
+/*---
+custom: true
+---*/
+
 /*===
 0
 1
@@ -24,7 +28,6 @@
 22
 23
 24
-done
 ===*/
 
 function test() {
@@ -49,9 +52,4 @@ function test() {
     }
 }
 
-try {
-    test();
-} catch (e) {
-    print(e.stack || e);
-}
-print('done');
+test();

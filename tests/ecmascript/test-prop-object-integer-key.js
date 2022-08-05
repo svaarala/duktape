@@ -7,8 +7,4 @@ function test() {
     print(JSON.stringify(obj));
 }
 
-try {
-    test();
-} catch (e) {
-    print(e.stack || e);
-}
+test();

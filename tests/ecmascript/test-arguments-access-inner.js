@@ -16,9 +16,5 @@ function f() {
     return g;
 }
 
-try {
-    t = f('foo', 'bar', 'quux');
-    t();
-} catch (e) {
-    print(e);
-}
+t = f('foo', 'bar', 'quux');
+t();

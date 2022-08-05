@@ -14,7 +14,6 @@
 /*===
 prototype loop set up
 RangeError
-done
 ===*/
 
 function test() {
@@ -41,11 +40,6 @@ function test() {
         print(e.name);
         //print(e.stack);
     }
-    print('done');
 }
 
-try {
-    test();
-} catch (e) {
-    print(e.stack || e);
-}
+test();

@@ -25,29 +25,25 @@ bar
 quux
 ===*/
 
-try {
-    var S1 = Symbol.for('S1');
-    var S2 = Symbol.for('S2');
-    var target = { foo: 123, bar: 234, quux: 345, '0': 'zero', '1': 'one', '2': 'two', [S1]: true, [S2]: true };
-    var P = new Proxy(target, {
-        ownKeys: function (targ) {
-            // Return keys not in ES2015+ order.
-            print('ownKeys called');
-            return [ 'bar', '0', S2, '2', S1, 'quux', 'foo', '1' ];
-        }
-    });
-    print('reflect ownKeys');
-    print(JSON.stringify(Reflect.ownKeys(P).map(String)));
-    var obj = { quux: 'mine' };
-    Object.setPrototypeOf(obj, P);
-    print('for-in enum of obj');
-    for (var k in obj) {
-        print(String(k));
+var S1 = Symbol.for('S1');
+var S2 = Symbol.for('S2');
+var target = { foo: 123, bar: 234, quux: 345, '0': 'zero', '1': 'one', '2': 'two', [S1]: true, [S2]: true };
+var P = new Proxy(target, {
+    ownKeys: function (targ) {
+        // Return keys not in ES2015+ order.
+        print('ownKeys called');
+        return [ 'bar', '0', S2, '2', S1, 'quux', 'foo', '1' ];
     }
-    print('for-in enum of target');
-    for (var k in target) {
-        print(String(k));
-    }
-} catch (e) {
-    print(e.stack || e);
+});
+print('reflect ownKeys');
+print(JSON.stringify(Reflect.ownKeys(P).map(String)));
+var obj = { quux: 'mine' };
+Object.setPrototypeOf(obj, P);
+print('for-in enum of obj');
+for (var k in obj) {
+    print(String(k));
+}
+print('for-in enum of target');
+for (var k in target) {
+    print(String(k));
 }

@@ -60,8 +60,4 @@ function f(x) {
     print(x, arguments[0], Object.getOwnPropertyDescriptor(arguments, '0').value);
 }
 
-try {
-    f(1);
-} catch (e) {
-    print(e.stack || e);
-}
+f(1);

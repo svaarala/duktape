@@ -206,16 +206,8 @@ function reflectPreventExtensions() {
     }
 }
 
-try {
-    print('- Object.preventExtensions()');
-    objectPreventExtensions();
-} catch (e) {
-    print(e.stack || e);
-}
+print('- Object.preventExtensions()');
+objectPreventExtensions();
 
-try {
-    print('- Reflect.preventExtensions()');
-    reflectPreventExtensions();
-} catch (e) {
-    print(e.stack || e);
-}
+print('- Reflect.preventExtensions()');
+reflectPreventExtensions();

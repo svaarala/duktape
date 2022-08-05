@@ -24,11 +24,7 @@ function f_decl1() {
     print(foo);      // 10
 }
 
-try {
-    f_decl1();
-} catch (e) {
-    print(e.name);
-}
+f_decl1();
 
 /*===
 100
@@ -52,8 +48,4 @@ function f_del1() {
     print(obj.x);
 }
 
-try {
-    f_del1();
-} catch (e) {
-    print(e.name);
-}
+f_del1();
