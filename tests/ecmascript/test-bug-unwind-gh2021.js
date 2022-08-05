@@ -4,7 +4,6 @@
 
 /*===
 error
-done
 ===*/
 
 function basicTest() {
@@ -24,5 +23,3 @@ try {
     // call stack.
     print('error');
 }
-
-print('done');

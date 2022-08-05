@@ -10,8 +10,4 @@ function f(x) {
     return String.fromCharCode(x);
 }
 
-try {
-    print(f(65));
-} catch (e) {
-    print(e.name);
-}
+print(f(65));

@@ -11,9 +11,5 @@ NaN
  * empty string in C code, so this testcase ensures that doesn't happen.
  */
 
-try {
-    print(+'', 1/(+''));
-    print(+'\u0000');
-} catch (e) {
-    print(e);
-}
+print(+'', 1/(+''));
+print(+'\u0000');

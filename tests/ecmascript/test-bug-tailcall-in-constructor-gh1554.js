@@ -16,8 +16,4 @@ function test() {
     print(typeof O);
 }
 
-try {
-    test();
-} catch (e) {
-    print(e.stack || e);
-}
+test();

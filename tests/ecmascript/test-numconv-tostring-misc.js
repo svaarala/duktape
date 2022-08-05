@@ -9,8 +9,4 @@ function miscTest() {
     print(1e23);
 }
 
-try {
-    miscTest();
-} catch (e) {
-    print(e);
-}
+miscTest();

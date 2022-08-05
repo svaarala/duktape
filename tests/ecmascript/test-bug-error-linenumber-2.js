@@ -46,8 +46,4 @@ function test() {
     evalCheck("\nprint('line 2')\n\n\n\n\n\n\n\nthis.nonexistent.foo = 1;");
 }
 
-try {
-    test();
-} catch (e) {
-    print(e);
-}
+test();

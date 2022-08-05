@@ -9,7 +9,6 @@
 
 /*===
 RangeError
-done
 ===*/
 
 function test() {
@@ -22,9 +21,4 @@ function test() {
     }
 }
 
-try {
-    test();
-} catch (e) {
-    print(e.stack || e);
-}
-print('done');
+test();

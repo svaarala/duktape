@@ -80,8 +80,4 @@ function limitsTest() {
      */
 }
 
-try {
-    limitsTest();
-} catch (e) {
-    print(e);
-}
+limitsTest();

@@ -2,6 +2,10 @@
  *  https://github.com/svaarala/duktape/issues/2030
  */
 
+/*---
+custom: true
+---*/
+
 /*===
 done
 ===*/

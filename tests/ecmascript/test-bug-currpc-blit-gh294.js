@@ -4,7 +4,6 @@
 
 /*===
 blitMask 11 52 123
-done
 ===*/
 
 function Image() {
@@ -34,4 +33,3 @@ this.blit = function(x, y, alpha) {
 };
 
 this.blit(1,2,3);
-print('done');

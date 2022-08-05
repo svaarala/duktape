@@ -9,9 +9,7 @@
  */
 
 /*---
-{
-    "skip": true
-}
+skip: true
 ---*/
 
 /* XXX: add tests */

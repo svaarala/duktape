@@ -8,10 +8,6 @@ undefined
  * value.)
  */
 
-try {
-    var t = typeof foo;   // UnresolvableReference
-    print(typeof t);
-    print(t);
-} catch (e) {
-    print(e);
-}
+var t = typeof foo;   // UnresolvableReference
+print(typeof t);
+print(t);

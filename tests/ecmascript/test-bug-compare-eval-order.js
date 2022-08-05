@@ -42,8 +42,4 @@ function test() {
     print(getObject('obj1', 2) >= getObject('obj2', 1));
 }
 
-try {
-    test();
-} catch (e) {
-    print(e);
-}
+test();

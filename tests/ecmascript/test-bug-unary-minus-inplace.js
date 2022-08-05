@@ -10,8 +10,4 @@ function test() {
     print(foo);
 }
 
-try {
-    test();
-} catch (e) {
-    print(e.stack || e);
-}
+test();

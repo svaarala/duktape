@@ -17,9 +17,5 @@
  * This bug will be fixed by proper fixed format Dragon4 changes.
  */
 
-try {
-    print((0.9881312916824930884e-323).toString());
-    print((0.9881312916824930884e-323).toPrecision(20));
-} catch (e) {
-    print(e);
-}
+print((0.9881312916824930884e-323).toString());
+print((0.9881312916824930884e-323).toPrecision(20));

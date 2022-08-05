@@ -1,7 +1,10 @@
 // https://github.com/svaarala/duktape/issues/2316
 
+/*---
+custom: true
+---*/
+
 /*===
-done
 ===*/
 
 function main() {
@@ -10,4 +13,3 @@ function main() {
     var v5 = CBOR.encode(v4);
 }
 main();
-print('done');

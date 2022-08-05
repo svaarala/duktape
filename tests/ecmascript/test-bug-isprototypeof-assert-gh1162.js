@@ -8,8 +8,4 @@
 false
 ===*/
 
-try {
-    print(this.parseFloat.isPrototypeOf(this.Object.prototype));
-} catch (e) {
-    print(e.stack || e);
-}
+print(this.parseFloat.isPrototypeOf(this.Object.prototype));

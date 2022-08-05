@@ -61,8 +61,4 @@ function hexTest() {
     pI('0xg');
 }
 
-try {
-    hexTest();
-} catch (e) {
-    print(e);
-}
+hexTest();

@@ -2,9 +2,12 @@
  *  Cleaned up repro from https://github.com/svaarala/duktape/issues/2061.
  */
 
+/*---
+custom: true
+---*/
+
 /*===
 true
-done
 ===*/
 
 try {
@@ -15,4 +18,3 @@ try {
 } catch (e) {
     print(e === Float64Array);
 }
-print('done');

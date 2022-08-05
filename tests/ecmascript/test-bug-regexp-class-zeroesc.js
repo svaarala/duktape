@@ -15,8 +15,4 @@ function test() {
     print(re2.test('\u0000'));
 }
 
-try {
-    test();
-} catch (e) {
-    print(e.stack || e);
-}
+test();

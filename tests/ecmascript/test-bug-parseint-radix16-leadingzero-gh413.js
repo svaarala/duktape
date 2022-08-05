@@ -30,8 +30,4 @@ function test() {
     print(parseInt('0X1234', 16));
 }
 
-try {
-    test();
-} catch (e) {
-    print(e.stack || e);
-}
+test();

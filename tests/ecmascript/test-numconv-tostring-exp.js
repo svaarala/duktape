@@ -43,8 +43,4 @@ function expTest() {
     test(-0, 2);
 }
 
-try {
-    expTest();
-} catch (e) {
-    print(e);
-}
+expTest();

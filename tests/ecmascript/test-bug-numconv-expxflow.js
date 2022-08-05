@@ -22,8 +22,4 @@ function expOverflowUnderflowTest() {
     print(val);
 }
 
-try {
-    expOverflowUnderflowTest();
-} catch (e) {
-    print(e);
-}
+expOverflowUnderflowTest();

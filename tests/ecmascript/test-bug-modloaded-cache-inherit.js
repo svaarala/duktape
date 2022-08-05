@@ -4,6 +4,10 @@
  *  trying to load a module.
  */
 
+/*---
+custom: true
+---*/
+
 /*===
 TypeError
 ===*/

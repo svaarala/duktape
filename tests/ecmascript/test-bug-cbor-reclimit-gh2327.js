@@ -3,14 +3,11 @@
  */
 
 /*---
-{
-    "custom": true
-}
+custom: true
 ---*/
 
 /*===
 RangeError
-done
 ===*/
 
 function main() {
@@ -22,9 +19,9 @@ function main() {
     var v9 = new Proxy(v8,v8);
     var v10 = CBOR.encode(v9);
 }
+
 try {
     main();
 } catch (e) {
     print(e.name);
 }
-print('done');

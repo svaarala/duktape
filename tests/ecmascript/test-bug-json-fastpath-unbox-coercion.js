@@ -46,11 +46,7 @@ function testNumberCoercion() {
     print(JSON.stringify(x));
 }
 
-try {
-    testNumberCoercion();
-} catch (e) {
-    print(e.stack || e);
-}
+testNumberCoercion();
 
 /*===
 my .toString() called
@@ -87,8 +83,4 @@ function testStringCoercion() {
     print(JSON.stringify(x));
 }
 
-try {
-    testStringCoercion();
-} catch (e) {
-    print(e.stack || e);
-}
+testStringCoercion();

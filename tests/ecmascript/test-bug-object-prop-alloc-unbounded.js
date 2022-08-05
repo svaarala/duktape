@@ -36,6 +36,10 @@
 
 /*@include util-object.js@*/
 
+/*---
+custom: true
+---*/
+
 /*===
 without compaction
 entry count < 100: true
@@ -84,11 +88,7 @@ function objectEntryPartResizeTest(doCompact) {
     print('entry count < 100:', (entrySize < 100));
 }
 
-try {
-    print('without compaction');
-    objectEntryPartResizeTest(false);
-    print('with compaction');
-    objectEntryPartResizeTest(true);
-} catch (e) {
-    print(e);
-}
+print('without compaction');
+objectEntryPartResizeTest(false);
+print('with compaction');
+objectEntryPartResizeTest(true);

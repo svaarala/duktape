@@ -18,9 +18,5 @@
 OK
 ===*/
 
-try {
-    eval("do{;}while(false)false");
-    print("OK");
-} catch (e) {
-    print(e.name);
-}
+eval("do{;}while(false)false");
+print("OK");

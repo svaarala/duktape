@@ -34,8 +34,4 @@ function test() {
     f('(function () { "use strict"; return 0o76543210; })()');
 }
 
-try {
-    test();
-} catch (e) {
-    print(e.stack || e);
-}
+test();

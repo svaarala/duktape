@@ -1,7 +1,5 @@
 /*---
-{
-    "custom": true
-}
+custom: true
 ---*/
 
 /*===
@@ -63,8 +61,4 @@ function expLimitTest() {
     test('-1000000000000000000000000000000');
 }
 
-try {
-    expLimitTest();
-} catch (e) {
-    print(e);
-}
+expLimitTest();

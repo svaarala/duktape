@@ -3,6 +3,10 @@
  *  normally except they won't be augmented to avoid recursion.
  */
 
+/*---
+custom: true
+---*/
+
 /*===
 errCreate: RangeError
 errThrow: RangeError

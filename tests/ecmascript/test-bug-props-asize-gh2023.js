@@ -3,7 +3,6 @@
  */
 
 /*===
-done
 ===*/
 
 function mapchar ( v ) { }
@@ -12,5 +11,3 @@ var round ;
 input = [ ] ;
 input[ 65536 ] = 0 ;
 input.map( mapchar ).join( '' );
-
-print('done');

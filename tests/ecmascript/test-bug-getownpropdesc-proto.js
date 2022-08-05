@@ -10,12 +10,8 @@ true
  * Once getOwnPropertyDescriptor() returned an object with null prototype.
  */
 
-try {
-    var obj = { foo: 1 };
-    var pd = Object.getOwnPropertyDescriptor(obj, 'foo');
+var obj = { foo: 1 };
+var pd = Object.getOwnPropertyDescriptor(obj, 'foo');
 
-    print(Object.getPrototypeOf(pd));
-    print(Object.getPrototypeOf(pd) === Object.prototype);
-} catch (e) {
-    print(e);
-}
+print(Object.getPrototypeOf(pd));
+print(Object.getPrototypeOf(pd) === Object.prototype);

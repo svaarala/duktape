@@ -18,8 +18,5 @@ function test() {
         obj = { ref1: obj, ref2: obj };
     }
 }
-try {
-    test();
-} catch (e) {
-    print(e);
-}
+
+test();

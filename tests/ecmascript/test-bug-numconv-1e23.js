@@ -38,10 +38,6 @@
  * exactly halfway and we should round to even.
  */
 
-try {
-    print(parseInt('0000100000000000000000000000', 10));
-    print(parseFloat('1e23', 10));
-    print(parseFloat('1e+23', 10));
-} catch (e) {
-    print(e);
-}
+print(parseInt('0000100000000000000000000000', 10));
+print(parseFloat('1e23', 10));
+print(parseFloat('1e+23', 10));

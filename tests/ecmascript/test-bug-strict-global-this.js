@@ -10,8 +10,4 @@
 object
 ===*/
 
-try {
-    print(typeof this);
-} catch (e) {
-    print(e);
-}
+print(typeof this);

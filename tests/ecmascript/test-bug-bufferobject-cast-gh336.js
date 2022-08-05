@@ -18,9 +18,7 @@
 /*@include util-buffer.js@*/
 
 /*---
-{
-    "custom": true
-}
+custom: true
 ---*/
 
 /*===
@@ -42,8 +40,4 @@ function test() {
     print(Duktape.enc('jx', createPlainBuffer(b)));
 }
 
-try {
-    test();
-} catch (e) {
-    print(e.stack || e);
-}
+test();

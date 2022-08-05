@@ -46,8 +46,4 @@ function test() {
     print(arr.length, arr[0], arr[1]);
 }
 
-try {
-    test();
-} catch (e) {
-    print(e);
-}
+test();

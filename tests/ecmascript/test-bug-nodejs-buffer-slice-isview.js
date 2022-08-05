@@ -14,8 +14,4 @@ function test() {
     print(typeof slice.length, slice.length);
 }
 
-try {
-    test();
-} catch (e) {
-    print(e.stack || e);
-}
+test();

@@ -4,6 +4,10 @@
  *  Testcase adapted a bit in this version.
  */
 
+/*---
+custom: true
+---*/
+
 /*===
 done
 finalizer called

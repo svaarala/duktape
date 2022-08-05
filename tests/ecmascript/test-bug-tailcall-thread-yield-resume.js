@@ -29,6 +29,10 @@
  *      Duktape 0.10.0 to print "never here".
  */
 
+/*---
+custom: true
+---*/
+
 /*===
 retval
 retval
@@ -117,26 +121,7 @@ function test4() {
     }
 }
 
-try {
-    print(test1());
-} catch (e) {
-    print(e);
-}
-
-try {
-    print(test2());
-} catch (e) {
-    print(e);
-}
-
-try {
-    test3();
-} catch (e) {
-    print(e);
-}
-
-try {
-    test4();
-} catch (e) {
-    print(e);
-}
+print(test1());
+print(test2());
+test3();
+test4();

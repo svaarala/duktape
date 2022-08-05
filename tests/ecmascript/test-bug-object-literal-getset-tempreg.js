@@ -1,5 +1,9 @@
 // Reported here: https://github.com/svaarala/duktape/pull/1190#issuecomment-267533606
 
+/*---
+custom: true
+---*/
+
 /*===
 still here
 function true true true

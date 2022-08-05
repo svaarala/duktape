@@ -3,11 +3,14 @@
  *  'finally' caused an internal error (GH-287).
  */
 
+/*---
+custom: true
+---*/
+
 /*===
 The pig ate all the food, and then...
 *munch*
 Error: A pig ate everyone at 8:12
-done
 ===*/
 
 function test() {
@@ -32,4 +35,3 @@ try {
 } catch (e) {
     print(e);
 }
-print('done');

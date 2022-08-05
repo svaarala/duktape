@@ -46,17 +46,7 @@ function test2() {
 }
 
 print('test1');
-
-try {
-    test1();
-} catch (e) {
-    print(e);
-}
+test1();
 
 print('test2');
-
-try {
-    test2();
-} catch (e) {
-    print(e);
-}
+test2();

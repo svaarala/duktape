@@ -8,8 +8,4 @@ undefined
  * This was broken at some point.
  */
 
-try {
-    print(typeof x);
-} catch (e) {
-    print(e.name);
-}
+print(typeof x);

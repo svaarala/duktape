@@ -16,37 +16,31 @@
 0.5
 SyntaxError
 /foo/
-done
 ===*/
 
+// Original issue found in the wild.
+print(eval('z = 0; [67,69,71][0|z++/20]'));
+
+// Coverage for similar issues.
+print(eval('z = 100; z++/20'));
+print(eval('z = 100; z--/20'));
+print(eval('z = 100; ++z/20'));
+print(eval('z = 100; --z/20'));
+
+// Other related tests.
+print(eval('x = 100; y = 200; z = 300; w = 400; x++/y++/z++/w++;'));
+print(eval('x = 100; y = 200; z = 300; w = 400; x--/y--/z--/w--;'));
+print(eval('x = 100; y = 200; z = 300; w = 400; ++x/++y/++z/++w;'));
+print(eval('x = 100; y = 200; z = 300; w = 400; --x/--y/--z/--w;'));
+print(eval('x = 100; y = 200; z = 300; w = 400; x++/y--/++z/--w;'));
+print(eval('x = 100; y = 200; x++/y;'));
 try {
-    // Original issue found in the wild.
-    print(eval('z = 0; [67,69,71][0|z++/20]'));
-
-    // Coverage for similar issues.
-    print(eval('z = 100; z++/20'));
-    print(eval('z = 100; z--/20'));
-    print(eval('z = 100; ++z/20'));
-    print(eval('z = 100; --z/20'));
-
-    // Other related tests.
-    print(eval('x = 100; y = 200; z = 300; w = 400; x++/y++/z++/w++;'));
-    print(eval('x = 100; y = 200; z = 300; w = 400; x--/y--/z--/w--;'));
-    print(eval('x = 100; y = 200; z = 300; w = 400; ++x/++y/++z/++w;'));
-    print(eval('x = 100; y = 200; z = 300; w = 400; --x/--y/--z/--w;'));
-    print(eval('x = 100; y = 200; z = 300; w = 400; x++/y--/++z/--w;'));
-    print(eval('x = 100; y = 200; x++/y;'));
-    try {
-        print(String(eval('x = 100; y = 200; x++\n/foo/')));
-    } catch (e) {
-        print(e.name);
-    }
-    try {
-        print(String(eval('x = 100; y = 200; x++;\n/foo/')));
-    } catch (e) {
-        print(e.name);
-    }
+    print(String(eval('x = 100; y = 200; x++\n/foo/')));
 } catch (e) {
-    print(e.stack || e);
+    print(e.name);
 }
-print('done');
+try {
+    print(String(eval('x = 100; y = 200; x++;\n/foo/')));
+} catch (e) {
+    print(e.name);
+}

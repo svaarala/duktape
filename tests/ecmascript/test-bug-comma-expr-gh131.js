@@ -83,21 +83,17 @@ function test5notail() {
     return (function() { var a = 1; return (function() { 'use duk notail'; a = 2 })(), a })();
 }
 
-try {
-    print('test1', test1());
-    print('test1notail', test1notail());
-    print('test1var', test1var());
-    print('test2', test2());
-    print('test2notail', test2notail());
-    print('test2var', test2var());
-    print('test3', test3());
-    print('test3notail', test3notail());
-    print('test3var', test3var());
-    print('test4', test4());
-    print('test4notail', test4notail());
-    print('test4var', test4var());
-    print('test5', test5());
-    print('test5notail', test5notail());
-} catch (e) {
-    print(e.stack || e);
-}
+print('test1', test1());
+print('test1notail', test1notail());
+print('test1var', test1var());
+print('test2', test2());
+print('test2notail', test2notail());
+print('test2var', test2var());
+print('test3', test3());
+print('test3notail', test3notail());
+print('test3var', test3var());
+print('test4', test4());
+print('test4notail', test4notail());
+print('test4var', test4var());
+print('test5', test5());
+print('test5notail', test5notail());

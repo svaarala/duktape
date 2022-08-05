@@ -28,6 +28,10 @@
  *  is then made with up-to-date refcounts.
  */
 
+/*---
+custom: true
+---*/
+
 /*===
 no finalizer
 caught Error: thrown by constructor

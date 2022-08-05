@@ -21,8 +21,4 @@ function test() {
     print(delete str[1]);
 }
 
-try {
-    test();
-} catch (e) {
-    print(e);
-}
+test();

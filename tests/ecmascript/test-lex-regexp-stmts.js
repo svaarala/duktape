@@ -84,7 +84,6 @@ NaN              - /foo/ / /bar/
 /foo/            - /foo///bar/
 NaN              - /foo/g/ /bar/
 NaN              - /foo/g/ /bar/im
-done
 ===*/
 
 var sources = [
@@ -225,5 +224,3 @@ sources.forEach(function (src) {
         print(f(e.name) + ' - ' + fmtSrc);
     }
 });
-
-print('done');

@@ -10,6 +10,10 @@
  *  https://github.com/svaarala/duktape/pull/1096
  */
 
+/*---
+custom: true
+---*/
+
 /*===
 Object.defineProperty() to convert .prop to an accessor property
 finalizer, modify object
@@ -49,8 +53,4 @@ function accessorToDataTest() {
     print(Duktape.enc('jx', obj));
 }
 
-try {
-    accessorToDataTest();
-} catch (e) {
-    print(e.stack || e);
-}
+accessorToDataTest();

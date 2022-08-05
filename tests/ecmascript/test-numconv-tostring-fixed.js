@@ -84,8 +84,4 @@ function fixedTest() {
     test(0.999999999, 7);  // round up and wrap
 }
 
-try {
-    fixedTest();
-} catch (e) {
-    print(e);
-}
+fixedTest();

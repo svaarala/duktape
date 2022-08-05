@@ -1,7 +1,5 @@
 /*---
-{
-    "custom": true
-}
+custom: true
 ---*/
 
 /*===
@@ -97,8 +95,4 @@ function octalTest() {
 
 }
 
-try {
-    octalTest();
-} catch (e) {
-    print(e);
-}
+octalTest();

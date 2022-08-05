@@ -74,8 +74,4 @@ function regexpQuantifierCaptureTest() {
     }
 }
 
-try {
-    regexpQuantifierCaptureTest();
-} catch (e) {
-    print(e);
-}
+regexpQuantifierCaptureTest();

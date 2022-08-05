@@ -7,6 +7,10 @@
  *  See: https://github.com/svaarala/duktape/issues/45
  */
 
+/*---
+custom: true
+---*/
+
 /*===
 about to exit
 finalize [object Object]

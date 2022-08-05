@@ -5,6 +5,10 @@
 
 /*@include util-buffer.js@*/
 
+/*---
+custom: true
+---*/
+
 /*===
 foo
 foo
@@ -50,8 +54,4 @@ function test() {
     }
 }
 
-try {
-    test();
-} catch (e) {
-    print(e.stack || e);
-}
+test();

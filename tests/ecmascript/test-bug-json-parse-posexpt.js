@@ -17,14 +17,5 @@ function testEval() {
     print(eval('1.50e+2'));
 }
 
-try {
-    testJson();
-} catch (e) {
-    print(e.stack || e);
-}
-
-try {
-    testEval();
-} catch (e) {
-    print(e.stack || e);
-}
+testJson();
+testEval();
