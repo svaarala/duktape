@@ -2,7 +2,6 @@
 
 /*===
 {"foo":0,"nonEnumerable":0}
-done
 ===*/
 
 Object.defineProperty(Array.prototype, 0, { set: function () { } });
@@ -14,4 +13,3 @@ function jsonStringifyOwnKeysProxyTest () {
 }
 
 jsonStringifyOwnKeysProxyTest();
-print('done');

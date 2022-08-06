@@ -108,8 +108,4 @@ function expOverflowUnderflowTest() {
     }
 }
 
-try {
-    expOverflowUnderflowTest();
-} catch (e) {
-    print(e);
-}
+expOverflowUnderflowTest();

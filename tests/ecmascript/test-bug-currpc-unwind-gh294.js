@@ -2,6 +2,10 @@
  *  Unwind and thr->ptr_curr_pc related bug when developing GH-294.
  */
 
+/*---
+custom: true
+---*/
+
 /*===
 returning
 obj finalized
@@ -38,9 +42,5 @@ function test() {
     func();
 }
 
-try {
-    test();
-    print('done');
-} catch (e) {
-    print(e.stack || e);
-}
+test();
+print('done');

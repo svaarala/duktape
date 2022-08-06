@@ -12,5 +12,5 @@ try {
      */
     eval("x={5:6}; print(x.5);");
 } catch (e) {
-    print (e.name);
+    print(e.name);
 }

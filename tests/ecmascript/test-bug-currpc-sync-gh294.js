@@ -2,13 +2,17 @@
  *  Some curr_pc sync bugs when developing GH-294.
  */
 
+/*---
+custom: true
+---*/
+
 /*===
 calling inner
 inner called
 -1 0
--2 23
--3 30
--4 35
+-2 27
+-3 34
+-4 39
 inner returned
 ===*/
 
@@ -41,11 +45,10 @@ try {
 testing
 getter called
 -1 0
--2 62
--3 70
--4 75
+-2 65
+-3 73
+-4 76
 123
-done
 ===*/
 
 /* The executor may do an automatic function call when it accesses a setter.
@@ -68,11 +71,6 @@ function sideEffectTest() {
 
     print('testing');
     print(obj.prop);
-    print('done');
 }
 
-try {
-    sideEffectTest();
-} catch (e) {
-    print(e.stack || e);
-}
+sideEffectTest();

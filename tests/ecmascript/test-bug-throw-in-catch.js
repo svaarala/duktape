@@ -6,9 +6,7 @@
  */
 
 /*---
-{
-    "custom": true
-}
+custom: true
 ---*/
 
 /*===
@@ -22,7 +20,6 @@ resumed with quux
 yielded with 3
 resumed with baz
 Error: error 2
-finished
 ===*/
 
 function yielder(x) {
@@ -64,5 +61,3 @@ try {
 } catch (e) {
     print(e);
 }
-
-print('finished');

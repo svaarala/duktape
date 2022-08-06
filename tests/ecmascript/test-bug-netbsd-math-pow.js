@@ -34,8 +34,4 @@ function test() {
     pr(Math.pow(-0, Number.NEGATIVE_INFINITY));
 }
 
-try {
-    test();
-} catch (e) {
-    print(e);
-}
+test();

@@ -28,8 +28,4 @@ function test() {
     dump(eval(inp));
 }
 
-try {
-    test();
-} catch (e) {
-    print(e.stack || e);
-}
+test();

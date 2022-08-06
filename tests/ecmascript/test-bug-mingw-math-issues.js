@@ -68,8 +68,4 @@ function test() {
     printExact(Math.pow(0/0, -0));
 }
 
-try {
-    test();
-} catch (e) {
-    print(e.stack || e);
-}
+test();

@@ -21,7 +21,6 @@
 test 1
 test 2
 test 3
-done
 ===*/
 
 function genfunc(nvar, nconst, gencsprop, avoidmputobj) {
@@ -106,12 +105,6 @@ function test() {
             }
         }
     }
-
-    print('done');
 }
 
-try {
-    test('foo');
-} catch (e) {
-    print(e.stack || e);
-}
+test('foo');

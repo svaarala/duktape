@@ -1,5 +1,4 @@
 /*===
-done
 ===*/
 
 function main() {
@@ -12,9 +11,5 @@ function main() {
         var v9 = 0;
     }
 }
-try {
-    main();
-} catch (e) {
-    print(e.stack || e);
-}
-print('done');
+
+main();

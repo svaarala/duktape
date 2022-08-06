@@ -57,20 +57,6 @@ function test3(x) {
 }
 
 
-try {
-    print(test1(1));
-} catch (e) {
-    print(e);
-}
-
-try {
-    print(test2(1));
-} catch (e) {
-    print(e);
-}
-
-try {
-    print(test3(1));
-} catch (e) {
-    print(e);
-}
+print(test1(1));
+print(test2(1));
+print(test3(1));

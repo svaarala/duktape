@@ -18,7 +18,6 @@ run
 7000
 8000
 9000
-done
 ===*/
 
 function test() {
@@ -39,12 +38,6 @@ function test() {
         var src = '"' + str.substring(0, j) + '" + "' + str.substring(0, k) + '"';
         if (eval(src).length !== j + k) { throw new Error('failed with lengths: ' + j + ', ' + k); }
     }
-
-    print('done');
 }
 
-try {
-    test();
-} catch (e) {
-    print(e.stack || e);
-}
+test();

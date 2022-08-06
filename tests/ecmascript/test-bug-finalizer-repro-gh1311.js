@@ -2,6 +2,10 @@
  *  Pure JS repro for one issue in https://github.com/svaarala/duktape/issues/1311.
  */
 
+/*---
+custom: true
+---*/
+
 /*===
 Error: a pig ate it
 done

@@ -8,11 +8,7 @@
  * by one.  The final result is 2.
  */
 
-try {
-    print(Number('1.99999999999999989'));
-} catch (e) {
-    print(e);
-}
+print(Number('1.99999999999999989'));
 
 /*===
 Infinity
@@ -22,8 +18,4 @@ Infinity
  * yielding Infinity.
  */
 
-try {
-    print(Number('1.79769313486231581e308'));
-} catch (e) {
-    print(e);
-}
+print(Number('1.79769313486231581e308'));

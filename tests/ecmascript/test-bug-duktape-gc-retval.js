@@ -4,12 +4,12 @@
  *  0 means success so that Duktape.gc() would return false on success.
  */
 
+/*---
+custom: true
+---*/
+
 /*===
 true
 ===*/
 
-try {
-    print(Duktape.gc());
-} catch (e) {
-    print(e.stack || e);
-}
+print(Duktape.gc());

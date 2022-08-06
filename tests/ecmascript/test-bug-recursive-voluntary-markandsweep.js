@@ -3,6 +3,10 @@
  *  voluntary GC, https://github.com/svaarala/duktape/pull/1347.
  */
 
+/*---
+custom: true
+---*/
+
 /*===
 0
 1
@@ -14,7 +18,6 @@
 7
 8
 9
-done
 ===*/
 
 function myFinalizer(obj) {
@@ -58,12 +61,6 @@ function test() {
         Duktape.gc();
         Duktape.gc();
     }
-
-    print('done');
 }
 
-try {
-    test();
-} catch (e) {
-    print(e.stack || e);
-}
+test();

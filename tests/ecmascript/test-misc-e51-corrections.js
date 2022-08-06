@@ -14,14 +14,10 @@ barfoo
  * (The character value (CV) is defined to be the empty character.)
  */
 
-try {
-    print("foo\
+print("foo\
 bar");
-    print('bar\
+print('bar\
 foo');
-} catch (e) {
-    print(e);
-}
 
 /*===
 imm1
@@ -101,11 +97,7 @@ function forToBooleanTest() {
     }
 }
 
-try {
-    forToBooleanTest();
-} catch (e) {
-    print(e);
-}
+forToBooleanTest();
 
 /*===
 ===*/
@@ -135,29 +127,17 @@ undefined
  */
 
 /* break/continue tests are simply syntax tests */
-try {
-    print('switch-break');
-    print(eval('(function() { switch(123) { case 123: break\n; }; })()'));
-} catch (e) {
-    print(e);
-}
+print('switch-break');
+print(eval('(function() { switch(123) { case 123: break\n; }; })()'));
 
-try {
-    print('for-continue');
-   print(eval('(function() { for (;;) { break; continue\n; } })()'));
-} catch (e) {
-    print(e);
-}
+print('for-continue');
+print(eval('(function() { for (;;) { break; continue\n; } })()'));
 
-try {
-    /* if 'return\n;' is parsed as 'return; ;' it would make the if-statement
-     * invalid, so this is a more useful test.
-     */
-    print('function-return');
-    print(eval('(function() { if (true) return\n;else return 234 })()'));
-} catch (e) {
-    print(e);
-}
+/* if 'return\n;' is parsed as 'return; ;' it would make the if-statement
+ * invalid, so this is a more useful test.
+ */
+print('function-return');
+print(eval('(function() { if (true) return\n;else return 234 })()'));
 
 /*===
 ===*/
@@ -178,12 +158,8 @@ NaN
  * (Already works, demonstrate with empty string: NaN is provided by step 12.)
  */
 
-try {
-    print(parseInt(''));
-    print(parseInt('    '));
-} catch (e) {
-    print(e);
-}
+print(parseInt(''));
+print(parseInt('    '));
 
 /*===
 NaN
@@ -196,12 +172,8 @@ NaN
  * as empty string doesn't match StrDecimalLiteral.)
  */
 
-try {
-    print(parseFloat(''));
-    print(parseFloat('    '));
-} catch (e) {
-    print(e);
-}
+print(parseFloat(''));
+print(parseFloat('    '));
 
 /*===
 %23[]!'()*
@@ -218,12 +190,8 @@ try {
  * doc/uri.txt for discussion.)
  */
 
-try {
-    print(decodeURI("%23%5B%5D%21%27%28%29%2A"));
-    print(encodeURI("#[]!'()*"));
-} catch (e) {
-    print(e);
-}
+print(decodeURI("%23%5B%5D%21%27%28%29%2A"));
+print(encodeURI("#[]!'()*"));
 
 /*===
 ===*/
@@ -305,12 +273,7 @@ undefined
 
 /* 15.4.4.18: In step 9 of the algorithm, undefined is now the specified return value. */
 
-try {
-    print([1,2,3].forEach(function(x) { print('forEach:', x); }));
-
-} catch (e) {
-    print(e);
-}
+print([1,2,3].forEach(function(x) { print('forEach:', x); }));
 
 /*===
 reduce: 1 2 1 1,2,3
@@ -331,27 +294,19 @@ reduceRight this: undefined undefined
  * (Test 'this' binding, must use a strict function to get in unmangled.)
  */
 
-try {
-    print([1,2,3].reduce(function(accumulator, kValue, k, O) {
-        'use strict';
-        print('reduce:', accumulator, kValue, k, O);
-        print('reduce this:', typeof this, this);
-        return accumulator + kValue;  // sum
-    }));
-} catch (e) {
-    print(e);
-}
+print([1,2,3].reduce(function(accumulator, kValue, k, O) {
+    'use strict';
+    print('reduce:', accumulator, kValue, k, O);
+    print('reduce this:', typeof this, this);
+    return accumulator + kValue;  // sum
+}));
 
-try {
-    print([1,2,3].reduceRight(function(accumulator, kValue, k, O) {
-        'use strict';
-        print('reduceRight:', accumulator, kValue, k, O);
-        print('reduceRight this:', typeof this, this);
-        return accumulator + kValue;  // sum
-    }));
-} catch (e) {
-    print(e);
-}
+print([1,2,3].reduceRight(function(accumulator, kValue, k, O) {
+    'use strict';
+    print('reduceRight:', accumulator, kValue, k, O);
+    print('reduceRight this:', typeof this, this);
+    return accumulator + kValue;  // sum
+}));
 
 /*===
 ===*/
@@ -461,11 +416,7 @@ function errMessageTest1() {
     print(JSON.stringify(e3.message));
 }
 
-try {
-    errMessageTest1();
-} catch (e) {
-    print(e);
-}
+errMessageTest1();
 
 /*===
 "Error"
@@ -481,11 +432,7 @@ function errMessageTest2() {
     print(JSON.stringify(e2.toString()));
 }
 
-try {
-    errMessageTest2();
-} catch (e) {
-    print(e);
-}
+errMessageTest2();
 
 /*===
 ===*/

@@ -20,13 +20,9 @@ function test(n) {
     eval(src);
 }
 
-try {
-    test(100);
-    print('test 1 ok');
-    test(200);
-    print('test 2 ok');
-    test(10000);
-    print('test 3 ok');
-} catch (e) {
-    print(e);
-}
+test(100);
+print('test 1 ok');
+test(200);
+print('test 2 ok');
+test(10000);
+print('test 3 ok');

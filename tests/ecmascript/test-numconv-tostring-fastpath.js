@@ -7,9 +7,7 @@
  */
 
 /*---
-{
-    "slow": true
-}
+slow: true
 ---*/
 
 /*@include util-string.js@*/
@@ -374,8 +372,4 @@ function fastPathTest() {
     }
 }
 
-try {
-    fastPathTest();
-} catch (e) {
-    print(e);
-}
+fastPathTest();

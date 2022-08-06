@@ -25,8 +25,4 @@ function f_postinc() {
     print('->', x, y);
 }
 
-try {
-    f_postinc();
-} catch (e) {
-    print(e.name);
-}
+f_postinc();

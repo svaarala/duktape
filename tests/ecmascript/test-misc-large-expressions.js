@@ -35,9 +35,7 @@
 var extVar = 0;  // dummy assignment target
 
 /*---
-{
-    "slow": true
-}
+slow: true
 ---*/
 
 /*===
@@ -179,8 +177,4 @@ function largeExprTest() {
 
 print('large expressions')
 
-try {
-    largeExprTest();
-} catch (e) {
-    print(e.stack || e);
-}
+largeExprTest();

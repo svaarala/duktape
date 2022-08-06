@@ -1,5 +1,9 @@
 // https://github.com/svaarala/duktape/issues/2204
 
+/*---
+custom: true
+---*/
+
 /*===
 0
 done

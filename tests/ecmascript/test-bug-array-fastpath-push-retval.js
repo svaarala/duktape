@@ -12,8 +12,4 @@ function test() {
     print(typeof ret, ret);
 }
 
-try {
-    test();
-} catch (e) {
-    print(e.stack || e);
-}
+test();

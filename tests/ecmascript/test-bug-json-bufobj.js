@@ -9,6 +9,10 @@
 
 /*@include util-buffer.js@*/
 
+/*---
+custom: true
+---*/
+
 /*===
 index: 0
 json fast: {"0":0,"1":0,"2":0,"3":0}
@@ -123,8 +127,4 @@ function test() {
     });
 }
 
-try {
-    test();
-} catch (e) {
-    print(e.stack || e);
-}
+test();

@@ -23,8 +23,4 @@ function test() {
     print(obj1[(obj1 = obj2), 'name']);
 }
 
-try {
-    test();
-} catch (e) {
-    print(e.stack || e);
-}
+test();

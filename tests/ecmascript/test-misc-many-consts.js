@@ -75,16 +75,8 @@ function testObject(num) {
     print('object', num, keys.length, len);
 }
 
-try {
-    [0, 10, 100, 253, 254, 255, 256, 257, 300, 3000, 10000, 65000]
-        .forEach(function(x) { testArray(x); });
-} catch (e) {
-    print(e);
-}
+[0, 10, 100, 253, 254, 255, 256, 257, 300, 3000, 10000, 65000]
+    .forEach(function(x) { testArray(x); });
 
-try {
-    [0, 10, 100, 125, 126, 127, 128, 129, 130, 253, 254, 255, 256, 257, 300, 3000, 10000, 32000]
-        .forEach(function(x) { testObject(x); });
-} catch (e) {
-    print(e);
-}
+[0, 10, 100, 125, 126, 127, 128, 129, 130, 253, 254, 255, 256, 257, 300, 3000, 10000, 32000]
+    .forEach(function(x) { testObject(x); });

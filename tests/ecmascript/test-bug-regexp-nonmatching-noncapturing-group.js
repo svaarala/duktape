@@ -43,8 +43,4 @@ function regexpNoncapturingTest() {
     print(/(?:a)?/.test("a"));
 }
 
-try {
-    regexpNoncapturingTest();
-} catch (e) {
-    print(e);
-}
+regexpNoncapturingTest();

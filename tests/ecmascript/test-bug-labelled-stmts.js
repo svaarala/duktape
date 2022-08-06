@@ -42,18 +42,6 @@ function testWith() {
     print('with 3');
 }
 
-try {
-    testIf();
-} catch (e) {
-    print(e.stack || e);
-}
-try {
-    testBlock();
-} catch (e) {
-    print(e.stack || e);
-}
-try {
-    testWith();
-} catch (e) {
-    print(e.stack || e);
-}
+testIf();
+testBlock();
+testWith();

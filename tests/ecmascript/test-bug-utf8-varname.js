@@ -12,8 +12,4 @@ function test() {
     print('count:', my_变量);
 }
 
-try {
-    test();
-} catch (e) {
-    print(e.stack || e);
-}
+test();

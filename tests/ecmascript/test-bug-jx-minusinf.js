@@ -1,3 +1,7 @@
+/*---
+custom: true
+---*/
+
 /*===
 -Infinity
 SyntaxError
@@ -14,8 +18,4 @@ function test() {
     }
 }
 
-try {
-    test();
-} catch (e) {
-    print(e.stack || e);
-}
+test();

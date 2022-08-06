@@ -10,7 +10,6 @@
 about to set year
 year set ok
 Invalid Date
-done
 ===*/
 
 function test() {
@@ -21,9 +20,4 @@ function test() {
     print(d);
 }
 
-try {
-    test();
-} catch (e) {
-    print(e);
-}
-print('done');
+test();

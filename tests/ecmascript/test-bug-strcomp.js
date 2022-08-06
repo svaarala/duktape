@@ -4,10 +4,6 @@ false
 true
 ===*/
 
-try {
-    print('' === 'foo');
-    print('' > 'foo');
-    print('' < 'foo');
-} catch (e) {
-    print(e);
-}
+print('' === 'foo');
+print('' > 'foo');
+print('' < 'foo');

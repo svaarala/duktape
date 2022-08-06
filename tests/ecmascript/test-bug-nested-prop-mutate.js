@@ -90,12 +90,8 @@ function test5() {
     print(obj1.name);
 }
 
-try {
-    test1();
-    test2();
-    test3();
-    test4();
-    test5();
-} catch (e) {
-    print(e.stack || e);
-}
+test1();
+test2();
+test3();
+test4();
+test5();

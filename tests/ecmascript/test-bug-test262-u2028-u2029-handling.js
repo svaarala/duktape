@@ -12,18 +12,10 @@
 
 var bar;
 
-try {
-    bar = -1;
-    eval("var foo\u2028bar = 66;");
-    print(bar);
-} catch (e) {
-    print(e);
-}
+bar = -1;
+eval("var foo\u2028bar = 66;");
+print(bar);
 
-try {
-    bar = -1;
-    eval("var foo\u2028bar = 66;");
-    print(bar);
-} catch (e) {
-    print(e);
-}
+bar = -1;
+eval("var foo\u2028bar = 66;");
+print(bar);

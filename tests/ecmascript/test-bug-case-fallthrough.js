@@ -75,26 +75,7 @@ function test2a() {
     }
 }
 
-try {
-    test1a();
-} catch (e) {
-    print(e);
-}
-
-try {
-    test1b();
-} catch (e) {
-    print(e);
-}
-
-try {
-    test1c();
-} catch (e) {
-    print(e);
-}
-
-try {
-    test2a();
-} catch (e) {
-    print(e);
-}
+test1a();
+test1b();
+test1c();
+test2a();

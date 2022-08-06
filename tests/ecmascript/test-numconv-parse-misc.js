@@ -135,8 +135,4 @@ function miscTest() {
     pFloat('0.00010000000000000000000000');
 }
 
-try {
-    miscTest();
-} catch (e) {
-    print(e);
-}
+miscTest();

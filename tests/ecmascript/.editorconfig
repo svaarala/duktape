@@ -1,0 +1,8 @@
+# https://editorconfig.org/
+#
+# Approximate configuration for the Duktape code base.
+
+# Don't trim trailing whitespace because some testcase expect values
+# have trailing whitespace.
+[*.js]
+trim_trailing_whitespace = false

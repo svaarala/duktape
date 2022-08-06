@@ -49,8 +49,4 @@ function octalTest() {
     p('099');
 }
 
-try {
-    octalTest();
-} catch (e) {
-    print(e);
-}
+octalTest();

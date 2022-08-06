@@ -16,10 +16,5 @@ function test ( ) {
     var f = eval( f );
 }
 
-try {
-    test();
-} catch (e) {
-    print(e.stack || e);
-}
-
+test();
 print('done');

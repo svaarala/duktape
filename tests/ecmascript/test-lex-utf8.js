@@ -11,11 +11,11 @@
 hello world!
 ===*/
 
-// These chars are in UTF-8 format in the source file
+// These chars are in UTF-8 format in the source file.
 print('äö');
 print('变量');
 
-/* Note: smjs fails the tests below (Rhino does not) */
+// Note: smjs fails the tests below (Rhino does not).
 
 $äöå = 1;
 print($äöå, typeof $äöå);

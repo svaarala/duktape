@@ -11,8 +11,4 @@ function test() {
     print('still here');
 }
 
-try {
-    test();
-} catch (e) {
-    print(e.stack || e);
-}
+test();

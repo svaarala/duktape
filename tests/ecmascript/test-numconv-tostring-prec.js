@@ -69,8 +69,4 @@ function precisionTest() {
     test(-0, 3);
 }
 
-try {
-    precisionTest();
-} catch (e) {
-    print(e);
-}
+precisionTest();

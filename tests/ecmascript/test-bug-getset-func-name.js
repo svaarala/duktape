@@ -36,8 +36,4 @@ function test() {
     print('set.name:', pd.set.name);
 }
 
-try {
-    test();
-} catch (e) {
-    print(e.stack || e);
-}
+test();

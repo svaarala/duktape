@@ -171,8 +171,4 @@ function test() {\
 }\
 ";
 
-try {
-    eval(test_source + "; test();");
-} catch (e) {
-    print(e);
-}
+eval(test_source + "; test();");

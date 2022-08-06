@@ -1,7 +1,5 @@
 /*---
-{
-    "custom": true
-}
+custom: true
 ---*/
 
 /*===
@@ -23,8 +21,4 @@ function pointerTostringTest() {
     print(re_ptr_nonnull.test(ptr_nonnull.toString()));
 }
 
-try {
-    pointerTostringTest();
-} catch (e) {
-    print(e);
-}
+pointerTostringTest();

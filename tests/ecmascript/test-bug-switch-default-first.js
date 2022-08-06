@@ -50,18 +50,14 @@ function test3(v) {
     }
 }
 
-try {
-    print(test1(0));
-    print(test1(1));
-    print(test1(2));
+print(test1(0));
+print(test1(1));
+print(test1(2));
 
-    print(test2(0));
-    print(test2(1));
-    print(test2(2));
+print(test2(0));
+print(test2(1));
+print(test2(2));
 
-    print(test3(0));
-    print(test3(1));
-    print(test3(2));
-} catch (e) {
-    print(e.stack || e);
-}
+print(test3(0));
+print(test3(1));
+print(test3(2));

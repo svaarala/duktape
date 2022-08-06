@@ -4,7 +4,6 @@
 
 /*===
 RangeError
-done
 ===*/
 
 function b() {
@@ -16,4 +15,3 @@ try {
 } catch (e) {
     print(e.name);
 }
-print('done');

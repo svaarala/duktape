@@ -47,8 +47,4 @@ function test() {
     printDesc('prop2');
 }
 
-try {
-    test();
-} catch (e) {
-    print(e);
-}
+test();

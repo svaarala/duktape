@@ -45,8 +45,4 @@ function test() {
     evalCheck("\nprint('line 2')\n" + rep('\n', 200) + "if (null.foo) {}");
 }
 
-try {
-    test();
-} catch (e) {
-    print(e);
-}
+test();

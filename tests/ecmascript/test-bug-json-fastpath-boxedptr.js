@@ -3,6 +3,12 @@
  *  to be emitted as "{}" instead of being omitted.
  */
 
+/*---
+custom: true
+duktape_config:
+  DUK_USE_JSON_STRINGIFY_FASTPATH: true
+---*/
+
 /*===
 [null,null]
 [null,null]
@@ -16,8 +22,4 @@ function test() {
     print(JSON.stringify([ Duktape.Pointer('dummy'), new Duktape.Pointer('dummy') ], function id(k,v) { return v; }));
 }
 
-try {
-    test();
-} catch (e) {
-    print(e.stack || e);
-}
+test();

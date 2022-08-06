@@ -32,9 +32,10 @@
  */
 
 /*---
-{
-    "custom": true
-}
+custom: true
+duktape_config:
+  DUK_USE_ARRAY_FASTPATH: true
+  DUK_USE_ARRAY_PROP_FASTPATH: true
 ---*/
 
 /*===
@@ -242,8 +243,4 @@ function arrayFastWriteTest() {
     print(arr.length, JSON.stringify(arr));
 }
 
-try {
-    arrayFastWriteTest();
-} catch (e) {
-    print(e.stack || e);
-}
+arrayFastWriteTest();

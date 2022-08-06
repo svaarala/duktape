@@ -9,7 +9,6 @@ function
 fn called
 [object Math]
 [object Math]
-done
 ===*/
 
 var global = new Function('return this')();
@@ -34,5 +33,3 @@ try {
 print(Math);
 var Math;
 print(Math);
-
-print('done');

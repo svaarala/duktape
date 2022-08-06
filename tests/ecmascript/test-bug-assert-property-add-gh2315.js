@@ -1,7 +1,6 @@
 // https://github.com/svaarala/duktape/issues/2315
 
 /*===
-done
 ===*/
 
 function main() {
@@ -15,4 +14,3 @@ function main() {
     }
 }
 main();
-print('done');

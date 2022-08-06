@@ -25,8 +25,4 @@ function test() {
     print(obj.value);
 }
 
-try {
-    test();
-} catch (e) {
-    print(e);
-}
+test();

@@ -4,6 +4,10 @@
  *  https://github.com/svaarala/duktape/pull/1096
  */
 
+/*---
+custom: true
+---*/
+
 /*===
 deleting obj.prop
 finalizer, modify object
@@ -50,8 +54,4 @@ function test() {
     print(Duktape.enc('jx', obj));
 }
 
-try {
-    test();
-} catch (e) {
-    print(e.stack || e);
-}
+test();

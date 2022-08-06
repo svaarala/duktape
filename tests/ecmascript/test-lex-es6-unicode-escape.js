@@ -131,12 +131,8 @@ function stringLiteralTest() {
     });
 }
 
-try {
-    print('string literal');
-    stringLiteralTest();
-} catch (e) {
-    print(e.stack || e);
-}
+print('string literal');
+stringLiteralTest();
 
 /*===
 plain escape
@@ -190,9 +186,5 @@ function plainEscapeTest() {
     });
 }
 
-try {
-    print('plain escape');
-    plainEscapeTest();
-} catch (e) {
-    print(e.stack || e);
-}
+print('plain escape');
+plainEscapeTest();

@@ -16,11 +16,7 @@ function declarationTest() {
     print(typeof this);  // strict: 'undefined', non-strict: 'object'
 }
 
-try {
-    declarationTest.call(undefined);
-} catch (e) {
-    print(e);
-}
+declarationTest.call(undefined);
 
 /*===
 5
@@ -49,9 +45,5 @@ function DiagModule(stdlib) {
     return { diag: diag };
 }
 
-try {
-    var mod = DiagModule(this);  // this = global object
-    print(mod.diag(3, 4));  // -> 5
-} catch (e) {
-    print(e);
-}
+var mod = DiagModule(this);  // this = global object
+print(mod.diag(3, 4));  // -> 5

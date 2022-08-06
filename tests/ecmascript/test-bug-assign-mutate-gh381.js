@@ -34,8 +34,4 @@ function test() {
     print( (x = y) + (y = 30) );
 }
 
-try {
-    test();
-} catch (e) {
-    print(e.stack || e);
-}
+test();

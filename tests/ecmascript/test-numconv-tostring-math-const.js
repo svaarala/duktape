@@ -18,8 +18,4 @@ function mathConstTest() {
     }
 }
 
-try {
-    mathConstTest()
-} catch (e) {
-    print(e);
-}
+mathConstTest()

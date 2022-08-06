@@ -9,9 +9,7 @@
  */
 
 /*---
-{
-    "custom": true
-}
+custom: true
 ---*/
 
 /*===
@@ -43,8 +41,4 @@ function testErrorToStringReplacement() {
     }
 }
 
-try {
-    testErrorToStringReplacement();
-} catch (e) {
-    print(e.stack || e);
-}
+testErrorToStringReplacement();

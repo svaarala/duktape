@@ -6,7 +6,6 @@
  */
 
 /*===
-done
 ===*/
 
 function test ( ) {
@@ -21,4 +20,3 @@ function test ( ) {
     func = function ( a , b , c ) { print ( eval ( '"aiee"' ) ) ; } ;
 }
 try { test ( ) ; } catch ( e ) { /* print(e); */ }
-print('done');

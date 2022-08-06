@@ -37,8 +37,4 @@ function labelledBlockTest() {
     print("after loop 2");
 }
 
-try {
-    labelledBlockTest();
-} catch (e) {
-    print(e);
-}
+labelledBlockTest();

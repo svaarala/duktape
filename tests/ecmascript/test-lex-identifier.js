@@ -23,7 +23,6 @@ try {
     print(e.name);
 }
 
-
 /*
  *  Escapes in IdentifierStart and IdentifierPart
  */

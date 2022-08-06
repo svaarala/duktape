@@ -19,10 +19,8 @@
  */
 
 /*---
-{
-    "custom": true,
-    "slow": true
-}
+custom: true
+slow: true
 ---*/
 
 /*===
@@ -95,14 +93,5 @@ function test2() {
     }
 }
 
-try {
-    test1();
-} catch (e) {
-    print(e);
-}
-
-try {
-    test2();
-} catch (e) {
-    print(e);
-}
+test1();
+test2();

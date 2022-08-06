@@ -44,8 +44,4 @@ function test() {
     print(obj.prop1, obj.prop2);
 }
 
-try {
-    test();
-} catch (e) {
-    print(e);
-}
+test();

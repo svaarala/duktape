@@ -108,23 +108,11 @@ function test3() {
     });
 }
 
-try {
-    print('test1');
-    test1();
-} catch (e) {
-    print(e.stack || e);
-}
+print('test1');
+test1();
 
-try {
-    print('test2');
-    test2();
-} catch (e) {
-    print(e.stack || e);
-}
+print('test2');
+test2();
 
-try {
-    print('test3');
-    test3();
-} catch (e) {
-    print(e.stack || e);
-}
+print('test3');
+test3();
