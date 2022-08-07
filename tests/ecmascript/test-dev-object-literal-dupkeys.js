@@ -84,8 +84,4 @@ function test() {
     print(typeof pd.get, typeof pd.set, pd.writable, pd.configurable);
 }
 
-try {
-    test();
-} catch (e) {
-    print(e.stack || e);
-}
+test();

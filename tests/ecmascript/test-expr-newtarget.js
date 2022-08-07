@@ -73,8 +73,4 @@ function test() {
     new outer();
 }
 
-try {
-    test();
-} catch (e) {
-    print(e.stack || e);
-}
+test();

@@ -44,8 +44,4 @@ function randomPropTest() {
     }
 }
 
-try {
-    randomPropTest();
-} catch (e) {
-    print(e);
-}
+randomPropTest();

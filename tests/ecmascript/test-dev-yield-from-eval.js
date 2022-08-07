@@ -3,6 +3,10 @@
  *  cause a clean TypeError.
  */
 
+/*---
+custom: true
+---*/
+
 /*===
 TypeError
 ===*/

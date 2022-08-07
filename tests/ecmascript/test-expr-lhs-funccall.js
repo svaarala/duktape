@@ -10,8 +10,8 @@ f3 error
 ===*/
 
 function f1() { return 1; }
-function f2() { throw new Error("f2 error"); }
-function f3() { throw new Error("f3 error"); }
+function f2() { throw new Error('f2 error'); }
+function f3() { throw new Error('f3 error'); }
 
 try {
     f1() = f1();

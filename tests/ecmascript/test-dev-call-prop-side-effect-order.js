@@ -1,3 +1,7 @@
+/*---
+custom: true
+---*/
+
 /*===
 getter
 foo

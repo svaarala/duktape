@@ -11,9 +11,7 @@
  */
 
 /*---
-{
-    "nonstandard": true
-}
+nonstandard: true
 ---*/
 
 /*===

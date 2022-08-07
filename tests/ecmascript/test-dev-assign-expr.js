@@ -223,12 +223,8 @@ function slowPathAssignTest() {
     print( (glob = y1 + y2) + (glob = y3 + y4) );
 }
 
-try {
-    print('slow path');
-    slowPathAssignTest();
-} catch (e) {
-    print(e.stack || e);
-}
+print('slow path');
+slowPathAssignTest();
 
 /*===
 fast path
@@ -436,12 +432,8 @@ function fastPathAssignTest() {
     print( (x = y1 + y2) + (x = y3 + y4) );
 }
 
-try {
-    print('fast path');
-    fastPathAssignTest();
-} catch (e) {
-    print(e.stack || e);
-}
+print('fast path');
+fastPathAssignTest();
 
 /*===
 misc assign test
@@ -524,9 +516,5 @@ function miscAssignTest() {
     print(glob = +(x + y), glob = 123, glob = 123.1);
 }
 
-try {
-    print('misc assign test');
-    miscAssignTest();
-} catch (e) {
-    print(e.stack || e);
-}
+print('misc assign test');
+miscAssignTest();

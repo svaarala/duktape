@@ -25,8 +25,4 @@ function test() {
     eval(code);
 }
 
-try {
-    test();
-} catch (e) {
-    print(e);
-}
+test();

@@ -6,10 +6,8 @@
  */
 
 /*---
-{
-    "custom": true,
-    "skip": true
-}
+custom: true
+skip: true
 ---*/
 
 var global = new Function('return this;')();
@@ -444,51 +442,47 @@ function romObjectArrayPrototypeTest() {
 // duk_hobject_props.c:duk__putprop_shallow_fastpath_array_tval(): assert, can't be exercised directly.
 // duk_hobject_props.c:duk__putprop_fastpath_bufobj_tval(): assert, can't be exercised directly.
 
-try {
-    print('--- extensibility');
-    romObjectExtensibleTest();
+print('--- extensibility');
+romObjectExtensibleTest();
 
-    print('--- global object');
-    romObjectGlobalObjectTest();
+print('--- global object');
+romObjectGlobalObjectTest();
 
-    print('--- property attributes');
-    romObjectPropertyAttributeTest();
+print('--- property attributes');
+romObjectPropertyAttributeTest();
 
-    print('--- property write');
-    romObjectPropertyWriteTest();
+print('--- property write');
+romObjectPropertyWriteTest();
 
-    print('--- property delete');
-    romObjectPropertyDeleteTest();
+print('--- property delete');
+romObjectPropertyDeleteTest();
 
-    print('--- defineProperty');
-    romObjectDefinePropertyTest();
+print('--- defineProperty');
+romObjectDefinePropertyTest();
 
-    print('--- setPrototypeOf');
-    romObjectSetPrototypeOfTest();
+print('--- setPrototypeOf');
+romObjectSetPrototypeOfTest();
 
-    print('--- seal/freeze');
-    romObjectSealFreezeTest();
+print('--- seal/freeze');
+romObjectSealFreezeTest();
 
-    print('--- compact');
-    romObjectCompactTest();
+print('--- compact');
+romObjectCompactTest();
 
-    print('--- Date toGMTString/toUTCString');
-    romObjectDateGmtUtcStringTest();
+print('--- Date toGMTString/toUTCString');
+romObjectDateGmtUtcStringTest();
 
-    print('--- Boolean prototype _Value');
-    romObjectBooleanInternalValueTest();
+print('--- Boolean prototype _Value');
+romObjectBooleanInternalValueTest();
 
-    print('--- RegExp prototype matches empty string');
-    romObjectRegExpTest();
+print('--- RegExp prototype matches empty string');
+romObjectRegExpTest();
 
-    print('--- Error.prototype setter/getter');
-    romObjectErrorPrototypeAccessorTest();
+print('--- Error.prototype setter/getter');
+romObjectErrorPrototypeAccessorTest();
 
-    print('--- Accessor test')
-    romObjectAccessorTest();
+print('--- Accessor test')
+romObjectAccessorTest();
 
-    print('--- Array.prototype test');
-    romObjectArrayPrototypeTest();
-} catch (e) {
-    print(e.stack || e);
-}
+print('--- Array.prototype test');
+romObjectArrayPrototypeTest();

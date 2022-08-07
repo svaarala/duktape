@@ -30,8 +30,4 @@ function test() {
     print(Object.getPrototypeOf(f4) === Function.prototype);
 }
 
-try {
-    test();
-} catch (e) {
-    print(e.stack || e);
-}
+test();

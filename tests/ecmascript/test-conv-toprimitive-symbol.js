@@ -38,14 +38,14 @@ function basicTest() {
         }
     };
     print(+obj);
-    print("" + obj);
+    print('' + obj);
     var obj = Object.create({ [Symbol.toPrimitive]: function (hint) {
             print('@@toPrimitive', this === obj, hint);
             return 'PrimValue';
         }
     });
     print(+obj);
-    print("" + obj);
+    print('' + obj);
 
     // @@toPrimitive on a primitive value; doesn't inherit from prototype,
     // primitive value is returned as is.
@@ -58,7 +58,7 @@ function basicTest() {
     });
     var val = true;
     print(+val);
-    print("" + val);
+    print('' + val);
 
     // If @@toPrimitive returns a non-primitive value, a TypeError is thrown.
     // For this test, plain buffers and lightfuncs are considered objects.
@@ -125,13 +125,9 @@ function basicTest() {
     var tmp = {};
     tmp[obj] = 123;
     print(+obj);
-    print("" + obj);
+    print('' + obj);
     print(tmp[432]);
     print(tmp[543]);
 }
 
-try {
-    basicTest();
-} catch (e) {
-    print(e.stack || e);
-}
+basicTest();

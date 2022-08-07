@@ -4,9 +4,7 @@
  */
 
 /*---
-{
-    "custom": true
-}
+custom: true
 ---*/
 
 /*===
@@ -29,11 +27,7 @@ function test(inp) {
     }
 }
 
-try {
-    // Test for specific line numbers; these may change at some point due to compiler details
-    test('"foo');
-    test('\n"foo');
-    test('\n\n1\n+');
-} catch (e) {
-    print(e);
-}
+// Test for specific line numbers; these may change at some point due to compiler details
+test('"foo');
+test('\n"foo');
+test('\n\n1\n+');

@@ -48,8 +48,4 @@ function test() {
     dump(pd.get);
 }
 
-try {
-    test();
-} catch (e) {
-    print(e.stack || e);
-}
+test();

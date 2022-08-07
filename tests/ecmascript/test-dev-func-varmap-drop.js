@@ -5,9 +5,7 @@
  */
 
 /*---
-{
-    "custom": true
-}
+custom: true
 ---*/
 
 /*@include util-object.js@*/
@@ -215,8 +213,4 @@ function test() {
     printPropDiff();
 }
 
-try {
-    test();
-} catch (e) {
-    print(e.stack || e);
-}
+test();

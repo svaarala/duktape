@@ -1,7 +1,5 @@
 /*---
-{
-    "custom": true
-}
+custom: true
 ---*/
 
 /* XXX: the ordering of print statements is not deterministic, it changes

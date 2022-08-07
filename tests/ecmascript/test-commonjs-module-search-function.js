@@ -16,6 +16,12 @@
  *      have been added to the exports table.
  */
 
+/*---
+custom: true
+duktape_extras:
+  module-duktape: true
+---*/
+
 /*===
 Duktape.modSearch dummy1
 require function false
@@ -175,8 +181,4 @@ function moduleSearchTest() {
     //print(Duktape.enc('jx', Duktape.modLoaded));
 }
 
-try {
-    moduleSearchTest();
-} catch (e) {
-    print(e);
-}
+moduleSearchTest();

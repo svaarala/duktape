@@ -9,6 +9,10 @@
  *  callstack.
  */
 
+/*---
+custom: true
+---*/
+
 /*===
 func called
 typeof this: undefined
@@ -45,8 +49,4 @@ function test() {
     bound();
 }
 
-try {
-    test();
-} catch (e) {
-    print(e.stack || e);
-}
+test();

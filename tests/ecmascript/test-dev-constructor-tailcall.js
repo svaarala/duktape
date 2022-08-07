@@ -26,8 +26,4 @@ function test() {
     print(count);
 }
 
-try {
-    test();
-} catch (e) {
-    print(e.stack || e);
-}
+test();

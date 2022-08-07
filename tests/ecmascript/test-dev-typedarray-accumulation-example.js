@@ -67,8 +67,4 @@ function test() {
     //print(Duktape.enc('jx', res));
 }
 
-try {
-    test();
-} catch (e) {
-    print(e.stack || e);
-}
+test();

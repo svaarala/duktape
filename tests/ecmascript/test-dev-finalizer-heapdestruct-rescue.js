@@ -6,6 +6,10 @@
  *  finalizer to run once more - but the FINALIZED flag would prevent it.
  */
 
+/*---
+custom: true
+---*/
+
 /*===
 created object 1
 object 1 finalized before heap destruction, create new object, rescue current

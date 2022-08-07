@@ -33,8 +33,4 @@ function test() {
     bar('foo', 'bar', 'quux', 'baz', 'quuux', 'baz');
 }
 
-try {
-    test();
-} catch (e) {
-    print(e.stack || e);
-}
+test();

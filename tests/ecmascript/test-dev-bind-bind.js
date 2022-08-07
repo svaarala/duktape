@@ -29,8 +29,4 @@ function test() {
     h();
 }
 
-try {
-    test();
-} catch (e) {
-    print(e);
-}
+test();

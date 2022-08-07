@@ -21,9 +21,5 @@ function test(x) {
     eval(x);
 }
 
-try {
-    test(3e3);
-    print('count:', count);
-} catch (e) {
-    print(e.stack || e);
-}
+test(3e3);
+print('count:', count);

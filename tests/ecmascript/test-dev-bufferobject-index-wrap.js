@@ -37,8 +37,4 @@ function bufferObjectWrapTest() {
     print(b[0xc00fffff]);
 }
 
-try {
-    bufferObjectWrapTest();
-} catch (e) {
-    print(e.stack || e);
-}
+bufferObjectWrapTest();

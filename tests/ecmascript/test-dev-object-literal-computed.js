@@ -61,8 +61,4 @@ function computedPropertyName() {
     }
 }
 
-try {
-    computedPropertyName();
-} catch (e) {
-    print(e.stack || e);
-}
+computedPropertyName();

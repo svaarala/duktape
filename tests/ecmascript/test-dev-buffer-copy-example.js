@@ -5,9 +5,7 @@
 /*@include util-buffer.js@*/
 
 /*---
-{
-    "custom": true
-}
+custom: true
 ---*/
 
 /*===
@@ -40,8 +38,4 @@ function bufferCopyTest() {
     print('copy:', bufferToStringRaw(copy));
 }
 
-try {
-    bufferCopyTest();
-} catch (e) {
-    print(e.stack || e);
-}
+bufferCopyTest();

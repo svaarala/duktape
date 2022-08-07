@@ -3,6 +3,12 @@
  *  modSearch() call and inside the module code.
  */
 
+/*---
+custom: true
+duktape_extras:
+  module-duktape: true
+---*/
+
 /*===
 module.exports replaced by module
 modSearch test1/foo
@@ -36,12 +42,8 @@ function moduleExportsReplacedByModuleTest() {
     print(adder === require('test1/foo'));
 }
 
-try {
-    print('module.exports replaced by module');
-    moduleExportsReplacedByModuleTest();
-} catch (e) {
-    print(e.stack || e);
-}
+print('module.exports replaced by module');
+moduleExportsReplacedByModuleTest();
 
 /*===
 module.exports replaced by modSearch
@@ -143,9 +145,5 @@ function moduleExportsReplacedByModSearchTest() {
     print(quux === require('test2/quux'));
 }
 
-try {
-    print('module.exports replaced by modSearch');
-    moduleExportsReplacedByModSearchTest();
-} catch (e) {
-    print(e.stack || e);
-}
+print('module.exports replaced by modSearch');
+moduleExportsReplacedByModSearchTest();

@@ -7,17 +7,13 @@ var t;
 var arr;
 var i;
 
-try {
-    // simple ascii
-    print(JSON.stringify({foo:1,bar:2}));
+// simple ascii
+print(JSON.stringify({foo:1,bar:2}));
 
-    // the Unicode character will not be escaped, so print output codepoints
-    t = JSON.stringify({foo:1,bar:2,quux:"\u1234"});
-    arr = [];
-    for (i = 0; i < t.length; i++) {
-        arr.push(t.charCodeAt(i));
-    }
-    print(arr.join(' '));
-} catch (e) {
-    print(e.name);
+// the Unicode character will not be escaped, so print output codepoints
+t = JSON.stringify({foo:1,bar:2,quux:"\u1234"});
+arr = [];
+for (i = 0; i < t.length; i++) {
+    arr.push(t.charCodeAt(i));
 }
+print(arr.join(' '));

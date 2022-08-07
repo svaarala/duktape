@@ -4,6 +4,10 @@
  *  refcount after the finalizer returns, the object gets freed immediately.
  */
 
+/*---
+custom: true
+---*/
+
 /*===
 gc 1
 gc 2, finalizer execution
@@ -32,8 +36,4 @@ function test() {
     print('done');
 }
 
-try {
-    test();
-} catch (e) {
-    print(e.stack || e);
-}
+test();

@@ -312,42 +312,38 @@ function testContinueConvertedToReturn1() {
     print('end of function');
 }
 
-try {
-    print('testBreak1');
-    testBreak1();
+print('testBreak1');
+testBreak1();
 
-    print('testContinue1');
-    testContinue1();
+print('testContinue1');
+testContinue1();
 
-    print('testMultiLevelBreak1');
-    testMultiLevelBreak1();
+print('testMultiLevelBreak1');
+testMultiLevelBreak1();
 
-    print('testMultiLevelContinue1');
-    testMultiLevelContinue1();
+print('testMultiLevelContinue1');
+testMultiLevelContinue1();
 
-    print('testBreakThroughFinally1');
-    testBreakThroughFinally1();
+print('testBreakThroughFinally1');
+testBreakThroughFinally1();
 
-    print('testContinueThroughFinally1');
-    testContinueThroughFinally1();
+print('testContinueThroughFinally1');
+testContinueThroughFinally1();
 
-    print('testBreakCapturesFinally1');
-    testBreakCapturesFinally1();
+print('testBreakCapturesFinally1');
+testBreakCapturesFinally1();
 
-    print('testContinueCapturesFinally1');
-    testContinueCapturesFinally1();
+print('testContinueCapturesFinally1');
+testContinueCapturesFinally1();
 
-    print('testBreakThroughMultipleFinally1');
-    testBreakThroughMultipleFinally1();
+print('testBreakThroughMultipleFinally1');
+testBreakThroughMultipleFinally1();
 
-    print('testContinueThroughMultipleFinally1');
-    testContinueThroughMultipleFinally1();
+print('testContinueThroughMultipleFinally1');
+testContinueThroughMultipleFinally1();
 
-    print('testBreakConvertedToReturn1');
-    print(testBreakConvertedToReturn1());
+print('testBreakConvertedToReturn1');
+print(testBreakConvertedToReturn1());
 
-    print('testContinueConvertedToReturn1');
-    print(testContinueConvertedToReturn1());
-} catch (e) {
-    print(e);
-}
+print('testContinueConvertedToReturn1');
+print(testContinueConvertedToReturn1());

@@ -133,39 +133,35 @@ function testTryFinally5() {
     print('never here');
 }
 
-try {
-    print('testReturn1');
-    print('returned', testReturn1());
+print('testReturn1');
+print('returned', testReturn1());
 
-    print('testReturn2');
-    print('returned', testReturn2());
+print('testReturn2');
+print('returned', testReturn2());
 
-    print('testReturn3');
-    print('returned', testReturn3());
+print('testReturn3');
+print('returned', testReturn3());
 
-    print('testForLoop1');
-    print('returned', testForLoop1());
+print('testForLoop1');
+print('returned', testForLoop1());
 
-    print('testTryCatch1');
-    print('returned', testTryCatch1());
+print('testTryCatch1');
+print('returned', testTryCatch1());
 
-    print('testTryCatch2');
-    print('returned', testTryCatch2());
+print('testTryCatch2');
+print('returned', testTryCatch2());
 
-    print('testTryFinally1');
-    print('returned', testTryFinally1());
+print('testTryFinally1');
+print('returned', testTryFinally1());
 
-    print('testTryFinally2');
-    print('returned', testTryFinally2());
+print('testTryFinally2');
+print('returned', testTryFinally2());
 
-    print('testTryFinally3');
-    print('returned', testTryFinally3());
+print('testTryFinally3');
+print('returned', testTryFinally3());
 
-    print('testTryFinally4');
-    print('returned', testTryFinally4());
+print('testTryFinally4');
+print('returned', testTryFinally4());
 
-    print('testTryFinally5');
-    print('returned', testTryFinally5());
-} catch (e) {
-    print(e);
-}
+print('testTryFinally5');
+print('returned', testTryFinally5());

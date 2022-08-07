@@ -4,6 +4,13 @@
 
 /*@include util-buffer.js@*/
 
+/*---
+custom: true
+duktape_extras:
+  module-duktape: true
+  logging: true
+---*/
+
 /*===
 default behavior
 test/foo2 test/foo2 undefined undefined
@@ -84,8 +91,4 @@ function test() {
     var tmp = require('test/quux1/../quux2');
 }
 
-try {
-    test();
-} catch (e) {
-    print(e.stack || e);
-}
+test();

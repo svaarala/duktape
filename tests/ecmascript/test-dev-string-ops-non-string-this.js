@@ -1,7 +1,5 @@
 /*---
-{
-    "skip": true
-}
+skip: true
 ---*/
 
 /* XXX: test string prototype operations when called with 'this'

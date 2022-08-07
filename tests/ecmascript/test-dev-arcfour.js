@@ -68,8 +68,4 @@ function testVectorTest() {
     });
 }
 
-try {
-    testVectorTest();
-} catch (e) {
-    print(e);
-}
+testVectorTest();

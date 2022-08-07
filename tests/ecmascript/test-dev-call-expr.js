@@ -3,7 +3,6 @@
  */
 
 /*===
-basic
 1 2 3
 1 2 3 4
 ===*/
@@ -35,9 +34,4 @@ function basicTest() {
     g(1).foo(2)(3).bar(4);
 }
 
-try {
-    print('basic');
-    basicTest();
-} catch (e) {
-    print(e.stack || e);
-}
+basicTest();

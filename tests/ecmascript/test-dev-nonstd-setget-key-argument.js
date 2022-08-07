@@ -4,9 +4,7 @@
  */
 
 /*---
-{
-    "custom": true
-}
+custom: true
 ---*/
 
 /*===
@@ -85,8 +83,4 @@ function nonStandardAccessorKeyArgumentTest() {
     getter();
 }
 
-try {
-    nonStandardAccessorKeyArgumentTest();
-} catch (e) {
-    print(e);
-}
+nonStandardAccessorKeyArgumentTest();

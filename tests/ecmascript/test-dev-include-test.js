@@ -8,8 +8,4 @@ Hello world!
 
 /*@include util-helloworld.js@*/
 
-try {
-    testHelloWorldUtility();
-} catch (e) {
-    print(e.stack || e);
-}
+testHelloWorldUtility();

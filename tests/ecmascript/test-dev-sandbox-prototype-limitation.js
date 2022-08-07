@@ -33,8 +33,4 @@ function test() {
     print(typeof "foo".toUpperCase);
 }
 
-try {
-    test();
-} catch (e) {
-    print(e.stack || e);
-}
+test();

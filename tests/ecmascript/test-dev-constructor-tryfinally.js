@@ -63,8 +63,4 @@ function test() {
     print(typeof t, t.replaced);
 }
 
-try {
-    test();
-} catch (e) {
-    print(e.stack || e);
-}
+test();

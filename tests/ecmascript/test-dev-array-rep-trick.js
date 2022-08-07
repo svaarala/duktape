@@ -20,18 +20,10 @@ function dump(x) {
     print(x.length, ch);
 }
 
-try {
-    dump(Array.prototype.join.call({ length: 10 + 1 }, 'x'));
-    var arr = []; arr.length = 10 + 1;
-    dump(arr.join('y'));
-} catch (e) {
-    print(e);
-}
+dump(Array.prototype.join.call({ length: 10 + 1 }, 'x'));
+var arr = []; arr.length = 10 + 1;
+dump(arr.join('y'));
 
-try {
-    dump(Array.prototype.join.call({ length: 100000 + 1 }, 'x'));
-    var arr = []; arr.length = 100000 + 1;
-    dump(arr.join('y'));
-} catch (e) {
-    print(e);
-}
+dump(Array.prototype.join.call({ length: 100000 + 1 }, 'x'));
+var arr = []; arr.length = 100000 + 1;
+dump(arr.join('y'));

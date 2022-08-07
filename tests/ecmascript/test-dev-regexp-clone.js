@@ -10,17 +10,13 @@ true 10 10
  * "RegExp(re)" does return the same object.
  */
 
-try {
-    var re1 = /foo/g;
-    var re2;
+var re1 = /foo/g;
+var re2;
 
-    re1.lastIndex = 10;
-    re2 = new RegExp(re1);
-    print(re1 === re2, re1.lastIndex, re2.lastIndex);
+re1.lastIndex = 10;
+re2 = new RegExp(re1);
+print(re1 === re2, re1.lastIndex, re2.lastIndex);
 
-    re1.lastIndex = 10;
-    re2 = RegExp(re1);
-    print(re1 === re2, re1.lastIndex, re2.lastIndex);
-} catch (e) {
-    print(e);
-}
+re1.lastIndex = 10;
+re2 = RegExp(re1);
+print(re1 === re2, re1.lastIndex, re2.lastIndex);

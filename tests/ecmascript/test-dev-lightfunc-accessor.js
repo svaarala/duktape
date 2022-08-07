@@ -152,8 +152,4 @@ function lightfuncAsAccessorTest() {
     print('pd_in.set === pd_out.set:', pd_in.set === pd_out.set);
 }
 
-try {
-    lightfuncAsAccessorTest();
-} catch (e) {
-    print(e.stack || e);
-}
+lightfuncAsAccessorTest();

@@ -12,9 +12,7 @@
 
 // Error message is custom
 /*---
-{
-    "custom": true
-}
+custom: true
 ---*/
 
 /*===

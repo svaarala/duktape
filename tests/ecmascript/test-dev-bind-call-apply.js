@@ -25,8 +25,4 @@ function test() {
     f2();
 }
 
-try {
-    test();
-} catch (e) {
-    print(e);
-}
+test();

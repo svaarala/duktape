@@ -11,13 +11,13 @@ foo inherited
 // Duktape and V8 enumerate 'foo', Rhino does not.
 
 function F() {};
-F.prototype = { "foo": "inherited" };
+F.prototype = { 'foo': 'inherited' };
 
 var a = new F();
-a.bar = "skip";
-a.foo = "own";
+a.bar = 'skip';
+a.foo = 'own';
 
-// enumeration order: "bar", "foo"
+// enumeration order: 'bar', 'foo'
 for (var i in a) {
     delete a.foo;  // only affects 'a', not F.prototype
     print(i, a[i]);

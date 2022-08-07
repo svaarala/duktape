@@ -45,8 +45,4 @@ function test() {
     print(a == b);
 }
 
-try {
-    test();
-} catch (e) {
-    print(e.stack || e);
-}
+test();

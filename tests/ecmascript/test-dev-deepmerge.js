@@ -102,8 +102,4 @@ function deepMergeTest() {
     print(JSON.stringify(deepMerge(A, B), null, 4));
 }
 
-try {
-    deepMergeTest();
-} catch (e) {
-    print(e);
-}
+deepMergeTest();

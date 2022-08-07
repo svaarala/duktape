@@ -4,6 +4,12 @@
  *  fixed in Duktape 1.5.x.
  */
 
+/*---
+custom: true
+duktape_extras:
+  module-duktape: true
+---*/
+
 /*===
 function
 string
@@ -31,8 +37,4 @@ function test() {
     require('foo/bar');
 }
 
-try {
-    test();
-} catch (e) {
-    print(e.stack || e);
-}
+test();

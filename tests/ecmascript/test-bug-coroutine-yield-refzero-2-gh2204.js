@@ -4,7 +4,6 @@ custom: true
 
 /*===
 RangeError: aiee
-done
 ===*/
 
 function yielder() {
@@ -18,4 +17,3 @@ try {
 } catch (e) {
     print(e);
 }
-print('done');

@@ -6,9 +6,7 @@
  */
 
 /*---
-{
-    "custom": true
-}
+custom: true
 ---*/
 
 /*===
@@ -124,8 +122,4 @@ function test() {
     func();
 }
 
-try {
-    test();
-} catch (e) {
-    print(e.stack || e);
-}
+test();

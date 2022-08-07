@@ -9,9 +9,7 @@
  */
 
 /*---
-{
-    "custom": true
-}
+custom: true
 ---*/
 
 /*===
@@ -126,11 +124,7 @@ function test() {
     Array.prototype.forEach.call(b, function (v) { print(v); });
 }
 
-try {
-    test();
-} catch (e) {
-    print(e.stack || e);
-}
+test();
 
 /*===
 all done
@@ -161,8 +155,4 @@ function randomOrderTest() {
     print('all done');
 }
 
-try {
-    randomOrderTest();
-} catch (e) {
-    print(e.stack || e);
-}
+randomOrderTest();

@@ -99,11 +99,6 @@ try {
     print(e.name);
 }
 
-try {
-} catch (e) {
-    print(e.name);
-}
-
 /*===
 true
 test

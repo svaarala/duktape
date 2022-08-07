@@ -74,8 +74,4 @@ function test() {
     glob = 0.5; print(glob);
 }
 
-try {
-    test();
-} catch (e) {
-    print(e.stack || e);
-}
+test();

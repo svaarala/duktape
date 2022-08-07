@@ -2358,14 +2358,10 @@ function test(s, verbose) {
     }
 }
 
-try {
-    var cp;
-    test('abc\u0678\u1234', true);
+var cp;
+test('abc\u0678\u1234', true);
 
-    // comprehensive 16-bit test
-    for (cp = 0; cp < 65536; cp++) {
-        test(String.fromCharCode(cp), (cp < 256));
-    }
-} catch (e) {
-    print(e);
+// comprehensive 16-bit test
+for (cp = 0; cp < 65536; cp++) {
+    test(String.fromCharCode(cp), (cp < 256));
 }

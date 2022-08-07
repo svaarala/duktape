@@ -22,36 +22,21 @@ var this_obj = { 'foo': 'bar' };
 
 this.is_global = true;
 
-try {
-    // global object
-    print(this.Number.POSITIVE_INFINITY);
-} catch (e) {
-    print(e.name);
-}
+// global object
+print(this.Number.POSITIVE_INFINITY);
 
-try {
-    // global object
-    printThisProperty('is_global');
-} catch (e) {
-    print(e.name);
-}
+// global object
+printThisProperty('is_global');
 
-try {
-    // forced binding
-    printThisProperty.call(this_obj, 'foo');
-} catch (e) {
-    print(e.name);
-}
+// forced binding
+printThisProperty.call(this_obj, 'foo');
 
 /*===
 ===*/
 
 /* Identifier */
 
-try {
-} catch (e) {
-    print(e.name);
-}
+// XXX
 
 /*===
 null
@@ -75,64 +60,24 @@ false
  * OctalLiteral evaluation is inside an eval() call because it is optional.
  */
 
-try {
-    print(null);
-} catch (e) {
-    print(e.name);
-}
+print(null);
+print(true);
+print(false);
+print(123);
+print(0x41);
 
-try {
-    print(true);
-} catch (e) {
-    print(e.name);
-}
+// = 4*8+1 = 33
+print(eval("041"));
 
-try {
-    print(false);
-} catch (e) {
-    print(e.name);
-}
+// 077 = 7*8 + 7 = 63
+print(eval("077"));
 
-try {
-    print(123);
-} catch (e) {
-    print(e.name);
-}
+// 088 is an invalid NumericLiteral in ES5; ES2015 allows it to be parsed
+// as decimal and both V8 and Spidermonkey do so.
+print(eval("088"));
 
-try {
-    print(0x41);
-} catch (e) {
-    print(e.name);
-}
-
-try {
-    // = 4*8+1 = 33
-    print(eval("041"));
-} catch (e) {
-    print(e.name);
-}
-
-try {
-    // 077 = 7*8 + 7 = 63
-    print(eval("077"));
-} catch (e) {
-    print(e.name);
-}
-
-try {
-    // 088 is an invalid NumericLiteral in ES5; ES2015 allows it to be parsed
-    // as decimal and both V8 and Spidermonkey do so.
-    print(eval("088"));
-} catch (e) {
-    print(e.name);
-}
-
-try {
-    // 099 is similar to 088
-    print(eval("099"));
-} catch (e) {
-    print(e.name);
-}
+// 099 is similar to 088
+print(eval("099"));
 
 /*===
 1,2,3

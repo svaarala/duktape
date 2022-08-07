@@ -3,6 +3,10 @@
  *  in coercions etc.  More detailed tests separately.
  */
 
+/*---
+custom: true
+---*/
+
 function dumpClass(x) {
     return Object.prototype.toString.call(x);
 }
@@ -120,11 +124,7 @@ function testPointer2() {
     }
 }
 
-try {
-    print('test pointer 1');
-    testPointer1();
-    print('test pointer 2');
-    testPointer2();
-} catch (e) {
-    print(e);
-}
+print('test pointer 1');
+testPointer1();
+print('test pointer 2');
+testPointer2();

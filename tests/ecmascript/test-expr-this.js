@@ -28,8 +28,4 @@ function test() {
     tmp();
 }
 
-try {
-    test();
-} catch (e) {
-    print(e.stack || e);
-}
+test();

@@ -10,13 +10,10 @@
 /*@include util-buffer.js@*/
 
 /*---
-{
-    "custom": true
-}
+custom: true
 ---*/
 
 /*===
-done
 ===*/
 
 function testOne(blen) {
@@ -69,9 +66,4 @@ function test() {
     }
 }
 
-try {
-    test();
-    print('done');
-} catch (e) {
-    print(e.stack);
-}
+test();

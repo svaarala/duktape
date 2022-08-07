@@ -6,7 +6,6 @@ custom: true
 
 /*===
 0
-done
 ===*/
 
 function yielder() {
@@ -16,4 +15,3 @@ function yielder() {
 }
 var t = Duktape.Thread(yielder);
 print(Duktape.Thread.resume(t));
-print('done');

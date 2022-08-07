@@ -28,8 +28,4 @@ function test() {
     print(typeof undefined, undefined);
 }
 
-try {
-    test();
-} catch (e) {
-    print(e.stack || e);
-}
+test();

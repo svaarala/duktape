@@ -33,8 +33,4 @@ function bufferObjectFastPathTest() {
     print(b1['3'], b2['3']);  // slow path read + slow path read
 }
 
-try {
-    bufferObjectFastPathTest();
-} catch (e) {
-    print(e.stack || e);
-}
+bufferObjectFastPathTest();

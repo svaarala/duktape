@@ -5,9 +5,7 @@
  */
 
 /*---
-{
-    "custom": true
-}
+custom: true
 ---*/
 
 /*===
@@ -63,8 +61,4 @@ function test() {
     Object.getOwnPropertyNames(arr).forEach(function (k) { print('-', k); });
 }
 
-try {
-    test();
-} catch (e) {
-    print(e.stack || e);
-}
+test();

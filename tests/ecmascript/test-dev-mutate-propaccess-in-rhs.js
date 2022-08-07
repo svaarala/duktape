@@ -31,9 +31,5 @@ function test2() {
     print(JSON.stringify(alt2));
 }
 
-try {
-    test1();
-    test2();
-} catch (e) {
-    print(e.stack || e);
-}
+test1();
+test2();

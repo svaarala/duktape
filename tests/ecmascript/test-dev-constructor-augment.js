@@ -3,9 +3,7 @@
  */
 
 /*---
-{
-    "custom": true
-}
+custom: true
 ---*/
 
 /*===
@@ -27,8 +25,4 @@ function test() {
     print(t.lineNumber > 0);
 }
 
-try {
-    test();
-} catch (e) {
-    print(e.stack || e);
-}
+test();

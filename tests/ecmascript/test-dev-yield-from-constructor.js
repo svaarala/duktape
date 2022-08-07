@@ -3,6 +3,10 @@
  *  Test for Duktape 2.2 behavior.
  */
 
+/*---
+custom: true
+---*/
+
 /*===
 coroutine start
 123
@@ -25,11 +29,7 @@ function coroutine() {
     return 321;
 }
 
-try {
-    thr = new Duktape.Thread(coroutine);
-    print(Duktape.Thread.resume(thr));
-    print(Duktape.Thread.resume(thr));
-    print(Duktape.Thread.resume(thr));
-} catch (e) {
-    print(e.name);
-}
+thr = new Duktape.Thread(coroutine);
+print(Duktape.Thread.resume(thr));
+print(Duktape.Thread.resume(thr));
+print(Duktape.Thread.resume(thr));

@@ -7,15 +7,7 @@
 undefined
 ===*/
 
-try {
-    print(eval("123; 456;"));
-} catch (e) {
-    print(e.name);
-}
+print(eval('123; 456;'));
 
-try {
-    /* latter expression generates an 'undefined' implicit return value */
-    print(eval("123; void 456;"));
-} catch (e) {
-    print(e.name);
-}
+/* latter expression generates an 'undefined' implicit return value */
+print(eval('123; void 456;'));

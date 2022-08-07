@@ -3,9 +3,9 @@
  */
 
 /*---
-{
-    "custom": true
-}
+custom: true
+duktape_extras:
+  module-duktape: true
 ---*/
 
 /*===
@@ -33,8 +33,4 @@ Duktape.modSearch = function (id) {
     }
 }
 
-try {
-    print(require('foo').val);
-} catch (e) {
-    print(e);
-}
+print(require('foo').val);

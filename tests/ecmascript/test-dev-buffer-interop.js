@@ -4,6 +4,10 @@
 
 /*@include util-buffer.js@*/
 
+/*---
+custom: true
+---*/
+
 /*===
 plain buffer test
 object [object Uint8Array] ABCD
@@ -56,12 +60,8 @@ function plainBufferTest() {
     // this test will need to be updated.
 }
 
-try {
-    print('plain buffer test');
-    plainBufferTest();
-} catch (e) {
-    print(e.stack || e);
-}
+print('plain buffer test');
+plainBufferTest();
 
 /*===
 Node.js Buffer constructor interop
@@ -117,12 +117,8 @@ function nodejsBufferConstructorTest() {
     print(Duktape.enc('jx', b));
 }
 
-try {
-    print('Node.js Buffer constructor interop');
-    nodejsBufferConstructorTest();
-} catch (e) {
-    print(e.stack || e);
-}
+print('Node.js Buffer constructor interop');
+nodejsBufferConstructorTest();
 
 /*===
 Node.js Buffer.concat interop
@@ -146,12 +142,8 @@ function nodejsConcatTest() {
     print('' + res);
 }
 
-try {
-    print('Node.js Buffer.concat interop');
-    nodejsConcatTest();
-} catch (e) {
-    print(e.stack || e);
-}
+print('Node.js Buffer.concat interop');
+nodejsConcatTest();
 
 /*===
 ArrayBuffer constructor interop
@@ -178,9 +170,5 @@ function arrayBufferConstructorTest() {
     // such values are integer coerced and used as a length.
 }
 
-try {
-    print('ArrayBuffer constructor interop');
-    arrayBufferConstructorTest();
-} catch (e) {
-    print(e.stack || e);
-}
+print('ArrayBuffer constructor interop');
+arrayBufferConstructorTest();

@@ -7,9 +7,7 @@
 /*@include util-object.js@*/
 
 /*---
-{
-    "custom": true
-}
+custom: true
 ---*/
 
 /*===
@@ -88,14 +86,5 @@ function namedTest() {
     Duktape.gc();
 }
 
-try {
-    anonTest();
-} catch (e) {
-    print(e);
-}
-
-try {
-    namedTest();
-} catch (e) {
-    print(e);
-}
+anonTest();
+namedTest();

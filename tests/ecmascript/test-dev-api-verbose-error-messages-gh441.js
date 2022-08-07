@@ -5,6 +5,10 @@
 /*@include util-buffer.js@*/
 /*@include util-string.js@*/
 
+/*---
+custom: true
+---*/
+
 /*===
 TypeError: string required, found none (stack index 0)
 TypeError: string required, found undefined (stack index 0)
@@ -64,8 +68,4 @@ function test() {
     }
 }
 
-try {
-    test();
-} catch (e) {
-    print(e.stack || e);
-}
+test();

@@ -136,8 +136,4 @@ function test() {
     print(Object.getPrototypeOf(a) === f64p, Object.getPrototypeOf(b) === f64p);
 }
 
-try {
-    test();
-} catch (e) {
-    print(e.stack || e);
-}
+test();

@@ -28,10 +28,6 @@ function test() {
     print(x.bar);
 }
 
-try {
-    test();
-} catch (e) {
-    print(e.stack || e);
-}
+test();
 
 /* XXX: more tests */

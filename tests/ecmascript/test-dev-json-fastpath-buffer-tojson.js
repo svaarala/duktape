@@ -4,6 +4,12 @@
 
 /*@include util-buffer.js@*/
 
+/*---
+custom: true
+duktape_config:
+  DUK_USE_JSON_STRINGIFY_FASTPATH: true
+---*/
+
 /*===
 {"0":97,"1":98,"2":99,"3":100}
 |61626364|
@@ -40,8 +46,4 @@ function test() {
     print(Duktape.enc('jc', buf, id));
 }
 
-try {
-    test();
-} catch (e) {
-    print(e.stack || e);
-}
+test();

@@ -2,6 +2,12 @@
  *  Example adapted from http://wiki.commonjs.org/wiki/Modules/1.1.1
  */
 
+/*---
+custom: true
+duktape_extras:
+  module-duktape: true
+---*/
+
 /*===
 Duktape.modSearch program
 Duktape.modSearch increment
@@ -29,8 +35,4 @@ Duktape.modSearch = function (id) {
     }[id];
 };
 
-try {
-    require('program');
-} catch (e) {
-    print(e);
-}
+require('program');

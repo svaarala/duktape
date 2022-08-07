@@ -9,10 +9,8 @@
  */
 
 /*---
-{
-    "custom": true,
-    "slow": true
-}
+custom: true
+slow: true
 ---*/
 
 /*===
@@ -30,9 +28,5 @@ function deepInnerFunctionTest() {
     eval(txt);
 }
 
-try {
-    deepInnerFunctionTest();
-    print('returned');
-} catch (e) {
-    print(e.name);
-}
+deepInnerFunctionTest();
+print('returned');

@@ -2,6 +2,10 @@
  *  Misc tests related to Reflect.construct() and other special call handling.
  */
 
+/*---
+custom: true
+---*/
+
 /*===
 TypeError: [object Function] not constructable
 TypeError: [object Function] not constructable
@@ -77,8 +81,4 @@ function test() {
     }
 }
 
-try {
-    test();
-} catch (e) {
-    print(e.stack || e);
-}
+test();

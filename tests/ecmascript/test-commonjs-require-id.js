@@ -9,9 +9,9 @@
  */
 
 /*---
-{
-    "custom": true
-}
+custom: true
+duktape_extras:
+  module-duktape: true
 ---*/
 
 /*===
@@ -42,8 +42,4 @@ function test() {
     var foobar = require('foo/./bar');  // resolves to 'foo/bar'
 }
 
-try {
-    test();
-} catch (e) {
-    print(e.stack || e);
-}
+test();

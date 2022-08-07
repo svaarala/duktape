@@ -39,12 +39,8 @@ function test2() {
     return ret;
 }
 
-try {
-    test1();
-    test2();
-} catch (e) {
-    print(e.stack || e);
-}
+test1();
+test2();
 
 /*===
 before bar
@@ -68,14 +64,4 @@ function test() {
     print('after bar');
 }
 
-try {
-    test();
-} catch (e) {
-    print(e.stack || e);
-}
-
-/*===
-done
-===*/
-
-print('done');
+test();

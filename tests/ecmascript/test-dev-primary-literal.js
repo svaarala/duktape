@@ -21,52 +21,16 @@ foo
  *   -> RegularExpressionLiteral
  */
 
-try {
-    print(null);
-} catch (e) {
-    print(e.name);
-}
+print(null);
+print(true);
+print(false);
+print(123);
+print(0x41);
 
-try {
-    print(true);
-} catch (e) {
-    print(e.name);
-}
-
-try {
-    print(false);
-} catch (e) {
-    print(e.name);
-}
-
-try {
-    print(123);
-} catch (e) {
-    print(e.name);
-}
-
-try {
-    print(0x41);
-} catch (e) {
-    print(e.name);
-}
-
-try {
-    // = 4*8+1 = 33
-    print(041);
-} catch (e) {
-    print(e.name);
-}
+// = 4*8+1 = 33
+print(041);
 
 // XXX: 077, 088, 099 -> V8 accepts 088 and 099 as decimal literals
-try {
-    print("foo");
-} catch (e) {
-    print(e.name);
-}
 
-try {
-    print('foo');
-} catch (e) {
-    print(e.name);
-}
+print("foo");
+print('foo');

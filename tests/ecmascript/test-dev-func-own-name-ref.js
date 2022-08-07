@@ -10,19 +10,11 @@ function foo() {
     print(typeof foo);
 }
 
-try {
-    foo();
-} catch (e) {
-    print(e.name);
-}
+foo();
 
 var funcexpr = 'not visible';
 var temp = function funcexpr() {
     print(typeof funcexpr);
 };
 
-try {
-    temp();
-} catch (e) {
-    print(e.name);
-}
+temp();

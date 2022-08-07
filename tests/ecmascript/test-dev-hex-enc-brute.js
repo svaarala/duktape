@@ -6,6 +6,12 @@
 /*@include util-buffer.js@*/
 /*@include util-string.js@*/
 
+/*---
+custom: true
+duktape_config:
+  DUK_USE_HEX_FASTPATH: true
+---*/
+
 /*===
 00
 01
@@ -626,8 +632,4 @@ function test() {
     }
 }
 
-try {
-    test();
-} catch (e) {
-    print(e.stack || e);
-}
+test();

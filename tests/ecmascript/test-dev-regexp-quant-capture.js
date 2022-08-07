@@ -28,8 +28,4 @@ function test() {
     print(typeof m, m[0], m[1], m[2], m[3], m[4]);
 }
 
-try {
-    test();
-} catch (e) {
-    print(e);
-}
+test();

@@ -39,12 +39,8 @@ function nonShuffledTest() {
     }
 }
 
-try {
-    print('non-shuffled test');
-    nonShuffledTest();
-} catch (e) {
-    print(e.stack || e);
-}
+print('non-shuffled test');
+nonShuffledTest();
 
 function shuffledTest() {
     var x000, x001, x002, x003, x004, x005, x006, x007, x008, x009;
@@ -158,9 +154,5 @@ function shuffledTest() {
     }
 }
 
-try {
-    print('shuffled test');
-    shuffledTest();
-} catch (e) {
-    print(e.stack || e);
-}
+print('shuffled test');
+shuffledTest();

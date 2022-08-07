@@ -13,7 +13,6 @@
 700
 800
 900
-done
 ===*/
 
 function makeTestFunction(count) {
@@ -46,11 +45,6 @@ function test() {
             throw new Error('failed for i: ' + i);
         }
     }
-    print('done');
 }
 
-try {
-    test();
-} catch (e) {
-    print(e.stack || e);
-}
+test();

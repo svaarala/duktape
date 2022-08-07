@@ -3,6 +3,10 @@
  *  The finalizer will only get called once.
  */
 
+/*---
+custom: true
+---*/
+
 /*===
 finalizer called, argument type: function
 finished
@@ -23,10 +27,6 @@ function test() {
     finalizer.prototype = undefined;
 }
 
-try {
-    test();
-    Duktape.gc();  /* force collection */
-    print('finished');
-} catch (e) {
-    print(e);
-}
+test();
+Duktape.gc();  /* force collection */
+print('finished');

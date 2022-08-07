@@ -7,7 +7,6 @@ custom: true
 ---*/
 
 /*===
-done
 ===*/
 
 Duktape.fin(
@@ -17,5 +16,3 @@ Duktape.fin(
         }
         Duktape.Thread.resume(new Duktape.Thread(f));
 });
-
-print('done');

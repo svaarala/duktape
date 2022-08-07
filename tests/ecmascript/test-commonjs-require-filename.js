@@ -13,9 +13,9 @@
  */
 
 /*---
-{
-    "custom": true
-}
+custom: true
+duktape_extras:
+  module-duktape: true
 ---*/
 
 /*===
@@ -49,8 +49,4 @@ function test() {
     mod.testFunc();
 }
 
-try {
-    test();
-} catch (e) {
-    print(e.stack || e);
-}
+test();

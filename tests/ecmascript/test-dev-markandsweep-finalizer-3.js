@@ -6,6 +6,10 @@
  *  created by the finalizer are considered in the next pass.
  */
 
+/*---
+custom: true
+---*/
+
 /*===
 removing references
 obj1 and obj2 unreachable now

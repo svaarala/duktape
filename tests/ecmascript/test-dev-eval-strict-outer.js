@@ -22,14 +22,5 @@ function strict_parent() {
     print(typeof x);       // -> undefined
 }
 
-try {
-    nonstrict_parent();
-} catch (e) {
-    print(e.name);
-}
-
-try {
-    strict_parent();
-} catch (e) {
-    print(e.name);
-}
+nonstrict_parent();
+strict_parent();
