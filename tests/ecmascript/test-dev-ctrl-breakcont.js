@@ -15,11 +15,11 @@ after do
 
 try {
     do {
-        print("before break");
+        print('before break');
         break;
-        print("after break");
+        print('after break');
     } while(0);
-    print("after do");
+    print('after do');
 } catch (e) {
     print(e.name);
 }
@@ -30,12 +30,12 @@ try {
         if (done) {
             break;
         }
-        print("before continue");
+        print('before continue');
         done = 1;
         continue;
-        print("after continue");
+        print('after continue');
     } while(0);
-    print("after do");
+    print('after do');
 } catch (e) {
     print(e.name);
 }
@@ -54,10 +54,10 @@ try {
         try {
             break;
         } finally {
-            print("break caught by finally");  // caught, but rethrown
+            print('break caught by finally');  // caught, but rethrown
         }
     } while(true);
-    print("broke out");
+    print('broke out');
 } catch (e) {
     print(e.name);
 }
@@ -74,10 +74,10 @@ try {
             done = 1;
             continue;
         } finally {
-            print("continue caught by finally");  // caught, but rethrown
+            print('continue caught by finally');  // caught, but rethrown
         }
     } while(true);
-    print("broke out");
+    print('broke out');
 } catch (e) {
     print(e.name);
 }
@@ -95,7 +95,7 @@ try {
             break;
         }
     } while(true);
-    print("broke out");
+    print('broke out');
 } catch (e) {
     print(e.name);
 }
@@ -113,7 +113,7 @@ try {
             continue;
         }
     } while(true);
-    print("broke out");
+    print('broke out');
 } catch (e) {
     print(e.name);
 }
@@ -145,9 +145,9 @@ try {
             continue;
         }
 
-        print("never here");
+        print('never here');
     } while(true);
-    print("loop done");
+    print('loop done');
 } catch (e) {
     print(e.name);
 }

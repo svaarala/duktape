@@ -27,12 +27,8 @@ function expOperatorTest() {
     print(x ** x ** z);  // right associative
 }
 
-try {
-    print("exponentiation operator");
-    expOperatorTest();
-} catch (e) {
-    print(e.stack || e);
-}
+print('exponentiation operator');
+expOperatorTest();
 
 /*===
 exponentiation assignment
@@ -51,12 +47,8 @@ function expAssignmentTest() {
     print(y);
 }
 
-try {
-    print("exponentiation assignment");
-    expAssignmentTest();
-} catch (e) {
-    print(e.stack || e);
-}
+print('exponentiation assignment');
+expAssignmentTest();
 
 
 /*===
@@ -97,7 +89,7 @@ function expSpecialCasesTest() {
     // Allow 0 and -0 to be differentiated in the output.
     function printNumber(value) {
         if (value == 0 && (1 / value) < 0) {
-            print("-0");
+            print('-0');
         } else {
             print(value);
         }
@@ -129,9 +121,5 @@ function expSpecialCasesTest() {
     printNumber(minusOne ** half);
 }
 
-try {
-    print("special cases")
-    expSpecialCasesTest();
-} catch (e) {
-    print(e.stack || e);
-}
+print('special cases')
+expSpecialCasesTest();

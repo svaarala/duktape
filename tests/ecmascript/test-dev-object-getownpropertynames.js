@@ -1,8 +1,6 @@
 /* marked as custom because enum order differs */
 /*---
-{
-    "custom": true
-}
+custom: true
 ---*/
 
 /*===

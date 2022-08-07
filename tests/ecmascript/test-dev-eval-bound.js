@@ -35,8 +35,4 @@ function test() {
     eval('print(1000)');
 }
 
-try {
-    test();
-} catch (e) {
-    print(e.stack || e);
-}
+test();

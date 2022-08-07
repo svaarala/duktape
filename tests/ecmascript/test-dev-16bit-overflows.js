@@ -11,10 +11,29 @@
  */
 
 /*---
-{
-    "custom": true
-}
+custom: true
+duktape_config:
+  DUK_USE_STRLEN16: true
+  DUK_USE_STRHASH16: true
+  DUK_USE_BUFLEN16: true
+  DUK_USE_OBJSIZES16: true
+  DUK_USE_REFCOUNT16: true
 ---*/
+
+/*===
+32768
+32767
+65535
+RangeError: result too long
+32768
+32767
+65535
+RangeError: buffer too long
+65535
+RangeError: buffer too long
+Error: alloc failed
+Reached prop: 65535
+===*/
 
 // Make string of N bytes (must be 2^x)
 function makeString(n) {
@@ -39,18 +58,15 @@ function stringConcatByteLenTest() {
 }
 
 function bufferConcatLenTest() {
-    // Buffer concatenation currently results in a string so this test is
-    // not very useful now.
-
     var s = makeString(32768);
     var t = s.substring(0, 32767);
     s = Uint8Array.allocPlain(s);
     t = Uint8Array.allocPlain(t);
     print(s.length);
     print(t.length);
-    var justok = s + t;    // 65535 exactly
+    var justok = Buffer.concat([s, t]);  // 65535 exactly
     print(justok.length);
-    var overflow = s + s;  // 65536 exactly
+    var overflow = Buffer.concat([s, s]);  // 65536 exactly
     print(overflow.length);
 }
 
@@ -63,7 +79,7 @@ function bufferConstructTest() {
     print(b.length);
 }
 
-var reached = 0;
+var reachedProp = 0;
 
 function objectPropertyLimitTest() {
     var i, n;
@@ -82,7 +98,7 @@ function objectPropertyLimitTest() {
     // reached is 64231 but that limit depends on tuning.)
 
     for (i = 0; i < 65536; i++) {
-        reached = i;
+        reachedProp = i;
         obj['str-' + i] = true;
     }
 }
@@ -111,4 +127,4 @@ try {
     print(e);
 }
 
-print('Reached: ' + reached);
+print('Reached prop: ' + reachedProp);

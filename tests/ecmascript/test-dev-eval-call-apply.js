@@ -27,8 +27,4 @@ function test() {
     f();
 }
 
-try {
-    test();
-} catch (e) {
-    print(e);
-}
+test();

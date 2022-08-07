@@ -6,9 +6,7 @@
 /* Disabled by default, run manually. */
 
 /*---
-{
-    "skip": true
-}
+skip: true
 ---*/
 
 function test() {

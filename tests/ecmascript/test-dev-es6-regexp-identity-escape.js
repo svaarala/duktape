@@ -61,8 +61,4 @@ function test() {
     // the characters literally.
 }
 
-try {
-    test();
-} catch (e) {
-    print(e.stack || e);
-}
+test();

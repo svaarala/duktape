@@ -7,6 +7,10 @@
  *  from finalize_list.
  */
 
+/*---
+custom: true
+---*/
+
 /*===
 gc 1
 finalizer called

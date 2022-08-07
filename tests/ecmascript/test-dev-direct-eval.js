@@ -51,12 +51,9 @@ function f1() {
     print(x);
 }
 
-try {
-    f1.call('"this" value');
-    print(x);
-} catch (e) {
-    print(e.name);
-}
+f1.call('"this" value');
+print(x);
+
 /*===
 true
 Infinity
@@ -104,13 +101,9 @@ function f2() {
     print(y);                     // still prints, bleeds to global object
 }
 
-try {
-    f2.call('"this" value');
-    print(x);
-    print(y);
-} catch (e) {
-    print(e.name);
-}
+f2.call('"this" value');
+print(x);
+print(y);
 
 /*===
 "this" value
@@ -130,11 +123,7 @@ function f3() {
     print("" + eval('this'));
 }
 
-try {
-    f3.call('"this" value');
-} catch (e) {
-    print(e.name);
-}
+f3.call('"this" value');
 
 /*===
 false
@@ -167,23 +156,19 @@ function wrapper() {
     return ret;
 }
 
-try {
-    var func = wrapper();
-    var my_obj = { func: func };  // call through this to get a this binding != global object
+var func = wrapper();
+var my_obj = { func: func };  // call through this to get a this binding != global object
 
-    // initially, binding_obj has no 'eval' binding, hence direct eval
-    my_obj.func();
+// initially, binding_obj has no 'eval' binding, hence direct eval
+my_obj.func();
 
-    // add 'intercepting' eval binding, hence indirect eval
-    binding_obj.eval = function(x) { print('fake eval'); return orig_eval(x); };
-    my_obj.func();
+// add 'intercepting' eval binding, hence indirect eval
+binding_obj.eval = function(x) { print('fake eval'); return orig_eval(x); };
+my_obj.func();
 
-    // remove intercepting binding, again a direct eval
-    delete binding_obj.eval;
-    my_obj.func();
-} catch (e) {
-    print(e.name);
-}
+// remove intercepting binding, again a direct eval
+delete binding_obj.eval;
+my_obj.func();
 
 /*===
 forced this
@@ -221,32 +206,18 @@ function bound3() {
     print(bound_eval("'use strict'; this.Number.POSITIVE_INFINITY"));
 }
 
-try {
-    /* The 'this' binding for eval() itself (here, the string "bound this")
-     * should not really matter; the 'this' binding for the evaluated code
-     * should still be as specified in E5 Section 10.4.2.
-     *
-     * The initial [[Call]] would happen using semantics from E5 Section
-     * 15.3.4.5.1.  That algorithm would [[Call]] the built-in eval
-     * function (E5 Section 10.4.2) which would ignore any 'this' binding.
-     */
+/* The 'this' binding for eval() itself (here, the string "bound this")
+ * should not really matter; the 'this' binding for the evaluated code
+ * should still be as specified in E5 Section 10.4.2.
+ *
+ * The initial [[Call]] would happen using semantics from E5 Section
+ * 15.3.4.5.1.  That algorithm would [[Call]] the built-in eval
+ * function (E5 Section 10.4.2) which would ignore any 'this' binding.
+ */
 
-    bound1.call('forced this');
-} catch (e) {
-    print(e.name);
-}
-
-try {
-    bound2.call('forced this');
-} catch (e) {
-    print(e.name);
-}
-
-try {
-    bound3.call('forced this');
-} catch (e) {
-    print(e.name);
-}
+bound1.call('forced this');
+bound2.call('forced this');
+bound3.call('forced this');
 
 /*===
 NaN
@@ -279,26 +250,7 @@ function thisBinding_direct_strict() {
     eval('"use strict"; print(this.foo)');
 }
 
-try {
-    thisBinding_indirect_nonstrict.call({foo:'bar'});
-} catch (e) {
-    print(e.name);
-}
-
-try {
-    thisBinding_indirect_strict.call({foo:'bar'});
-} catch (e) {
-    print(e.name);
-}
-
-try {
-    thisBinding_direct_nonstrict.call({foo:'bar'});
-} catch (e) {
-    print(e.name);
-}
-
-try {
-    thisBinding_direct_strict.call({foo:'bar'});
-} catch (e) {
-    print(e.name);
-}
+thisBinding_indirect_nonstrict.call({foo:'bar'});
+thisBinding_indirect_strict.call({foo:'bar'});
+thisBinding_direct_nonstrict.call({foo:'bar'});
+thisBinding_direct_strict.call({foo:'bar'});

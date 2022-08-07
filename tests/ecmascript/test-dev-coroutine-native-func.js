@@ -2,6 +2,10 @@
  *  Native function not allowed as an initial function.
  */
 
+/*---
+custom: true
+---*/
+
 /*===
 caught error
 TypeError

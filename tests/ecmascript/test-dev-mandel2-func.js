@@ -5,9 +5,7 @@
  */
 
 /*---
-{
-    "slow": true
-}
+slow: true
 ---*/
 
 /* Computed with Rhino, verified against V8 */
@@ -102,8 +100,4 @@ function mandel() {
     }
 }
 
-try {
-    mandel();
-} catch (e) {
-    print(e);
-}
+mandel();

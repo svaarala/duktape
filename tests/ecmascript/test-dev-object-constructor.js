@@ -3,9 +3,7 @@
  */
 
 /*---
-{
-    "skip": true
-}
+skip: true
 ---*/
 
 /* XXX: to be implemented */

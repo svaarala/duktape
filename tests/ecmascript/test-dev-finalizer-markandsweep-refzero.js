@@ -13,6 +13,10 @@
  *  back for a new mark-and-sweep round.
  */
 
+/*---
+custom: true
+---*/
+
 /*===
 gc 1
 gc 2, finalizer
@@ -56,8 +60,4 @@ function test() {
     print('done');
 }
 
-try {
-    test();
-} catch (e) {
-    print(e.stack || e);
-}
+test();

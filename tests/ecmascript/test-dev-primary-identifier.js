@@ -39,8 +39,4 @@ function test(arg) {
     eval('print(arg);');
 }
 
-try {
-    test(123);
-} catch (e) {
-    print(e.name);
-}
+test(123);

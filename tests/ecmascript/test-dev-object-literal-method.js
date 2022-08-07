@@ -133,8 +133,4 @@ function test() {
     print(obj[0xdeadbeef]());
 }
 
-try {
-    test();
-} catch (e) {
-    print(e.stack || e);
-}
+test();

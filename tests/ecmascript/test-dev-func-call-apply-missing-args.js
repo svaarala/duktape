@@ -31,7 +31,6 @@ mythis undefined undefined undefined
 mythis foo bar undefined
 mythis FOO BAR undefined
 TypeError
-done
 ===*/
 
 function test() {
@@ -100,12 +99,6 @@ function test() {
     } catch (e) {
         print(e.name);
     }
-
-    print('done');
 }
 
-try {
-    test();
-} catch (e) {
-    print(e.stack || e);
-}
+test();

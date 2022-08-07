@@ -5,9 +5,7 @@
  */
 
 /*---
-{
-    "custom": true
-}
+custom: true
 ---*/
 
 /*===
@@ -58,8 +56,4 @@ function test() {
     ex2 = null;
 }
 
-try {
-    test();
-} catch (e) {
-    print(e);
-}
+test();

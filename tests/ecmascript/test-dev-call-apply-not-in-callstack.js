@@ -2,6 +2,10 @@
  *  Since Duktape 2.2 .call() and .apply() no longer visible in call stack.
  */
 
+/*---
+custom: true
+---*/
+
 /*===
 f0 called
 -1 act
@@ -33,8 +37,5 @@ function test() {
     }
     f3();
 }
-try {
-    test();
-} catch (e) {
-    print(e.stack || e);
-}
+
+test();

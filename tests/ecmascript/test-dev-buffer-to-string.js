@@ -5,6 +5,10 @@
 
 /*@include util-buffer.js@*/
 
+/*---
+custom: true
+---*/
+
 /*===
 4 "\xffabc"
 |c3bf616263|
@@ -85,8 +89,4 @@ function test() {
     print(Duktape.enc('jx', stringToBuffer(s)));
 }
 
-try {
-    test();
-} catch (e) {
-    print(e.stack || e);
-}
+test();

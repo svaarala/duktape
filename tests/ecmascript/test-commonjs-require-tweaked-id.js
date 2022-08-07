@@ -9,6 +9,12 @@
  *  that Duktape re-resolves even the manually tweaked 'id' values.
  */
 
+/*---
+custom: true
+duktape_extras:
+  module-duktape: true
+---*/
+
 /*===
 Duktape.modSearch quux
 quux: Error
@@ -64,8 +70,4 @@ function tweakedIdentifierTest() {
     }
 }
 
-try {
-    tweakedIdentifierTest();
-} catch (e) {
-    print(e);
-}
+tweakedIdentifierTest();

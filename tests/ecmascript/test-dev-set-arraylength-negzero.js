@@ -8,8 +8,4 @@ function test() {
     print(arr.length);
 }
 
-try {
-    test();
-} catch (e) {
-    print(e.stack || e);
-}
+test();

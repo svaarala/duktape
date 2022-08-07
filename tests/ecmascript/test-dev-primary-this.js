@@ -18,23 +18,11 @@ var this_obj = { 'foo': 'bar' };
 
 this.is_global = true;
 
-try {
-    // global object
-    print(this.Number.POSITIVE_INFINITY);
-} catch (e) {
-    print(e.name);
-}
+// global object
+print(this.Number.POSITIVE_INFINITY);
 
-try {
-    // global object
-    printThisProperty('is_global');
-} catch (e) {
-    print(e.name);
-}
+// global object
+printThisProperty('is_global');
 
-try {
-    // forced binding
-    printThisProperty.call(this_obj, 'foo');
-} catch (e) {
-    print(e.name);
-}
+// forced binding
+printThisProperty.call(this_obj, 'foo');

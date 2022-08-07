@@ -3122,18 +3122,14 @@ function downgradeSanityTest() {
     }
 }
 
-try {
-    binaryArithmeticTest();
-    binaryArithmeticBrute();
-    binaryBitopsBrute();
-    unaryArithmeticTest();
-    unaryArithmeticBrute();
-    unaryBitopsBrute();
-    negativeZeroTest();
-    retvalDowngradeTest();
-    yieldResumeDowngradeTest();
-    unaryPlusDowngradeTest();
-    downgradeSanityTest();
-} catch (e) {
-    print(e.stack || e);
-}
+binaryArithmeticTest();
+binaryArithmeticBrute();
+binaryBitopsBrute();
+unaryArithmeticTest();
+unaryArithmeticBrute();
+unaryBitopsBrute();
+negativeZeroTest();
+retvalDowngradeTest();
+yieldResumeDowngradeTest();
+unaryPlusDowngradeTest();
+downgradeSanityTest();

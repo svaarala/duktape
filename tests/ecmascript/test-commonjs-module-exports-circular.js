@@ -5,6 +5,12 @@
  *  required sub-modules immediately.  This matches Node.js behavior.
  */
 
+/*---
+custom: true
+duktape_extras:
+  module-duktape: true
+---*/
+
 /*===
 modSearch: test1/foo
 modSearch: test1/bar
@@ -37,8 +43,4 @@ function moduleExportsCircularRequireTest() {
     print('main sees typeof bar: ' + typeof bar);
 }
 
-try {
-    moduleExportsCircularRequireTest();
-} catch (e) {
-    print(e.stack || e);
-}
+moduleExportsCircularRequireTest();

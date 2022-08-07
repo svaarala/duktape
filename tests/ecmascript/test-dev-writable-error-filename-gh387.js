@@ -13,6 +13,10 @@
  *  https://github.com/svaarala/duktape/issues/387
  */
 
+/*---
+custom: true
+---*/
+
 /*===
 ["message"]
 dummy
@@ -88,8 +92,4 @@ function test() {
     writabilityTest();  // not writable, Duktape 1.3.0 behavior
 }
 
-try {
-    test();
-} catch (e) {
-    print(e.stack || e);
-}
+test();

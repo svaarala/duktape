@@ -63,9 +63,5 @@ function strictTest() {
     }
 }
 
-try {
-    nonStrictTest();
-    strictTest();
-} catch (e) {
-    print(e);
-}
+nonStrictTest();
+strictTest();

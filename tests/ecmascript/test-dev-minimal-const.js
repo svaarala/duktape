@@ -3,9 +3,7 @@
  */
 
 /*---
-{
-    "custom": true
-}
+custom: true
 ---*/
 
 /*===
@@ -20,11 +18,7 @@ function constBasicTest() {
     print(x, y, x + y);
 }
 
-try {
-    constBasicTest();
-} catch (e) {
-    print(e.stack || e);
-}
+constBasicTest();
 
 /*===
 1000 234 1234
@@ -41,11 +35,7 @@ function constWriteTest() {
     print(x, y, x + y);
 }
 
-try {
-    constWriteTest();
-} catch (e) {
-    print(e.stack || e);
-}
+constWriteTest();
 
 /*===
 SyntaxError
@@ -63,11 +53,7 @@ function noConstInitializerTest() {
     }
 }
 
-try {
-    noConstInitializerTest();
-} catch (e) {
-    print(e.stack || e);
-}
+noConstInitializerTest();
 
 /*===
 234
@@ -85,8 +71,4 @@ function redeclareConstAsVarTest() {
     }
 }
 
-try {
-    redeclareConstAsVarTest();
-} catch (e) {
-    print(e.stack || e);
-}
+redeclareConstAsVarTest();

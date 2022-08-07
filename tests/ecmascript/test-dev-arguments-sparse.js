@@ -23,8 +23,4 @@ function test() {
     print(JSON.stringify(Object.getOwnPropertyNames(args)));
 }
 
-try {
-    test();
-} catch (e) {
-    print(e.stack || e);
-}
+test();

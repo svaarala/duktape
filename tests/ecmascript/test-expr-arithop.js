@@ -960,13 +960,8 @@ function matrixTest() {
     }
 }
 
-try {
-    print('matrix test');
-    matrixTest();
-} catch (e) {
-    print(e.stack || e);
-}
-
+print('matrix test');
+matrixTest();
 
 /*===
 multiply rounding to zero and infinity
@@ -997,9 +992,5 @@ function multiplyRoundingTest() {
     print (t, typeof t, 1 / t);
 }
 
-try {
-    print('multiply rounding to zero and infinity');
-    multiplyRoundingTest();
-} catch (e) {
-    print(e.stack || e);
-}
+print('multiply rounding to zero and infinity');
+multiplyRoundingTest();

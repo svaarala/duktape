@@ -3,9 +3,8 @@
  */
 
 /*---
-{
-    "skip": true
-}
+custom: true
+skip: true
 ---*/
 
 function test() {

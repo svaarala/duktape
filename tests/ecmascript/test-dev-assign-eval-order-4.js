@@ -26,8 +26,4 @@ function test() {
     print(JSON.stringify(c));
 }
 
-try {
-    test();
-} catch (e) {
-    print(e.stack || e);
-}
+test();

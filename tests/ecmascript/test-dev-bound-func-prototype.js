@@ -32,8 +32,4 @@ function test() {
     print(Object.getPrototypeOf(G) === proto);
 }
 
-try {
-    test();
-} catch (e) {
-    print(e.stack || e);
-}
+test();

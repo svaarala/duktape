@@ -16,7 +16,6 @@ RangeError
 true
 RangeError
 true
-done
 ===*/
 
 function test() {
@@ -73,12 +72,6 @@ function test() {
         print(e.name);
     }
     print(count > 2000);
-
-    print('done');
 }
 
-try {
-    test();
-} catch (e) {
-    print(e.stack || e);
-}
+test();

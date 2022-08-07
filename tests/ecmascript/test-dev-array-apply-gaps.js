@@ -58,8 +58,4 @@ function test() {
     print(arr.map(function (v, i) { return i; }));
 }
 
-try {
-    test();
-} catch (e) {
-    print(e.stack || e);
-}
+test();

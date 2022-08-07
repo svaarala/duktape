@@ -2,6 +2,12 @@
  *  Randomized identifier testing to stress test identifier resolution.
  */
 
+/*---
+custom: true
+duktape_extras:
+  module-duktape: true
+---*/
+
 /*===
 0
 10000
@@ -13,7 +19,6 @@
 70000
 80000
 90000
-done
 ===*/
 
 function rnd() {
@@ -64,10 +69,4 @@ function randomizedTest() {
     //print('successful: ' + succ + '/' + n);
 }
 
-try {
-    randomizedTest();
-} catch (e) {
-    print(e);
-}
-
-print('done');
+randomizedTest();

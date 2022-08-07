@@ -3,9 +3,7 @@
  */
 
 /*---
-{
-    "custom": true
-}
+custom: true
 ---*/
 
 /*===
@@ -32,9 +30,5 @@ function basicTest() {
     print(object instanceof Duktape.Pointer);
 }
 
-try {
-    print('basic test');
-    basicTest();
-} catch (e) {
-    print(e.stack || e);
-}
+print('basic test');
+basicTest();

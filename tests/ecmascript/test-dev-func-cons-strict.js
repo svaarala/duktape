@@ -19,8 +19,4 @@ function f() {
     g();
 }
 
-try {
-    f();
-} catch (e) {
-    print(e.name);
-}
+f();

@@ -28,8 +28,4 @@ function test() {
     // XXX: no __proto__ literals (yet)
 }
 
-try {
-    test();
-} catch (e) {
-    print(e);
-}
+test();

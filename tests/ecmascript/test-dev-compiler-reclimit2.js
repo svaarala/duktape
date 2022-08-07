@@ -11,9 +11,7 @@
  */
 
 /*---
-{
-    "custom": true
-}
+custom: true
 ---*/
 
 function rep(n, c) {

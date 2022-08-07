@@ -1072,8 +1072,4 @@ function roundTripTest() {
     }
 }
 
-try {
-    roundTripTest();
-} catch (e) {
-    print(e.stack || e);
-}
+roundTripTest();

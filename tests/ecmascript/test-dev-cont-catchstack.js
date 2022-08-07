@@ -9,10 +9,8 @@
 
 // Skipped since Duktape 2.2.0: no explicit catchstack limits.
 /*---
-{
-    "custom": true,
-    "skip": true
-}
+custom: true
+skip: true
 ---*/
 
 /*===
@@ -69,8 +67,4 @@ function fib(x) {
     return fib(x - 1) + fib(x - 2);
 }
 
-try {
-    print(fib(20));
-} catch (e) {
-    print(e.name);
-}
+print(fib(20));

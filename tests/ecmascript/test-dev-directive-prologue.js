@@ -101,9 +101,5 @@ use strict
  * and must generate an implicit return value for e.g. eval().
  */
 
-try {
-    print(eval("'use strict';"));
-    print(eval("'use strict'; var x = 10;"));  // var statement is empty, no effect
-} catch (e) {
-    print(e.name);
-}
+print(eval("'use strict';"));
+print(eval("'use strict'; var x = 10;"));  // var statement is empty, no effect

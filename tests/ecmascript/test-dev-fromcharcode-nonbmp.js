@@ -7,6 +7,10 @@
  *  standard ToUint16() coercion.
  */
 
+/*---
+custom: true
+---*/
+
 /*===
 1
 65
@@ -32,8 +36,4 @@ function test() {
     print(Duktape.enc('jx', s));
 }
 
-try {
-    test();
-} catch (e) {
-    print(e.stack || e);
-}
+test();

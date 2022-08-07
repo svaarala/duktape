@@ -51,8 +51,4 @@ function lightfuncFinalizerTest() {
     lfunc = null;
 }
 
-try {
-    lightfuncFinalizerTest();
-} catch (e) {
-    print(e.stack || e);
-}
+lightfuncFinalizerTest();

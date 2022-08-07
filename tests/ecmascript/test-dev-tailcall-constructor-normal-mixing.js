@@ -15,9 +15,7 @@
  */
 
 /*---
-{
-    "custom": true
-}
+custom: true
 ---*/
 
 function getDepth() {
@@ -130,12 +128,8 @@ function testNonProxy() {
     new cnrapply_b();
 }
 
-try {
-    print('non-proxy test');
-    testNonProxy();
-} catch (e) {
-    print(e.stack || e);
-}
+print('non-proxy test');
+testNonProxy();
 
 /*===
 proxy construct test 1
@@ -263,26 +257,14 @@ function testProxyConstruct3() {
     print(new proxy1().foo);
 }
 
-try {
-    print('proxy construct test 1');
-    testProxyConstruct1();
-} catch (e) {
-    print(e.stack || e);
-}
+print('proxy construct test 1');
+testProxyConstruct1();
 
-try {
-    print('proxy construct test 2');
-    testProxyConstruct2();
-} catch (e) {
-    print(e.stack || e);
-}
+print('proxy construct test 2');
+testProxyConstruct2();
 
-try {
-    print('proxy construct test 3');
-    testProxyConstruct3();
-} catch (e) {
-    print(e.stack || e);
-}
+print('proxy construct test 3');
+testProxyConstruct3();
 
 /*===
 proxy apply test 1
@@ -377,9 +359,5 @@ function proxyApplyTest1() {
     print(proxy4());
 }
 
-try {
-    print('proxy apply test 1');
-    proxyApplyTest1();
-} catch (e) {
-    print(e.stack || e);
-}
+print('proxy apply test 1');
+proxyApplyTest1();

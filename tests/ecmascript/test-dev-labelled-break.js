@@ -61,20 +61,6 @@ function test3() {
     print('while done');
 }
 
-try {
-    test1();
-} catch (e) {
-    print(e);
-}
-
-try {
-    test2();
-} catch (e) {
-    print(e);
-}
-
-try {
-    test3();
-} catch (e) {
-    print(e);
-}
+test1();
+test2();
+test3();

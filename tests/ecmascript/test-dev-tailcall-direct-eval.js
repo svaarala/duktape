@@ -55,14 +55,10 @@ function f2s() {
     return eval('!this');
 }
 
-try {
-    print('eval', eval('!this'));
-    print('f0', f0());
-    print('f0s', f0s());
-    print('f1', f1());
-    print('f1s', f1s());
-    print('f2', f2());
-    print('f2s', f2s());
-} catch (e) {
-    print(e);
-}
+print('eval', eval('!this'));
+print('f0', f0());
+print('f0s', f0s());
+print('f1', f1());
+print('f1s', f1s());
+print('f2', f2());
+print('f2s', f2s());

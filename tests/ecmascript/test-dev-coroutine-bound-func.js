@@ -2,6 +2,10 @@
  *  Coroutine with initial bound function.
  */
 
+/*---
+custom: true
+---*/
+
 /*===
 mythread starting
 object mythis
@@ -34,8 +38,4 @@ function test() {
     print(Duktape.Thread.resume(T, 'foo'));
 }
 
-try {
-    test();
-} catch (e) {
-    print(e.stack || e);
-}
+test();

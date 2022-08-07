@@ -51,9 +51,7 @@
  */
 
 /*---
-{
-    "custom": true
-}
+custom: true
 ---*/
 
 /*===
@@ -360,25 +358,21 @@ this.T.test = function test() {
 };
 this.T.test.prototype = null;  // break circular ref
 
-try {
-    T.test();
+T.test();
 
-    // Delete bindings and compact global object.  Important to delete
-    // and not just set to null.
-    delete T;
+// Delete bindings and compact global object.  Important to delete
+// and not just set to null.
+delete T;
 
-    // Compact the global object to match test-dev-hello-world.js;
-    // built-ins including global object are compacted on creation
-    // so the result should be the same.
-    Duktape.compact(this);
+// Compact the global object to match test-dev-hello-world.js;
+// built-ins including global object are compacted on creation
+// so the result should be the same.
+Duktape.compact(this);
 
-    // Global object should now be in its original state.
+// Global object should now be in its original state.
 
-    // *DO NOT* run mark-and-sweep here: if you do, garbage with broken
-    // refcounts will be collected which we don't want!  It's best to
-    // test with mark-and-sweep disabled.
-    //print(Object.getOwnPropertyNames(this));
-    print('exiting');
-} catch (e) {
-    print(e.stack || e);
-}
+// *DO NOT* run mark-and-sweep here: if you do, garbage with broken
+// refcounts will be collected which we don't want!  It's best to
+// test with mark-and-sweep disabled.
+//print(Object.getOwnPropertyNames(this));
+print('exiting');

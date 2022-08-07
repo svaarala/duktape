@@ -11,6 +11,12 @@
  *  since Duktape 1.3 (before that the partial module would get cached).
  */
 
+/*---
+custom: true
+duktape_extras:
+  module-duktape: true
+---*/
+
 /*===
 loading module...
 Error: aiee
@@ -47,8 +53,4 @@ function moduleLoadErrorTest() {
     print('test1/foo' in Duktape.modLoaded);
 }
 
-try {
-    moduleLoadErrorTest();
-} catch (e) {
-    print(e.stack || e);
-}
+moduleLoadErrorTest();

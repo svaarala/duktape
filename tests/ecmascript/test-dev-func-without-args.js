@@ -6,8 +6,4 @@
 hello world
 ===*/
 
-try {
-    eval("(function() { print('hello world'); })();");
-} catch (e) {
-    print(e.name);
-}
+eval("(function() { print('hello world'); })();");

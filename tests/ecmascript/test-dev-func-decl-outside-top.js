@@ -10,9 +10,7 @@
  */
 
 /*---
-{
-    "nonstandard": true
-}
+nonstandard: true
 ---*/
 
 // This should not get accessed by any test, but bind it to something

@@ -14,6 +14,10 @@
  *  complete.
  */
 
+/*---
+custom: true
+---*/
+
 /*===
 gc 1
 lose refs

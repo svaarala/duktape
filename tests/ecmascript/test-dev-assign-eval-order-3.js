@@ -19,8 +19,4 @@ function test() {
     print(b_orig.length);
 }
 
-try {
-    test();
-} catch (e) {
-    print(e.stack || e);
-}
+test();

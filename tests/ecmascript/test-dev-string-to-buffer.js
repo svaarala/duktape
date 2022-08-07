@@ -6,6 +6,10 @@
 
 /*@include util-buffer.js@*/
 
+/*---
+custom: true
+---*/
+
 /*===
 |ff666f6f|
 {type:"Buffer",data:[195,191,102,111,111]}
@@ -48,8 +52,4 @@ function test() {
     print(Duktape.enc('jx', b));
 }
 
-try {
-    test();
-} catch (e) {
-    print(e.stack || e);
-}
+test();

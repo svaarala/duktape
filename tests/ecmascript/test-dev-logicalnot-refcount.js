@@ -1,9 +1,7 @@
 /*@include util-object.js@*/
 
 /*---
-{
-    "custom": true
-}
+custom: true
 ---*/
 
 /*===
@@ -31,8 +29,4 @@ function test() {
     print(tmp);
 }
 
-try {
-    test();
-} catch (e) {
-    print(e);
-}
+test();

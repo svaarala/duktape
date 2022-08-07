@@ -3,9 +3,7 @@
  */
 
 /*---
-{
-    "custom": true
-}
+custom: true
 ---*/
 
 /*===
@@ -48,8 +46,4 @@ function test() {
     print(Duktape.enc('jx', w));
 }
 
-try {
-    test();
-} catch (e) {
-    print(e.stack || e);
-}
+test();

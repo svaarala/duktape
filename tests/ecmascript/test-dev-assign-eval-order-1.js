@@ -37,8 +37,4 @@ function test() {
     print(b[3]);
 }
 
-try {
-    test();
-} catch (e) {
-    print(e.stack || e);
-}
+test();

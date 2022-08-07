@@ -35,8 +35,4 @@ function test() {
     print(t.list);
 }
 
-try {
-    test();
-} catch (e) {
-    print(e.stack || e);
-}
+test();

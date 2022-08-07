@@ -4,6 +4,10 @@
  *  such objects have been created.
  */
 
+/*---
+custom: true
+---*/
+
 /*===
 finalizing
 finalizing

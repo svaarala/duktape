@@ -3,9 +3,7 @@
  */
 
 /*---
-{
-    "skip": true
-}
+skip: true
 ---*/
 
 // See: GH-214

@@ -27,10 +27,6 @@ function test() {
     print(x);
 }
 
-try {
-    test();
-} catch (e) {
-    print(e.stack || e);
-}
+test();
 
 /* XXX: more tests */

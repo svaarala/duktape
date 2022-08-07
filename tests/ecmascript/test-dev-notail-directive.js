@@ -3,6 +3,10 @@
  *  This matters to special functions which rely on callstack shape.
  */
 
+/*---
+custom: true
+---*/
+
 /*===
 test1: act test1func useNotailDirectiveTest
 test2: act test2func test2 useNotailDirectiveTest

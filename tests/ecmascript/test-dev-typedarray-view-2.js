@@ -3,10 +3,8 @@
  */
 
 /*---
-{
-    "custom": true,
-    "endianness": "little"
-}
+custom: true
+endianness: little
 ---*/
 
 /*===
@@ -128,8 +126,4 @@ function test() {
     for (i = 0; i < v2.length; i++) { print('v2', i, v2[i]); }
 }
 
-try {
-    test();
-} catch (e) {
-    print(e.stack || e);
-}
+test();

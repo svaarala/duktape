@@ -32,12 +32,8 @@ function slowPathVariableLhsTest() {
     print('Final x:', obj.x);
 }
 
-try {
-    print('slow path variable LHS');
-    slowPathVariableLhsTest();
-} catch (e) {
-    print(e.stack || e);
-}
+print('slow path variable LHS');
+slowPathVariableLhsTest();
 
 /*===
 fast path variable LHS
@@ -51,12 +47,8 @@ function fastPathVariableLhsTest() {
     print('Final x:', x);
 }
 
-try {
-    print('fast path variable LHS');
-    fastPathVariableLhsTest();
-} catch (e) {
-    print(e.stack || e);
-}
+print('fast path variable LHS');
+fastPathVariableLhsTest();
 
 /*===
 property access LHS
@@ -70,12 +62,8 @@ function propertyAccessLhsTest() {
     print('Final x:', obj.x);
 }
 
-try {
-    print('property access LHS');
-    propertyAccessLhsTest();
-} catch (e) {
-    print(e.stack || e);
-}
+print('property access LHS');
+propertyAccessLhsTest();
 
 /*===
 function LHS
@@ -110,12 +98,8 @@ function functionLhsTest() {
     print('done');
 }
 
-try {
-    print('function LHS');
-    functionLhsTest();
-} catch (e) {
-    print(e.stack || e);
-}
+print('function LHS');
+functionLhsTest();
 
 /*===
 optimization
@@ -154,9 +138,5 @@ function optimizationTest() {
     x += y;
 }
 
-try {
-    print('optimization');
-    optimizationTest();
-} catch (e) {
-    print(e.stack || e);
-}
+print('optimization');
+optimizationTest();

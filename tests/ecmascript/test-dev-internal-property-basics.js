@@ -6,9 +6,7 @@
 /*@include util-buffer.js@*/
 
 /*---
-{
-    "custom": true
-}
+custom: true
 ---*/
 
 /*===
@@ -86,8 +84,4 @@ function test() {
     sanitizedPrint('direct access: ' + obj[internalKey]);
 }
 
-try {
-    test();
-} catch (e) {
-    print(e);
-}
+test();

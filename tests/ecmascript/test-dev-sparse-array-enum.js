@@ -6,9 +6,7 @@
  */
 
 /*---
-{
-    "custom": true
-}
+custom: true
 ---*/
 
 function enumArray(arr) {

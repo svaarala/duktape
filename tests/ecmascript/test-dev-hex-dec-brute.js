@@ -6,6 +6,12 @@
 /*@include util-string.js@*/
 /*@include util-buffer.js@*/
 
+/*---
+custom: true
+duktape_config:
+  DUK_USE_HEX_FASTPATH: true
+---*/
+
 /*===
 ||
 ||
@@ -130,8 +136,4 @@ function testLengths() {
     }
 }
 
-try {
-    testLengths();
-} catch (e) {
-    print(e.stack || e);
-}
+testLengths();

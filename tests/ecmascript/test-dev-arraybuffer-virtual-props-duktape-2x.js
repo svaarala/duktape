@@ -55,8 +55,4 @@ function test() {
     print(buf[100]);
 }
 
-try {
-    test();
-} catch (e) {
-    print(e.stack || e);
-}
+test();

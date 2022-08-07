@@ -6,9 +6,7 @@
 
 /* Marked custom because of a custom internal limit */
 /*---
-{
-    "custom": true
-}
+custom: true
 ---*/
 
 /*===
@@ -169,8 +167,4 @@ function test() {
     wrappedTest(1000);
 }
 
-try {
-    test();
-} catch (e) {
-    print(e.stack || e);
-}
+test();

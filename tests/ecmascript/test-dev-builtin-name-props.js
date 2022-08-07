@@ -2,9 +2,7 @@
 // specified exactly and implementations differ
 
 /*---
-{
-    "custom": true
-}
+custom: true
 ---*/
 
 /*===
@@ -111,12 +109,8 @@ print(JSON.name);
  * uses empty string which we also use.
  */
 
-try {
-    var desc = Object.getOwnPropertyDescriptor(Function.prototype, 'caller');
-    print(desc.get.name);
-} catch (e) {
-    print(e.name, e);
-}
+var desc = Object.getOwnPropertyDescriptor(Function.prototype, 'caller');
+print(desc.get.name);
 
 /*===
 undefined
@@ -124,8 +118,4 @@ undefined
 
 /* XXX: other non-standard builtins */
 
-try {
-    print(Duktape.name);
-} catch (e) {
-    print(e.name);
-}
+print(Duktape.name);

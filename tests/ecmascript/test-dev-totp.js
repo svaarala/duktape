@@ -221,8 +221,4 @@ function test() {
     print(TOTP.base32Decode('MZXW6IDCMFZA'));
 }
 
-try {
-    test();
-} catch (e) {
-    print(e);
-}
+test();

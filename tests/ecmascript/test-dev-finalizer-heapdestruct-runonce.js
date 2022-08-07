@@ -14,6 +14,10 @@
  *  run twice.
  */
 
+/*---
+custom: true
+---*/
+
 /*===
 created object 1
 object 1 finalized before heap destruction, create new object

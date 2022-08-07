@@ -30,8 +30,4 @@ function test() {
     print(o1 + o2 + o3);
 }
 
-try {
-    test();
-} catch (e) {
-    print(e.stack || e);
-}
+test();

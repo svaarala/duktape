@@ -5,10 +5,8 @@
  */
 
 /*---
-{
-    "custom": true,
-    "comment": "breaks with DUK_USE_NONSTD_FUNC_CALLER_PROPERTY"
-}
+custom: true
+comment: "breaks with DUK_USE_NONSTD_FUNC_CALLER_PROPERTY"
 ---*/
 
 /*===
@@ -92,7 +90,7 @@ try {
 }
 
 try {
-    // this should probably not
+    // This should probably not.
     print(tail_eval(0, 100000));
 } catch (e) {
     print(e.name);

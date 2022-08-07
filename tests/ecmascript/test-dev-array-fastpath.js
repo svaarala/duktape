@@ -2,10 +2,14 @@
  *  Exercise array fast paths (DUK_USE_ARRAY_FASTPATH).
  */
 
+/*---
+duktape_config:
+  DUK_USE_ARRAY_FASTPATH: true
+---*/
+
 /*===
 499500
 0
-done
 ===*/
 
 function pushPopTest() {
@@ -26,9 +30,4 @@ function pushPopTest() {
     // XXX: At the moment there's no shrink check in the fast path.
 }
 
-try {
-    pushPopTest();
-    print('done');
-} catch (e) {
-    print(e.stack || e);
-}
+pushPopTest();

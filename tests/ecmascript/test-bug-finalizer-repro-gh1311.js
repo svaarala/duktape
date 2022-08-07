@@ -8,7 +8,6 @@ custom: true
 
 /*===
 Error: a pig ate it
-done
 ===*/
 
 function Foo() {
@@ -22,5 +21,3 @@ try {
 } catch (e) {
     print(e);
 }
-
-print('done');

@@ -7,6 +7,12 @@
  *  inside a temporary function which provides the scope for the module.
  */
 
+/*---
+custom: true
+duktape_extras:
+  module-duktape: true
+---*/
+
 /*===
 basic bindings
 modSearch: foo/bar
@@ -45,11 +51,7 @@ function bindingTest() {
     // to require the correct module from any other module
 }
 
-try {
-    bindingTest();
-} catch (e) {
-    print(e);
-}
+bindingTest();
 
 /*===
 scoping
@@ -157,12 +159,7 @@ print('scoping');
 print('before global require');
 initVars();
 dumpVars();
-try {
-    mod = require('test1');
-} catch (e) {
-    print('global require failed:', e);
-    print(e.stack || e);
-}
+mod = require('test1');
 print('mod:', typeof mod, mod);
 print('mod.name:', mod.name);
 print('mod.foo:', mod.foo);
@@ -173,8 +170,4 @@ initVars();
 print('before module require');
 dumpVars();
 
-try {
-    moduleEnvironmentTest();
-} catch (e) {
-    print(e);
-}
+moduleEnvironmentTest();

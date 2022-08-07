@@ -22,9 +22,5 @@ function test2() {
     print(obj['foo'] + (obj = alt, 1000));
 }
 
-try {
-    test1();
-    test2();
-} catch (e) {
-    print(e.stack || e);
-}
+test1();
+test2();

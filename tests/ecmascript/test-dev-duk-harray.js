@@ -24,12 +24,8 @@ function arrayLiteralTest() {
     print(arr);
 }
 
-try {
-    print('array literal test');
-    arrayLiteralTest();
-} catch (e) {
-    print(e.stack || e);
-}
+print('array literal test');
+arrayLiteralTest();
 
 /*===
 array constructor test
@@ -85,12 +81,8 @@ function arrayConstructorTest() {
     print(arr.length);
 }
 
-try {
-    print('array constructor test');
-    arrayConstructorTest();
-} catch (e) {
-    print(e.stack || e);
-}
+print('array constructor test');
+arrayConstructorTest();
 
 /*===
 array enumeration test
@@ -116,12 +108,8 @@ function arrayEnumerationTest() {
     print(Object.keys(arr));
 }
 
-try {
-    print('array enumeration test');
-    arrayEnumerationTest();
-} catch (e) {
-    print(e.stack || e);
-}
+print('array enumeration test');
+arrayEnumerationTest();
 
 /*===
 array .length property descriptor test
@@ -218,12 +206,8 @@ function arrayLengthPropertyDescriptorTest() {
     print(arr.length, JSON.stringify(arr));
 }
 
-try {
-    print('array .length property descriptor test');
-    arrayLengthPropertyDescriptorTest();
-} catch (e) {
-    print(e.stack || e);
-}
+print('array .length property descriptor test');
+arrayLengthPropertyDescriptorTest();
 
 /*===
 array length test
@@ -315,12 +299,8 @@ function arrayLengthTest() {
     print(arr[10]);
 }
 
-try {
-    print('array length test');
-    arrayLengthTest();
-} catch (e) {
-    print(e.stack || e);
-}
+print('array length test');
+arrayLengthTest();
 
 /*===
 enumeration order for sparse arrays
@@ -374,12 +354,8 @@ function sparseArrayEnumTest() {
     print(Object.keys(arr));
 }
 
-try {
-    print('enumeration order for sparse arrays');
-    sparseArrayEnumTest();
-} catch (e) {
-    print(e.stack || e);
-}
+print('enumeration order for sparse arrays');
+sparseArrayEnumTest();
 
 /*===
 Array.prototype test
@@ -417,12 +393,8 @@ function arrayPrototypeTest() {
     print(arr[1000]);
 }
 
-try {
-    print('Array.prototype test');
-    arrayPrototypeTest();
-} catch (e) {
-    print(e.stack || e);
-}
+print('Array.prototype test');
+arrayPrototypeTest();
 
 /*===
 100
@@ -443,8 +415,4 @@ function arrayMiscTest() {
     print(arr.length);
 }
 
-try {
-    arrayMiscTest();
-} catch (e) {
-    print(e.stack || e);
-}
+arrayMiscTest();

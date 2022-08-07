@@ -1,7 +1,5 @@
 /*---
-{
-    "custom": true
-}
+custom: true
 ---*/
 
 var thread;
@@ -33,26 +31,14 @@ function coroutine3() {
     Reflect.apply(innerfunc);
 }
 
-try {
-    thread = new Duktape.Thread(coroutine1);
-    res = Duktape.Thread.resume(thread, 0);
-    print(res);
-} catch (e) {
-    print(e.name);
-}
+thread = new Duktape.Thread(coroutine1);
+res = Duktape.Thread.resume(thread, 0);
+print(res);
 
-try {
-    thread = new Duktape.Thread(coroutine2);
-    res = Duktape.Thread.resume(thread, 0);
-    print(res);
-} catch (e) {
-    print(e.name);
-}
+thread = new Duktape.Thread(coroutine2);
+res = Duktape.Thread.resume(thread, 0);
+print(res);
 
-try {
-    thread = new Duktape.Thread(coroutine3);
-    res = Duktape.Thread.resume(thread, 0);
-    print(res);
-} catch (e) {
-    print(e.name);
-}
+thread = new Duktape.Thread(coroutine3);
+res = Duktape.Thread.resume(thread, 0);
+print(res);

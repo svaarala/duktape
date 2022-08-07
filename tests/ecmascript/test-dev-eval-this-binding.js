@@ -41,8 +41,4 @@ function test() {
          "print(typeof (this || {}).Math);\n");
 }
 
-try {
-    test();
-} catch (e) {
-    print(e.stack || e);
-}
+test();

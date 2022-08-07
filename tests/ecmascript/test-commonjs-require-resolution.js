@@ -35,6 +35,12 @@
  *  be emptied.
  */
 
+/*---
+custom: true
+duktape_extras:
+  module-duktape: true
+---*/
+
 /*===
 basic resolution
 Duktape.modSearch foo/mod1
@@ -178,12 +184,7 @@ function basicResolutionTest() {
 }
 
 print('basic resolution');
-
-try {
-    basicResolutionTest();
-} catch (e) {
-    print(e);
-}
+basicResolutionTest();
 
 /*===
 non-ascii
@@ -230,12 +231,7 @@ function nonAsciiTest() {
 }
 
 print('non-ascii');
-
-try {
-    nonAsciiTest();
-} catch (e) {
-    print(e);
-}
+nonAsciiTest();
 
 /*===
 length
@@ -397,9 +393,4 @@ function lengthTest() {
 }
 
 print('length');
-
-try {
-    lengthTest();
-} catch (e) {
-    print(e);
-}
+lengthTest();

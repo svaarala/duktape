@@ -12,9 +12,7 @@
 /*@include util-buffer.js@*/
 
 /*---
-{
-    "custom": true
-}
+custom: true
 ---*/
 
 /*===
@@ -48,8 +46,4 @@ function test() {
     print('using Duktape.dec, date \\x82Value:', dt[key]);
 }
 
-try {
-    test();
-} catch (e) {
-    print(e.stack || e);
-}
+test();

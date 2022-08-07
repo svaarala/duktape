@@ -5,6 +5,13 @@
 
 /*@include util-buffer.js@*/
 
+/*---
+custom: true
+duktape_extras:
+  module-duktape: true
+  logging: true
+---*/
+
 /*===
 Duktape.modSearch foo
 TIMESTAMP INF foo: hello from module
@@ -29,8 +36,4 @@ function moduleLogNameTest() {
     mod = require('foo/./bar/../BAR/quux');  // foo/BAR/quux absolute
 }
 
-try {
-    moduleLogNameTest();
-} catch (e) {
-    print(e);
-}
+moduleLogNameTest();

@@ -25,8 +25,4 @@ function test() {
     print(y);
 }
 
-try {
-    test();
-} catch (e) {
-    print(e.stack || e);
-}
+test();

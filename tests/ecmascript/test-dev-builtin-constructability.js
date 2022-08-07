@@ -6,9 +6,7 @@
  */
 
 /*---
-{
-    "custom": true
-}
+custom: true
 ---*/
 
 /*===
@@ -32,18 +30,14 @@ function testConstruct(fn) {
     }
 }
 
-try {
-    testConstruct(this);
-    testConstruct(Number);
-    testConstruct(String);
-    testConstruct(Math);
-    testConstruct(JSON);
-    testConstruct(Math.cos);
-    testConstruct(String.prototype.toUpperCase);
+testConstruct(this);
+testConstruct(Number);
+testConstruct(String);
+testConstruct(Math);
+testConstruct(JSON);
+testConstruct(Math.cos);
+testConstruct(String.prototype.toUpperCase);
 
-    // Duktape specific: stack getters are not constructable
-    testConstruct(Object.getOwnPropertyDescriptor(Error.prototype, 'stack').get);
-    testConstruct(Object.getOwnPropertyDescriptor(Error.prototype, 'stack').set);
-} catch (e) {
-    print(e);
-}
+// Duktape specific: stack getters are not constructable
+testConstruct(Object.getOwnPropertyDescriptor(Error.prototype, 'stack').get);
+testConstruct(Object.getOwnPropertyDescriptor(Error.prototype, 'stack').set);

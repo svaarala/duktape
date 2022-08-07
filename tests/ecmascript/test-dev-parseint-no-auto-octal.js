@@ -13,8 +13,4 @@ function test() {
     print(parseInt('0123', 8));  // parse octal with explicit radix
 }
 
-try {
-    test();
-} catch (e) {
-    print(e.stack || e);
-}
+test();

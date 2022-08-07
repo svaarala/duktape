@@ -23,17 +23,16 @@ custom: true
 duktape_config:
   DUK_USE_FASTINT: true
   DUK_USE_LIGHTFUNC_BUILTINS: true
+duktape_extras:
+  module-duktape: true
+  logging: true
 ---*/
 
 /* Some additional Function.prototype properties expected by tests below. */
-try {
-    Object.defineProperties(Function.prototype, {
-        testWritable: { value: 123, writable: true, enumerable: false, configurable: false },
-        testNonWritable: { value: 234, writable: false, enumerable: false, configurable: false }
-    });
-} catch (e) {
-    print(e.stack);
-}
+Object.defineProperties(Function.prototype, {
+    testWritable: { value: 123, writable: true, enumerable: false, configurable: false },
+    testNonWritable: { value: 234, writable: false, enumerable: false, configurable: false }
+});
 
 /* Shared object value which coerces to 'length' with a side effect.
  * Used to verify string coercion and evaluation order.
@@ -98,12 +97,8 @@ function lightFuncSupportTest() {
     print(valueIsLightFunc(getLightFunc()));
 }
 
-try {
-    print('light func support test');
-    lightFuncSupportTest();
-} catch (e) {
-    print(e.stack || e);
-}
+print('light func support test');
+lightFuncSupportTest();
 
 /*===
 typeof test
@@ -120,12 +115,8 @@ function typeofTest() {
     print(typeof fun);
 }
 
-try {
-    print('typeof test');
-    typeofTest();
-} catch (e) {
-    print(e.stack || e);
-}
+print('typeof test');
+typeofTest();
 
 /*===
 property assignment test
@@ -297,12 +288,8 @@ function propertyAssignmentTest() {
     }
 }
 
-try {
-    print('property assignment test');
-    propertyAssignmentTest();
-} catch (e) {
-    print(e.stack || e);
-}
+print('property assignment test');
+propertyAssignmentTest();
 
 /*===
 instanceof test
@@ -375,12 +362,8 @@ function instanceofTest() {
     }
 }
 
-try {
-    print('instanceof test');
-    instanceofTest();
-} catch (e) {
-    print(e.stack || e);
-}
+print('instanceof test');
+instanceofTest();
 
 /*===
 comparison test
@@ -470,12 +453,8 @@ function comparisonTest() {
     }
 }
 
-try {
-    print('comparison test');
-    comparisonTest();
-} catch (e) {
-    print(e.stack || e);
-}
+print('comparison test');
+comparisonTest();
 
 /*===
 arithmetic test
@@ -494,12 +473,8 @@ function arithmeticTest() {
     p((function foo(){}) + (function bar(){}));
 }
 
-try {
-    print('arithmetic test');
-    arithmeticTest();
-} catch (e) {
-    print(e.stack || e);
-}
+print('arithmetic test');
+arithmeticTest();
 
 /*===
 toString() test
@@ -531,12 +506,8 @@ function toStringTest() {
     print(String(fun) === Function.prototype.toString.call(fun));
 }
 
-try {
-    print('toString() test');
-    toStringTest();
-} catch (e) {
-    print(e.stack || e);
-}
+print('toString() test');
+toStringTest();
 
 /*===
 toObject() test
@@ -602,12 +573,8 @@ function toObjectTest() {
     // XXX: other properties
 }
 
-try {
-    print('toObject() test');
-    toObjectTest();
-} catch (e) {
-    print(e.stack || e);
-}
+print('toObject() test');
+toObjectTest();
 
 /*===
 toBoolean() test
@@ -623,12 +590,8 @@ function toBooleanTest() {
     print(Boolean(nfunc));
 }
 
-try {
-    print('toBoolean() test');
-    toBooleanTest();
-} catch (e) {
-    print(e.stack || e);
-}
+print('toBoolean() test');
+toBooleanTest();
 
 /*===
 toBuffer() test
@@ -663,12 +626,8 @@ function toBufferTest() {
     printbuf(tobuf(Math.sin));
 }
 
-try {
-    print('toBuffer() test');
-    toBufferTest();
-} catch (e) {
-    print(e.stack || e);
-}
+print('toBuffer() test');
+toBufferTest();
 
 /*===
 toPointer() test
@@ -688,12 +647,8 @@ function toPointerTest() {
     print(typeof t, String(t) === 'null');
 }
 
-try {
-    print('toPointer() test');
-    toPointerTest();
-} catch (e) {
-    print(e.stack || e);
-}
+print('toPointer() test');
+toPointerTest();
 
 /*===
 number coercion test
@@ -728,12 +683,8 @@ function numberCoercionTest() {
 
 }
 
-try {
-    print('number coercion test');
-    numberCoercionTest();
-} catch (e) {
-    print(e.stack || e);
-}
+print('number coercion test');
+numberCoercionTest();
 
 /*===
 call and apply test
@@ -758,12 +709,8 @@ function callApplyTest() {
     print(fun.apply('myThis', [ 123, 321, 987, 345 ]));
 }
 
-try {
-    print('call and apply test');
-    callApplyTest();
-} catch (e) {
-    print(e.stack || e);
-}
+print('call and apply test');
+callApplyTest();
 
 /*===
 this coercion test
@@ -797,12 +744,8 @@ function thisCoercionTest() {
     myNonStrict.call(lfunc);
 }
 
-try {
-    print('this coercion test');
-    thisCoercionTest();
-} catch (e) {
-    print(e.stack || e);
-}
+print('this coercion test');
+thisCoercionTest();
 
 /*===
 inherit from Function.prototype test
@@ -816,12 +759,8 @@ function inheritFromFunctionPrototypeTest() {
     print(fun.inheritTestProperty);
 }
 
-try {
-    print('inherit from Function.prototype test');
-    inheritFromFunctionPrototypeTest();
-} catch (e) {
-    print(e.stack || e);
-}
+print('inherit from Function.prototype test');
+inheritFromFunctionPrototypeTest();
 
 /*===
 Object.prototype.toString() test
@@ -839,12 +778,8 @@ function objectPrototypeToStringTest() {
     print(Object.prototype.toString.call(fun));
 }
 
-try {
-    print('Object.prototype.toString() test');
-    objectPrototypeToStringTest();
-} catch (e) {
-    print(e.stack || e);
-}
+print('Object.prototype.toString() test');
+objectPrototypeToStringTest();
 
 /*===
 JSON/JX/JC test
@@ -1100,12 +1035,8 @@ function jsonJxJcTest() {
     delete Function.prototype.toJSON;
 }
 
-try {
-    print('JSON/JX/JC test');
-    jsonJxJcTest();
-} catch (e) {
-    print(e.stack || e);
-}
+print('JSON/JX/JC test');
+jsonJxJcTest();
 
 /*===
 bound function test
@@ -1156,12 +1087,8 @@ function boundFunctionTest() {
     print('G(123,987):', G(123, 987));
 }
 
-try {
-    print('bound function test');
-    boundFunctionTest();
-} catch (e) {
-    print(e.stack || e);
-}
+print('bound function test');
+boundFunctionTest();
 
 /*===
 property get test
@@ -1218,12 +1145,8 @@ function propertyGetTest() {
     });
 }
 
-try {
-    print('property get test');
-    propertyGetTest();
-} catch (e) {
-    print(e.stack || e);
-}
+print('property get test');
+propertyGetTest();
 
 /*===
 property put test
@@ -1298,12 +1221,8 @@ function propertyPutTest() {
     });
 }
 
-try {
-    print('property put test');
-    propertyPutTest();
-} catch (e) {
-    print(e.stack || e);
-}
+print('property put test');
+propertyPutTest();
 
 /*===
 property has test
@@ -1342,12 +1261,8 @@ function propertyHasTest() {
     });
 }
 
-try {
-    print('property has test');
-    propertyHasTest();
-} catch (e) {
-    print(e.stack || e);
-}
+print('property has test');
+propertyHasTest();
 
 /*===
 property delete test
@@ -1429,12 +1344,8 @@ function propertyDeleteTest() {
     }
 }
 
-try {
-    print('property delete test');
-    propertyDeleteTest();
-} catch (e) {
-    print(e.stack || e);
-}
+print('property delete test');
+propertyDeleteTest();
 
 /*===
 property accessor this binding test
@@ -1540,12 +1451,8 @@ function propertyAccessorThisBindingTest() {
     lightFunc.testAccessorNonStrict = 123;
 }
 
-try {
-    print('property accessor this binding test');
-    propertyAccessorThisBindingTest();
-} catch (e) {
-    print(e.stack || e);
-}
+print('property accessor this binding test');
+propertyAccessorThisBindingTest();
 
 /*===
 property misc test
@@ -1616,12 +1523,8 @@ function propertyMiscTest() {
     print('censored lightFunc.name:', t);
 }
 
-try {
-    print('property misc test');
-    propertyMiscTest();
-} catch (e) {
-    print(e.stack || e);
-}
+print('property misc test');
+propertyMiscTest();
 
 /*===
 traceback test
@@ -1645,12 +1548,8 @@ function tracebackTest() {
     print(sanitizeTraceback(err.stack));
 }
 
-try {
-    print('traceback test');
-    tracebackTest();
-} catch (e) {
-    print(e.stack || e);
-}
+print('traceback test');
+tracebackTest();
 
 /*===
 Duktape.act() test
@@ -1685,12 +1584,8 @@ function duktapeActTest() {
     });
 }
 
-try {
-    print('Duktape.act() test');
-    duktapeActTest();
-} catch (e) {
-    print(e.stack || e);
-}
+print('Duktape.act() test');
+duktapeActTest();
 
 /*===
 exempt built-ins test
@@ -1777,12 +1672,8 @@ function exemptBuiltinsTest() {
     print('JSON:', f(JSON));
 }
 
-try {
-    print('exempt built-ins test');
-    exemptBuiltinsTest();
-} catch (e) {
-    print(e.stack || e);
-}
+print('exempt built-ins test');
+exemptBuiltinsTest();
 
 /*===
 getOwnPropertyNames() test
@@ -1801,12 +1692,8 @@ function getOwnPropertyNamesTest() {
     }
 }
 
-try {
-    print('getOwnPropertyNames() test');
-    getOwnPropertyNamesTest();
-} catch (e) {
-    print(e.stack || e);
-}
+print('getOwnPropertyNames() test');
+getOwnPropertyNamesTest();
 
 /*===
 getOwnPropertyDescriptor() test
@@ -1839,12 +1726,8 @@ function getOwnPropertyDescriptorTest() {
     test('nonExistent');
 }
 
-try {
-    print('getOwnPropertyDescriptor() test');
-    getOwnPropertyDescriptorTest();
-} catch (e) {
-    print(e.stack || e);
-}
+print('getOwnPropertyDescriptor() test');
+getOwnPropertyDescriptorTest();
 
 /*===
 hasOwnProperty() test
@@ -1863,12 +1746,8 @@ function hasOwnPropertyTest() {
     print(Object.prototype.hasOwnProperty.call(lfunc, 'call'));  // inherited
 }
 
-try {
-    print('hasOwnProperty() test');
-    hasOwnPropertyTest();
-} catch (e) {
-    print(e.stack || e);
-}
+print('hasOwnProperty() test');
+hasOwnPropertyTest();
 
 /*===
 propertyIsEnumerable() test
@@ -1887,12 +1766,8 @@ function propertyIsEnumerableTest() {
     print(Object.prototype.propertyIsEnumerable(lfunc, 'call'));  // inherited
 }
 
-try {
-    print('propertyIsEnumerable() test');
-    propertyIsEnumerableTest();
-} catch (e) {
-    print(e.stack || e);
-}
+print('propertyIsEnumerable() test');
+propertyIsEnumerableTest();
 
 /*===
 defineProperty() test
@@ -1990,12 +1865,8 @@ function definePropertyTest() {
     }
 }
 
-try {
-    print('defineProperty() test');
-    definePropertyTest();
-} catch (e) {
-    print(e.stack || e);
-}
+print('defineProperty() test');
+definePropertyTest();
 
 /*===
 defineProperties() test
@@ -2043,12 +1914,8 @@ function definePropertiesTest() {
     }
 }
 
-try {
-    print('defineProperties() test');
-    definePropertiesTest();
-} catch (e) {
-    print(e.stack || e);
-}
+print('defineProperties() test');
+definePropertiesTest();
 
 /*===
 getPrototypeOf() test
@@ -2067,12 +1934,8 @@ function getPrototypeOfTest() {
     print(lfunc.__proto__.__proto__ === Function.prototype);
 }
 
-try {
-    print('getPrototypeOf() test');
-    getPrototypeOfTest();
-} catch (e) {
-    print(e.stack || e);
-}
+print('getPrototypeOf() test');
+getPrototypeOfTest();
 
 /*===
 setPrototypeOf() test
@@ -2126,12 +1989,8 @@ function setPrototypeOfTest() {
     succ(function () { lfunc.__proto__ = Function.prototype; });
 }
 
-try {
-    print('setPrototypeOf() test');
-    setPrototypeOfTest();
-} catch (e) {
-    print(e.stack || e);
-}
+print('setPrototypeOf() test');
+setPrototypeOfTest();
 
 /*===
 Array built-in test
@@ -2192,12 +2051,8 @@ function arrayBuiltinTest() {
     f('reduceRight');  // -''-
 }
 
-try {
-    print('Array built-in test');
-    arrayBuiltinTest();
-} catch (e) {
-    print(e.stack || e);
-}
+print('Array built-in test');
+arrayBuiltinTest();
 
 /*===
 Boolean built-in test
@@ -2216,12 +2071,8 @@ function booleanBuiltinTest() {
     testTypedJx(function () { return Boolean.prototype.valueOf.call(lfunc, lfunc) }, 'valueOf');
 }
 
-try {
-    print('Boolean built-in test');
-    booleanBuiltinTest();
-} catch (e) {
-    print(e.stack || e);
-}
+print('Boolean built-in test');
+booleanBuiltinTest();
 
 /*===
 Duktape.Buffer built-in test
@@ -2240,12 +2091,8 @@ function duktapeBufferBuiltinTest() {
     testTypedJx(function () { return Duktape.Buffer.prototype.valueOf.call(lfunc, lfunc) }, 'valueOf');
 }
 
-try {
-    print('Duktape.Buffer built-in test');
-    duktapeBufferBuiltinTest();
-} catch (e) {
-    print(e.stack || e);
-}
+print('Duktape.Buffer built-in test');
+duktapeBufferBuiltinTest();
 
 /*===
 Date built-in test
@@ -2363,12 +2210,8 @@ function dateBuiltinTest() {
     f('getYear');
 }
 
-try {
-    print('Date built-in test');
-    dateBuiltinTest();
-} catch (e) {
-    print(e.stack || e);
-}
+print('Date built-in test');
+dateBuiltinTest();
 
 /*===
 Duktape built-in test
@@ -2407,12 +2250,8 @@ function duktapeBuiltinTest() {
     testTypedJx(function () { return Duktape.compact(lfunc); }, 'compact');
 }
 
-try {
-    print('Duktape built-in test');
-    duktapeBuiltinTest();
-} catch (e) {
-    print(e.stack || e);
-}
+print('Duktape built-in test');
+duktapeBuiltinTest();
 
 /*===
 Error built-in test
@@ -2431,12 +2270,8 @@ function errorBuiltinTest() {
     testTypedJx(function () { return Error.prototype.valueOf.call(lfunc, lfunc); }, 'valueOf');
 }
 
-try {
-    print('Error built-in test');
-    errorBuiltinTest();
-} catch (e) {
-    print(e.stack || e);
-}
+print('Error built-in test');
+errorBuiltinTest();
 
 /*===
 Function built-in test
@@ -2460,12 +2295,8 @@ function functionBuiltinTest() {
     // - bind
 }
 
-try {
-    print('Function built-in test');
-    functionBuiltinTest();
-} catch (e) {
-    print(e.stack || e);
-}
+print('Function built-in test');
+functionBuiltinTest();
 
 /*===
 global built-in test
@@ -2505,12 +2336,8 @@ function globalBuiltinTest() {
     testTypedJx(function () { return typeof unescape(lfunc); }, 'unescape');
 }
 
-try {
-    print('global built-in test');
-    globalBuiltinTest();
-} catch (e) {
-    print(e.stack || e);
-}
+print('global built-in test');
+globalBuiltinTest();
 
 /*===
 JSON built-in test
@@ -2526,12 +2353,8 @@ function jsonBuiltinTest() {
     testTypedJx(function () { return JSON.stringify(lfunc); }, 'stringify');
 }
 
-try {
-    print('JSON built-in test');
-    jsonBuiltinTest();
-} catch (e) {
-    print(e.stack || e);
-}
+print('JSON built-in test');
+jsonBuiltinTest();
 
 /*===
 Duktape.Logger built-in test
@@ -2566,12 +2389,8 @@ function duktapeLoggerBuiltinTest() {
     Duktape.Logger.prototype.raw = old_raw;
 }
 
-try {
-    print('Duktape.Logger built-in test');
-    duktapeLoggerBuiltinTest();
-} catch (e) {
-    print(e.stack || e);
-}
+print('Duktape.Logger built-in test');
+duktapeLoggerBuiltinTest();
 
 /*===
 Math built-in test
@@ -2618,12 +2437,8 @@ function mathBuiltinTest() {
     testTypedJx(function () { return Math.tan(lfunc); }, 'tan');
 }
 
-try {
-    print('Math built-in test');
-    mathBuiltinTest();
-} catch (e) {
-    print(e.stack || e);
-}
+print('Math built-in test');
+mathBuiltinTest();
 
 /*===
 Number built-in test
@@ -2650,12 +2465,8 @@ function numberBuiltinTest() {
     testTypedJx(function () { return Number.prototype.toPrecision.call(lfunc, lfunc); }, 'toPrecision');
 }
 
-try {
-    print('Number built-in test');
-    numberBuiltinTest();
-} catch (e) {
-    print(e.stack || e);
-}
+print('Number built-in test');
+numberBuiltinTest();
 
 /*===
 Object built-in test
@@ -2710,12 +2521,8 @@ function objectBuiltinTest() {
     testTypedJx(function () { return Object.prototype.isPrototypeOf.call(lfunc, lfunc); }, 'isPrototypeOf');
 }
 
-try {
-    print('Object built-in test');
-    objectBuiltinTest();
-} catch (e) {
-    print(e.stack || e);
-}
+print('Object built-in test');
+objectBuiltinTest();
 
 /*===
 Duktape.Pointer built-in test
@@ -2734,12 +2541,8 @@ function duktapePointerBuiltinTest() {
     testTypedJx(function () { return Duktape.Pointer.prototype.toString.call(lfunc); }, 'valueOf');
 }
 
-try {
-    print('Duktape.Pointer built-in test');
-    duktapePointerBuiltinTest();
-} catch (e) {
-    print(e.stack || e);
-}
+print('Duktape.Pointer built-in test');
+duktapePointerBuiltinTest();
 
 /*===
 Proxy built-in test
@@ -2810,12 +2613,8 @@ function proxyBuiltinTest() {
     delete Function.prototype.get;
 }
 
-try {
-    print('Proxy built-in test');
-    proxyBuiltinTest();
-} catch (e) {
-    print(e.stack || e);
-}
+print('Proxy built-in test');
+proxyBuiltinTest();
 
 /*===
 RegExp built-in test
@@ -2842,12 +2641,8 @@ function regexpBuiltinTest() {
     testTypedJx(function () { return RegExp.prototype.valueOf.call(lfunc, lfunc); }, 'valueOf');
 }
 
-try {
-    print('RegExp built-in test');
-    regexpBuiltinTest();
-} catch (e) {
-    print(e.stack || e);
-}
+print('RegExp built-in test');
+regexpBuiltinTest();
 
 /*===
 String built-in test
@@ -2911,12 +2706,8 @@ function stringBuiltinTest() {
     testTypedJx(function () { return sanitizeLfunc(String.prototype.substr.call(lfunc, lfunc)); }, 'substr');
 }
 
-try {
-    print('String built-in test');
-    stringBuiltinTest();
-} catch (e) {
-    print(e.stack || e);
-}
+print('String built-in test');
+stringBuiltinTest();
 
 /*===
 Duktape.Thread built-in test
@@ -2944,12 +2735,8 @@ function duktapeThreadBuiltinTest() {
     }
 }
 
-try {
-    print('Duktape.Thread built-in test');
-    duktapeThreadBuiltinTest();
-} catch (e) {
-    print(e.stack || e);
-}
+print('Duktape.Thread built-in test');
+duktapeThreadBuiltinTest();
 
 /*===
 Object .valueOf() test
@@ -2976,9 +2763,5 @@ function objectValueOfTest() {
     print(getValuePublicType(t));      // tag 6: object
 }
 
-try {
-    print('Object .valueOf() test');
-    objectValueOfTest();
-} catch (e) {
-    print(e.stack || e);
-}
+print('Object .valueOf() test');
+objectValueOfTest();

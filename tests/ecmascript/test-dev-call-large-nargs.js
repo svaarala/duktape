@@ -27,8 +27,4 @@ function test() {
     eval(source);
 }
 
-try {
-    test();
-} catch (e) {
-    print(e.stack || e);
-}
+test();

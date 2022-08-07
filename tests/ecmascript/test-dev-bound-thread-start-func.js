@@ -3,9 +3,7 @@
  */
 
 /*---
-{
-    "custom": true
-}
+custom: true
 ---*/
 
 /*===
@@ -32,15 +30,8 @@ function boundTest() {
     Duktape.Thread.resume(t, 321);  // arg ignored because bound
 }
 
-try {
-    print('non-bound');
-    nonBoundTest();
-} catch (e) {
-    print(e.stack || e);
-}
-try {
-    print('bound');
-    boundTest();
-} catch (e) {
-    print(e.stack || e);
-}
+print('non-bound');
+nonBoundTest();
+
+print('bound');
+boundTest();

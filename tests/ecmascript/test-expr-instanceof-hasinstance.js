@@ -174,8 +174,4 @@ function basicTest() {
     print(Function.prototype[Symbol.hasInstance].call(rhs, Object.create(rhs.prototype)));
 }
 
-try {
-    basicTest();
-} catch (e) {
-    print(e.stack || e);
-}
+basicTest();

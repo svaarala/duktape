@@ -3,9 +3,7 @@
  */
 
 /*---
-{
-    "custom": true
-}
+custom: true
 ---*/
 
 /*===
@@ -78,8 +76,4 @@ function test() {
     f(66000, true);
 }
 
-try {
-    test();
-} catch (e) {
-    print(e.stack || e);
-}
+test();

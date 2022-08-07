@@ -15,8 +15,4 @@ function test() {
     print(arr[1e7 + 1]);
 }
 
-try {
-    test();
-} catch (e) {
-    print(e.stack || e);
-}
+test();

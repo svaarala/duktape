@@ -8,8 +8,4 @@ function foo(x) {
     }
 }
 
-try {
-    foo(1)(2);
-} catch (e) {
-    print(e.name);
-}
+foo(1)(2);

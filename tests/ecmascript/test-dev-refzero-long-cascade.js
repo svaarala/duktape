@@ -24,10 +24,7 @@ function test() {
     print('start cascade');
 }
 
-try {
-    test();
-    print('end cascade');
-} catch (e) {
-    print(e.stack || e);
-}
+test();
+print('end cascade');
+
 print('done');

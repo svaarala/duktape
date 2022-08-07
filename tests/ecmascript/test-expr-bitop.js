@@ -32,12 +32,8 @@ function minimalAndOrXorTest() {
     print(255 ^ 64);
 }
 
-try {
-    print('minimal and-or-xor');
-    minimalAndOrXorTest();
-} catch (e) {
-    print(e.stack || e);
-}
+print('minimal and-or-xor');
+minimalAndOrXorTest();
 
 /*===
 minimal not
@@ -54,12 +50,8 @@ function minimalNotTest() {
     print(~~1e10);
 }
 
-try {
-    print('minimal not');
-    minimalNotTest();
-} catch (e) {
-    print(e.stack || e);
-}
+print('minimal not');
+minimalNotTest();
 
 /*===
 precedence and-or-xor
@@ -121,12 +113,8 @@ function precedenceAndOrXorTest() {
     printHex(~(0x12345679 | 0xffff0000));
 }
 
-try {
-    print('precedence and-or-xor');
-    precedenceAndOrXorTest();
-} catch (e) {
-    print(e.stack || e);
-}
+print('precedence and-or-xor');
+precedenceAndOrXorTest();
 
 /*===
 associativity and-or-xor
@@ -192,12 +180,8 @@ function associativityAndOrXorTest() {
     printHex(val(0x12345678) & (val(0x23456789) & val(0x3456789a)));
 }
 
-try {
-    print('associativity and-or-xor');
-    associativityAndOrXorTest();
-} catch (e) {
-    print(e.stack || e);
-}
+print('associativity and-or-xor');
+associativityAndOrXorTest();
 
 /*===
 target modify not
@@ -222,12 +206,8 @@ function targetModifyNotTest() {
     print(obj.x);
 }
 
-try {
-    print('target modify not');
-    targetModifyNotTest();
-} catch (e) {
-    print(e.stack || e);
-}
+print('target modify not');
+targetModifyNotTest();
 
 /*===
 matrix and-or-xor-not
@@ -914,9 +894,5 @@ function matrixAndOrXorNotTest() {
     }
 }
 
-try {
-    print('matrix and-or-xor-not');
-    matrixAndOrXorNotTest();
-} catch (e) {
-    print(e.stack || e);
-}
+print('matrix and-or-xor-not');
+matrixAndOrXorNotTest();

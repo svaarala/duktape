@@ -10,8 +10,4 @@ function test() {
     print(JSON.stringify([ 1, 2, 3, true, false, {}, [], [ 'foo', 'bar' ] ].map(String)));
 }
 
-try {
-    test();
-} catch (e) {
-    print(e.stack || e);
-}
+test();

@@ -4,6 +4,12 @@
  *  source code is executed.
  */
 
+/*---
+custom: true
+duktape_extras:
+  module-duktape: true
+---*/
+
 /*===
 Duktape.modSearch foo
 foo.name: foo
@@ -64,8 +70,4 @@ function moduleReturnValueTest() {
     }
 }
 
-try {
-    moduleReturnValueTest();
-} catch (e) {
-    print(e);
-}
+moduleReturnValueTest();
