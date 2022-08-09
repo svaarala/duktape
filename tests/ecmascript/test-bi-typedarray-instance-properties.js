@@ -3,9 +3,7 @@
  */
 
 /*---
-{
-    "custom": true
-}
+custom: true
 ---*/
 
 function encValue(v) {
@@ -14,7 +12,6 @@ function encValue(v) {
 }
 
 /*===
-TypedArray instance properties test
 Int8Array buffer true object [object ArrayBuffer]
 Int8Array byteOffset true number 0
 Int8Array byteLength true number 2
@@ -142,9 +139,4 @@ function typedArrayInstancePropertiesTest() {
     });
 }
 
-try {
-    print('TypedArray instance properties test');
-    typedArrayInstancePropertiesTest();
-} catch (e) {
-    print(e.stack || e);
-}
+typedArrayInstancePropertiesTest();

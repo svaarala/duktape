@@ -19,8 +19,4 @@ function test1() {
     print(bar.foo);
 }
 
-try {
-    test1();
-} catch (e) {
-    print(e.stack || e);
-}
+test1();

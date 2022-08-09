@@ -133,21 +133,17 @@ function replacerTest5() {
     print(JSON.stringify(obj, repl));
 }
 
-try {
-    print('identity replacer');
-    replacerTest1();
+print('identity replacer');
+replacerTest1();
 
-    print('replace top level with foo');
-    replacerTest2();
+print('replace top level with foo');
+replacerTest2();
 
-    print('replace non-empty primitive values');
-    replacerTest3();
+print('replace non-empty primitive values');
+replacerTest3();
 
-    print('ignored replacers');
-    replacerTest4();
+print('ignored replacers');
+replacerTest4();
 
-    print('array replacer');
-    replacerTest5();
-} catch (e) {
-    print(e.name);
-}
+print('array replacer');
+replacerTest5();

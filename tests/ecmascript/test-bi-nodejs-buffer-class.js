@@ -4,9 +4,7 @@
  */
 
 /*---
-{
-    "custom": true
-}
+custom: true
 ---*/
 
 /*===
@@ -24,8 +22,4 @@ function nodejsBufferClassTest() {
     print(Object.prototype.toString.call(new Buffer(123)));
 }
 
-try {
-    nodejsBufferClassTest();
-} catch (e) {
-    print(e.stack || e);
-}
+nodejsBufferClassTest();

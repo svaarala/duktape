@@ -8,9 +8,7 @@
 /*@include util-buffer.js@*/
 
 /*---
-{
-    "custom": true
-}
+custom: true
 ---*/
 
 /*===
@@ -112,8 +110,4 @@ function nodejsDifferencesTest() {
     print(Object.getPrototypeOf(buf2) === proto);             // Node.js: false, Duktape: false
 }
 
-try {
-    nodejsDifferencesTest();
-} catch (e) {
-    print(e.stack || e);
-}
+nodejsDifferencesTest();

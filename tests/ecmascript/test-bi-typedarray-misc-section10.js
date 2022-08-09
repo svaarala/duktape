@@ -5,7 +5,6 @@
 /*@include util-buffer.js@*/
 
 /*===
-section 10 example test
 0 0 1 2 3
 4 4 5 6 7
 8 0 1 2 3
@@ -201,9 +200,4 @@ function section10ExampleTest() {
     print(tmp === expect);
 }
 
-try {
-    print('section 10 example test');
-    section10ExampleTest();
-} catch (e) {
-    print(e.stack || e);
-}
+section10ExampleTest();

@@ -1,7 +1,5 @@
 /*---
-{
-    "custom": true
-}
+custom: true
 ---*/
 
 /*===
@@ -38,11 +36,7 @@ function constructorAsFunctionTest() {
     print(typeof t, t instanceof Uint8Array, typeof t.valueOf());
 }
 
-try {
-    constructorAsFunctionTest();
-} catch (e) {
-    print(e.name);
-}
+constructorAsFunctionTest();
 
 /*===
 object constructor as constructor
@@ -68,8 +62,4 @@ function constructorTest() {
     print(typeof t, t instanceof Uint8Array, typeof t.valueOf());
 }
 
-try {
-    constructorTest();
-} catch (e) {
-    print(e.name);
-}
+constructorTest();

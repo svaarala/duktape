@@ -5,8 +5,11 @@
 /*@include util-symbol.js@*/
 /*@include util-buffer.js@*/
 
+/*---
+custom: true
+---*/
+
 /*===
-symbol enumeration
 for-in
   - ownEnumStr
   - inhEnumStr
@@ -147,9 +150,4 @@ function symbolEnumerationTest() {
     });
 }
 
-try {
-    print('symbol enumeration');
-    symbolEnumerationTest();
-} catch (e) {
-    print(e.stack || e);
-}
+symbolEnumerationTest();

@@ -19,21 +19,17 @@ function testStringify(x) {
     print(typeof t, t);
 }
 
-try {
-    testStringify(undefined);  // this returns 'undefined', not a string
-    testStringify(null);
-    testStringify(true);
-    testStringify(false);
-    testStringify(123.0);
-    testStringify(Number.NaN);
-    testStringify(Number.POSITIVE_INFINITY);
-    testStringify(Number.NEGATIVE_INFINITY);
-    testStringify('text');
-    testStringify({foo:'bar'});
-    testStringify(['foo','bar']);
-} catch (e) {
-    print(e.name);
-}
+testStringify(undefined);  // this returns 'undefined', not a string
+testStringify(null);
+testStringify(true);
+testStringify(false);
+testStringify(123.0);
+testStringify(Number.NaN);
+testStringify(Number.POSITIVE_INFINITY);
+testStringify(Number.NEGATIVE_INFINITY);
+testStringify('text');
+testStringify({foo:'bar'});
+testStringify(['foo','bar']);
 
 /*===
 object
@@ -52,14 +48,10 @@ function testParse(x) {
     print(typeof t);
 }
 
-try {
-    testParse('null');  // note: typeof null -> 'object'
-    testParse('true');
-    testParse('false');
-    testParse('123.0');
-    testParse('"text"');
-    testParse('{"foo":"bar"}');
-    testParse('["foo","bar"]');
-} catch (e) {
-    print(e.name);
-}
+testParse('null');  // note: typeof null -> 'object'
+testParse('true');
+testParse('false');
+testParse('123.0');
+testParse('"text"');
+testParse('{"foo":"bar"}');
+testParse('["foo","bar"]');

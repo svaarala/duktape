@@ -1,7 +1,5 @@
 /*---
-{
-    "custom": true
-}
+custom: true
 ---*/
 
 /*===
@@ -19,8 +17,4 @@ function timeClipZeroTest() {
     d = new Date(-0); print('implementation dependent', 1 / d.getTime());
 }
 
-try {
-    timeClipZeroTest();
-} catch (e) {
-    print(e.stack || e);
-}
+timeClipZeroTest();

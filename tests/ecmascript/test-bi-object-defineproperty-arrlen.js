@@ -220,8 +220,4 @@ function test() {
     dump();
 }
 
-try {
-    test();
-} catch (e) {
-    print(e.stack || e);
-}
+test();

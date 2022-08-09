@@ -17,6 +17,10 @@
 
 /*@include util-buffer.js@*/
 
+/*---
+custom: true
+---*/
+
 /*===
 Rk9STQAAAFZJTEJNQk1IRAAAABQAEAAQAAAAAAEAAAAAAGRkAUAAyENNQVAAAAAGAAAA//8AQk9EWQAAACAAADPMD/ADwAP8D8wP/D/MM8w//zPwAzAPMAwwDzwAAA==
 ===*/
@@ -135,8 +139,4 @@ function iffTest() {
     }
 }
 
-try {
-    iffTest();
-} catch (e) {
-    print(e.stack || e);
-}
+iffTest();

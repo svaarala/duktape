@@ -3,9 +3,7 @@
  */
 
 /*---
-{
-    "custom": true
-}
+custom: true
 ---*/
 
 /*===
@@ -44,8 +42,4 @@ function overflowTest() {
     }
 }
 
-try {
-    overflowTest();
-} catch (e) {
-    print(e.stack || e);
-}
+overflowTest();

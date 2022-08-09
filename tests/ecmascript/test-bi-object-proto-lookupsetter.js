@@ -54,8 +54,4 @@ function testLookupSetter() {
     print(Object.prototype.__lookupSetter__.name);
 }
 
-try {
-    testLookupSetter();
-} catch (e) {
-    print(e.stack || e);
-}
+testLookupSetter();

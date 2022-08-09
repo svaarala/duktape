@@ -1,7 +1,6 @@
 /*@include util-buffer.js@*/
 
 /*===
-ArrayBuffer methods
 - isView
 true
 ===*/
@@ -16,9 +15,4 @@ function arrayBufferMethodTest() {
     print(ArrayBuffer.isView(pb));
 }
 
-try {
-    print('ArrayBuffer methods');
-    arrayBufferMethodTest();
-} catch (e) {
-    print(e.stack || e);
-}
+arrayBufferMethodTest();

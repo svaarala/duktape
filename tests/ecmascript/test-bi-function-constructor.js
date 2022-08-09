@@ -3,7 +3,6 @@
  */
 
 /*===
-constructor
 true true
 false false false
 true 1
@@ -89,9 +88,4 @@ function functionConstructorTest() {
     print(typeof x);
 }
 
-try {
-    print('constructor');
-    functionConstructorTest();
-} catch (e) {
-    print(e.stack || e);
-}
+functionConstructorTest();

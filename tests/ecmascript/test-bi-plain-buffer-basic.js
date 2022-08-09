@@ -1,7 +1,6 @@
 /*@include util-buffer.js@*/
 
 /*===
-basic test
 object
 [object Uint8Array]
 true
@@ -20,9 +19,4 @@ function basicTest() {
     print(pb instanceof Uint8Array);
 }
 
-try {
-    print('basic test');
-    basicTest();
-} catch (e) {
-    print(e.stack || e);
-}
+basicTest();

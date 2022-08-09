@@ -54,8 +54,4 @@ function testLookupGetter() {
     print(Object.prototype.__lookupGetter__.name);
 }
 
-try {
-    testLookupGetter();
-} catch (e) {
-    print(e.stack || e);
-}
+testLookupGetter();

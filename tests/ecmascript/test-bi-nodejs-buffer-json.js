@@ -3,9 +3,7 @@
  */
 
 /*---
-{
-    "custom": true
-}
+custom: true
 ---*/
 
 /*===
@@ -42,8 +40,4 @@ function nodejsBufferJsonTest() {
     print(Duktape.enc('jc', b));
 }
 
-try {
-    nodejsBufferJsonTest();
-} catch (e) {
-    print(e.stack || e);
-}
+nodejsBufferJsonTest();

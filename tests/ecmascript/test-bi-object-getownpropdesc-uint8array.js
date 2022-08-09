@@ -9,31 +9,27 @@ undefined
 undefined
 ===*/
 
-try {
-    var u8 = new Uint8Array([ 1, 2, 3 ]);
-    var pd;
+var u8 = new Uint8Array([ 1, 2, 3 ]);
+var pd;
 
-    pd = Object.getOwnPropertyDescriptor(u8, 0);
-    print(JSON.stringify(pd));
-    pd = Object.getOwnPropertyDescriptor(u8, 1);
-    print(JSON.stringify(pd));
-    pd = Object.getOwnPropertyDescriptor(u8, 2);
-    print(JSON.stringify(pd));
+pd = Object.getOwnPropertyDescriptor(u8, 0);
+print(JSON.stringify(pd));
+pd = Object.getOwnPropertyDescriptor(u8, 1);
+print(JSON.stringify(pd));
+pd = Object.getOwnPropertyDescriptor(u8, 2);
+print(JSON.stringify(pd));
 
-    pd = Object.getOwnPropertyDescriptor(u8, 3);
-    print(JSON.stringify(pd));
+pd = Object.getOwnPropertyDescriptor(u8, 3);
+print(JSON.stringify(pd));
 
-    pd = Object.getOwnPropertyDescriptor(u8, '0');
-    print(JSON.stringify(pd));
+pd = Object.getOwnPropertyDescriptor(u8, '0');
+print(JSON.stringify(pd));
 
-    pd = Object.getOwnPropertyDescriptor(u8, '+0');
-    print(JSON.stringify(pd));
+pd = Object.getOwnPropertyDescriptor(u8, '+0');
+print(JSON.stringify(pd));
 
-    pd = Object.getOwnPropertyDescriptor(u8, '-0');
-    print(JSON.stringify(pd));
+pd = Object.getOwnPropertyDescriptor(u8, '-0');
+print(JSON.stringify(pd));
 
-    pd = Object.getOwnPropertyDescriptor(u8, '0.0');
-    print(JSON.stringify(pd));
-} catch (e) {
-    print(e.stack || e);
-}
+pd = Object.getOwnPropertyDescriptor(u8, '0.0');
+print(JSON.stringify(pd));

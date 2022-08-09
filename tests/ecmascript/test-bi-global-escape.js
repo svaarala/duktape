@@ -79,7 +79,7 @@ function basicTest() {
 try {
     basicTest();
 } catch (e) {
-    print(e);
+    print(e.stack || e);
 }
 
 /*===
@@ -170,7 +170,7 @@ function bruteForceTest() {
 try {
     bruteForceTest();
 } catch (e) {
-    print(e);
+    print(e.stack || e);
 }
 
 /*===
@@ -203,5 +203,5 @@ function coercionTest() {
 try {
     coercionTest();
 } catch (e) {
-    print(e);
+    print(e.stack || e);
 }

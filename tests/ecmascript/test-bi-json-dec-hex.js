@@ -6,6 +6,14 @@
 
 /*@include util-buffer.js@*/
 
+/*---
+custom: true
+duktape_config:
+  DUK_USE_JX: true
+  DUK_USE_HEX_SUPPORT: true
+  DUK_USE_HEX_FASTPATH: true
+---*/
+
 /*===
 done
 ===*/
@@ -52,8 +60,4 @@ function test() {
     print('done');
 }
 
-try {
-    test();
-} catch (e) {
-    print(e.stack || e);
-}
+test();

@@ -81,12 +81,8 @@ function stringifyPropertyListTest2() {
     print(txt);
 }
 
-try {
-    stringifyPropertyListTest1();
-    stringifyPropertyListTest2();
-} catch (e) {
-    print(e.name);
-}
+stringifyPropertyListTest1();
+stringifyPropertyListTest2();
 
 /*===
 {"foo":1,"baz":4}
@@ -130,8 +126,4 @@ function stringifyPropertyListTest3() {
     print(JSON.stringify(obj, [ 'foo', null, 1.2, new Number(2.2), 0/0 ]));
 }
 
-try {
-    stringifyPropertyListTest3();
-} catch (e) {
-    print(e.name);
-}
+stringifyPropertyListTest3();

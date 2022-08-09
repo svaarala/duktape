@@ -3,6 +3,10 @@
  *  encoded as CBOR text strings, other strings as CBOR byte strings.
  */
 
+/*---
+custom: true
+---*/
+
 /*===
 66666f6f626172
 "foobar"
@@ -16,7 +20,6 @@
 |666f6fedb08064383030626172|
 6a666f6ff09f92a9626172
 "foo\U0001f4a9bar"
-done
 ===*/
 
 function test(val) {
@@ -43,5 +46,3 @@ test('foo\ud83d\udca9bar');
 
 // XXX: Add coverage when C API exists:
 // - BF A0: initial byte is a continuation byte
-
-print('done');

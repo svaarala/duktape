@@ -157,8 +157,4 @@ function test() {
     print(new proxy(123, 234).foo);
 }
 
-try {
-    test();
-} catch (e) {
-    print(e.stack || e);
-}
+test();

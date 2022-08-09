@@ -3,9 +3,7 @@
  */
 
 /*---
-{
-    "custom": true
-}
+custom: true
 ---*/
 
 function encValue(v) {
@@ -14,7 +12,6 @@ function encValue(v) {
 }
 
 /*===
-DataView instance properties test
 buffer true object [object ArrayBuffer]
 byteOffset true number 13
 byteLength true number 17
@@ -101,9 +98,4 @@ function dataViewInstancePropertiesTest() {
     print(view.buffer === buf);
 }
 
-try {
-    print('DataView instance properties test');
-    dataViewInstancePropertiesTest();
-} catch (e) {
-    print(e.stack || e);
-}
+dataViewInstancePropertiesTest();

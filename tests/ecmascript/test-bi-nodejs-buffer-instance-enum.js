@@ -5,7 +5,6 @@
 /*@include util-buffer.js@*/
 
 /*===
-enumerating and keys test
 for-in
 string 0
 string 1
@@ -74,9 +73,4 @@ function enumeratingAndKeysTest() {
     });
 }
 
-try {
-    print('enumerating and keys test');
-    enumeratingAndKeysTest();
-} catch (e) {
-    print(e.stack || e);
-}
+enumeratingAndKeysTest();

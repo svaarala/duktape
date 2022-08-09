@@ -21,13 +21,11 @@
 
 // Test is custom because of custom local time formatting
 /*---
-{
-    "custom": true
-}
+custom: true
+timezone: Europe/Helsinki
 ---*/
 
 /*===
-finnish locale test
 1396141199000 2014-03-30T00:59:59.000Z 2014-03-30 02:59:59.000+02:00
 1396141199000 2014-03-30T00:59:59.000Z 2014-03-30 02:59:59.000+02:00
 1396141200000 2014-03-30T01:00:00.000Z 2014-03-30 04:00:00.000+03:00
@@ -62,10 +60,4 @@ function finnishLocaleTest() {
     print(d.getTime(), d.toISOString(), d.toString());
 }
 
-print('finnish locale test');
-
-try {
-    finnishLocaleTest();
-} catch (e) {
-    print(e);
-}
+finnishLocaleTest();

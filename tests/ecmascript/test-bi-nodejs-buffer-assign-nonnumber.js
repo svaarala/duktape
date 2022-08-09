@@ -49,8 +49,4 @@ function nodejsBufferAssignNonNumberTest() {
     printNodejsBuffer(b1);
 }
 
-try {
-    nodejsBufferAssignNonNumberTest();
-} catch (e) {
-    print(e.stack || e);
-}
+nodejsBufferAssignNonNumberTest();

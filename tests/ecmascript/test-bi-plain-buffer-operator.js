@@ -1,7 +1,10 @@
 /*@include util-buffer.js@*/
 
+/*---
+custom: true
+---*/
+
 /*===
-operator test
 [object Uint8Array][object Uint8Array]
 false
 false
@@ -68,9 +71,4 @@ function operatorTest() {
     print(!!createPlainBuffer(0));
 }
 
-try {
-    print('operator test');
-    operatorTest();
-} catch (e) {
-    print(e.stack || e);
-}
+operatorTest();

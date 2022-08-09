@@ -21,11 +21,7 @@ function basicTest() {
     print('\u00c4'.toLowerCase().charCodeAt(0));  // U+00C4 (A with dots) -> U+00E4 (a with dots) = 228
 }
 
-try {
-    basicTest();
-} catch (e) {
-    print(e);
-}
+basicTest();
 
 /*===
 string 3 57 963 33
@@ -72,17 +68,9 @@ function localeTest() {
     // XXX: add locale specific test and ensure locale specific rules do not apply
 }
 
-try {
-    greekSigmaTest();
-} catch (e) {
-    print(e);
-}
+greekSigmaTest();
 
-try {
-    localeTest();
-} catch (e) {
-    print(e);
-}
+localeTest();
 
 /*===
 TypeError
@@ -117,8 +105,4 @@ function coercionTest() {
     test({ foo: 1, bar: 2 });
 }
 
-try {
-    coercionTest();
-} catch (e) {
-    print(e);
-}
+coercionTest();

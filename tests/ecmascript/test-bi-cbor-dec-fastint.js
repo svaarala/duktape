@@ -3,6 +3,7 @@
  */
 
 /*---
+custom: true
 duktape_config:
   DUK_USE_FASTINT: true
 ---*/
@@ -152,8 +153,4 @@ function test() {
     t([ 0x81, 0xf9, 0x57, 0xb0 ]);
 }
 
-try {
-    test();
-} catch (e) {
-    print(e.stack || e);
-}
+test();

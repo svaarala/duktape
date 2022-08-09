@@ -30,8 +30,4 @@ function miscSymbolTest() {
     print(Symbol.for(Symbol.keyFor(globalFoo)) === Symbol.for('foo'));
 }
 
-try {
-    miscSymbolTest();
-} catch (e) {
-    print(e.stack || e);
-}
+miscSymbolTest();

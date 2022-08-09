@@ -8,6 +8,10 @@
 
 /*@include util-buffer.js@*/
 
+/*---
+custom: true
+---*/
+
 /*===
 0 {foo:||} {foox:||}
 1 {foo:|00|} {foox:|00|}
@@ -356,8 +360,4 @@ function test() {
     }
 }
 
-try {
-    test();
-} catch (e) {
-    print(e.stack || e);
-}
+test();

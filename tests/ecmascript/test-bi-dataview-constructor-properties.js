@@ -3,9 +3,7 @@
  */
 
 /*---
-{
-    "custom": true
-}
+custom: true
 ---*/
 
 function encValue(v) {
@@ -14,7 +12,6 @@ function encValue(v) {
 }
 
 /*===
-DataView constructor properties test
 name true string DataView
 length true number 3
 prototype true object [object Object]
@@ -41,9 +38,4 @@ function dataViewConstructorPropertiesTest() {
     print(DataView.prototype.constructor === DataView);
 }
 
-try {
-    print('DataView constructor properties test');
-    dataViewConstructorPropertiesTest();
-} catch (e) {
-    print(e.stack || e);
-}
+dataViewConstructorPropertiesTest();

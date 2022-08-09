@@ -9,7 +9,6 @@ Symbol(Symbol.toPrimitive)
 valueOf
 toString
 TypeError
-done
 ===*/
 
 var P = new Proxy({}, {
@@ -29,5 +28,3 @@ try {
 } catch (e) {
     print(e.name);
 }
-
-print('done');

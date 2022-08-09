@@ -5,7 +5,6 @@
 /*@include util-buffer.js@*/
 
 /*===
-Node.js Buffer slice() test
 8 bytes: 4142434445464748
 8 bytes: 4142434445464748
 ABaDEFGH ABaDEFGH
@@ -97,9 +96,4 @@ function nodejsBufferSliceTest() {
     printNodejsBuffer(b3);
 }
 
-try {
-    print('Node.js Buffer slice() test');
-    nodejsBufferSliceTest();
-} catch (e) {
-    print(e.stack || e);
-}
+nodejsBufferSliceTest();

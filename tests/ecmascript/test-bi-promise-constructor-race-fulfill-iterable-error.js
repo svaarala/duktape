@@ -15,11 +15,7 @@ iterable[Symbol.iterator] = function () {
 };
 
 // Error from iteration must cause a reject for P rather than bubbling out.
-try {
-    var P = Promise.race(iterable);
-} catch (e) {
-    print(e.stack || e);
-}
+var P = Promise.race(iterable);
 P.then(function (v) {
     print('race fulfill:', v);
 }, function (e) {

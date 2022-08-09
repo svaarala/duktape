@@ -242,12 +242,8 @@ function trapResultTest() {
     });
 }
 
-try {
-    print('trap result test');
-    trapResultTest();
-} catch (e) {
-    print(e.stack || e);
-}
+print('trap result test');
+trapResultTest();
 
 /*===
 proxy in Object.keys() etc
@@ -277,9 +273,5 @@ function proxyInKeysTest() {
     print(Reflect.ownKeys(proxy).map(String));
 }
 
-try {
-    print('proxy in Object.keys() etc');
-    proxyInKeysTest();
-} catch (e) {
-    print(e.stack || e);
-}
+print('proxy in Object.keys() etc');
+proxyInKeysTest();

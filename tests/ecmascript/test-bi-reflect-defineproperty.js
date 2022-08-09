@@ -19,34 +19,30 @@ foo false false false
 function basicTest() {
     'use strict';
 
-    var obj = { prop1: "baz" };
+    var obj = { prop1: 'baz' };
     var desc;
 
     // DefProp of existing property with no attributes leaves existing
     // attributes as is
-    print(Reflect.defineProperty(obj, 'prop1', { value: "quux" }));
+    print(Reflect.defineProperty(obj, 'prop1', { value: 'quux' }));
     print(obj.prop1);
-    obj.prop1 = "pigz r dum";  // should succeed
+    obj.prop1 = 'pigz r dum';  // should succeed
     print(obj.prop1);
     desc = Reflect.getOwnPropertyDescriptor(obj, 'prop1');
     print(desc.value, desc.writable, desc.enumerable, desc.configurable);
-    print(Reflect.defineProperty(obj, 'prop1', { value: "baz" }));
+    print(Reflect.defineProperty(obj, 'prop1', { value: 'baz' }));
 
     // DefProp of new property with no attributes uses defaults (i.e. all false)
-    print(Reflect.defineProperty(obj, 'prop2', { value: "foo" }));
+    print(Reflect.defineProperty(obj, 'prop2', { value: 'foo' }));
     print(obj.prop2);
-    print(Reflect.defineProperty(obj, 'prop2', { value: "bar" }));  // should fail
+    print(Reflect.defineProperty(obj, 'prop2', { value: 'bar' }));  // should fail
     print(obj.prop2);
     var desc = Reflect.getOwnPropertyDescriptor(obj, 'prop2');
     print(desc.value, desc.writable, desc.enumerable, desc.configurable);
 }
 
-try {
-    print("basic operation");
-    basicTest();
-} catch (e) {
-    print(e.stack || e);
-}
+print('basic operation');
+basicTest();
 
 /*===
 writable
@@ -61,7 +57,7 @@ bar true true true
 function writableTest() {
     'use strict';
 
-    var obj = { prop: "foo" };
+    var obj = { prop: 'foo' };
     var desc;
 
     Reflect.defineProperty(obj, 'prop', { writable: false });
@@ -69,25 +65,21 @@ function writableTest() {
     desc = Reflect.getOwnPropertyDescriptor(obj, 'prop');
     print(desc.value, desc.writable, desc.enumerable, desc.configurable);
     try {
-        obj.prop = "bar";  // should fail
-        print("never here");
+        obj.prop = 'bar';  // should fail
+        print('never here');
     } catch (e) {
         print(e.name);
     }
     print(obj.prop);
     Reflect.defineProperty(obj, 'prop', { writable: true });
-    obj.prop = "bar";
+    obj.prop = 'bar';
     print(obj.prop);
     desc = Reflect.getOwnPropertyDescriptor(obj, 'prop');
     print(desc.value, desc.writable, desc.enumerable, desc.configurable);
 }
 
-try {
-    print("writable");
-    writableTest();
-} catch (e) {
-    print(e.stack || e);
-}
+print('writable');
+writableTest();
 
 /*===
 enumerable
@@ -104,7 +96,7 @@ prop1,prop2
 function enumerableTest() {
     'use strict';
 
-    var obj = { prop1: "foo", prop2: "bar" };
+    var obj = { prop1: 'foo', prop2: 'bar' };
     var desc;
 
     print(Reflect.defineProperty(obj, 'prop1', { enumerable: true }));
@@ -122,12 +114,8 @@ function enumerableTest() {
     print(Object.keys(obj));
 }
 
-try {
-    print("enumerable");
-    enumerableTest();
-} catch (e) {
-    print(e.stack || e);
-}
+print('enumerable');
+enumerableTest();
 
 /*===
 configurable
@@ -142,14 +130,14 @@ bar false true false
 function configurableTest() {
     'use strict';
 
-    var obj = { prop: "foo" };
+    var obj = { prop: 'foo' };
     var desc;
 
     Reflect.defineProperty(obj, 'prop', { configurable: false });
 
     desc = Reflect.getOwnPropertyDescriptor(obj, 'prop');
     print(desc.value, desc.writable, desc.enumerable, desc.configurable);
-    obj.prop = "bar";  // still writable, so should succeed
+    obj.prop = 'bar';  // still writable, so should succeed
     print(obj.prop);
     print(Reflect.defineProperty(obj, 'prop', { writable: false }));  // this is allowed
     desc = Reflect.getOwnPropertyDescriptor(obj, 'prop');
@@ -159,9 +147,5 @@ function configurableTest() {
     print(desc.value, desc.writable, desc.enumerable, desc.configurable);
 }
 
-try {
-    print("configurable");
-    configurableTest();
-} catch (e) {
-    print(e.stack || e);
-}
+print('configurable');
+configurableTest();

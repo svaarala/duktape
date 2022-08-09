@@ -1,7 +1,6 @@
 /*@include util-buffer.js@*/
 
 /*===
-proxy test
 Proxy get for key: BYTES_PER_ELEMENT
 1
 Proxy get for key: 0
@@ -63,9 +62,4 @@ function proxyTest() {
     delete Uint8Array.prototype.get;
 }
 
-try {
-    print('proxy test');
-    proxyTest();
-} catch (e) {
-    print(e.stack || e);
-}
+proxyTest();

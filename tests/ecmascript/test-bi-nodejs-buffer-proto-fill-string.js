@@ -5,15 +5,12 @@
 /*@include util-buffer.js@*/
 
 /*---
-{
-    "custom": true
-}
+custom: true
 ---*/
 
 /* Custom because of some Node.js clamping differences. */
 
 /*===
-fill string test
 16 bytes: 11111141626261416262111111111111
 16 bytes: 11111141414141414141111111111111
 16 bytes: 111111c39eecabbec39eec1111111111
@@ -80,9 +77,4 @@ function fillStringTest() {
     printNodejsBuffer(b);
 }
 
-try {
-    print('fill string test');
-    fillStringTest();
-} catch (e) {
-    print(e.stack || e);
-}
+fillStringTest();

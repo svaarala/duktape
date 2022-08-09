@@ -1,7 +1,6 @@
 /*@include util-buffer.js@*/
 
 /*===
-misc test
 0
 4 97
 4 97
@@ -107,9 +106,5 @@ function miscTest() {
     print(Error.prototype.toString.call(pb));
     delete Uint8Array.prototype.message;
 }
-try {
-    print('misc test');
-    miscTest();
-} catch (e) {
-    print(e.stack || e);
-}
+
+miscTest();

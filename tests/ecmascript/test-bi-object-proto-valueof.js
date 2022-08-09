@@ -39,8 +39,4 @@ function basicTest() {
     test({ foo: 1, bar: 2 });
 }
 
-try {
-    basicTest();
-} catch (e) {
-    print(e);
-}
+basicTest();

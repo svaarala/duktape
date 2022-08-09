@@ -8,9 +8,7 @@
  */
 
 /*---
-{
-    "slow": true
-}
+slow: true
 ---*/
 
 // indirect eval -> this is bound to the global object, E5 Section 10.4.2, step 1.a.
@@ -243,7 +241,7 @@ try {
     print('encodeURIComponent BMP');
     encodeURIBMPTest(true);
 } catch (e) {
-    print(e.name, e);
+    print(e.stack || e);
 }
 
 /*===
@@ -324,8 +322,9 @@ try {
     print('encodeURIComponent surrogate pairs');
     encodeURISurrogatePairTest(true);
 } catch (e) {
-    print(e.name, e);
+    print(e.stack || e);
 }
+
 /*===
 ===*/
 

@@ -49,9 +49,5 @@ function arrayLengthTest2() {
     print(JSON.stringify(arr));
 }
 
-try {
-    arrayLengthTest1();
-    arrayLengthTest2();
-} catch (e) {
-    print(e.name);
-}
+arrayLengthTest1();
+arrayLengthTest2();

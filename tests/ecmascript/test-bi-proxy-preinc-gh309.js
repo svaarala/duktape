@@ -34,8 +34,4 @@ function test() {
     print(target.val);
 }
 
-try {
-    test();
-} catch (e) {
-    print(e.stack || e);
-}
+test();

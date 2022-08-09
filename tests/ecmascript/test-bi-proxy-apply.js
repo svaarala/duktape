@@ -163,8 +163,4 @@ function test() {
     print(proxy('foo', 'bar', 'quux'));
 }
 
-try {
-    test();
-} catch (e) {
-    print(e.stack || e);
-}
+test();

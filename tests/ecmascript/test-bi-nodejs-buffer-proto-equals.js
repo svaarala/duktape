@@ -5,7 +5,6 @@
 /*@include util-buffer.js@*/
 
 /*===
-node.js Buffer equals() test
 0 0 TypeError
 0 1 TypeError
 0 2 TypeError
@@ -223,9 +222,4 @@ function nodejsBufferEqualsTest() {
 
 // Note: Buffer.equals() does not exist.
 
-try {
-    print('node.js Buffer equals() test');
-    nodejsBufferEqualsTest();
-} catch (e) {
-    print(e.stack || e);
-}
+nodejsBufferEqualsTest();

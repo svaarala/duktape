@@ -10,7 +10,6 @@ test 4
 test 5
 test 6
 test 7
-done
 ===*/
 
 function basicTest() {
@@ -65,9 +64,4 @@ function basicTest() {
     });
 }
 
-try {
-    basicTest();
-} catch (e) {
-    print(e.stack || e);
-}
-print('done');
+basicTest();

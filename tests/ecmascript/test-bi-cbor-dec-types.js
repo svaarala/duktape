@@ -5,6 +5,10 @@
  *  padded inputs are rejected.
  */
 
+/*---
+custom: true
+---*/
+
 /*===
 - Major type 0x00-0x1f: unsigned integer
 - Major type 0x20-0x3f: negative integer (not -0)
@@ -28,7 +32,6 @@ proto is Object.prototype: true
 is bare: false
 - Major type 0xc0-0xdf: tag
 - Major type 0xe0-0xff: simple types, floating point numbers, break, etc
-done
 ===*/
 
 var ERROR = {};
@@ -1010,5 +1013,3 @@ test('ff', ERROR);  // break, out of context
 test('ff00', ERROR);
 test('ffff', ERROR);
 test('ffffff', ERROR);
-
-print('done');

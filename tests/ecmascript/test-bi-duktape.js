@@ -1,13 +1,13 @@
 /*
- *  Duktape builtin.
+ *  Duktape built-in.
  */
 
 /*@include util-buffer.js@*/
 
 /*---
-{
-    "custom": true
-}
+custom: true
+duktape_extras:
+  logging: true
 ---*/
 
 /*===

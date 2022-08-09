@@ -426,12 +426,8 @@ function nodejsBufferCopyTest() {
     });
 }
 
-try {
-    print('Node.js Buffer copy() test');
-    nodejsBufferCopyTest();
-} catch (e) {
-    print(e.stack || e);
-}
+print('Node.js Buffer copy() test');
+nodejsBufferCopyTest();
 
 /*===
 Node.js Buffer copy() retval test
@@ -550,9 +546,5 @@ function nodejsBufferCopyRetvalTest() {
     print(String(b1), String(b2), printableNodejsBuffer(b1), printableNodejsBuffer(b2));
 }
 
-try {
-    print('Node.js Buffer copy() retval test');
-    nodejsBufferCopyRetvalTest();
-} catch (e) {
-    print(e.stack || e);
-}
+print('Node.js Buffer copy() retval test');
+nodejsBufferCopyRetvalTest();

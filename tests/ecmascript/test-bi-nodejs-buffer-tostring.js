@@ -8,6 +8,10 @@
 /*@include util-buffer.js@*/
 /*@include util-string.js@*/
 
+/*---
+custom: true
+---*/
+
 function makeBuffer(bytes) {
     var buf = new Buffer(bytes.length);
     for (var i = 0; i < bytes.length; i++) {
@@ -336,12 +340,8 @@ function nodejsBufferToStringTest() {
     });
 }
 
-try {
-    print('node.js Buffer toString() test');
-    nodejsBufferToStringTest();
-} catch (e) {
-    print(e.stack || e);
-}
+print('node.js Buffer toString() test');
+nodejsBufferToStringTest();
 
 /*===
 all bytes test
@@ -369,12 +369,8 @@ function allBytesTest() {
     print(cpsum);
 }
 
-try {
-    print('all bytes test');
-    allBytesTest();
-} catch (e) {
-    print(e.stack || e);
-}
+print('all bytes test');
+allBytesTest();
 
 /*===
 0 120
@@ -663,11 +659,7 @@ function miscDecodeTest() {
     test([ 0xec, 0xab, 'f', 'o', 'o', 0xec, 0xab ]);
 }
 
-try {
-    miscDecodeTest();
-} catch (e) {
-    print(e.stack || e);
-}
+miscDecodeTest();
 
 /*===
 replacement character policy
@@ -733,12 +725,8 @@ function replacementCharacterPolicyTest() {
     print(Array.prototype.map.call(res, function (v) { return v.charCodeAt(0); }).join(' '));
 }
 
-try {
-    print('replacement character policy');
-    replacementCharacterPolicyTest();
-} catch (e) {
-    print(e.stack || e);
-}
+print('replacement character policy');
+replacementCharacterPolicyTest();
 
 /*===
 bom handling
@@ -770,9 +758,5 @@ function bomTest() {
     safePrintString(res);
 }
 
-try {
-    print('bom handling');
-    bomTest();
-} catch (e) {
-    print(e.stack || e);
-}
+print('bom handling');
+bomTest();

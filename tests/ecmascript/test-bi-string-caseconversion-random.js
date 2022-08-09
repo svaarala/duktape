@@ -45,8 +45,4 @@ function randomStringTest() {
     }
 }
 
-try {
-    randomStringTest();
-} catch (e) {
-    print(e.stack || e);
-}
+randomStringTest();

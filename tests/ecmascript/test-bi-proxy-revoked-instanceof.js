@@ -2,7 +2,6 @@
 false
 undefined
 TypeError
-done
 ===*/
 
 var target = function test() {};
@@ -20,4 +19,3 @@ try {
     print(e.name);
     //print(e.stack);
 }
-print('done');

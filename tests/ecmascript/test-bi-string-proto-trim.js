@@ -74,11 +74,7 @@ function basicTest() {
     test(all_ws + 'foo' + all_ws);
 }
 
-try {
-    basicTest();
-} catch (e) {
-    print(e);
-}
+basicTest();
 
 /*===
 coercion
@@ -122,8 +118,4 @@ function coercionTest() {
     test({ foo: 1, bar: 2 });
 }
 
-try {
-    coercionTest();
-} catch (e) {
-    print(e);
-}
+coercionTest();

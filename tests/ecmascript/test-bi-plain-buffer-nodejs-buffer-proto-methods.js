@@ -1,7 +1,10 @@
 /*@include util-buffer.js@*/
 
+/*---
+custom: true
+---*/
+
 /*===
-Node.js Buffer.prototype methods
 - toJSON
 {type:"Buffer",data:[97,98,99,100,101,102,103,104,105,106,107,108,109,110,111,112]}
 {type:"Buffer",data:[97,98,99,100,101,102,103,104,105,106,107,108,109,110,111,112]}
@@ -176,9 +179,4 @@ function nodejsBufferPrototypeMethodTest() {
     print(Buffer.prototype.toString.call(pb));
 }
 
-try {
-    print('Node.js Buffer.prototype methods');
-    nodejsBufferPrototypeMethodTest();
-} catch (e) {
-    print(e.stack || e);
-}
+nodejsBufferPrototypeMethodTest();

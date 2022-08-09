@@ -5,10 +5,8 @@
 /*@include util-buffer.js@*/
 
 /*---
-{
-    "custom": true,
-    "slow": true
-}
+custom: true
+slow: true
 ---*/
 
 /* Custom because there are a few numconv rounding issues. */
@@ -1793,16 +1791,12 @@ function readDataViewTest(arrayLength) {
     });
 }
 
-try {
-    /* There are no alignment requirements for DataView, but test two
-     * lengths anyway.
-     */
+/* There are no alignment requirements for DataView, but test two
+ * lengths anyway.
+ */
 
-    print('read TypedArray test, arrayLength 16');
-    readDataViewTest(16);
+print('read TypedArray test, arrayLength 16');
+readDataViewTest(16);
 
-    print('read TypedArray test, arrayLength 17');
-    readDataViewTest(17);
-} catch (e) {
-    print(e.stack || e);
-}
+print('read TypedArray test, arrayLength 17');
+readDataViewTest(17);

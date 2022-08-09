@@ -51,11 +51,7 @@ function basicTest() {
     p(str.indexOf('foo', 1));
 }
 
-try {
-    basicTest();
-} catch (e) {
-    print(e);
-}
+basicTest();
 
 /*===
 empty
@@ -108,11 +104,7 @@ function emptyTest() {
     p(str.indexOf('', Number.NaN));  // coerces to 0
 }
 
-try {
-    emptyTest();
-} catch (e) {
-    print(e);
-}
+emptyTest();
 
 /*===
 position
@@ -197,11 +189,7 @@ function positionTest() {
     p(str.indexOf('x', Number.NaN));
 }
 
-try {
-    positionTest();
-} catch (e) {
-    print(e);
-}
+positionTest();
 
 /*===
 argument coercion
@@ -256,11 +244,7 @@ function argumentTest() {
     }));
 }
 
-try {
-    argumentTest();
-} catch (e) {
-    print(e);
-}
+argumentTest();
 
 /*===
 this coercion
@@ -312,11 +296,7 @@ function thisCoercionTest() {
     });
 }
 
-try {
-    thisCoercionTest();
-} catch (e) {
-    print(e);
-}
+thisCoercionTest();
 
 /*===
 non-bmp
@@ -349,8 +329,4 @@ function nonBmpTest() {
     p(str.indexOf('\udead', 6));  // found
 }
 
-try {
-    nonBmpTest();
-} catch (e) {
-    print(e);
-}
+nonBmpTest();

@@ -7,9 +7,7 @@
  */
 
 /*---
-{
-    "custom": true
-}
+custom: true
 ---*/
 
 /*===
@@ -51,8 +49,4 @@ function subarrayPrototypeInheritanceTest() {
     print(Object.getPrototypeOf(v2) === proto);
 }
 
-try {
-    subarrayPrototypeInheritanceTest();
-} catch (e) {
-    print(e.stack || e);
-}
+subarrayPrototypeInheritanceTest();

@@ -5,9 +5,8 @@
  */
 
 /*---
-{
-    "skip": true
-}
+custom: true
+skip: true
 ---*/
 
 /*===
@@ -30,8 +29,4 @@ function test() {
     });
 }
 
-try {
-    test();
-} catch (e) {
-    print(e.stack || e);
-}
+test();

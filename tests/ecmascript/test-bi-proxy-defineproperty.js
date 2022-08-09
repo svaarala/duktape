@@ -30,8 +30,4 @@ function test() {
     Reflect.defineProperty(P, 'foo', { value: 123, dummy: true, writable: 1, enumerable: true, configurable: false });
 }
 
-try {
-    test();
-} catch (e) {
-    print(e.stack || e);
-}
+test();

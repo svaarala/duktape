@@ -701,7 +701,7 @@ function printObject(obj) {
         t += '!extensible';
     }
 
-    print (t);
+    print(t);
 
     var iproto = Object.getPrototypeOf(obj.obj);
     var p_obj = null;
@@ -720,7 +720,7 @@ function printObject(obj) {
         t += ' INCORRECT';
     }
 
-    print (t);
+    print(t);
 
     t = 'CLASS: ';
     var cl = getObjectClass(obj.obj);
@@ -728,7 +728,7 @@ function printObject(obj) {
     if (obj.class !== cl) {
         t += ' INCORRECT, expected: ' + obj.class;
     }
-    print (t);
+    print(t);
 
     for (i = 0; i < obj.props.length; i++) {
         var p = obj.props[i];
@@ -780,7 +780,7 @@ function printObject(obj) {
             }
         }
 
-        print (t);
+        print(t);
     }
 
     for (i = 0; i < obj.noprops.length; i++) {
@@ -791,16 +791,15 @@ function printObject(obj) {
 
         t += '"' + p.key + '"';
 
-        t += ' ';
         if (pd) {
-            t += 'UNEXPECTEDLY-FOUND';
+            t += ' UNEXPECTEDLY-FOUND';
             t += ' ';
             t += JSON.stringify(pd);
         } else {
             // ok
         }
 
-        print (t);
+        print(t);
     }
 }
 
@@ -835,7 +834,7 @@ PROPERTY: "ReferenceError" writable !enumerable configurable
 PROPERTY: "SyntaxError" writable !enumerable configurable
 PROPERTY: "TypeError" writable !enumerable configurable
 PROPERTY: "URIError" writable !enumerable configurable
-NOPROPERTY: "length" 
+NOPROPERTY: "length"
 
 OBJECT: "Object" !sealed !frozen extensible
 PROTOTYPE: "Function.prototype"
@@ -865,7 +864,7 @@ PROPERTY: "valueOf" writable !enumerable configurable
 PROPERTY: "hasOwnProperty" writable !enumerable configurable
 PROPERTY: "isPrototypeOf" writable !enumerable configurable
 PROPERTY: "propertyIsEnumerable" writable !enumerable configurable
-NOPROPERTY: "length" 
+NOPROPERTY: "length"
 
 OBJECT: "Function" !sealed !frozen extensible
 PROTOTYPE: "Function.prototype"
@@ -961,7 +960,7 @@ CLASS: Boolean
 PROPERTY: "constructor" writable !enumerable configurable
 PROPERTY: "toString" writable !enumerable configurable
 PROPERTY: "valueOf" writable !enumerable configurable
-NOPROPERTY: "length" 
+NOPROPERTY: "length"
 
 OBJECT: "Number" !sealed !frozen extensible
 PROTOTYPE: "Function.prototype"
@@ -984,7 +983,7 @@ PROPERTY: "valueOf" writable !enumerable configurable
 PROPERTY: "toFixed" writable !enumerable configurable
 PROPERTY: "toExponential" writable !enumerable configurable
 PROPERTY: "toPrecision" writable !enumerable configurable
-NOPROPERTY: "length" 
+NOPROPERTY: "length"
 
 OBJECT: "Math" !sealed !frozen extensible
 PROTOTYPE: "Object.prototype"
@@ -1015,7 +1014,7 @@ PROPERTY: "round" writable !enumerable configurable
 PROPERTY: "sin" writable !enumerable configurable
 PROPERTY: "sqrt" writable !enumerable configurable
 PROPERTY: "tan" writable !enumerable configurable
-NOPROPERTY: "length" 
+NOPROPERTY: "length"
 
 OBJECT: "Date" !sealed !frozen extensible
 PROTOTYPE: "Function.prototype"
@@ -1072,7 +1071,7 @@ PROPERTY: "setUTCFullYear" writable !enumerable configurable
 PROPERTY: "toUTCString" writable !enumerable configurable
 PROPERTY: "toISOString" writable !enumerable configurable
 PROPERTY: "toJSON" writable !enumerable configurable
-NOPROPERTY: "length" 
+NOPROPERTY: "length"
 
 OBJECT: "RegExp" !sealed !frozen extensible
 PROTOTYPE: "Function.prototype"
@@ -1087,7 +1086,7 @@ PROPERTY: "constructor" writable !enumerable configurable
 PROPERTY: "exec" writable !enumerable configurable
 PROPERTY: "test" writable !enumerable configurable
 PROPERTY: "toString" writable !enumerable configurable
-NOPROPERTY: "length" 
+NOPROPERTY: "length"
 
 OBJECT: "Error" !sealed !frozen extensible
 PROTOTYPE: "Function.prototype"
@@ -1102,7 +1101,7 @@ PROPERTY: "constructor" writable !enumerable configurable
 PROPERTY: "name" writable !enumerable configurable
 PROPERTY: "message" writable !enumerable configurable
 PROPERTY: "toString" writable !enumerable configurable
-NOPROPERTY: "length" 
+NOPROPERTY: "length"
 
 OBJECT: "EvalError" !sealed !frozen extensible
 PROTOTYPE: "Error"
@@ -1116,7 +1115,7 @@ CLASS: Error
 PROPERTY: "constructor" writable !enumerable configurable
 PROPERTY: "name" writable !enumerable configurable
 PROPERTY: "message" writable !enumerable configurable
-NOPROPERTY: "length" 
+NOPROPERTY: "length"
 
 OBJECT: "RangeError" !sealed !frozen extensible
 PROTOTYPE: "Error"
@@ -1130,7 +1129,7 @@ CLASS: Error
 PROPERTY: "constructor" writable !enumerable configurable
 PROPERTY: "name" writable !enumerable configurable
 PROPERTY: "message" writable !enumerable configurable
-NOPROPERTY: "length" 
+NOPROPERTY: "length"
 
 OBJECT: "ReferenceError" !sealed !frozen extensible
 PROTOTYPE: "Error"
@@ -1144,7 +1143,7 @@ CLASS: Error
 PROPERTY: "constructor" writable !enumerable configurable
 PROPERTY: "name" writable !enumerable configurable
 PROPERTY: "message" writable !enumerable configurable
-NOPROPERTY: "length" 
+NOPROPERTY: "length"
 
 OBJECT: "SyntaxError" !sealed !frozen extensible
 PROTOTYPE: "Error"
@@ -1158,7 +1157,7 @@ CLASS: Error
 PROPERTY: "constructor" writable !enumerable configurable
 PROPERTY: "name" writable !enumerable configurable
 PROPERTY: "message" writable !enumerable configurable
-NOPROPERTY: "length" 
+NOPROPERTY: "length"
 
 OBJECT: "TypeError" !sealed !frozen extensible
 PROTOTYPE: "Error"
@@ -1172,7 +1171,7 @@ CLASS: Error
 PROPERTY: "constructor" writable !enumerable configurable
 PROPERTY: "name" writable !enumerable configurable
 PROPERTY: "message" writable !enumerable configurable
-NOPROPERTY: "length" 
+NOPROPERTY: "length"
 
 OBJECT: "URIError" !sealed !frozen extensible
 PROTOTYPE: "Error"
@@ -1186,14 +1185,14 @@ CLASS: Error
 PROPERTY: "constructor" writable !enumerable configurable
 PROPERTY: "name" writable !enumerable configurable
 PROPERTY: "message" writable !enumerable configurable
-NOPROPERTY: "length" 
+NOPROPERTY: "length"
 
 OBJECT: "JSON" !sealed !frozen extensible
 PROTOTYPE: "Object.prototype"
 CLASS: JSON
 PROPERTY: "parse" writable !enumerable configurable
 PROPERTY: "stringify" writable !enumerable configurable
-NOPROPERTY: "length" 
+NOPROPERTY: "length"
 ===*/
 
 /* XXX: the expected value needs to be verified against the specification */
@@ -1209,8 +1208,4 @@ function checkBuiltins() {
     }
 }
 
-try {
-    checkBuiltins();
-} catch (e) {
-    print(e.name, e.message);
-}
+checkBuiltins();

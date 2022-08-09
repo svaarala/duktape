@@ -3,9 +3,7 @@
  */
 
 /*---
-{
-    "custom": true
-}
+custom: true
 ---*/
 
 function encValue(v) {
@@ -14,7 +12,6 @@ function encValue(v) {
 }
 
 /*===
-TypedArray constructor properties test
 Int8Array name true string Int8Array
 Int8Array length true number 3
 Int8Array prototype true object [object Object]
@@ -98,9 +95,4 @@ function typedArrayConstructorPropertiesTest() {
     });
 }
 
-try {
-    print('TypedArray constructor properties test');
-    typedArrayConstructorPropertiesTest();
-} catch (e) {
-    print(e.stack || e);
-}
+typedArrayConstructorPropertiesTest();

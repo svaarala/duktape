@@ -106,8 +106,4 @@ function fromCodePointTest() {
     test([ mkObj('foo', '123', 10123), mkObj('bar', '321', 10321), mkObj('quux', '234', 10234) ]);
 }
 
-try {
-    fromCodePointTest();
-} catch (e) {
-    print(e);
-}
+fromCodePointTest();

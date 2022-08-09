@@ -49,8 +49,4 @@ function basicTest() {
     print(obj.valueOf() === obj);  // false, number vs. object
 }
 
-try {
-    basicTest();
-} catch (e) {
-    print(e);
-}
+basicTest();

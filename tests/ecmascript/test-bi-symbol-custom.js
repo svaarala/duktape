@@ -4,6 +4,10 @@
 
 /*@include util-buffer.js@*/
 
+/*---
+custom: true
+---*/
+
 /*===
 TypeError
 TypeError
@@ -61,8 +65,4 @@ function test() {
     print(obj[Symbol.for('accessor')]);
 }
 
-try {
-    test();
-} catch (e) {
-    print(e.stack || e);
-}
+test();

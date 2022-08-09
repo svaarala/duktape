@@ -5,7 +5,6 @@
 /*@include util-buffer.js@*/
 
 /*===
-JSON.stringify test
 {"type":"Buffer","data":[18,18,18,18,18,18,18,18,255,18]}
 ===*/
 
@@ -18,9 +17,4 @@ function jsonStringifyTest() {
     print(JSON.stringify(b));
 }
 
-try {
-    print('JSON.stringify test');
-    jsonStringifyTest();
-} catch (e) {
-    print(e.stack || e);
-}
+jsonStringifyTest();

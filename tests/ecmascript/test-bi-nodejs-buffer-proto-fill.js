@@ -21,7 +21,6 @@ function setHackFill() {
 //setHackFill();  // uncomment manually
 
 /*===
-fill test
 basic
 16 bytes: 11111122221111111111111111111111
 16 bytes: 00000000000000000000000000000000
@@ -277,9 +276,4 @@ function fillTest() {
     });
 }
 
-try {
-    print('fill test');
-    fillTest();
-} catch (e) {
-    print(e.stack || e);
-}
+fillTest();

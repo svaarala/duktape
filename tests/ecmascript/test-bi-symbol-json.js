@@ -5,7 +5,6 @@
 /*@include util-symbol.js@*/
 
 /*===
-symbol json
 undefined
 undefined
 [1,null,null,4]
@@ -104,9 +103,4 @@ function symbolJsonTest() {
     print(JSON.stringify({ foo: tmp }));
 }
 
-try {
-    print('symbol json');
-    symbolJsonTest();
-} catch (e) {
-    print(e.stack || e);
-}
+symbolJsonTest();

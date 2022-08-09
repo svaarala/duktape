@@ -6,9 +6,7 @@
  */
 
 /*---
-{
-    "slow": true
-}
+slow: true
 ---*/
 
 /*

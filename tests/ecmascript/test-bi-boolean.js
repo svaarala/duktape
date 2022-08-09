@@ -53,7 +53,7 @@ try {
     constructorAsFunctionTest({});
     constructorAsFunctionTest({foo:1, bar:2});
 } catch (e) {
-    print(e.name, e);
+    print(e.stack || e);
 }
 
 /*===
@@ -113,7 +113,7 @@ try {
     constructorTest({});
     constructorTest({foo:1, bar:2});
 } catch (e) {
-    print(e.name);
+    print(e.stack || e);
 }
 
 /*===
@@ -138,7 +138,7 @@ function instanceTest() {
 try {
     instanceTest();
 } catch (e) {
-    print(e.name);
+    print(e.stack || e);
 }
 
 /*===

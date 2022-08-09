@@ -1,3 +1,7 @@
+/*---
+custom: true
+---*/
+
 /*===
 ,,,foo,,,,,bar,
 10
@@ -59,8 +63,4 @@ function test() {
     }
 }
 
-try {
-    test();
-} catch (e) {
-    print(e.stack || e);
-}
+test();

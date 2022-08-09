@@ -52,8 +52,4 @@ function chainedTargetTest() {
     print(Math.foo);
 }
 
-try {
-    chainedTargetTest();
-} catch (e) {
-    print(e.stack || e);
-}
+chainedTargetTest();

@@ -1,3 +1,7 @@
+/*---
+custom: true
+---*/
+
 /*===
 "\u{}" SyntaxError
 "\u{F}" 7 15
@@ -13,7 +17,6 @@
 "\u{0010ffff}" 14 56319 57343
 "\u{00110000}" 14 65533 65533 65533 65533
 "\u{fdec1234}" 14 65533 65533 65533 65533 65533 65533 65533
-done
 ===*/
 
 function test(str) {
@@ -44,5 +47,3 @@ test('"\\u{00001fa49}"');
 test('"\\u{0010ffff}"');
 test('"\\u{00110000}"'); // Replaced with U+FFFDs
 test('"\\u{fdec1234}"'); // Replaced with U+FFFDs
-
-print('done');

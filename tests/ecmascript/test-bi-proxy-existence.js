@@ -1,5 +1,4 @@
 /*===
-proxy existence
 Proxy exists: true function
 Proxy.length: 2
 Proxy.name: Proxy
@@ -32,10 +31,4 @@ function proxyExistenceTest() {
     }
 }
 
-print('proxy existence');
-
-try {
-    proxyExistenceTest();
-} catch (e) {
-    print(e.stack || e);
-}
+proxyExistenceTest();

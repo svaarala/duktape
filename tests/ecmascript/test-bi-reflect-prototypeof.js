@@ -23,11 +23,11 @@ undefined
 ===*/
 
 function test() {
-    var proto = { proto: "Protoman" };
-    var mega = Object.create(proto, { name: { value: "Megaman" } });
-    var noExts = Object.preventExtensions({ prevent: "forest fires" });
-    var sealed = Object.seal({ seal: "Andre" });
-    var frozen = Object.freeze({ snowman: "Olaf" });
+    var proto = { proto: 'Protoman' };
+    var mega = Object.create(proto, { name: { value: 'Megaman' } });
+    var noExts = Object.preventExtensions({ prevent: 'forest fires' });
+    var sealed = Object.seal({ seal: 'Andre' });
+    var frozen = Object.freeze({ snowman: 'Olaf' });
 
     // note: Object literals inherit from Object.prototype.
     print(Reflect.getPrototypeOf(proto) === Object.prototype);
@@ -53,8 +53,4 @@ function test() {
     print(frozen.name);
 }
 
-try {
-    test();
-} catch (e) {
-    print(e.stack || e);
-}
+test();

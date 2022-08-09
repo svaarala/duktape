@@ -5,9 +5,7 @@
 /*@include util-buffer.js@*/
 
 /*---
-{
-    "custom": true
-}
+custom: true
 ---*/
 
 function printProps(x) {
@@ -144,19 +142,11 @@ function typedArrayConstructorCallTest(constructorCall) {
     });
 }
 
-try {
-    print('TypedArray constructor call test');
-    typedArrayConstructorCallTest(true);
-} catch (e) {
-    print(e.stack || e);
-}
+print('TypedArray constructor call test');
+typedArrayConstructorCallTest(true);
 
-try {
-    print('TypedArray normal call test');
-    typedArrayConstructorCallTest(false);
-} catch (e) {
-    print(e.stack || e);
-}
+print('TypedArray normal call test');
+typedArrayConstructorCallTest(false);
 
 /*===
 TypedArray argument bruteforce test
@@ -1307,12 +1297,8 @@ function typedArrayArgumentBruteForceTest() {
     });
 }
 
-try {
-    print('TypedArray argument bruteforce test');
-    typedArrayArgumentBruteForceTest();
-} catch (e) {
-    print(e.stack || e);
-}
+print('TypedArray argument bruteforce test');
+typedArrayArgumentBruteForceTest();
 
 /*===
 only constructor call
@@ -1336,12 +1322,8 @@ function onlyConstructorCallTest() {
     }
 }
 
-try {
-    print('only constructor call');
-    onlyConstructorCallTest();
-} catch (e) {
-    print(e.stack || e);
-}
+print('only constructor call');
+onlyConstructorCallTest();
 
 /*===
 number argument
@@ -1362,12 +1344,8 @@ function numberArgumentTest() {
     printProps(b);
 }
 
-try {
-    print('number argument');
-    numberArgumentTest();
-} catch (e) {
-    print(e.stack || e);
-}
+print('number argument');
+numberArgumentTest();
 
 /*===
 ArrayBuffer argument
@@ -1435,12 +1413,8 @@ function arrayBufferArgumentTest() {
     }
 }
 
-try {
-    print('ArrayBuffer argument');
-    arrayBufferArgumentTest();
-} catch (e) {
-    print(e.stack || e);
-}
+print('ArrayBuffer argument');
+arrayBufferArgumentTest();
 
 /*===
 TypedArray argument
@@ -1572,12 +1546,8 @@ function typedArrayArgumentTest() {
     print(v1.buffer === v2.buffer);
 }
 
-try {
-    print('TypedArray argument');
-    typedArrayArgumentTest();
-} catch (e) {
-    print(e.stack || e);
-}
+print('TypedArray argument');
+typedArrayArgumentTest();
 
 /*===
 plain Array argument
@@ -1603,12 +1573,8 @@ function plainArrayArgumentTest() {
     print(v[0], v[1], v[2], v[3], v[4], v[5]);
 }
 
-try {
-    print('plain Array argument');
-    plainArrayArgumentTest();
-} catch (e) {
-    print(e.stack || e);
-}
+print('plain Array argument');
+plainArrayArgumentTest();
 
 /*===
 Array-like argument
@@ -1641,12 +1607,8 @@ function arrayLikeArgumentTest() {
     print(v[0], v[1], v[2]);  // value coercion
 }
 
-try {
-    print('Array-like argument');
-    arrayLikeArgumentTest();
-} catch (e) {
-    print(e.stack || e);
-}
+print('Array-like argument');
+arrayLikeArgumentTest();
 
 /*===
 string argument
@@ -1693,12 +1655,8 @@ function stringArgumentTest() {
     }
 }
 
-try {
-    print('string argument');
-    stringArgumentTest();
-} catch (e) {
-    print(e.stack || e);
-}
+print('string argument');
+stringArgumentTest();
 
 /*===
 plain buffer argument
@@ -1741,9 +1699,5 @@ function plainBufferArgumentTest() {
     test(buf, view);
 }
 
-try {
-    print('plain buffer argument');
-    plainBufferArgumentTest();
-} catch (e) {
-    print(e.stack || e);
-}
+print('plain buffer argument');
+plainBufferArgumentTest();

@@ -58,11 +58,7 @@ function functionTest() {
     });
 }
 
-try {
-    functionTest();
-} catch (e) {
-    print(e);
-}
+functionTest();
 
 /*===
 constructor
@@ -126,11 +122,7 @@ function constructorTest() {
     });
 }
 
-try {
-    constructorTest();
-} catch (e) {
-    print(e);
-}
+constructorTest();
 
 /*===
 prototype
@@ -163,8 +155,4 @@ function prototypeTest() {
     print(Object.getPrototypeOf(num) === repl_prototype);
 }
 
-try {
-    prototypeTest();
-} catch (e) {
-    print(e);
-}
+prototypeTest();

@@ -126,8 +126,4 @@ function iso8601ParseTest() {
     print(Date.parse('foo'));
 }
 
-try {
-    iso8601ParseTest();
-} catch (e) {
-    print(e.name);
-}
+iso8601ParseTest();

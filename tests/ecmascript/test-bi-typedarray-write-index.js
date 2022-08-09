@@ -6,11 +6,9 @@
 /*@include util-string.js@*/
 
 /*---
-{
-    "custom": true,
-    "endianness": "little",
-    "slow": true
-}
+custom: true
+endianness: little
+slow: true
 ---*/
 
 /*===
@@ -736,18 +734,14 @@ function writeTypedArrayTest(arrayLength) {
     });
 }
 
-try {
-    /* Attempt to create a view using default length fails if starting offset
-     * is not aligned and the underlying ArrayBuffer doesn't end up evenly at
-     * an element boundary.  Run the testcase with two ArrayBuffer lengths to
-     * cover these cases properly.
-     */
+/* Attempt to create a view using default length fails if starting offset
+ * is not aligned and the underlying ArrayBuffer doesn't end up evenly at
+ * an element boundary.  Run the testcase with two ArrayBuffer lengths to
+ * cover these cases properly.
+ */
 
-    print('write TypedArray test, arrayLength 16');
-    writeTypedArrayTest(16);
+print('write TypedArray test, arrayLength 16');
+writeTypedArrayTest(16);
 
-    print('write TypedArray test, arrayLength 17');
-    writeTypedArrayTest(17);
-} catch (e) {
-    print(e.stack || e);
-}
+print('write TypedArray test, arrayLength 17');
+writeTypedArrayTest(17);

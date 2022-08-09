@@ -29,8 +29,4 @@ function test() {
     safePrintString(t);
 }
 
-try {
-    test();
-} catch (e) {
-    print(e.stack || e);
-}
+test();

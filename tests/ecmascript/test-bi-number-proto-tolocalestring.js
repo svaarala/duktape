@@ -1,7 +1,5 @@
 /*---
-{
-    "custom": true
-}
+custom: true
 ---*/
 
 /* toLocaleString() behavior is not specified, except that the number
@@ -65,8 +63,4 @@ function basicTest() {
     print(new Number(100).toLocaleString(16));
 }
 
-try {
-    basicTest();
-} catch (e) {
-    print(e);
-}
+basicTest();

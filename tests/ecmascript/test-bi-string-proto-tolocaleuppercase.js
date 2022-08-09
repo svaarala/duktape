@@ -2,11 +2,7 @@
 FOOBAR
 ===*/
 
-try {
-    print('fOoBaR'.toLocaleUpperCase());
-} catch (e) {
-    print(e);
-}
+print('fOoBaR'.toLocaleUpperCase());
 
 /*===
 TypeError
@@ -41,11 +37,7 @@ function coercionTest() {
     test({ foo: 1, bar: 2 });
 }
 
-try {
-    coercionTest();
-} catch (e) {
-    print(e);
-}
+coercionTest();
 
 /* XXX: basic tests like coercion etc. */
 

@@ -169,12 +169,8 @@ function compareTest() {
     });
 }
 
-try {
-    print('Node.js Buffer.compare() test');
-    compareTest();
-} catch (e) {
-    print(e.stack || e);
-}
+print('Node.js Buffer.compare() test');
+compareTest();
 
 /*===
 Node.js Buffer instance compare() test
@@ -590,9 +586,5 @@ function nodejsBufferCompareTest() {
     print(tmp.join(''));
 }
 
-try {
-    print('Node.js Buffer instance compare() test');
-    nodejsBufferCompareTest();
-} catch (e) {
-    print(e.stack || e);
-}
+print('Node.js Buffer instance compare() test');
+nodejsBufferCompareTest();

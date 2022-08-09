@@ -13,11 +13,7 @@ function basicTest() {
     print('\u00e4'.toUpperCase().charCodeAt(0));  // U+00E4 (a with dots) -> U+00C4 (A with dots) = 196
 }
 
-try {
-    basicTest();
-} catch (e) {
-    print(e);
-}
+basicTest();
 
 /*===
 ===*/
@@ -33,12 +29,7 @@ function localeTest() {
     // XXX: add locale specific test and ensure locale specific rules do not apply
 }
 
-try {
-    localeTest();
-} catch (e) {
-    print(e);
-}
-
+localeTest();
 
 /*===
 TypeError
@@ -73,8 +64,4 @@ function coercionTest() {
     test({ foo: 1, bar: 2 });
 }
 
-try {
-    coercionTest();
-} catch (e) {
-    print(e);
-}
+coercionTest();

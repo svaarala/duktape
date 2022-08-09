@@ -6,16 +6,12 @@
 {"foo":{"value":123,"writable":true,"dummy":true},"bar":{"value":234,"writable":true,"foo":"bar"}}
 ===*/
 
-try {
-    var descs = {
-        foo: { value: 123, writable: true, dummy: true },
-        bar: { value: 234, writable: true, foo: 'bar' }
-    };
+var descs = {
+    foo: { value: 123, writable: true, dummy: true },
+    bar: { value: 234, writable: true, foo: 'bar' }
+};
 
-    var O = {};
-    print(JSON.stringify(descs));
-    Object.defineProperties(O, descs);
-    print(JSON.stringify(descs));
-} catch (e) {
-    print(e.stack || e);
-}
+var O = {};
+print(JSON.stringify(descs));
+Object.defineProperties(O, descs);
+print(JSON.stringify(descs));

@@ -55,11 +55,7 @@ function constructorAsFunctionTest() {
     print(t1 === t2);
 }
 
-try {
-    constructorAsFunctionTest();
-} catch (e) {
-    print(e.name);
-}
+constructorAsFunctionTest();
 
 /*===
 object constructor as constructor
@@ -116,8 +112,4 @@ function constructorTest() {
     dumpObject(t2);
 }
 
-try {
-    constructorTest();
-} catch (e) {
-    print(e.name);
-}
+constructorTest();

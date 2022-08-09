@@ -29,8 +29,4 @@ function test() {
     print(typeof buf, buf.length, String(buf));
 }
 
-try {
-    test();
-} catch (e) {
-    print(e.stack || e);
-}
+test();

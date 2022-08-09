@@ -9,9 +9,7 @@
 /*@include util-buffer.js@*/
 
 /*---
-{
-    "custom": true
-}
+custom: true
 ---*/
 
 /*===
@@ -123,8 +121,4 @@ function writeCoercionTest() {
     values.forEach(i16);
 }
 
-try {
-    writeCoercionTest();
-} catch (e) {
-    print(e.stack || e);
-}
+writeCoercionTest();

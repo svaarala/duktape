@@ -10,8 +10,4 @@ function test() {
     print(pd.writable, pd.enumerable, pd.configurable);
 }
 
-try {
-    test();
-} catch (e) {
-    print(e.stack || e);
-}
+test();

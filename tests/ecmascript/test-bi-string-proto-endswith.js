@@ -142,8 +142,4 @@ function test() {
     print('all done');
 }
 
-try {
-    test();
-} catch (e) {
-    print(e.stack || e);
-}
+test();

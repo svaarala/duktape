@@ -149197,8 +149197,4 @@ function runTestCases() {
     }
 }
 
-try {
-    runTestCases();
-} catch (e) {
-    print(e);
-}
+runTestCases();

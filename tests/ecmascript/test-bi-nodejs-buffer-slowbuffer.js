@@ -4,9 +4,7 @@
  */
 
 /*---
-{
-    "skip": true
-}
+skip: true
 ---*/
 
 /*@include util-buffer.js@*/
@@ -16,8 +14,4 @@ function testSlowBuffer() {
     print(buffer.SlowBuffer);
 }
 
-try {
-    testSlowBuffer();
-} catch (e) {
-    print(e.stack || e);
-}
+testSlowBuffer();

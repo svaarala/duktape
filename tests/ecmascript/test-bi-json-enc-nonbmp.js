@@ -2,9 +2,7 @@
 /*@include util-string.js@*/
 
 /*---
-{
-    "custom": true
-}
+custom: true
 ---*/
 
 /*===
@@ -65,8 +63,4 @@ function nonBmpTest() {
     }
 }
 
-try {
-    nonBmpTest();
-} catch (e) {
-    print(e.stack || e);
-}
+nonBmpTest();

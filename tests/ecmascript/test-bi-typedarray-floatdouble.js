@@ -6,15 +6,12 @@
 /*@include util-buffer.js@*/
 
 /*---
-{
-    "custom": true
-}
+custom: true
 ---*/
 
 /* Custom because there are a few numconv issues. */
 
 /*===
-float double test
 0 -Infinity -Infinity
 1 -9007199254740994 -9007199254740992
 2 -9007199254740994 -9007199254740992
@@ -102,9 +99,4 @@ function floatDoubleTest() {
     });
 }
 
-try {
-    print('float double test');
-    floatDoubleTest();
-} catch (e) {
-    print(e.stack || e);
-}
+floatDoubleTest();

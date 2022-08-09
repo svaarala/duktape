@@ -1,5 +1,9 @@
 /*@include util-buffer.js@*/
 
+/*---
+custom: true
+---*/
+
 /*===
 [object Uint8Array]
 true
@@ -54,8 +58,4 @@ function test() {
     print(Duktape.enc('jx', u16));
 }
 
-try {
-    test();
-} catch (e) {
-    print(e.stack || e);
-}
+test();

@@ -6,9 +6,7 @@
  */
 
 /*---
-{
-    "nonstandard": true
-}
+nonstandard: true
 ---*/
 
 /*===
@@ -2091,8 +2089,4 @@ function quotingTest() {
     }
 }
 
-try {
-    quotingTest();
-} catch (e) {
-    print(e.name);
-}
+quotingTest();

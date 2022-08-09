@@ -81,12 +81,8 @@ function toJsonPropertyTest5() {
     print(JSON.stringify(obj));
 }
 
-try {
-    toJsonPropertyTest1();
-    toJsonPropertyTest2();
-    toJsonPropertyTest3();
-    toJsonPropertyTest4();
-    toJsonPropertyTest5();
-} catch (e) {
-    print(e.name);
-}
+toJsonPropertyTest1();
+toJsonPropertyTest2();
+toJsonPropertyTest3();
+toJsonPropertyTest4();
+toJsonPropertyTest5();

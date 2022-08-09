@@ -57,8 +57,4 @@ function test() {
     conv('.\u03a3');    // same
 }
 
-try {
-    test();
-} catch (e) {
-    print(e.stack || e);
-}
+test();

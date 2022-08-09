@@ -5,7 +5,6 @@
 /*@include util-symbol.js@*/
 
 /*===
-symbol operator
 TypeError
 TypeError
 TypeError
@@ -118,9 +117,4 @@ function symbolOperatorTest() {
     test(function () { return Object(s1) == Object(s2); });
 }
 
-try {
-    print('symbol operator');
-    symbolOperatorTest();
-} catch (e) {
-    print(e.stack || e);
-}
+symbolOperatorTest();

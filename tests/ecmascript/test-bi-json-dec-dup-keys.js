@@ -1,7 +1,5 @@
 /*---
-{
-    "nonstandard": true
-}
+nonstandard: true
 ---*/
 
 /*===
@@ -15,8 +13,4 @@
  * not change the enum order (first occurrence defines order).
  */
 
-try {
-    print(JSON.stringify(JSON.parse('{"foo":1,"bar":2,"foo":3}')));
-} catch (e) {
-    print(e.name);
-}
+print(JSON.stringify(JSON.parse('{"foo":1,"bar":2,"foo":3}')));

@@ -1,7 +1,10 @@
 /*@include util-buffer.js@*/
 
+/*---
+custom: true
+---*/
+
 /*===
-DataView.prototype methods
 - getUint16
 |6162636465666768696a6b6c6d6e6f70|
 26215
@@ -34,9 +37,4 @@ function dataViewPrototypeMethodTest() {
     print(Duktape.enc('jx', pb));
 }
 
-try {
-    print('DataView.prototype methods');
-    dataViewPrototypeMethodTest();
-} catch (e) {
-    print(e.stack || e);
-}
+dataViewPrototypeMethodTest();

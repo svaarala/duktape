@@ -7,7 +7,6 @@
 /*@include util-buffer.js@*/
 
 /*===
-node.js Buffer valueOf() test
 function
 true
 false
@@ -31,9 +30,4 @@ function nodejsBufferValueOfTest() {
     print(b.valueOf() === b);
 }
 
-try {
-    print('node.js Buffer valueOf() test');
-    nodejsBufferValueOfTest();
-} catch (e) {
-    print(e.stack || e);
-}
+nodejsBufferValueOfTest();

@@ -1,7 +1,6 @@
 /*@include util-buffer.js@*/
 
 /*===
-property test
 16
 48
 16
@@ -35,9 +34,4 @@ function propertyTest() {
     print(a1 === a2);
 }
 
-try {
-    print('property test');
-    propertyTest();
-} catch (e) {
-    print(e.stack || e);
-}
+propertyTest();

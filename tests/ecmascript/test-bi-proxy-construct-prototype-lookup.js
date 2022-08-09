@@ -39,8 +39,4 @@ function test() {
     print(tmp.foo);
 }
 
-try {
-    test();
-} catch (e) {
-    print(e.stack || e);
-}
+test();

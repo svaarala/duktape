@@ -34,11 +34,7 @@ function basicTest() {
     test(obj);
 }
 
-try {
-    basicTest();
-} catch (e) {
-    print(e);
-}
+basicTest();
 
 /*===
 coercion
@@ -76,8 +72,4 @@ function coercionTest() {
     test({ foo: 1, bar: 1 });
 }
 
-try {
-    coercionTest();
-} catch (e) {
-    print(e);
-}
+coercionTest();

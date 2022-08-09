@@ -49,8 +49,4 @@ function test() {
     print(O[10] = 123);
 }
 
-try {
-    test();
-} catch (e) {
-    print(e.stack || e);
-}
+test();

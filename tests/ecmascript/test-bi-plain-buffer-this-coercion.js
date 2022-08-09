@@ -1,7 +1,6 @@
 /*@include util-buffer.js@*/
 
 /*===
-this coercion test
 object true
 object false
 ===*/
@@ -26,9 +25,4 @@ function thisCoercionTest() {
     myNonStrict.call(pb);
 }
 
-try {
-    print('this coercion test');
-    thisCoercionTest();
-} catch (e) {
-    print(e.stack || e);
-}
+thisCoercionTest();

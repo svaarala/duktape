@@ -8,10 +8,6 @@ NaN
  * is "Date", and time value is NaN.
  */
 
-try {
-    print(Date.prototype.toString());
-    print(Date.prototype.getTime());
-    print(Object.prototype.toString.call(Date.prototype));
-} catch (e) {
-    print(e.name);
-}
+print(Date.prototype.toString());
+print(Date.prototype.getTime());
+print(Object.prototype.toString.call(Date.prototype));

@@ -26,8 +26,4 @@ function test() {
     print(JSON.stringify(Math.cos.bind().bind().bind().name));
 }
 
-try {
-    test();
-} catch (e) {
-    print(e.stack || e);
-}
+test();

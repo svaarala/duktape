@@ -35,11 +35,7 @@ function concatTest() {
     pv(str);
 }
 
-try {
-    concatTest();
-} catch (e) {
-    print(e);
-}
+concatTest();
 
 /*===
 unicode
@@ -68,11 +64,7 @@ function unicodeTest() {
     }
 }
 
-try {
-    unicodeTest();
-} catch (e) {
-    print(e);
-}
+unicodeTest();
 
 /*===
 coercion
@@ -128,8 +120,4 @@ function coercionTest() {
     print(typeof t, t.length, t);
 }
 
-try {
-    coercionTest();
-} catch (e) {
-    print(e);
-}
+coercionTest();

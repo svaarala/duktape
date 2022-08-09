@@ -1,7 +1,10 @@
 /*@include util-buffer.js@*/
 
+/*---
+custom: true
+---*/
+
 /*===
-Object methods
 - getPrototypeOf
 [object Object] true
 [object Object] true
@@ -209,9 +212,4 @@ function objectMethodTest() {
     print(Object.keys(pb));
 }
 
-try {
-    print('Object methods');
-    objectMethodTest();
-} catch (e) {
-    print(e.stack || e);
-}
+objectMethodTest();

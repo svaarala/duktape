@@ -38,8 +38,4 @@ function setterOrderTest() {
     print(d.getTime());
 }
 
-try {
-    setterOrderTest();
-} catch (e) {
-    print(e.name);
-}
+setterOrderTest();

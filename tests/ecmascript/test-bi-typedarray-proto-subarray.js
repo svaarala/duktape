@@ -44,12 +44,8 @@ function subarrayBasicTest() {
     printBuffer(v2);
 }
 
-try {
-    print('basic test');
-    subarrayBasicTest();
-} catch (e) {
-    print(e.stack || e);
-}
+print('basic test');
+subarrayBasicTest();
 
 /*===
 bruteforce test
@@ -1274,9 +1270,5 @@ function subarrayBruteforceTest() {
     });
 }
 
-try {
-    print('bruteforce test');
-    subarrayBruteforceTest();
-} catch (e) {
-    print(e.stack || e);
-}
+print('bruteforce test');
+subarrayBruteforceTest();

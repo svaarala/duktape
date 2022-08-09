@@ -6,10 +6,8 @@
 /*@include util-string.js@*/
 
 /*---
-{
-    "custom": true,
-    "endianness": "little"
-}
+custom: true
+endianness: little
 ---*/
 
 /* Custom because of Duktape lenient write coercion: out-of-bounds values are
@@ -133,12 +131,8 @@ if (typeof process !== 'undefined' && String(e) === 'TypeError: value is out of 
     });
 }
 
-try {
-    print('write field test');
-    writeFieldTest();
-} catch (e) {
-    print(e.stack || e);
-}
+print('write field test');
+writeFieldTest();
 
 /*===
 writefield noAssert coercion test
@@ -179,12 +173,8 @@ function writeFieldNoAssertCoercionTest() {
     });
 }
 
-try {
-    print('writefield noAssert coercion test');
-    writeFieldNoAssertCoercionTest();
-} catch (e) {
-    print(e.stack || e);
-}
+print('writefield noAssert coercion test');
+writeFieldNoAssertCoercionTest();
 
 /*===
 writefield retval test
@@ -285,9 +275,5 @@ function writeFieldRetvalTest() {
     print(printableNodejsBuffer(buf));
 }
 
-try {
-    print('writefield retval test');
-    writeFieldRetvalTest();
-} catch (e) {
-    print(e.stack || e);
-}
+print('writefield retval test');
+writeFieldRetvalTest();

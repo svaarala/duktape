@@ -34,7 +34,7 @@ function basicTest() {
 
     // If no coercion is needed, target object is returned (i.e. not a copy).
     obj = {};
-    dest = Object.assign(obj, { test: "test" });
+    dest = Object.assign(obj, { test: 'test' });
     print(dest === obj);
 
     // Properties are assigned in [[OwnPropertyKeys]] order, moving from left
@@ -46,18 +46,18 @@ function basicTest() {
     // call getters and watch the side effects.
     var obj1 = {}, obj2 = {}, arr = [];
     Object.defineProperties(obj1, {
-        pig: { enumerable: true, get: function() { print("pig"); return "maggie"; } },
-        cow: { enumerable: true, get: function() { print("cow"); return "Kittycow"; } },
-        ape: { enumerable: true, get: function() { print("ape"); return "Machel"; } }
+        pig: { enumerable: true, get: function() { print('pig'); return 'maggie'; } },
+        cow: { enumerable: true, get: function() { print('cow'); return 'Kittycow'; } },
+        ape: { enumerable: true, get: function() { print('ape'); return 'Machel'; } }
     });
     Object.defineProperties(arr, {  // note: This abandons the array part.
-        badger: { enumerable: true, get: function() { print("badger"); return "pig food"; } },
-        0: { enumerable: true, get: function() { print("0"); return 812; } },
-        2: { enumerable: true, get: function() { print("2"); return 9001; } },
-        1: { enumerable: true, get: function() { print("1"); return 1208; } }
+        badger: { enumerable: true, get: function() { print('badger'); return 'pig food'; } },
+        0: { enumerable: true, get: function() { print('0'); return 812; } },
+        2: { enumerable: true, get: function() { print('2'); return 9001; } },
+        1: { enumerable: true, get: function() { print('1'); return 1208; } }
     });
     Object.defineProperties(obj2, {
-        whale: { enumerable: true, get: function() { print("whale"); return "Fatty Whale"; } }
+        whale: { enumerable: true, get: function() { print('whale'); return 'Fatty Whale'; } }
     });
     obj = Object.assign({}, obj1, arr, obj2);
     print(obj.pig, obj.cow, obj.ape, obj.whale, obj[0], obj[1], obj[2]);
@@ -65,20 +65,20 @@ function basicTest() {
 
     // Existing properties in the target object can be overwritten.
     obj = Object.assign({ cow: 1208, pig: 812, ape: 9001 },
-        { pig: "maggie", saiyan: "Vegeta" });
+        { pig: 'maggie', saiyan: 'Vegeta' });
     print(obj.pig, obj.cow, obj.ape, obj.saiyan);
     print(Reflect.ownKeys(obj));
 
     // If a property write fails, an error is thrown (strict mode semantics)
     // and the object is left partially updated:
     obj = Object.create(Object.prototype, {
-        foo: { writable: true, value: "unchanged" },
-        bar: { writable: false, value: "read-only" },
-        baz: { writable: true, value: "unchanged" },
+        foo: { writable: true, value: 'unchanged' },
+        bar: { writable: false, value: 'read-only' },
+        baz: { writable: true, value: 'unchanged' },
     });
     try {
-        Object.assign(obj, { foo: "foo", bar: "bar", baz: "baz", quux: "quux" });
-        print("never here");
+        Object.assign(obj, { foo: 'foo', bar: 'bar', baz: 'baz', quux: 'quux' });
+        print('never here');
     } catch (e) {
         print(e.name);
         print(obj.foo, obj.bar, obj.baz, obj.quux);
@@ -86,9 +86,9 @@ function basicTest() {
     }
 
     // Only enumerable own properties of the source(s) are used.
-    src = Object.create({ inherited: "something stupid happened" }, {
-        prop1: { enumerable: true,  value: "this belongs here" },
-        prop2: { enumerable: false, value: "something stupid happened" }
+    src = Object.create({ inherited: 'something stupid happened' }, {
+        prop1: { enumerable: true,  value: 'this belongs here' },
+        prop2: { enumerable: false, value: 'something stupid happened' }
     });
     obj = Object.assign({}, src);
     print(obj.inherited);
@@ -98,20 +98,16 @@ function basicTest() {
 
     // Accessors in both target and source object(s) are called.
     obj = Object.create(Object.prototype, {
-        prop: { set: function(value) { print("set", value); }}
+        prop: { set: function(value) { print('set', value); }}
     });
     src = Object.create(Object.prototype, {
-        prop: { enumerable: true, get: function() { print("get"); return 812; }}
+        prop: { enumerable: true, get: function() { print('get'); return 812; }}
     });
     Object.assign(obj, src);
 }
 
-try {
-    print("basic tests");
-    basicTest();
-} catch (e) {
-    print(e.stack || e);
-}
+print('basic tests');
+basicTest();
 
 /*===
 argument policy
@@ -130,7 +126,7 @@ function argumentTest() {
 
     // The first argument to Object.assign() is ToObject() coerced.  The
     // coerced value is what's returned by the function.
-    obj = Object.assign(812, { test: "*MUNCH*" });
+    obj = Object.assign(812, { test: '*MUNCH*' });
     print(typeof obj, obj);
     print(obj.test);
 
@@ -138,37 +134,33 @@ function argumentTest() {
     //      to test for this?
 
     // Coercion is performed even if no sources are provided:
-    obj = Object.assign("cows eat kitties", { test: "moooo *munch*" });
+    obj = Object.assign('cows eat kitties', { test: 'moooo *munch*' });
     print(typeof obj, obj);
     print(obj.test);
 
     // null and undefined are not object coercible!
     try {
         Object.assign(null);
-        print("never here");
+        print('never here');
     } catch (e) {
         print(e.name);
     }
     try {
         Object.assign(undefined);
-        print("never here");
+        print('never here');
     } catch (e) {
         print(e.name);
     }
 
     // However, both null and undefined are accepted as sources.  They are
     // treated as though they were empty objects.
-    obj = Object.assign({}, undefined, { foo: "baz" }, null, { bar: "quux" });
+    obj = Object.assign({}, undefined, { foo: 'baz' }, null, { bar: 'quux' });
     print(Reflect.ownKeys(obj));
     print(obj.foo, obj.bar);
 }
 
-try {
-    print("argument policy");
-    argumentTest();
-} catch (e) {
-    print(e.stack || e);
-}
+print('argument policy');
+argumentTest();
 
 /*===
 virtual properties
@@ -193,9 +185,5 @@ function virtualPropTest() {
     print(obj[0], obj[1], obj[2]);
 }
 
-try {
-    print("virtual properties");
-    virtualPropTest();
-} catch (e) {
-    print(e.stack || e);
-}
+print('virtual properties');
+virtualPropTest();

@@ -13,9 +13,7 @@
 /*@include util-buffer.js@*/
 
 /*---
-{
-    "endianness": "little"
-}
+endianness: little
 ---*/
 
 /*===
@@ -74,8 +72,4 @@ function arrayMethodTest() {
     print('Uint16Array join:', Array.prototype.join.call(v1, ' - '));
 }
 
-try {
-    arrayMethodTest();
-} catch (e) {
-    print(e.stack || e);
-}
+arrayMethodTest();

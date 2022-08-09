@@ -5,15 +5,12 @@
 /*@include util-buffer.js@*/
 
 /*---
-{
-    "custom": true
-}
+custom: true
 ---*/
 
 /* Custom because of differences to Node.js. */
 
 /*===
-variable size int test
 16 bytes: 00000000000000000000000000000000
 16 bytes: 41414141414141414141414141414141
 AAAAAAAAAAAAAAAA
@@ -788,9 +785,4 @@ function variableSizeIntTest() {
     });
 }
 
-try {
-    print('variable size int test');
-    variableSizeIntTest();
-} catch (e) {
-    print(e.stack || e);
-}
+variableSizeIntTest();

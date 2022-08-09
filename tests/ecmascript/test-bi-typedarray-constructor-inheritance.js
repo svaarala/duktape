@@ -53,8 +53,4 @@ function test() {
     print(typeof pd.value, pd.value, pd.writable, pd.enumerable, pd.configurable);
 }
 
-try {
-    test();
-} catch (e) {
-    print(e.stack || e);
-}
+test();

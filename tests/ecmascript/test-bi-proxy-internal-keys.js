@@ -10,6 +10,10 @@
  *  target object.
  */
 
+/*---
+custom: true
+---*/
+
 /*===
 get for key: "foo"
 target finalized (2)
@@ -47,11 +51,7 @@ function test1() {
     proxy = null;  // now proxy also unreachable (at least after function exits)
 }
 
-try {
-    test1();
-} catch (e) {
-    print(e);
-}
+test1();
 
 /*===
 target finalized (2)
@@ -80,11 +80,7 @@ function test2() {
     proxy = null;  // now proxy also unreachable (at least after function exits)
 }
 
-try {
-    test2();
-} catch (e) {
-    print(e);
-}
+test2();
 
 /*===
 finished

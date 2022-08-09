@@ -50,8 +50,4 @@ function test() {
     print(t2 >= t1);
 }
 
-try {
-    test();
-} catch (e) {
-    print(e.stack || e);
-}
+test();

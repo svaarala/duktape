@@ -148,9 +148,5 @@ function testSideEffects() {
     print(Object.isExtensible(finalTarget));
 }
 
-try {
-    testBasic();
-    testSideEffects();
-} catch (e) {
-    print(e.stack || e);
-}
+testBasic();
+testSideEffects();

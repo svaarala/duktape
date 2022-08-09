@@ -1,7 +1,6 @@
 /*@include util-buffer.js@*/
 
 /*===
-Object.prototype methods
 - toString
 [object Uint8Array]
 - toLocaleString
@@ -82,9 +81,4 @@ function objectPrototypeMethodTest() {
     print(pb.propertyIsEnumerable('noSuch'));
 }
 
-try {
-    print('Object.prototype methods');
-    objectPrototypeMethodTest();
-} catch (e) {
-    print(e.stack || e);
-}
+objectPrototypeMethodTest();

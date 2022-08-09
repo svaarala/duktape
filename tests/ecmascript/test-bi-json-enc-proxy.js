@@ -29,11 +29,7 @@ function jsonStringifyNakedProxyTest() {
     print(JSON.stringify(proxy));
 }
 
-try {
-    jsonStringifyNakedProxyTest();
-} catch (e) {
-    print(e.stack || e);
-}
+jsonStringifyNakedProxyTest();
 
 /*===
 ownKeys should be called
@@ -112,8 +108,4 @@ function jsonStringifyOwnKeysProxyTest() {
     print(JSON.stringify(proxy));
 }
 
-try {
-    jsonStringifyOwnKeysProxyTest();
-} catch (e) {
-    print(e.stack || e);
-}
+jsonStringifyOwnKeysProxyTest();

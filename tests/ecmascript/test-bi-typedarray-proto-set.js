@@ -48,10 +48,8 @@
 /*@include util-string.js@*/
 
 /*---
-{
-    "custom": true,
-    "endianness": "little"
-}
+custom: true
+endianness: little
 ---*/
 
 function getFilledBuffer(size) {
@@ -110,12 +108,8 @@ function byteCopyTest() {
     });
 }
 
-try {
-    print('byte copy test');
-    byteCopyTest();
-} catch (e) {
-    print(e.stack || e);
-}
+print('byte copy test');
+byteCopyTest();
 
 /*===
 fast copy test
@@ -169,12 +163,8 @@ function fastCopyTest() {
     });
 }
 
-try {
-    print('fast copy test');
-    fastCopyTest();
-} catch (e) {
-    print(e.stack || e);
-}
+print('fast copy test');
+fastCopyTest();
 
 /*===
 slow copy test
@@ -220,12 +210,8 @@ function slowCopyTest() {
     });
 }
 
-try {
-    print('slow copy test');
-    slowCopyTest();
-} catch (e) {
-    print(e.stack || e);
-}
+print('slow copy test');
+slowCopyTest();
 
 /*===
 int8 to uint8clamped test
@@ -280,12 +266,8 @@ function int8ToUint8ClampedTest() {
     print(Duktape.enc('jx', b1));
 }
 
-try {
-    print('int8 to uint8clamped test');
-    int8ToUint8ClampedTest();
-} catch (e) {
-    print(e.stack || e);
-}
+print('int8 to uint8clamped test');
+int8ToUint8ClampedTest();
 
 /*===
 offset test
@@ -348,12 +330,8 @@ function offsetTest() {
     });
 }
 
-try {
-    print('offset test');
-    offsetTest();
-} catch (e) {
-    print(e.stack || e);
-}
+print('offset test');
+offsetTest();
 
 /*===
 TypedArray set() bruteforce test
@@ -539,12 +517,8 @@ function typedArraySetBruteForceTest() {
     });
 }
 
-try {
-    print('TypedArray set() bruteforce test');
-    typedArraySetBruteForceTest();
-} catch (e) {
-    print(e.stack || e);
-}
+print('TypedArray set() bruteforce test');
+typedArraySetBruteForceTest();
 
 /*===
 TypedArray set() retval test
@@ -559,9 +533,5 @@ function typedArraySetRetvalTest() {
     print(typeof ret, ret);
 }
 
-try {
-    print('TypedArray set() retval test');
-    typedArraySetRetvalTest();
-} catch (e) {
-    print(e.stack || e);
-}
+print('TypedArray set() retval test');
+typedArraySetRetvalTest();

@@ -5,7 +5,6 @@
 /*@include util-symbol.js@*/
 
 /*===
-symbol property
 foo
 undefined
 foo
@@ -176,9 +175,4 @@ function symbolPropertyTest() {
     print(obj[s1], obj[Symbol.iterator]);
 }
 
-try {
-    print('symbol property');
-    symbolPropertyTest();
-} catch (e) {
-    print(e.stack || e);
-}
+symbolPropertyTest();

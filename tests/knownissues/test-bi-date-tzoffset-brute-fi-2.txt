@@ -1,12 +1,10 @@
-/*
- *  Brute force tzoffset test for Finnish locale.
- */
-
-/*---
-timezone: Europe/Helsinki
----*/
-
-/*===
+summary: discrepancy to year 1970 because Duktape uses equivalent year
+description: >
+  Right now (2014-08-09) the only discrepancy to V8 is the year 1970.
+  That discrepancy is caused by Duktape using an equivalent year for
+  the year 1970.  If that behavior is removed, the test should pass
+  with no diff.
+---
 1900 -> 1993:-120 5208:-180 1559:-120
 1901 -> 2137:-120 5040:-180 1583:-120
 1902 -> 2113:-120 5040:-180 1607:-120
@@ -77,7 +75,7 @@ timezone: Europe/Helsinki
 1967 -> 2017:-120 5208:-180 1535:-120
 1968 -> 2161:-120 5040:-180 1583:-120
 1969 -> 2113:-120 5040:-180 1607:-120
-1970 -> 8760:-120
+1970 -> 2089:-120 5040:-180 1631:-120
 1971 -> 8760:-120
 1972 -> 8784:-120
 1973 -> 8760:-120
@@ -208,60 +206,3 @@ timezone: Europe/Helsinki
 2098 -> 2113:-120 5040:-180 1607:-120
 2099 -> 2089:-120 5040:-180 1631:-120
 2100 -> 2065:-120 5208:-180 1487:-120
-===*/
-
-function summarizeOffsets(offsets) {
-    var res = [];
-    var i, n;
-    var curroff, currlen;
-
-    for (i = 0, n = offsets.length; i < n; i++) {
-        if (curroff !== offsets[i]) {
-            if (currlen > 0) {
-                res.push(currlen + ':' + curroff);
-            }
-            curroff = offsets[i];
-            currlen = 1;
-        } else {
-            currlen++;
-        }
-    }
-    if (currlen > 0) {
-        res.push(currlen + ':' + curroff);
-    }
-    return res.join(' ');
-}
-
-function finnishTzoffsetTest() {
-    var offsets;
-    var timeval_start, timeval_end, timeval, timeval_step;
-    var year_start, year_curr;
-    var d;
-
-    // Start from Jan 1, 1900, 00:00:00 UTC
-    timeval_start = -2208988800000;
-
-    // End at Jan 1, 2101, 00:00:00 UTC
-    timeval_end = 4133980800000;
-
-    // 60 minute steps
-    timeval_step = 60 * 60 * 1000;
-
-    timeval = timeval_start;
-    while (timeval < timeval_end) {
-        year_start = new Date(timeval).getUTCFullYear();
-        offsets = [];
-        while (true) {
-            d = new Date(timeval);
-            year_curr = d.getUTCFullYear();
-            if (year_curr != year_start) {
-                break;
-            }
-            offsets.push(d.getTimezoneOffset());
-            timeval += timeval_step;
-        }
-        print(year_start + ' -> ' + summarizeOffsets(offsets));
-    }
-}
-
-finnishTzoffsetTest();

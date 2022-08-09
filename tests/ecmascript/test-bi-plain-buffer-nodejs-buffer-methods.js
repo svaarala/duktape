@@ -1,7 +1,10 @@
 /*@include util-buffer.js@*/
 
+/*---
+custom: true
+---*/
+
 /*===
-Node.js Buffer methods
 - compare
 0
 0
@@ -49,9 +52,4 @@ function nodejsBufferMethodTest() {
     print(Duktape.enc('jx', t));
 }
 
-try {
-    print('Node.js Buffer methods');
-    nodejsBufferMethodTest();
-} catch (e) {
-    print(e.stack || e);
-}
+nodejsBufferMethodTest();

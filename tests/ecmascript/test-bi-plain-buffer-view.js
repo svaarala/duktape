@@ -1,7 +1,10 @@
 /*@include util-buffer.js@*/
 
+/*---
+custom: true
+---*/
+
 /*===
-view test
 [object Uint32Array]
 4 16 0 4
 [object ArrayBuffer] false
@@ -30,9 +33,4 @@ function viewTest() {
     print(Duktape.enc('jx', view));
 }
 
-try {
-    print('view test');
-    viewTest();
-} catch (e) {
-    print(e.stack || e);
-}
+viewTest();

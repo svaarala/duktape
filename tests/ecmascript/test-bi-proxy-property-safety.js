@@ -15,10 +15,8 @@
 /*@include util-buffer.js@*/
 
 /*---
-{
-    "custom": true,
-    "skip": true
-}
+custom: true
+skip: true
 ---*/
 
 /*===
@@ -64,8 +62,4 @@ function proxyInternalKeysSandboxTest() {
     proxyPropertyTest(bufferToStringRaw(Duktape.dec('hex', 'ff48616e646c6572')));
 }
 
-try {
-    proxyInternalKeysSandboxTest();
-} catch (e) {
-    print(e.stack || e);
-}
+proxyInternalKeysSandboxTest();

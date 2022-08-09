@@ -84,8 +84,4 @@ function test() {
     f5.apply('ignored', [ 304, 305 ]);  // same here, [ 304, 305 ] is ignored by .apply()
 }
 
-try {
-    test();
-} catch (e) {
-    print(e.stack || e);
-}
+test();

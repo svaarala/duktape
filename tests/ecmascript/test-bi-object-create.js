@@ -59,11 +59,7 @@ function firstArgTest() {
     print('prototype: ' + Object.getPrototypeOf(obj), Object.getPrototypeOf(obj) === proto, obj.proto);
 }
 
-try {
-    firstArgTest();
-} catch (e) {
-    print(e);
-}
+firstArgTest();
 
 /*===
 property attributes
@@ -113,11 +109,7 @@ function propertyAttributeTest() {
     }
 }
 
-try {
-    propertyAttributeTest();
-} catch (e) {
-    print(e);
-}
+propertyAttributeTest();
 
 /*===
 object replaced
@@ -166,8 +158,4 @@ function objectReplacedTest() {
     print(typeof obj, obj.proto, obj.foo, obj.bar, obj.quux);
 }
 
-try {
-    objectReplacedTest();
-} catch (e) {
-    print(e);
-}
+objectReplacedTest();

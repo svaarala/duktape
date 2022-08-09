@@ -1,8 +1,12 @@
+/*---
+custom: true
+---*/
+
 /*===
-23
-true on line 26
-constructor on line 30
-getter on line 35
+27
+true on line 30
+constructor on line 34
+getter on line 39
 123
 ===*/
 

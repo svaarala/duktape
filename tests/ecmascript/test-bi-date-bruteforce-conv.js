@@ -1,7 +1,5 @@
 /*---
-{
-    "slow": true
-}
+slow: true
 ---*/
 
 var ms_day = 24 * 60 * 60 * 1000;
@@ -30,10 +28,6 @@ function isLeapYear(x) {
     }
     return true;
 }
-
-/*===
-brute force conversion test
-===*/
 
 /* Brute force back and forth conversion test for each start-of-month
  * for years in the range [-10000, 10000].
@@ -144,9 +138,4 @@ function bruteForceConversionTest() {
     }
 }
 
-try {
-    print('brute force conversion test');
-    bruteForceConversionTest();
-} catch (e) {
-    print(e.name);
-}
+bruteForceConversionTest();

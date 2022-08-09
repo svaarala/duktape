@@ -5,13 +5,10 @@
 /*@include util-buffer.js@*/
 
 /*---
-{
-    "custom": true
-}
+custom: true
 ---*/
 
 /*===
-isEncoding test
 empty: false
 undefined: false
 utf8: true
@@ -62,9 +59,4 @@ function isEncodingTest() {
     });
 }
 
-try {
-    print('isEncoding test');
-    isEncodingTest();
-} catch (e) {
-    print(e.stack || e);
-}
+isEncodingTest();

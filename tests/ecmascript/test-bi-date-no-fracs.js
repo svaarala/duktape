@@ -16,15 +16,11 @@
  * correctly; ToInteger() rounds towards zero.
  */
 
-try {
-    print(new Date(2012, 0, 1, 11, 22, 33, 123).getTime() % 1000);
-    print(new Date(2012, 0, 1, 11, 22, 33, 123.1).getTime() % 1000);
-    print(new Date(2012, 0, 1, 11, 22, 33, 123.9).getTime() % 1000);
+print(new Date(2012, 0, 1, 11, 22, 33, 123).getTime() % 1000);
+print(new Date(2012, 0, 1, 11, 22, 33, 123.1).getTime() % 1000);
+print(new Date(2012, 0, 1, 11, 22, 33, 123.9).getTime() % 1000);
 
-    print(new Date(123.1).getTime());
-    print(new Date(123.9).getTime());
-    print(new Date(-123.1).getTime());
-    print(new Date(-123.9).getTime());
-} catch (e) {
-    print(e.name);
-}
+print(new Date(123.1).getTime());
+print(new Date(123.9).getTime());
+print(new Date(-123.1).getTime());
+print(new Date(-123.9).getTime());

@@ -1,7 +1,5 @@
 /*---
-{
-    "custom": true
-}
+custom: true
 ---*/
 
 /*===
@@ -33,8 +31,4 @@ function test() {
     f(obj_ptr);
 }
 
-try {
-    test();
-} catch (e) {
-    print(e.stack || e);
-}
+test();

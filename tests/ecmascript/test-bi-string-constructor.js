@@ -46,11 +46,7 @@ function constructorAsFunctionTest() {
     pv(String(function(){}), true);
 }
 
-try {
-    constructorAsFunctionTest();
-} catch (e) {
-    print(e);
-}
+constructorAsFunctionTest();
 
 /*===
 constructor
@@ -100,8 +96,4 @@ function constructorTest() {
     pv(new String(function(){}), true);
 }
 
-try {
-    constructorTest();
-} catch (e) {
-    print(e);
-}
+constructorTest();

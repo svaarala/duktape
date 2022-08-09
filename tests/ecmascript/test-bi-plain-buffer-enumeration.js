@@ -1,7 +1,6 @@
 /*@include util-buffer.js@*/
 
 /*===
-enumeration test
 for-in plain
 0
 1
@@ -89,9 +88,4 @@ function enumerationTest() {
     });
 }
 
-try {
-    print('enumeration test');
-    enumerationTest();
-} catch (e) {
-    print(e.stack || e);
-}
+enumerationTest();

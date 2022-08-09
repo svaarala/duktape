@@ -560,11 +560,7 @@ function basicTest() {
     }
 }
 
-try {
-    basicTest();
-} catch (e) {
-    print(e);
-}
+basicTest();
 
 /*===
 coercion
@@ -642,8 +638,4 @@ function coercionTest() {
     test(new Number(12345), [ fracObj ]);  // for comparison -> RangeError
 }
 
-try {
-    coercionTest();
-} catch (e) {
-    print(e);
-}
+coercionTest();

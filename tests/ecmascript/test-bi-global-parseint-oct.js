@@ -3,9 +3,7 @@
  */
 
 /*---
-{
-    "nonstandard": true
-}
+nonstandard: true
 ---*/
 
 // indirect eval -> this is bound to the global object, E5 Section 10.4.2, step 1.a.
@@ -75,8 +73,4 @@ function radix8Test() {
     print(g.parseInt('-0129', 10));
 }
 
-try {
-    radix8Test();
-} catch (e) {
-    print(e.name);
-}
+radix8Test();

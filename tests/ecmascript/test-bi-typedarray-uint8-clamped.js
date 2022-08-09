@@ -5,7 +5,6 @@
 /*@include util-buffer.js@*/
 
 /*===
-Uint8ClampedArray coercion test
 0 0 0
 1 0.1 0
 2 0.5 0
@@ -89,9 +88,4 @@ function uint8ClampedArrayCoercionTest() {
     }
 }
 
-try {
-    print('Uint8ClampedArray coercion test');
-    uint8ClampedArrayCoercionTest();
-} catch (e) {
-    print(e.stack || e);
-}
+uint8ClampedArrayCoercionTest();

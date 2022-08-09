@@ -32,8 +32,4 @@ function testMisc() {
     print(obj.__lookupSetter__('foo') === mySetter);
 }
 
-try {
-    testMisc();
-} catch (e) {
-    print(e.stack || e);
-}
+testMisc();

@@ -1,10 +1,13 @@
+/*---
+custom: true
+---*/
+
 /*===
 ownKeys
 get: foo
 get: bar
 a263666f6f63464f4f6362617263424152
 {"foo":"FOO","bar":"BAR"}
-done
 ===*/
 
 function test() {
@@ -33,10 +36,4 @@ function test() {
     print(JSON.stringify(CBOR.decode(res)));
 }
 
-try {
-    test();
-} catch (e) {
-    print(e.stack || e);
-}
-
-print('done');
+test();

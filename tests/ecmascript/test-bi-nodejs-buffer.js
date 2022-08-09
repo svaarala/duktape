@@ -49,11 +49,7 @@ function test() {
     }
 }
 
-try {
-    test();
-} catch (e) {
-    print(e.stack || e);
-}
+test();
 
 /*
  *  Summary of methods and properties

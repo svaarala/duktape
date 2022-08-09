@@ -3,9 +3,7 @@
  */
 
 /*---
-{
-    "custom": true
-}
+custom: true
 ---*/
 
 /*===
@@ -60,8 +58,4 @@ function test() {
     print(typeof str);
 }
 
-try {
-    test();
-} catch (e) {
-    print(e.stack || e);
-}
+test();

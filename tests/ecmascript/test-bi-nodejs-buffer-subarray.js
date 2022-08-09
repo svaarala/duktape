@@ -31,8 +31,4 @@ function test() {
     print(Object.prototype.toString.call(sub));
 }
 
-try {
-    test();
-} catch (e) {
-    print(e.stack || e);
-}
+test();

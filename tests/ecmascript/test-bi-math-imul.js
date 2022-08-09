@@ -251,8 +251,4 @@ function test() {
     printExact(Math.imul(0x123456789abcd, 123, -321));
 }
 
-try {
-    test();
-} catch (e) {
-    print(e.stack || e);
-}
+test();

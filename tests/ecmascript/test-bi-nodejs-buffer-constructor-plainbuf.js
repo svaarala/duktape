@@ -5,9 +5,7 @@
 /*@include util-buffer.js@*/
 
 /*---
-{
-    "custom": true
-}
+custom: true
 ---*/
 
 /*===
@@ -31,8 +29,4 @@ function nodejsBufferPlainBufTest() {
     print(buf[10]);
 }
 
-try {
-    nodejsBufferPlainBufTest();
-} catch (e) {
-    print(e.stack || e);
-}
+nodejsBufferPlainBufTest();

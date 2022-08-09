@@ -28,10 +28,8 @@
 123
 123
 0
-done
 ===*/
 
 print(Number.prototype.valueOf.call(new Number(123)));
 print(Number.prototype.valueOf.call(123));
 print(Number.prototype.valueOf.call(Number.prototype));
-print('done');

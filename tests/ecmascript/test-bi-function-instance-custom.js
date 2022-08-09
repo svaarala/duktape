@@ -3,13 +3,10 @@
  */
 
 /*---
-{
-    "custom": true
-}
+custom: true
 ---*/
 
 /*===
-instance
 true string
 false false true
 ===*/
@@ -23,9 +20,4 @@ function functionInstanceTest() {
     print(pd.writable, pd.enumerable, pd.configurable);
 }
 
-try {
-    print('instance');
-    functionInstanceTest();
-} catch (e) {
-    print(e.stack || e);
-}
+functionInstanceTest();

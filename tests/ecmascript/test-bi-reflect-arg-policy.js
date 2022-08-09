@@ -113,11 +113,11 @@ TypeError
 
 function argPolicyTest() {
     [
-        { foo: "bar" },
+        { foo: 'bar' },
         [ 8, 1, 2 ],   // Note: Arrays are objects.
         function(){},  // As are functions.
         9000.5,
-        "Oozaru",
+        'Oozaru',
         null,
         undefined
     ].forEach(function(value) {
@@ -178,7 +178,7 @@ function argPolicyTest() {
             print(e.name);
         }
         try {
-            print(Reflect.set(value, 'fail', "epic fail"));
+            print(Reflect.set(value, 'fail', 'epic fail'));
         } catch (e) {
             print(e.name);
         }
@@ -208,8 +208,4 @@ function argPolicyTest() {
     }
 }
 
-try {
-    argPolicyTest();
-} catch (e) {
-    print(e.stack || e);
-}
+argPolicyTest();

@@ -60,8 +60,4 @@ function sparsePropertyListTest1() {
     print(JSON.stringify(obj, plist2));
 }
 
-try {
-    sparsePropertyListTest1();
-} catch (e) {
-    print(e.name);
-}
+sparsePropertyListTest1();

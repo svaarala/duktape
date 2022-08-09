@@ -2,6 +2,10 @@
  *  Some CBOR testcases converted from extras/cbor Makefile
  */
 
+/*---
+custom: true
+---*/
+
 function dec(hexInput, expect) {
     var t1 = CBOR.decode(Duktape.dec('hex', hexInput));
     var t2 = Duktape.enc('jx', t1);
@@ -408,9 +412,3 @@ enc({foo:{foo:{foo:{foo:{foo:{foo:{foo:{foo:{foo:{foo:{foo:{foo:{foo:{foo:{foo:{
 
 // Misc.
 enc({ jsonrpc: '2.0', id: 'foo-1', method: 'Add', params: { a: 123, b: 234 }}, 'a4676a736f6e72706363322e3062696465666f6f2d31666d6574686f646341646466706172616d73a26161187b616218ea');
-
-/*===
-done
-===*/
-
-print('done');

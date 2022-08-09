@@ -225,8 +225,4 @@ function subsetProxyTest() {
 
 print('subset proxy');
 
-try {
-    subsetProxyTest();
-} catch (e) {
-    print(e);
-}
+subsetProxyTest();

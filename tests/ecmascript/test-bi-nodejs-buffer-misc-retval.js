@@ -113,8 +113,4 @@ function writeReturnValueTest() {
     print(buf2.copy(buf, 233));
 }
 
-try {
-    writeReturnValueTest();
-} catch (e) {
-    print(e.stack || e);
-}
+writeReturnValueTest();
