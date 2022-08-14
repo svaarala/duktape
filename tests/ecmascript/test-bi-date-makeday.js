@@ -34,33 +34,29 @@ function MakeDay(year, month, day) {
     return res;
 }
 
-try {
-    // simple tests
-    print(MakeDay(1970, 0, 1));
-    print(MakeDay(1970, 1, 2));
+// simple tests
+print(MakeDay(1970, 0, 1));
+print(MakeDay(1970, 1, 2));
 
-    // components don't need to be normalized on input
-    // 123 = 10 years + 3 months
-    print(MakeDay(1970, 123, 60));
+// components don't need to be normalized on input
+// 123 = 10 years + 3 months
+print(MakeDay(1970, 123, 60));
 
-    // components may also be negative
-    print(MakeDay(-1970, -1, -2));
+// components may also be negative
+print(MakeDay(-1970, -1, -2));
 
-    // components are ToInteger() rounded, which rounds towards zero
-    print(MakeDay(1970.1, 1.1, 2.1));
-    print(MakeDay(1970.9, 1.9, 2.9));
-    print(MakeDay(-1970.1, -1.1, -2.1));
-    print(MakeDay(-1970.9, -1.9, -2.9));
+// components are ToInteger() rounded, which rounds towards zero
+print(MakeDay(1970.1, 1.1, 2.1));
+print(MakeDay(1970.9, 1.9, 2.9));
+print(MakeDay(-1970.1, -1.1, -2.1));
+print(MakeDay(-1970.9, -1.9, -2.9));
 
-    // Components even outside valid ecmascript range are OK as long as
-    // the result will be within ECMAScript range.  Here day and month
-    // should cancel out, leaving year zero, day 55.
-    print(MakeDay(100e10, -1200e10, 55));
-    print(MakeDay(0, 0, 55));
+// Components even outside valid ecmascript range are OK as long as
+// the result will be within ECMAScript range.  Here day and month
+// should cancel out, leaving year zero, day 55.
+print(MakeDay(100e10, -1200e10, 55));
+print(MakeDay(0, 0, 55));
 
-    // XXX: rounding errors?  MakeTime() is required to use ECMAScript
-    // (IEEE double) arithmetic.  These never occur unless extremely
-    // unnormalized values are used.
-} catch (e) {
-    print(e.name);
-}
+// XXX: rounding errors?  MakeTime() is required to use ECMAScript
+// (IEEE double) arithmetic.  These never occur unless extremely
+// unnormalized values are used.

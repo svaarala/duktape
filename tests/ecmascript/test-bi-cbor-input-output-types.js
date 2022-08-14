@@ -1,3 +1,7 @@
+/*---
+custom: true
+---*/
+
 /*===
 foo
 foo
@@ -55,9 +59,3 @@ try {
 } catch (e) {
     print(e.name);
 }
-
-/*===
-done
-===*/
-
-print('done');

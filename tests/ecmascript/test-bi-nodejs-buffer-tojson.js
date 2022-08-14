@@ -5,7 +5,6 @@
 /*@include util-buffer.js@*/
 
 /*===
-node.js Buffer toJSON() test
 object string Buffer object [65,66,67]
 true
 object string Buffer object []
@@ -59,9 +58,4 @@ function nodejsBufferToJsonTest() {
     print('still here');
 }
 
-try {
-    print('node.js Buffer toJSON() test');
-    nodejsBufferToJsonTest();
-} catch (e) {
-    print(e.stack || e);
-}
+nodejsBufferToJsonTest();

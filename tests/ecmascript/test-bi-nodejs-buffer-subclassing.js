@@ -6,9 +6,7 @@
  */
 
 /*---
-{
-    "custom": true
-}
+custom: true
 ---*/
 
 /*===
@@ -47,8 +45,4 @@ function slicePrototypeInheritanceTest() {
     print(Object.getPrototypeOf(b2) === proto);
 }
 
-try {
-    slicePrototypeInheritanceTest();
-} catch (e) {
-    print(e.stack || e);
-}
+slicePrototypeInheritanceTest();

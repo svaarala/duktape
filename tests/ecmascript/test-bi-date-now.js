@@ -19,8 +19,4 @@ function dateNowTest() {
           d2 <= Date.UTC(2100, 0));
 }
 
-try {
-    dateNowTest();
-} catch (e) {
-    print(e.name);
-}
+dateNowTest();

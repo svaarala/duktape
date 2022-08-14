@@ -2,6 +2,10 @@
  *  Full coverage for decoding all half-floats.  Compared against cbor-js.
  */
 
+/*---
+custom: true
+---*/
+
 /*===
 f90000 0
 f90001 5.960464477539063e-8
@@ -133,7 +137,6 @@ f9fc00 -Infinity
 f9fc01 NaN
 f9fc02 NaN
   diff: 0
-done
 ===*/
 
 function test() {
@@ -173,10 +176,4 @@ function test() {
     }
 }
 
-try {
-    test();
-} catch (e) {
-    print(e.stack || e);
-}
-
-print('done');
+test();

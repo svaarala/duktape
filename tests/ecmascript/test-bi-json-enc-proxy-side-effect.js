@@ -4,7 +4,6 @@ ownKeys
 get: foo
 get: bar
 {"foo":"FOO","bar":"BAR"}
-done
 ===*/
 
 function test() {
@@ -32,10 +31,4 @@ function test() {
     print(res);
 }
 
-try {
-    test();
-} catch (e) {
-    print(e.stack || e);
-}
-
-print('done');
+test();

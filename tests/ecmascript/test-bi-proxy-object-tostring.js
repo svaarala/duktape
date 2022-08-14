@@ -14,8 +14,4 @@ function test() {
     print(Object.prototype.toString.call(proxy));
 }
 
-try {
-    test();
-} catch (e) {
-    print(e.stack || e);
-}
+test();

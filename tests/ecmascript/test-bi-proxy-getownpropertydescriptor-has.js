@@ -36,8 +36,4 @@ function test() {
     print(P.hasOwnProperty('123'));
 }
 
-try {
-    test();
-} catch (e) {
-    print(e.stack || e);
-}
+test();

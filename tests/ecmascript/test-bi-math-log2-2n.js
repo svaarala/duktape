@@ -26,8 +26,4 @@ function test() {
     print('negative exponents done');
 }
 
-try {
-    test();
-} catch (e) {
-    print(e.stack || e);
-}
+test();

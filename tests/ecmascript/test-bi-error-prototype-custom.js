@@ -17,8 +17,4 @@ function test() {
     print(typeof pd.get, typeof pd.set, pd.enumerable, pd.configurable);
 }
 
-try {
-    test();
-} catch (e) {
-    print(e.stack || e);
-}
+test();

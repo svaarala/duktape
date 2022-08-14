@@ -45,7 +45,7 @@ MyConstructor.prototype.name = 'protoThis';
 function test() {
     var bound = MyConstructor.bind({ name: 'bindThis' }, 100, 200);
 
-    // For normal calls, the "closest" 'this' binding wins.
+    // For normal calls, the closest 'this' binding wins.
     bound(1, 2, 3);
     bound.apply({ name: 'applyThis' }, [ 1, 2, 3 ]);
 
@@ -55,8 +55,4 @@ function test() {
     Reflect.construct(bound, [ 1, 2, 3 ]);
 }
 
-try {
-    test();
-} catch (e) {
-    print(e.stack || e);
-}
+test();

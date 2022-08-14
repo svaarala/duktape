@@ -36,8 +36,4 @@ function test() {
     print(P.bar, O.bar);
 }
 
-try {
-    test();
-} catch (e) {
-    print(e.stack || e);
-}
+test();

@@ -4,8 +4,11 @@
 
 /*@include util-symbol.js@*/
 
+/*---
+custom: true
+---*/
+
 /*===
-symbol misc
 symbol
 [object Symbol]
 Symbol(123)
@@ -201,9 +204,4 @@ function symbolMiscTest() {
     }
 }
 
-try {
-    print('symbol misc');
-    symbolMiscTest();
-} catch (e) {
-    print(e.stack || e);
-}
+symbolMiscTest();

@@ -1,7 +1,10 @@
 /*@include util-buffer.js@*/
 
+/*---
+custom: true
+---*/
+
 /*===
-read/write coercion test
 -1234 46
 -256 0
 -255 1
@@ -42,10 +45,4 @@ function readWriteCoercionTest() {
     });
 }
 
-try {
-    print('read/write coercion test');
-    readWriteCoercionTest();
-
-} catch (e) {
-    print(e.stack || e);
-}
+readWriteCoercionTest();

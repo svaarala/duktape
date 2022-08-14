@@ -5,7 +5,6 @@
 
 /*===
 RangeError
-done
 ===*/
 
 function revive(key, value) {
@@ -18,4 +17,3 @@ try {
 } catch (e) {
     print(e.name);
 }
-print('done');

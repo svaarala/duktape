@@ -176,11 +176,7 @@ function coercionTest() {
     }, { value: 1 });
 }
 
-try {
-    coercionTest();
-} catch (e) {
-    print(e);
-}
+coercionTest();
 
 /*===
 topropertydescriptor
@@ -417,11 +413,7 @@ function toPropertyDescriptorTest() {
     test({ value: 'foo', writable: true, enumerable: false, configurable: true, unknown: 'property' });
 }
 
-try {
-    toPropertyDescriptorTest();
-} catch (e) {
-    print(e);
-}
+toPropertyDescriptorTest();
 
 /*===
 return value
@@ -441,11 +433,7 @@ function returnValueTest() {
     print(Object.defineProperty(obj, 'foo', { value: 1 }) === obj);
 }
 
-try {
-    returnValueTest();
-} catch (e) {
-    print(e);
-}
+returnValueTest();
 
 /*===
 no current, not extensible
@@ -468,11 +456,7 @@ function noCurrentNotExtensibleTest() {
     printDesc(obj, 'foo');
 }
 
-try {
-    noCurrentNotExtensibleTest();
-} catch (e) {
-    print(e);
-}
+noCurrentNotExtensibleTest();
 
 /*===
 no current, is extensible
@@ -497,11 +481,7 @@ function noCurrentIsExtensibleTest() {
     printDesc(obj, 'foo');
 }
 
-try {
-    noCurrentIsExtensibleTest();
-} catch (e) {
-    print(e);
-}
+noCurrentIsExtensibleTest();
 
 /*===
 has current, desc empty
@@ -527,11 +507,7 @@ function hasCurrentDescEmptyTest() {
     printDesc(obj, 'foo');
 }
 
-try {
-    hasCurrentDescEmptyTest();
-} catch (e) {
-    print(e);
-}
+hasCurrentDescEmptyTest();
 
 /*===
 step6
@@ -614,11 +590,7 @@ function step6Test() {
     test(obj, 'foo', { get: fun1, set: fun2, enumerable: false, configurable: true });
 }
 
-try {
-    step6Test();
-} catch (e) {
-    print(e);
-}
+step6Test();
 
 /*===
 step7
@@ -689,11 +661,7 @@ function step7Test() {
     test(obj, 'foo', { enumerable: false });
 }
 
-try {
-    step7Test();
-} catch (e) {
-    print(e);
-}
+step7Test();
 
 /*===
 step8
@@ -768,11 +736,7 @@ function step8Test() {
     testDef(obj, 'foo', { configurable: false, enumerable: true });
 }
 
-try {
-    step8Test();
-} catch (e) {
-    print(e);
-}
+step8Test();
 
 /*===
 step9
@@ -866,11 +830,7 @@ function step9Test() {
     testDef(obj, 'foo', { value: 123 });  // writable defaults to false
 }
 
-try {
-    step9Test();
-} catch (e) {
-    print(e);
-}
+step9Test();
 
 /*===
 step10
@@ -989,11 +949,7 @@ function step10Test() {
     // Note: enumerability changes handled in earlier cases (steps 7-8)
 }
 
-try {
-    step10Test();
-} catch (e) {
-    print(e);
-}
+step10Test();
 
 /*===
 step11
@@ -1141,11 +1097,7 @@ function step11Test() {
     testDef(obj, 'foo', { get: f3, set: f3, enumerable: true, configurable: false });
 }
 
-try {
-    step11Test();
-} catch (e) {
-    print(e);
-}
+step11Test();
 
 /*===
 step12
@@ -1161,10 +1113,6 @@ function step12Test() {
     // XXX: anything to test here which hasn't been covered above?
 }
 
-try {
-    step12Test();
-} catch (e) {
-    print(e);
-}
+step12Test();
 
 // XXX: test special behavior (like arrays, arguments object, etc)

@@ -23,8 +23,4 @@ function test() {
     print(g.length);
 }
 
-try {
-    test();
-} catch (e) {
-    print(e.stack || e);
-}
+test();

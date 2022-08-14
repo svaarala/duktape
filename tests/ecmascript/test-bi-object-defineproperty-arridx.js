@@ -13,7 +13,6 @@ foo foo undefined undefined
 foo foo bar undefined
 999
 foo undefined foo undefined undefined undefined
-done
 ===*/
 
 function test() {
@@ -60,9 +59,4 @@ function test() {
     //print(JSON.stringify(Duktape.info(A)));
 }
 
-try {
-    test();
-} catch (e) {
-    print(e.stack || e);
-}
-print('done');
+test();

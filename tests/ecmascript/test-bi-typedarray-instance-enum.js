@@ -3,9 +3,7 @@
  */
 
 /*---
-{
-    "custom": true
-}
+custom: true
 ---*/
 
 /*===
@@ -55,8 +53,4 @@ function typedArrayEnumTest() {
     });
 }
 
-try {
-    typedArrayEnumTest();
-} catch (e) {
-    print(e.stack || e);
-}
+typedArrayEnumTest();

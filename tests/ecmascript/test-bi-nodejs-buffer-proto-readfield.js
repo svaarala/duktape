@@ -5,9 +5,7 @@
 /*@include util-buffer.js@*/
 
 /*---
-{
-    "custom": true
-}
+custom: true
 ---*/
 
 /* Custom because of Node.js differences, and a few numconv rounding issues. */
@@ -755,12 +753,8 @@ function readFieldTest() {
     });
 }
 
-try {
-    print('read field test');
-    readFieldTest();
-} catch (e) {
-    print(e.stack || e);
-}
+print('read field test');
+readFieldTest();
 
 /*===
 readfield noAssert coercion test
@@ -785,9 +779,5 @@ function readFieldNoAssertCoercionTest() {
     });
 }
 
-try {
-    print('readfield noAssert coercion test');
-    readFieldNoAssertCoercionTest();
-} catch (e) {
-    print(e.stack || e);
-}
+print('readfield noAssert coercion test');
+readFieldNoAssertCoercionTest();

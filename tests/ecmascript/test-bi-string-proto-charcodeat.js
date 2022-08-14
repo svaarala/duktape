@@ -41,11 +41,7 @@ function charCodeAtTest() {
     }
 }
 
-try {
-    charCodeAtTest();
-} catch (e) {
-    print(e);
-}
+charCodeAtTest();
 
 /*===
 oob test
@@ -85,11 +81,7 @@ function outOfBoundsTest() {
     pc(Number.NaN);
 }
 
-try {
-    outOfBoundsTest();
-} catch (e) {
-    print(e);
-}
+outOfBoundsTest();
 
 /*===
 random access test
@@ -124,11 +116,7 @@ function randomAccessTest() {
     print('random access test done');
 }
 
-try {
-    randomAccessTest();
-} catch (e) {
-    print(e);
-}
+randomAccessTest();
 
 /*===
 coercion
@@ -213,8 +201,4 @@ function thisCoercionTest() {
     test({ foo: 1, bar: 2 });
 }
 
-try {
-    thisCoercionTest();
-} catch (e) {
-    print(e);
-}
+thisCoercionTest();

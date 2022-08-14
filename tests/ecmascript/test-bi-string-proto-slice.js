@@ -360,11 +360,7 @@ function basicTest() {
     }
 }
 
-try {
-    basicTest();
-} catch (e) {
-    print(e);
-}
+basicTest();
 
 /*===
 non-bmp
@@ -976,11 +972,7 @@ function nonBmpTest() {
     }
 }
 
-try {
-    nonBmpTest();
-} catch (e) {
-    print(e);
-}
+nonBmpTest();
 
 /*===
 coercion
@@ -1016,8 +1008,4 @@ function coercionTest() {
     test({ foo: 1, bar: 1 }, 2, 4);
 }
 
-try {
-    coercionTest();
-} catch (e) {
-    print(e);
-}
+coercionTest();

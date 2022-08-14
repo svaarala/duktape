@@ -57,8 +57,4 @@ function test() {
     print(O.foo);
 }
 
-try {
-    test();
-} catch (e) {
-    print(e.stack || e);
-}
+test();

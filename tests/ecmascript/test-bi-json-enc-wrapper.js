@@ -21,23 +21,19 @@ foo
 
 // Here the wrapper object is: { "": "foo" }
 
-try {
-    val = "foo";
-    t = JSON.stringify(val, function(k, v) {
-        // this binding: holder object, i.e. the wrapper
-        // k: key
-        // v: value
+val = "foo";
+t = JSON.stringify(val, function(k, v) {
+    // this binding: holder object, i.e. the wrapper
+    // k: key
+    // v: value
 
-        print("replacer");
+    print("replacer");
 
-        var pd = Object.getOwnPropertyDescriptor(this, '');
-        print('desc:', pd.writable, pd.enumerable, pd.configurable, pd.value);
+    var pd = Object.getOwnPropertyDescriptor(this, '');
+    print('desc:', pd.writable, pd.enumerable, pd.configurable, pd.value);
 
-        print(typeof this);
-        print(this['']);  // access the empty string key of the wrapper
-        print(k);         // empty string
-        print(v);         // 'foo'
-    });
-} catch (e) {
-    print(e.name);
-}
+    print(typeof this);
+    print(this['']);  // access the empty string key of the wrapper
+    print(k);         // empty string
+    print(v);         // 'foo'
+});

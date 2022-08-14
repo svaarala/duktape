@@ -8,7 +8,6 @@ function encValue(x) {
 }
 
 /*===
-Node.js Buffer prototype properties test
 constructor true function function
 write true function function
 toString true function function
@@ -120,9 +119,4 @@ function nodejsBufferPrototypePropertiesTest() {
     print(Buffer.prototype.constructor === Buffer);
 }
 
-try {
-    print('Node.js Buffer prototype properties test');
-    nodejsBufferPrototypePropertiesTest();
-} catch (e) {
-    print(e.stack || e);
-}
+nodejsBufferPrototypePropertiesTest();

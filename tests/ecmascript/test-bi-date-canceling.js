@@ -20,8 +20,4 @@ function hugeCancelingComponents() {
     print(d.toISOString());
 }
 
-try {
-    hugeCancelingComponents();
-} catch (e) {
-    print(e);
-}
+hugeCancelingComponents();

@@ -7,9 +7,8 @@
 /*@include util-buffer.js@*/
 
 /*===
-NaN handling test
 through dataview
-sign: 1
+sign: 0
 expt: 2047
 mantissa is non-zero
 through float64array
@@ -169,9 +168,4 @@ function nanHandlingTest() {
     }
 }
 
-try {
-    print('NaN handling test');
-    nanHandlingTest();
-} catch (e) {
-    print(e.stack || e);
-}
+nanHandlingTest();

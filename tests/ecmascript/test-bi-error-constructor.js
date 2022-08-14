@@ -27,8 +27,4 @@ function test() {
     print(RangeError.foo);
 }
 
-try {
-    test();
-} catch (e) {
-    print(e.stack || e);
-}
+test();

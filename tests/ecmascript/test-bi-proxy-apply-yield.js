@@ -2,6 +2,10 @@
  *  Yielding from a Proxy 'apply' trap.
  */
 
+/*---
+custom: true
+---*/
+
 /*===
 myFunction yielding
 1001
@@ -59,8 +63,4 @@ function test() {
     print(Duktape.Thread.resume(t, 3006));
 }
 
-try {
-    test();
-} catch (e) {
-    print(e.stack || e);
-}
+test();

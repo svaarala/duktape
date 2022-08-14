@@ -66,12 +66,8 @@ function noAssertWriteRetvalTest() {
     printNodejsBuffer(b);
 }
 
-try {
-    print('noAssert write return value test');
-    noAssertWriteRetvalTest();
-} catch (e) {
-    print(e.stack || e);
-}
+print('noAssert write return value test');
+noAssertWriteRetvalTest();
 
 /*===
 noAssert cast test
@@ -109,9 +105,5 @@ function noAssertCastTest() {
       { valueOf: function () { return false; } } ].forEach(test);
 }
 
-try {
-    print('noAssert cast test');
-    noAssertCastTest();
-} catch (e) {
-    print(e.stack || e);
-}
+print('noAssert cast test');
+noAssertCastTest();

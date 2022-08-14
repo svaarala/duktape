@@ -4,6 +4,10 @@
  *  Encoding is not unique, so this demonstrates current output.
  */
 
+/*---
+custom: true
+---*/
+
 /*===
 done
 ===*/

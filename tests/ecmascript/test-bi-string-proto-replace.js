@@ -71,11 +71,7 @@ function basicTest() {
     printCodepoints('\u1234\u0123\ufedc'.replace(/(?:)/g, '\u4321'));
 }
 
-try {
-    basicTest();
-} catch (e) {
-    print(e);
-}
+basicTest();
 
 /*===
 dollar replacements
@@ -153,11 +149,7 @@ function dollarTest() {
     test("$1,$2", /(\u0024(\d))/g, "$$1-$1$2");
 }
 
-try {
-    dollarTest();
-} catch (e) {
-    print(e);
-}
+dollarTest();
 
 /*===
 function replacer
@@ -267,11 +259,7 @@ function functionReplacerTest() {
     test('foobar', /((foo)|(bar))/g, repl2);
 }
 
-try {
-    functionReplacerTest();
-} catch (e) {
-    print(e);
-}
+functionReplacerTest();
 
 /*===
 regexp details
@@ -404,11 +392,7 @@ function regexpDetailsTest() {
     dumpRe(re);
 }
 
-try {
-    regexpDetailsTest();
-} catch (e) {
-    print(e);
-}
+regexpDetailsTest();
 
 /*===
 coercion
@@ -448,8 +432,4 @@ function coercionTest() {
     test({ foo:1, bar:2 }, 'Object', 'OBJECT');
 }
 
-try {
-    coercionTest();
-} catch (e) {
-    print(e);
-}
+coercionTest();

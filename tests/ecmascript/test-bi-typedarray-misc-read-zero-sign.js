@@ -6,13 +6,10 @@
 /*@include util-buffer.js@*/
 
 /*---
-{
-    "custom": true
-}
+custom: true
 ---*/
 
 /*===
-zero sign test
 [object ArrayBuffer] number -0
 [object DataView] number -0
 [object Int8Array] number +0
@@ -38,9 +35,4 @@ function zeroSignTest() {
     });
 }
 
-try {
-    print('zero sign test');
-    zeroSignTest();
-} catch (e) {
-    print(e.stack || e);
-}
+zeroSignTest();

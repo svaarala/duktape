@@ -3,9 +3,7 @@
  */
 
 /*---
-{
-    "custom": true
-}
+custom: true
 ---*/
 
 /*===
@@ -52,8 +50,4 @@ function test() {
     jc({ foo: 123, bar: lf });
 }
 
-try {
-    test();
-} catch (e) {
-    print(e);
-}
+test();

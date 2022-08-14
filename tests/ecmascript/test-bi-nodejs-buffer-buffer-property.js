@@ -21,8 +21,4 @@ function test() {
     print(Object.prototype.toString.call(buf.buffer));
 }
 
-try {
-    test();
-} catch (e) {
-    print(e.stack || e);
-}
+test();

@@ -27,8 +27,4 @@ function ancestorTest1() {
     print(JSON.stringify({ foo: {}, bar: {} }, ['foo', 'bar', 'myProp']));
 }
 
-try {
-    ancestorTest1();
-} catch (e) {
-    print(e.name);
-}
+ancestorTest1();

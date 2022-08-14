@@ -5,7 +5,6 @@
  */
 
 /*===
-done
 ===*/
 
 function test() {
@@ -21,12 +20,6 @@ function test() {
             void JSON.parse(tmp);
         }
     }
-
-    print('done');
 }
 
-try {
-    test();
-} catch (e) {
-    print(e.stack || e);
-}
+test();

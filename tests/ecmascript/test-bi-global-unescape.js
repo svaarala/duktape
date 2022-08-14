@@ -120,7 +120,7 @@ function basicTest() {
 try {
     basicTest();
 } catch (e) {
-    print(e);
+    print(e.stack || e);
 }
 
 /*===
@@ -213,5 +213,5 @@ function bruteForceTest() {
 try {
     bruteForceTest();
 } catch (e) {
-    print(e.name);
+    print(e.stack || e);
 }

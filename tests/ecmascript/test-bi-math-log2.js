@@ -73,30 +73,22 @@ Infinity
 53
 ===*/
 
-function test() {
-    var pd = Object.getOwnPropertyDescriptor(Math, 'log2');
-    print(typeof pd.value, pd.writable, pd.enumerable, pd.configurable);
-    print(Math.log2.length);
+var pd = Object.getOwnPropertyDescriptor(Math, 'log2');
+print(typeof pd.value, pd.writable, pd.enumerable, pd.configurable);
+print(Math.log2.length);
 
-    printExact(Math.log2(0 / 0));
-    printExact(Math.log2(-1));
-    printExact(Math.log2(0));
-    printExact(Math.log2(-0));
-    printExact(Math.log2(1));
-    printExact(Math.log2(1 / 0));
+printExact(Math.log2(0 / 0));
+printExact(Math.log2(-1));
+printExact(Math.log2(0));
+printExact(Math.log2(-0));
+printExact(Math.log2(1));
+printExact(Math.log2(1 / 0));
 
-    printExact(Math.log2(2));
-    printExact(Math.log2(1024));
-    printExact(Math.log2(2.73121871170759e+244));
-    printRounded6(Math.log2(1000));
+printExact(Math.log2(2));
+printExact(Math.log2(1024));
+printExact(Math.log2(2.73121871170759e+244));
+printRounded6(Math.log2(1000));
 
-    for (var n = 0; n <= 53; ++n) {
-        printExact(Math.log2(2 ** n));
-    }
-}
-
-try {
-    test();
-} catch (e) {
-    print(e.stack || e);
+for (var n = 0; n <= 53; ++n) {
+    printExact(Math.log2(2 ** n));
 }

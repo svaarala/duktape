@@ -39,11 +39,7 @@ function basicTest() {
     print(obj.foo);
 }
 
-try {
-    basicTest();
-} catch (e) {
-    print(e);
-}
+basicTest();
 
 /*===
 isExtensible 0
@@ -99,8 +95,4 @@ function coercionTest() {
     }
 }
 
-try {
-    coercionTest();
-} catch (e) {
-    print(e);
-}
+coercionTest();

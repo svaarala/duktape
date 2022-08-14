@@ -3,7 +3,6 @@
  */
 
 /*===
-basic test
 function true false true
 2
 true
@@ -53,9 +52,4 @@ function basicTest() {
     });
 }
 
-try {
-    print('basic test');
-    basicTest();
-} catch (e) {
-    print(e.stack || e);
-}
+basicTest();

@@ -56,8 +56,4 @@ function timeClipTest() {
     d = new Date(+0); print(1 / d.getTime());
 }
 
-try {
-    timeClipTest();
-} catch (e) {
-    print(e.name);
-}
+timeClipTest();

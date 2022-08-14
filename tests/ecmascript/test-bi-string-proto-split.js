@@ -121,11 +121,7 @@ function basicTest() {
     // XXX: add more non-BMP tests
 }
 
-try {
-    basicTest();
-} catch (e) {
-    print(e);
-}
+basicTest();
 
 /*===
 limit
@@ -211,11 +207,7 @@ function limitTest() {
     }
 }
 
-try {
-    limitTest();
-} catch (e) {
-    print(e);
-}
+limitTest();
 
 /*===
 regexp
@@ -285,11 +277,7 @@ function regExpTest() {
     test('foozbarZquux', re);
 }
 
-try {
-    regExpTest();
-} catch (e) {
-    print(e);
-}
+regExpTest();
 
 /*===
 coercion
@@ -377,8 +365,4 @@ function coercionTest() {
     });
 }
 
-try {
-    coercionTest();
-} catch (e) {
-    print(e);
-}
+coercionTest();

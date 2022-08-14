@@ -1,5 +1,4 @@
 /*===
-no output expected
 ===*/
 
 /* The underlying implementation of Date.prototype.getTimezoneOffset()
@@ -41,16 +40,10 @@ var years = [
 
 var i;
 
-print('no output expected');
+test(Date.now());
 
-try {
-    test(Date.now());
-
-    for (i = 0; i < years.length; i++) {
-        // Test January and July to get any DST effects
-        test(Date.UTC(years[i], 0, 1, 0, 0, 0, 0));
-        test(Date.UTC(years[i], 6, 1, 0, 0, 0, 0));
-    }
-} catch (e) {
-    print(e.name);
+for (i = 0; i < years.length; i++) {
+    // Test January and July to get any DST effects
+    test(Date.UTC(years[i], 0, 1, 0, 0, 0, 0));
+    test(Date.UTC(years[i], 6, 1, 0, 0, 0, 0));
 }

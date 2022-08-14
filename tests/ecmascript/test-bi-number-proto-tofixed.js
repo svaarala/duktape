@@ -571,11 +571,7 @@ function basicTest() {
     }
 }
 
-try {
-    basicTest();
-} catch (e) {
-    print(e);
-}
+basicTest();
 
 /*===
 coercion
@@ -752,11 +748,7 @@ function coercionTest() {
     }
 }
 
-try {
-    coercionTest();
-} catch (e) {
-    print(e);
-}
+coercionTest();
 
 /*===
 1000000000000000100
@@ -768,8 +760,4 @@ function specNoteTest() {
     print((1000000000000000128).toFixed());
 }
 
-try {
-    specNoteTest();
-} catch (e) {
-    print(e);
-}
+specNoteTest();

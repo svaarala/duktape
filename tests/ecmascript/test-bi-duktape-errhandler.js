@@ -5,6 +5,10 @@
 
 /*@include util-buffer.js@*/
 
+/*---
+custom: true
+---*/
+
 /*===
 errCreate
 - no errCreate
@@ -257,13 +261,12 @@ function errCreateTest() {
      */
 }
 
-print
 print('errCreate');
 
 try {
     errCreateTest();
 } catch (e) {
-    print(e);
+    print(e.stack || e);
 }
 
 /*===
@@ -591,7 +594,7 @@ print('errThrow');
 try {
     errThrowTest();
 } catch (e) {
-    print(e);
+    print(e.stack || e);
 }
 
 /*===
@@ -679,5 +682,5 @@ print('errCreate + errThrow');
 try {
     errCreateAndErrThrowTest();
 } catch (e) {
-    print(e);
+    print(e.stack || e);
 }

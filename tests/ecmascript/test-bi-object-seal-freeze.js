@@ -54,11 +54,7 @@ function basicTest() {
     p(obj);
 }
 
-try {
-    basicTest();
-} catch (e) {
-    print(e);
-}
+basicTest();
 
 /*===
 object, #names: 12, extensible: true
@@ -204,11 +200,7 @@ function propertyAttributeTest() {
     printObj(obj);
 }
 
-try {
-    propertyAttributeTest();
-} catch (e) {
-    print(e);
-}
+propertyAttributeTest();
 
 /*===
 0 0
@@ -321,10 +313,6 @@ function coercionTest() {
     }
 }
 
-try {
-    coercionTest();
-} catch (e) {
-    print(e);
-}
+coercionTest();
 
 /* XXX: test that ancestors have no effect and or not affected */

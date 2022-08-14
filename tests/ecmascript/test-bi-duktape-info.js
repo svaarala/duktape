@@ -5,6 +5,10 @@
  *  provided results.
  */
 
+/*---
+custom: true
+---*/
+
 /*===
 0 undefined object 1
 1 object object 2
@@ -45,8 +49,4 @@ function test() {
     // XXX
 }
 
-try {
-    test();
-} catch (e) {
-    print(e.stack || e);
-}
+test();

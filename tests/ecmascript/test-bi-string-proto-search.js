@@ -90,11 +90,7 @@ function basicTest() {
     test('', '');
 }
 
-try {
-    basicTest();
-} catch (e) {
-    print(e);
-}
+basicTest();
 
 /*===
 coercion
@@ -158,8 +154,4 @@ function coercionTest() {
     test('xxxP', { foo: 1, bar: 2 });      // no match
 }
 
-try {
-    coercionTest();
-} catch (e) {
-    print(e);
-}
+coercionTest();

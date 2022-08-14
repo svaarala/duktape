@@ -23,8 +23,4 @@ function valueTest() {
    }
 }
 
-try {
-    valueTest();
-} catch (e) {
-    print(e);
-}
+valueTest();

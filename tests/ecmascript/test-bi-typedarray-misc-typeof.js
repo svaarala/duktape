@@ -5,7 +5,6 @@
 /*@include util-buffer.js@*/
 
 /*===
-typeof test
 [object ArrayBuffer] object
 [object DataView] object
 [object Int8Array] object
@@ -26,9 +25,4 @@ function typeofTest() {
     });
 }
 
-try {
-    print('typeof test');
-    typeofTest();
-} catch (e) {
-    print(e.stack || e);
-}
+typeofTest();

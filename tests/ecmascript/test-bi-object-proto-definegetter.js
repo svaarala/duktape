@@ -69,8 +69,4 @@ function testDefineGetter() {
     print(Object.prototype.__defineGetter__.name);
 }
 
-try {
-    testDefineGetter();
-} catch (e) {
-    print(e.stack || e);
-}
+testDefineGetter();

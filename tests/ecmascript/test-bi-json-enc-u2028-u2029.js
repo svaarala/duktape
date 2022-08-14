@@ -12,9 +12,7 @@
  */
 
 /*---
-{
-    "nonstandard": true
-}
+nonstandard: true
 ---*/
 
 /*===
@@ -70,8 +68,4 @@ function u2028u2029test() {
     }
 }
 
-try {
-    u2028u2029test();
-} catch (e) {
-    print(e.stack || e);
-}
+u2028u2029test();

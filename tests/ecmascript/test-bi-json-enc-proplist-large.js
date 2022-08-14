@@ -20,8 +20,4 @@ function test() {
     print(JSON.stringify(obj, plist));
 }
 
-try {
-    test();
-} catch (e) {
-    print(e);
-}
+test();

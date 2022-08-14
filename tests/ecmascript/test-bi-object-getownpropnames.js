@@ -43,11 +43,7 @@ function basicTest() {
     test(new String('foobar'));
 }
 
-try {
-    basicTest();
-} catch (e) {
-    print(e);
-}
+basicTest();
 
 /*===
 coercion
@@ -93,8 +89,4 @@ function coercionTest() {
     test(function(){});
 }
 
-try {
-    coercionTest();
-} catch (e) {
-    print(e);
-}
+coercionTest();

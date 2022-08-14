@@ -1,5 +1,9 @@
 /*@include util-buffer.js@*/
 
+/*---
+custom: true
+---*/
+
 /*===
 {"buf":{}}
 {
@@ -73,8 +77,4 @@ function test() {
     f(b);
 }
 
-try {
-    test();
-} catch (e) {
-    print(e.stack || e);
-}
+test();

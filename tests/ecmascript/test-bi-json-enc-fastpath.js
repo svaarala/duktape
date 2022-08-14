@@ -7,6 +7,10 @@
 
 /*@include util-buffer.js@*/
 
+/*---
+custom: true
+---*/
+
 /*===
 basic test
 {"foo":123,"bar":234,"quux":{"val2":null,"val3":true,"val4":false,"val5":123,"val6":123.456,"val7":"foo"},"baz":[null,null,true,false,123,123.456,"foo"]}
@@ -43,12 +47,8 @@ function jsonStringifyFastPathBasic() {
     print(JSON.stringify(val));
 }
 
-try {
-    print('basic test');
-    jsonStringifyFastPathBasic();
-} catch (e) {
-    print(e.stack || e);
-}
+print('basic test');
+jsonStringifyFastPathBasic();
 
 /*===
 top level value test
@@ -88,12 +88,8 @@ function jsonStringifyFastPathTopLevelValueTest() {
     });
 }
 
-try {
-    print('top level value test');
-    jsonStringifyFastPathTopLevelValueTest();
-} catch (e) {
-    print(e.stack || e);
-}
+print('top level value test');
+jsonStringifyFastPathTopLevelValueTest();
 
 /*===
 auto unbox test
@@ -120,12 +116,8 @@ function jsonStringifyFastPathAutoUnboxTest() {
     });
 }
 
-try {
-    print('auto unbox test');
-    jsonStringifyFastPathAutoUnboxTest();
-} catch (e) {
-    print(e.stack || e);
-}
+print('auto unbox test');
+jsonStringifyFastPathAutoUnboxTest();
 
 /*===
 abort test
@@ -210,12 +202,8 @@ function jsonStringifyFastPathAbort() {
     delete Array.prototype['5'];
 }
 
-try {
-    print('abort test');
-    jsonStringifyFastPathAbort();
-} catch (e) {
-    print(e.stack || e);
-}
+print('abort test');
+jsonStringifyFastPathAbort();
 
 /*===
 inheritance test
@@ -260,12 +248,8 @@ function jsonStringifyFastPathInheritanceTest() {
     delete Array.prototype[1];  // restore sanity
 }
 
-try {
-    print('inheritance test');
-    jsonStringifyFastPathInheritanceTest();
-} catch (e) {
-    print(e.stack || e);
-}
+print('inheritance test');
+jsonStringifyFastPathInheritanceTest();
 
 /*===
 proxy test
@@ -301,12 +285,8 @@ function jsonStringifyFastPathProxyTest() {
     print(JSON.stringify(obj));
 }
 
-try {
-    print('proxy test');
-    jsonStringifyFastPathProxyTest();
-} catch (e) {
-    print(e.name);
-}
+print('proxy test');
+jsonStringifyFastPathProxyTest();
 
 /*===
 jx/jc test
@@ -826,9 +806,5 @@ function jxJcFastPathTest() {
     cleanPrint(jc3);
 }
 
-try {
-    print('jx/jc test');
-    jxJcFastPathTest();
-} catch (e) {
-    print(e.stack || e);
-}
+print('jx/jc test');
+jxJcFastPathTest();

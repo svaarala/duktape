@@ -14,9 +14,7 @@
 /*@include util-buffer.js@*/
 
 /*---
-{
-    "custom": true
-}
+custom: true
 ---*/
 
 /*===
@@ -131,8 +129,4 @@ function test() {
     jsonClipTest(inp, 'jx');  // causes TypeErrors for decode failures
 }
 
-try {
-    test();
-} catch (e) {
-    print(e.stack || e);
-}
+test();

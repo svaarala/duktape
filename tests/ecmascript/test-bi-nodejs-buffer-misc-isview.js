@@ -12,8 +12,4 @@ function test() {
     print(ArrayBuffer.isView(buf));
 }
 
-try {
-    test();
-} catch (e) {
-    print(e.stack || e);
-}
+test();

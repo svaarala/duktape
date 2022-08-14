@@ -26,8 +26,5 @@ function test() {
     f0.apply('applythis', args);
     print('done');
 }
-try {
-    test();
-} catch (e) {
-    print(e.stack || e);
-}
+
+test();

@@ -17,7 +17,6 @@ function encValue(x) {
 }
 
 /*===
-Node.js Buffer constructor properties test
 name true string Buffer
 length true number 2
 prototype true object [object Object]
@@ -51,9 +50,4 @@ function nodejsBufferConstructorPropertiesTest() {
     print(Buffer.prototype.constructor === Buffer);
 }
 
-try {
-    print('Node.js Buffer constructor properties test');
-    nodejsBufferConstructorPropertiesTest();
-} catch (e) {
-    print(e.stack || e);
-}
+nodejsBufferConstructorPropertiesTest();

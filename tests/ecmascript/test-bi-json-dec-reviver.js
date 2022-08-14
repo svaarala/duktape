@@ -26,11 +26,7 @@ function basicReviverTest() {
     v = JSON.parse('"foo"', reviver);
 }
 
-try {
-    basicReviverTest();
-} catch (e) {
-    print(e.name);
-}
+basicReviverTest();
 
 /*===
 complex reviver test
@@ -77,11 +73,7 @@ function complexReviverTest() {
     print(JSON.stringify(v));
 }
 
-try {
-    complexReviverTest();
-} catch (e) {
-    print(e.name, e);
-}
+complexReviverTest();
 
 /*===
 reviver deletion test
@@ -132,11 +124,7 @@ function reviverDeletionTest() {
     print(JSON.stringify(v));
 }
 
-try {
-    reviverDeletionTest();
-} catch (e) {
-    print(e.name);
-}
+reviverDeletionTest();
 
 /*===
 reviver replacement test
@@ -194,11 +182,7 @@ function reviverReplacementTest() {
     print(JSON.stringify(v));
 }
 
-try {
-    reviverReplacementTest();
-} catch (e) {
-    print(e.name);
-}
+reviverReplacementTest();
 
 /*===
 reviver object identity
@@ -248,11 +232,7 @@ function reviverObjectIdentityTest() {
     print(v.foo === v.bar);
 }
 
-try {
-    reviverObjectIdentityTest();
-} catch (e) {
-    print(e.name);
-}
+reviverObjectIdentityTest();
 
 /*===
 reviver name type test
@@ -286,11 +266,7 @@ function reviverNameTypeTest() {
     print(JSON.stringify(v));
 }
 
-try {
-    reviverNameTypeTest();
-} catch (e) {
-    print(e.name);
-}
+reviverNameTypeTest();
 
 /*===
 invalid revivers
@@ -334,8 +310,4 @@ function testInvalidRevivers() {
     print(JSON.stringify(v));
 }
 
-try {
-    testInvalidRevivers();
-} catch (e) {
-    print(e.name);
-}
+testInvalidRevivers();

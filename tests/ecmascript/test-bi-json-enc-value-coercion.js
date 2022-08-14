@@ -132,11 +132,7 @@ function valueCoercionTest1() {
     }
 }
 
-try {
-    valueCoercionTest1();
-} catch (e) {
-    print(e.name, e, e.stack || e);
-}
+valueCoercionTest1();
 
 /*===
 ===*/

@@ -65,8 +65,4 @@ function testSetters() {
     print(toISO(d) === 'RangeError', isNaN(d.getTime()));
 }
 
-try {
-    testSetters();
-} catch (e) {
-    print(e.name, e);
-}
+testSetters();

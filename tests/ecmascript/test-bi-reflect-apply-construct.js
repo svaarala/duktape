@@ -26,41 +26,37 @@ last arg: Frieza sux
 
 function applyTest() {
     var func = function(x, y, z) {
-        print("func() called with", arguments.length, "args");
+        print('func() called with', arguments.length, 'args');
         if (arguments.length >= 2) {
-            print(this.name, "the", x, y);
+            print(this.name, 'the', x, y);
         } else {
-            print(this.name, "the", x);
+            print(this.name, 'the', x);
         }
         if (arguments.length >= 3) {
             print(z);
         }
-        print("last arg:", arguments[arguments.length - 1]);
+        print('last arg:', arguments[arguments.length - 1]);
         return arguments.length;
     }
 
-    var casper = { name: "Casper" };
-    var maggie = { name: "maggie" };
-    var darkling = { name: "Darkling" };
-    var vegeta = { name: "Vegeta" };
-    print(Reflect.apply(func, casper, [ "friendly", "ghost" ]));
-    print(Reflect.apply(func, maggie, [ "eaty", "pig", "*munch*" ]));
+    var casper = { name: 'Casper' };
+    var maggie = { name: 'maggie' };
+    var darkling = { name: 'Darkling' };
+    var vegeta = { name: 'Vegeta' };
+    print(Reflect.apply(func, casper, [ 'friendly', 'ghost' ]));
+    print(Reflect.apply(func, maggie, [ 'eaty', 'pig', '*munch*' ]));
     print(Reflect.apply(func, darkling, []));
 
     // So I may have been having a bit too much fun writing this test... :)
     //   ~ Bruce
-    var argList = [ "Prince of All", "Saiyans", "IT'S OVER NINE THOUSAAAAANNNDDDD!!!!!!" ];
+    var argList = [ 'Prince of All', 'Saiyans', 'IT\'S OVER NINE THOUSAAAAANNNDDDD!!!!!!' ];
     while (argList.length < 9001) {
-        argList[argList.length] = "Frieza sux";
+        argList[argList.length] = 'Frieza sux';
     }
     print(Reflect.apply(func, vegeta, argList));
 }
 
-try {
-    applyTest();
-} catch (e) {
-    print(e.stack || e);
-}
+applyTest();
 
 /*===
 Person() called with 3 args
@@ -89,8 +85,8 @@ Kittycow says: MOOOOOOoooooooooooooo...
 
 function constructTest() {
     function Person(name, desc, type, remark) {
-        print("Person() called with", arguments.length, "args");
-        print("this instanceof Person?", this instanceof Person)
+        print('Person() called with', arguments.length, 'args');
+        print('this instanceof Person?', this instanceof Person)
         this.name = name;
         this.desc = desc;
         this.type = type;
@@ -99,36 +95,32 @@ function constructTest() {
             this.haveRemark = true;
             this.remark = remark;
         }
-        print("last arg:", arguments[arguments.length - 1]);
+        print('last arg:', arguments[arguments.length - 1]);
     }
     Person.prototype = {
         talk: function() {
-            print("Hi, my name is", this.name, "the", this.desc, this.type);
+            print('Hi, my name is', this.name, 'the', this.desc, this.type);
             if (this.haveRemark) {
-                print(this.name, "says:", this.remark);
+                print(this.name, 'says:', this.remark);
             }
         }
     };
-    var ghost = Reflect.construct(Person, [ "Casper", "friendly", "ghost" ]);
+    var ghost = Reflect.construct(Person, [ 'Casper', 'friendly', 'ghost' ]);
     print(ghost instanceof Person);
     ghost.talk();
-    var maggie = Reflect.construct(Person, [ "maggie", "eaty", "pig", "*MUNCH*" ]);
+    var maggie = Reflect.construct(Person, [ 'maggie', 'eaty', 'pig', '*MUNCH*' ]);
     print(maggie instanceof Person);
     maggie.talk();
-    var darkling = Reflect.construct(Person, [ "Darkling" ]);
+    var darkling = Reflect.construct(Person, [ 'Darkling' ]);
     print(darkling instanceof Person);
     darkling.talk();
-    var argList = [ "Kittycow", "kitty-eating", "cow", "MOOOOOOoooooooooooooo..." ];
+    var argList = [ 'Kittycow', 'kitty-eating', 'cow', 'MOOOOOOoooooooooooooo...' ];
     while (argList.length < 812) {
-        argList[argList.length] = "kittiez r food 4 cowz";
+        argList[argList.length] = 'kittiez r food 4 cowz';
     }
     var cow = Reflect.construct(Person, argList);
     print(cow instanceof Person);
     cow.talk();
 }
 
-try {
-    constructTest();
-} catch (e) {
-    print(e.stack || e);
-}
+constructTest();

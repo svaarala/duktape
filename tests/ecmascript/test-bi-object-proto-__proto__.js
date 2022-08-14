@@ -149,8 +149,4 @@ function test() {
     // XXX: coercion order tests (side effect / error message if multiple errors)
 }
 
-try {
-    test();
-} catch (e) {
-    print(e);
-}
+test();

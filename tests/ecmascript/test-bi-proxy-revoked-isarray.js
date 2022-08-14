@@ -2,7 +2,6 @@
 true
 undefined
 TypeError
-done
 ===*/
 
 var target = [];
@@ -20,4 +19,3 @@ try {
     print(e.name);
     //print(e.stack);
 }
-print('done');

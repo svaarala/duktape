@@ -8,7 +8,6 @@ function encValue(x) {
 }
 
 /*===
-Node.js Buffer instanceproperties test
 length true number 4
 0 true number 0
 1 true number 0
@@ -38,9 +37,4 @@ function nodejsBufferInstancePropertiesTest() {
     });
 }
 
-try {
-    print('Node.js Buffer instanceproperties test');
-    nodejsBufferInstancePropertiesTest();
-} catch (e) {
-    print(e.stack || e);
-}
+nodejsBufferInstancePropertiesTest();

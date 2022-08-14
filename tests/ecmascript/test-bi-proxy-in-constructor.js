@@ -23,8 +23,4 @@ function test() {
     print(o.foo);
 }
 
-try {
-    test();
-} catch (e) {
-    print(e);
-}
+test();

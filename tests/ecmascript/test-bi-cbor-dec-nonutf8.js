@@ -3,6 +3,10 @@
  *  (technically invalid CBOR).
  */
 
+/*---
+custom: true
+---*/
+
 /*===
 "foo"
 "foo\ud800"

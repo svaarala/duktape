@@ -11,14 +11,11 @@
 /*@include util-string.js@*/
 
 /*---
-{
-    "custom": true,
-    "endianness": "little"
-}
+custom: true
+endianness: little
 ---*/
 
 /*===
-coercion test
 [object ArrayBuffer]
 - skipped
 [object DataView]
@@ -1980,9 +1977,4 @@ function coercionTest() {
     });
 }
 
-try {
-    print('coercion test');
-    coercionTest();
-} catch (e) {
-    print(e.stack || e);
-}
+coercionTest();

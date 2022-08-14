@@ -5,9 +5,7 @@
 /*@include util-buffer.js@*/
 
 /*---
-{
-    "custom": true
-}
+custom: true
 ---*/
 
 /* Custom because there are some differences to Node.js behavior. */
@@ -288,8 +286,4 @@ function nodejsBufferWriteTest() {
     });
 }
 
-try {
-    nodejsBufferWriteTest();
-} catch (e) {
-    print(e.stack || e);
-}
+nodejsBufferWriteTest();

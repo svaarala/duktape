@@ -13,8 +13,4 @@ function midnight1970Test() {
     print(d.getTime(), 1 / d.getTime());  // 1/x to test sign
 }
 
-try {
-    midnight1970Test();
-} catch (e) {
-    print(e.name);
-}
+midnight1970Test();

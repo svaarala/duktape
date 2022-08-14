@@ -9,10 +9,6 @@
 779
 ===*/
 
-try {
-    print(parseInt('0777'));
-    print(parseInt('0778'));
-    print(parseInt('0779'));
-} catch (e) {
-    print(e.stack || e);
-}
+print(parseInt('0777'));
+print(parseInt('0778'));
+print(parseInt('0779'));

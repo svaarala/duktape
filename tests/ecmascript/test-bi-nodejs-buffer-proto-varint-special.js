@@ -14,14 +14,11 @@
 
 /* XXX: skip until a reasonable expect string exists. */
 /*---
-{
-    "custom": true,
-    "skip": true
-}
+custom: true
+skip: true
 ---*/
 
 /*===
-special write values
 -Infinity 1 00000000000000000000000000000000
 -Infinity 1 00000000000000000000000000000000
 -Infinity 1 00000000000000000000000000000000
@@ -370,9 +367,4 @@ function specialWriteValuesTest() {
     });
 }
 
-try {
-    print('special write values');
-    specialWriteValuesTest();
-} catch (e) {
-    print(e.stack || e);
-}
+specialWriteValuesTest();

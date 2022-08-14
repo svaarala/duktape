@@ -5,9 +5,7 @@
 /*@include util-buffer.js@*/
 
 /*---
-{
-    "custom": true
-}
+custom: true
 ---*/
 
 function encValue(v) {
@@ -16,7 +14,6 @@ function encValue(v) {
 }
 
 /*===
-TypedArray prototype properties test
 Int8Array
 set true function function
 subarray true function function
@@ -95,9 +92,4 @@ function typedArrayPrototypePropertiesTest() {
     });
 }
 
-try {
-    print('TypedArray prototype properties test');
-    typedArrayPrototypePropertiesTest();
-} catch (e) {
-    print(e.stack || e);
-}
+typedArrayPrototypePropertiesTest();

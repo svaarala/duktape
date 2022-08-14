@@ -42,8 +42,4 @@ function basicTest() {
     test(function f() { var indirect = eval; return indirect('this'); });  // indirect eval -> this=global
 }
 
-try {
-    basicTest();
-} catch (e) {
-    print(e);
-}
+basicTest();

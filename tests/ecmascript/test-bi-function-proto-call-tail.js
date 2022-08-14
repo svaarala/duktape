@@ -23,8 +23,4 @@ function test(count) {
     return 'done';
 }
 
-try {
-    print(test(0));
-} catch (e) {
-    print(e.stack || e);
-}
+print(test(0));

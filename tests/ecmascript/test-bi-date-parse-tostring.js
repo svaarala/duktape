@@ -37,8 +37,4 @@ function toStringParseTest() {
     // XXX: add more comprehensive cases
 }
 
-try {
-    toStringParseTest();
-} catch (e) {
-    print(e.name);
-}
+toStringParseTest();

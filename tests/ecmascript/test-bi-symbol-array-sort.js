@@ -3,7 +3,6 @@
  */
 
 /*===
-array sort
 TypeError
 sort finished
 0 number 1
@@ -57,9 +56,4 @@ function test() {
     }
 }
 
-try {
-    print('array sort');
-    test();
-} catch (e) {
-    print(e.stack || e);
-}
+test();

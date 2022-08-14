@@ -11,7 +11,7 @@ prop1,prop2
 function test() {
     'use strict';
 
-    var obj = { prop1: "foo", prop2: "bar" };
+    var obj = { prop1: 'foo', prop2: 'bar' };
 
     print(Reflect.ownKeys(obj));
 
@@ -22,8 +22,4 @@ function test() {
     print(Reflect.ownKeys(obj));
 }
 
-try {
-    test();
-} catch (e) {
-    print(e.stack || e);
-}
+test();

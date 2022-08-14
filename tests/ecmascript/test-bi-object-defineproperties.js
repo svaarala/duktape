@@ -116,11 +116,7 @@ function coercionTest() {
     // coercion of 'O' and 'P'; 'O' is checked first -- how to test this?
 }
 
-try {
-    coercionTest();
-} catch (e) {
-    print(e);
-}
+coercionTest();
 
 /*===
 proplist
@@ -193,11 +189,7 @@ function propListTest() {
     }
 }
 
-try {
-    propListTest();
-} catch (e) {
-    print(e);
-}
+propListTest();
 
 /*===
 topropdesc
@@ -235,11 +227,7 @@ function toPropDescTest() {
     printDesc(obj, 'foo');
 }
 
-try {
-    toPropDescTest();
-} catch (e) {
-    print(e);
-}
+toPropDescTest();
 
 /*===
 multiple
@@ -303,11 +291,7 @@ function multiplePropsTest() {
     }
 }
 
-try {
-    multiplePropsTest();
-} catch (e) {
-    print(e);
-}
+multiplePropsTest();
 
 /*===
 return
@@ -328,8 +312,4 @@ function returnValueTest() {
     print(ret === obj);
 }
 
-try {
-    returnValueTest();
-} catch (e) {
-    print(e);
-}
+returnValueTest();

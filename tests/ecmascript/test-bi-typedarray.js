@@ -14,13 +14,10 @@
 /*@include util-buffer.js@*/
 
 /*---
-{
-    "custom": true
-}
+custom: true
 ---*/
 
 /*===
-prototype chain and own property test
 [object ArrayBuffer] -> ArrayBuffer.prototype -> Object.prototype
 [object DataView] -> DataView.prototype -> Object.prototype
 [object Int8Array] -> Int8Array.prototype -> TypedArray.prototype -> Object.prototype
@@ -52,12 +49,7 @@ function prototypeChainAndOwnPropertyTest() {
     });
 }
 
-try {
-    print('prototype chain and own property test');
-    prototypeChainAndOwnPropertyTest();
-} catch (e) {
-    print(e.stack || e);
-}
+prototypeChainAndOwnPropertyTest();
 
 /*
  *  Summary of methods and properties

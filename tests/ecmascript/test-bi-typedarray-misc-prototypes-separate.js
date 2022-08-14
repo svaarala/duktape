@@ -67,8 +67,4 @@ function testSeparatePrototypes() {
     }
 }
 
-try {
-    testSeparatePrototypes();
-} catch (e) {
-    print(e.stack || e);
-}
+testSeparatePrototypes();

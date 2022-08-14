@@ -5,7 +5,6 @@
 /* XXX: toString(), call(), apply() */
 
 /*===
-instance
 true true
 true false false
 true true
@@ -59,9 +58,4 @@ function functionInstanceTest() {
     print('name' in anon, anon.hasOwnProperty('name'));
 }
 
-try {
-    print('instance');
-    functionInstanceTest();
-} catch (e) {
-    print(e.stack || e);
-}
+functionInstanceTest();

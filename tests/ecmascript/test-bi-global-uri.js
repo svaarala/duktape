@@ -103,7 +103,7 @@ function basicEncodeTest() {
 try {
     basicEncodeTest();
 } catch (e) {
-    print(e.name);
+    print(e.stack || e);
 }
 
 /*===
@@ -142,7 +142,7 @@ function asciiEncodeTest() {
 try {
     asciiEncodeTest();
 } catch (e) {
-    print(e.name);
+    print(e.stack || e);
 }
 
 /*===
@@ -171,7 +171,7 @@ function asciiDecodeTest() {
 try {
     asciiDecodeTest();
 } catch (e) {
-    print(e.name);
+    print(e.stack || e);
 }
 
 /*===
@@ -223,7 +223,7 @@ function decodeNonBmpTest() {
 try {
     decodeNonBmpTest();
 } catch (e) {
-    print(e.name);
+    print(e.stack || e);
 }
 
 /*===
@@ -248,7 +248,7 @@ try {
     print(g.encodeURI('\udbff\udc00'));
     print(g.encodeURI('\udbff\udfff'));
 } catch (e) {
-    print(e.name);
+    print(e.stack || e);
 }
 
 /*===
@@ -307,7 +307,7 @@ try {
     attemptInvalidSurrogateEncode('\udc00\udfff');
     attemptInvalidSurrogateEncode('\udc00\ue000');
 } catch (e) {
-    print(e.name);
+    print(e.stack || e);
 }
 
 /*===
@@ -468,7 +468,7 @@ function invalidUtf8Test() {
 try {
     invalidUtf8Test();
 } catch (e) {
-    print(e.name);
+    print(e.stack || e);
 }
 
 /*===
@@ -550,5 +550,5 @@ function testBrokenEscapes() {
 try {
     testBrokenEscapes();
 } catch (e) {
-    print(e.name);
+    print(e.stack || e);
 }

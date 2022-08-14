@@ -53,8 +53,4 @@ function datePrototypeGetterTests() {
     pg(new Date(Date.UTC(-300000, 1, 2, 3, 4, 5, 6)));
 }
 
-try {
-    datePrototypeGetterTests();
-} catch (e) {
-    print(e.name);
-}
+datePrototypeGetterTests();

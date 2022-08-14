@@ -2724,11 +2724,7 @@ function basicTest() {
     }
 }
 
-try {
-    basicTest();
-} catch (e) {
-    print(e);
-}
+basicTest();
 
 /*===
 coercion
@@ -2808,8 +2804,4 @@ function coercionTest() {
     test(new Number(123), [ makePrec('prec', 100, 256*256*256*256 + 0) ]);
 }
 
-try {
-    coercionTest();
-} catch (e) {
-    print(e);
-}
+coercionTest();

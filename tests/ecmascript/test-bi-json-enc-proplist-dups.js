@@ -21,9 +21,5 @@ function dupTest2() {
     print(JSON.stringify(obj, [ 'bar', 1, new Number(1), '1', 'foo' ]));
 }
 
-try {
-    dupTest1();
-    dupTest2();
-} catch (e) {
-    print(e);
-}
+dupTest1();
+dupTest2();

@@ -4,6 +4,10 @@
 
 /*@include util-buffer.js@*/
 
+/*---
+custom: true
+---*/
+
 // determine if two arrays contain the same values, used here to compare buffers
 function equiv(arr1, arr2) {
     if (Object.getPrototypeOf(arr1) !== Object.getPrototypeOf(arr2)) {
@@ -71,12 +75,8 @@ function encodeTest() {
 
 }
 
-try {
-    print('basic encode');
-    encodeTest();
-} catch (e) {
-    print(e.stack || e);
-}
+print('basic encode');
+encodeTest();
 
 /*===
 argument coercion and validation
@@ -123,9 +123,5 @@ function argumentTest() {
     });
 }
 
-try {
-    print('argument coercion and validation');
-    argumentTest();
-} catch (e) {
-    print(e.stack || e);
-}
+print('argument coercion and validation');
+argumentTest();

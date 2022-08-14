@@ -52,9 +52,5 @@ function testOrder2() {
     testObj(obj);
 }
 
-try {
-    testOrder1();
-    testOrder2();
-} catch (e) {
-    print(e.name);
-}
+testOrder1();
+testOrder2();

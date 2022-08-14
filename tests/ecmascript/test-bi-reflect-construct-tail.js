@@ -9,9 +9,7 @@
  */
 
 /*---
-{
-    "custom": true
-}
+custom: true
 ---*/
 
 /*===
@@ -60,8 +58,4 @@ function test() {
     print('count:', count);
 }
 
-try {
-    test();
-} catch (e) {
-    print(e.stack || e);
-}
+test();

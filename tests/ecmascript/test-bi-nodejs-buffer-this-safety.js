@@ -4,15 +4,11 @@
  */
 
 /*---
-{
-    "custom": true
-}
+custom: true
 ---*/
 
 /*===
-Node.js Buffer "this" sanity test
 total: 5508
-done
 ===*/
 
 function nodejsBufferThisSanityTest() {
@@ -116,10 +112,4 @@ function nodejsBufferThisSanityTest() {
     //print('errors:', errorCount);  // varies when details changed
 }
 
-try {
-    print('Node.js Buffer "this" sanity test');
-    nodejsBufferThisSanityTest();
-    print('done');
-} catch (e) {
-    print(e.stack || e);
-}
+nodejsBufferThisSanityTest();

@@ -31,12 +31,8 @@ function isBufferTest() {
     });
 }
 
-try {
-    print('isBuffer test');
-    isBufferTest();
-} catch (e) {
-    print(e.stack || e);
-}
+print('isBuffer test');
+isBufferTest();
 
 /*===
 inheritance test
@@ -54,9 +50,5 @@ function inheritanceTest() {
     print(obj[0], obj[1], obj[2], obj[3]);
 }
 
-try {
-    print('inheritance test');
-    inheritanceTest();
-} catch (e) {
-    print(e.stack || e);
-}
+print('inheritance test');
+inheritanceTest();

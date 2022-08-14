@@ -11,9 +11,7 @@
  */
 
 /*---
-{
-    "custom": true
-}
+custom: true
 ---*/
 
 /*===
@@ -86,11 +84,7 @@ function basicTest() {
     test('foo', '');
 }
 
-try {
-    basicTest();
-} catch (e) {
-    print(e);
-}
+basicTest();
 
 /*===
 coercion
@@ -239,11 +233,7 @@ function coercionTest() {
     test('[object Object\u005e', { foo: 1, bar: 2 });
 }
 
-try {
-    coercionTest();
-} catch (e) {
-    print(e);
-}
+coercionTest();
 
 /*===
 no that
@@ -273,8 +263,4 @@ function noThatTest() {
     test('undefinee');
 }
 
-try {
-    noThatTest();
-} catch (e) {
-    print(e);
-}
+noThatTest();

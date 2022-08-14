@@ -206,8 +206,4 @@ function basicExistenceTest() {
 
 print('basic test');
 
-try {
-    basicExistenceTest();
-} catch (e) {
-    print(e);
-}
+basicExistenceTest();

@@ -57,8 +57,4 @@ function nodejsBufferSlicePrototypeTest() {
     print(c.name);
 }
 
-try {
-    nodejsBufferSlicePrototypeTest();
-} catch (e) {
-    print(e.stack || e);
-}
+nodejsBufferSlicePrototypeTest();

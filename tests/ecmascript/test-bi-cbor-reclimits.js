@@ -1,7 +1,5 @@
 /*---
-{
-    "custom": true
-}
+custom: true
 ---*/
 
 /*===
@@ -13,7 +11,6 @@ decode 999 ok
 decode 1000 ok
 decode 1001 RangeError: decode recursion limit
 decode 10000 RangeError: decode recursion limit
-done
 ===*/
 
 function mkObj(n) {
@@ -49,5 +46,3 @@ function mkBuf(n) {
         print('decode', n, String(e));
     }
 });
-
-print('done');

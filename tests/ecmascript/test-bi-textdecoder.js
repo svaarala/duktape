@@ -4,6 +4,10 @@
 
 /*@include util-buffer.js@*/
 
+/*---
+custom: true
+---*/
+
 /*===
 basic decode
 utf-8
@@ -52,12 +56,8 @@ function decodeTest() {
 
 }
 
-try {
-    print('basic decode');
-    decodeTest();
-} catch (e) {
-    print(e.stack || e);
-}
+print('basic decode');
+decodeTest();
 
 /*===
 fatal mode
@@ -94,12 +94,8 @@ function fatalTest() {
     }
 }
 
-try {
-    print('fatal mode');
-    fatalTest();
-} catch (e) {
-    print(e.stack || e);
-}
+print('fatal mode');
+fatalTest();
 
 /*===
 ignore BOM
@@ -127,12 +123,8 @@ function ignoreBOMTest() {
     print(output === ref);
 }
 
-try {
-    print('ignore BOM');
-    ignoreBOMTest();
-} catch (e) {
-    print(e.stack || e);
-}
+print('ignore BOM');
+ignoreBOMTest();
 
 /*===
 streaming
@@ -140,8 +132,7 @@ true
 true
 ===*/
 
-function streamTest()
-{
+function streamTest() {
     var decoder;
     var ref, input, output;
 
@@ -171,12 +162,8 @@ function streamTest()
     print(output === ref);
 }
 
-try {
-    print('streaming');
-    streamTest();
-} catch (e) {
-    print(e.stack || e);
-}
+print('streaming');
+streamTest();
 
 /*===
 argument coercion and validation
@@ -301,12 +288,8 @@ function argumentTest() {
     delete String.prototype.stream;
 }
 
-try {
-    print('argument coercion and validation');
-    argumentTest();
-} catch (e) {
-    print(e.stack || e);
-}
+print('argument coercion and validation');
+argumentTest();
 
 /*===
 replacement character policy
@@ -354,12 +337,8 @@ function replacementCharacterPolicyTest() {
     print(Array.prototype.map.call(res, function (v) { return v.charCodeAt(0); }).join(' '));
 }
 
-try {
-    print('replacement character policy');
-    replacementCharacterPolicyTest();
-} catch (e) {
-    print(e.stack || e);
-}
+print('replacement character policy');
+replacementCharacterPolicyTest();
 
 /*===
 argument coercion order
@@ -396,9 +375,5 @@ function argumentCoercionOrderTest() {
     }
 }
 
-try {
-    print('argument coercion order');
-    argumentCoercionOrderTest();
-} catch (e) {
-    print(e.stack || e);
-}
+print('argument coercion order');
+argumentCoercionOrderTest();

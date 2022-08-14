@@ -1,3 +1,7 @@
+/*---
+custom: true
+---*/
+
 /*===
 test 1, step 1
 fin1
@@ -59,8 +63,4 @@ function test() {
     print('test 3, step 4');
 }
 
-try {
-    test();
-} catch (e) {
-    print(e.stack || e);
-}
+test();

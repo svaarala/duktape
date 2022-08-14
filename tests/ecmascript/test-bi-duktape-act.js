@@ -1,7 +1,11 @@
+/*---
+custom: true
+---*/
+
 /*===
 -1 0 act
--2 10 basicTest
--3 26 global
+-2 14 basicTest
+-3 30 global
 ===*/
 
 function basicTest() {
@@ -25,11 +29,11 @@ function basicTest() {
 try {
     basicTest();
 } catch (e) {
-    print(e);
+    print(e.stack || e);
 }
 
 /*===
-running on line: 42
+running on line: 46
 ===*/
 
 /* Simulate Duktape.line(). */

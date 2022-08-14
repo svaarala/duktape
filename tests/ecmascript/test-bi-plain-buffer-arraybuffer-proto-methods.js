@@ -1,7 +1,10 @@
 /*@include util-buffer.js@*/
 
+/*---
+custom: true
+---*/
+
 /*===
-ArrayBuffer.prototype methods
 - slice
 97
 object [object Uint8Array]
@@ -10,7 +13,6 @@ true
 99 100 101 102 undefined
 255 99
 - slice stress
-done
 ===*/
 
 function arrayBufferPrototypeMethodTest() {
@@ -54,12 +56,6 @@ function arrayBufferPrototypeMethodTest() {
             }
         }
     }
-    print('done');
 }
 
-try {
-    print('ArrayBuffer.prototype methods');
-    arrayBufferPrototypeMethodTest();
-} catch (e) {
-    print(e.stack || e);
-}
+arrayBufferPrototypeMethodTest();

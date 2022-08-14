@@ -5,7 +5,6 @@
 /*@include util-buffer.js@*/
 
 /*===
-stringify test
 [object ArrayBuffer] [object ArrayBuffer] [object ArrayBuffer]
 [object DataView] [object DataView] [object DataView]
 [object Int8Array] [object Int8Array] [object Int8Array]
@@ -27,9 +26,4 @@ function stringifyTest() {
     });
 }
 
-try {
-    print('stringify test');
-    stringifyTest();
-} catch (e) {
-    print(e.stack || e);
-}
+stringifyTest();

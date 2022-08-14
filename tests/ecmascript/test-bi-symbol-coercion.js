@@ -5,7 +5,6 @@
 /*@include util-symbol.js@*/
 
 /*===
-symbol coercion
 true false
 [object Symbol]
 [object Symbol]
@@ -196,9 +195,4 @@ function symbolCoercionTest() {
     restoreSymbolCoercionMethods(old);
 }
 
-try {
-    print('symbol coercion');
-    symbolCoercionTest();
-} catch (e) {
-    print(e.stack || e);
-}
+symbolCoercionTest();

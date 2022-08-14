@@ -11,9 +11,7 @@
 /*@include util-string.js@*/
 
 /*---
-{
-    "custom": true
-}
+custom: true
 ---*/
 
 /*===
@@ -40,8 +38,4 @@ function test() {
     print(Duktape.enc('jx', Uint8Array.allocPlain(res)));
 }
 
-try {
-    test();
-} catch (e) {
-    print(e.stack || e);
-}
+test();

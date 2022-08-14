@@ -15,7 +15,5 @@
  */
 
 /*---
-{
-    "skip": true
-}
+skip: true
 ---*/

@@ -7,9 +7,7 @@
 ===*/
 
 /*---
-{
-    "custom": true
-}
+custom: true
 ---*/
 
 function sparseArrayLengthTest() {
@@ -31,8 +29,4 @@ function sparseArrayLengthTest() {
     print(JSON.stringify(arr));
 }
 
-try {
-    sparseArrayLengthTest();
-} catch (e) {
-    print(e.name);
-}
+sparseArrayLengthTest();

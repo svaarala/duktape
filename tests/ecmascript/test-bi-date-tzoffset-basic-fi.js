@@ -4,9 +4,8 @@
 
 // Custom test because of locale specific timestamp outputs
 /*---
-{
-    "custom": true
-}
+custom: true
+timezone: Europe/Helsinki
 ---*/
 
 /*===
@@ -129,8 +128,4 @@ function finnishTzoffsetBasicTest() {
     dump(d);
 }
 
-try {
-    finnishTzoffsetBasicTest();
-} catch (e) {
-    print(e);
-}
+finnishTzoffsetBasicTest();

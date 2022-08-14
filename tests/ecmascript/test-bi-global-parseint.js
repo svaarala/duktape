@@ -73,7 +73,7 @@ try {
     print(g.parseInt('01000001', 2));  // smallest supported radix
     print(g.parseInt('z09gw', 36));    // largest supported radix
 } catch (e) {
-    print(e.name);
+    print(e.stack || e);
 }
 
 /*===
@@ -92,7 +92,7 @@ try {
           valueOf: function() { print('valueOf()'); return 123; } }
     ));
 } catch (e) {
-    print(e.name);
+    print(e.stack || e);
 }
 
 /*===
@@ -134,7 +134,7 @@ function whiteSpaceStripTest() {
 try {
     whiteSpaceStripTest();
 } catch (e) {
-    print(e.name);
+    print(e.stack || e);
 }
 
 /*===
@@ -182,7 +182,7 @@ function trailingGarbageTest() {
 try {
     trailingGarbageTest();
 } catch (e) {
-    print(e.name);
+    print(e.stack || e);
 }
 
 /*===
@@ -220,7 +220,7 @@ function fractionsTest() {
 try {
     fractionsTest();
 } catch (e) {
-    print(e.name);
+    print(e.stack || e);
 }
 
 /*===
@@ -308,7 +308,7 @@ function radixTest() {
 try {
     radixTest();
 } catch (e) {
-    print(e.name);
+    print(e.stack || e);
 }
 
 /*===
@@ -344,7 +344,7 @@ function testRadix16(x, r, arg_count) {
         }
         print(t);
     } catch (e) {
-        print(e);
+        print(e.stack || e);
     }
 }
 
@@ -383,7 +383,7 @@ function radix16Test() {
 try {
     radix16Test();
 } catch (e) {
-    print(e.name);
+    print(e.stack || e);
 }
 
 /*===
@@ -412,7 +412,7 @@ function signedValueTest() {
 try {
     signedValueTest();
 } catch (e) {
-    print(e.name);
+    print(e.stack || e);
 }
 
 /*===
@@ -460,7 +460,7 @@ function leadingZeroTest() {
 try {
     leadingZeroTest();
 } catch (e) {
-    print(e.name);
+    print(e.stack || e);
 }
 
 /*===
@@ -670,7 +670,7 @@ function numbersNear53BitsTest() {
 try {
     numbersNear53BitsTest();
 } catch (e) {
-    print(e.name);
+    print(e.stack || e);
 }
 
 /*===
@@ -813,7 +813,7 @@ function largeNumberTest() {
 try {
     largeNumberTest();
 } catch (e) {
-    print(e.name);
+    print(e.stack || e);
 }
 
 /*===
@@ -834,5 +834,5 @@ function digitCaseTest() {
 try {
     digitCaseTest();
 } catch (e) {
-    print(e.name);
+    print(e.stack || e);
 }

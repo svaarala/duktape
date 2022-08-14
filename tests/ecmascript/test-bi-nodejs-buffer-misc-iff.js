@@ -124,8 +124,4 @@ function iffTest() {
     }
 }
 
-try {
-    iffTest();
-} catch (e) {
-    print(e.stack || e);
-}
+iffTest();

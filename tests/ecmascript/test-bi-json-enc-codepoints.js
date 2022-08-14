@@ -32,8 +32,4 @@ function codepointTest() {
 
 print('codepoint test (no output)');
 
-try {
-    codepointTest();
-} catch (e) {
-    print(e.name);
-}
+codepointTest();

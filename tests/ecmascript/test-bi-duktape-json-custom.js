@@ -6,9 +6,7 @@
 /*@include util-buffer.js@*/
 
 /*---
-{
-    "custom": true
-}
+custom: true
 ---*/
 
 function encJx(val) {
@@ -229,14 +227,14 @@ print('primitive type encode');
 try {
     typeEncodeTest();
 } catch (e) {
-    print(e);
+    print(e.stack || e);
 }
 
 print('primitive type decode');
 try {
     typeDecodeTest();
 } catch (e) {
-    print(e);
+    print(e.stack || e);
 }
 
 /*===
@@ -288,7 +286,7 @@ print('signed zero');
 try {
     signedZeroTest();
 } catch (e) {
-    print(e);
+    print(e.stack || e);
 }
 
 /*===
@@ -366,14 +364,14 @@ print('character escape encode');
 try {
     characterEscapeEncodeTest();
 } catch (e) {
-    print(e);
+    print(e.stack || e);
 }
 
 print('character escape decode');
 try {
     characterEscapeDecodeTest();
 } catch (e) {
-    print(e);
+    print(e.stack || e);
 }
 
 /*===
@@ -487,7 +485,7 @@ print('ascii only output');
 try {
     asciiOnlyTest();
 } catch (e) {
-    print(e);
+    print(e.stack || e);
 }
 
 /*===
@@ -590,7 +588,7 @@ print('avoid key quotes');
 try {
     avoidKeyQuotesTest();
 } catch (e) {
-    print(e);
+    print(e.stack || e);
 }
 
 /*===
@@ -671,7 +669,7 @@ print('non-default encoding options');
 try {
     nonDefaultEncodingTest();
 } catch (e) {
-    print(e);
+    print(e.stack || e);
 }
 
 /*===
@@ -725,7 +723,7 @@ print('non-default decoding options');
 try {
     nonDefaultDecodingTest();
 } catch (e) {
-    print(e);
+    print(e.stack || e);
 }
 
 /*===
@@ -770,5 +768,5 @@ print('invalid xutf-8');
 try {
     invalidXutf8Test();
 } catch (e) {
-    print(e);
+    print(e.stack || e);
 }

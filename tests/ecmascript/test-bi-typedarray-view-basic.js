@@ -5,7 +5,6 @@
 /*@include util-buffer.js@*/
 
 /*===
-basic view test
 [object ArrayBuffer]
 16
 00000000000000000000000000000000
@@ -66,9 +65,4 @@ function basicViewTest() {
     print(bufferToHex(v2));
 }
 
-try {
-    print('basic view test');
-    basicViewTest();
-} catch (e) {
-    print(e.stack || e);
-}
+basicViewTest();

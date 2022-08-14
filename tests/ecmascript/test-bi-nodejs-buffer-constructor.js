@@ -8,13 +8,10 @@
 /*@include util-buffer.js@*/
 
 /*---
-{
-    "custom": true
-}
+custom: true
 ---*/
 
 /*===
-constructor test
 size: 0
 0 bytes: 
 [object Uint8Array] -> Buffer.prototype -> Uint8Array.prototype -> TypedArray.prototype -> Object.prototype
@@ -400,9 +397,4 @@ function constructorTest() {
     }
 }
 
-try {
-    print('constructor test');
-    constructorTest();
-} catch (e) {
-    print(e.stack || e);
-}
+constructorTest();

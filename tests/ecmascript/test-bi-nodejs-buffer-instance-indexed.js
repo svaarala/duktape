@@ -5,7 +5,6 @@
 /*@include util-buffer.js@*/
 
 /*===
-Node.js Buffer indexed property test
 0 128
 1 129
 2 130
@@ -48,9 +47,4 @@ function nodejsBufferIndexedPropertyTest() {
     printNodejsBuffer(b);
 }
 
-try {
-    print('Node.js Buffer indexed property test');
-    nodejsBufferIndexedPropertyTest();
-} catch (e) {
-    print(e.stack || e);
-}
+nodejsBufferIndexedPropertyTest();

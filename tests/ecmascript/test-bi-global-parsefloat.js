@@ -268,7 +268,7 @@ function basicTest() {
 try {
     basicTest();
 } catch (e) {
-    print(e.name);
+    print(e.stack || e);
 }
 
 /*===
@@ -287,7 +287,7 @@ try {
           valueOf: function() { print('valueOf()'); return 123.4; } }
     ));
 } catch (e) {
-    print(e.name);
+    print(e.stack || e);
 }
 
 /*===
@@ -325,7 +325,7 @@ function whiteSpaceStripTest() {
 try {
     whiteSpaceStripTest();
 } catch (e) {
-    print(e.name);
+    print(e.stack || e);
 }
 
 /*===
@@ -360,7 +360,7 @@ function trailingGarbageTest() {
 try {
     trailingGarbageTest();
 } catch (e) {
-    print(e.name);
+    print(e.stack || e);
 }
 
 /*===
@@ -402,7 +402,7 @@ function infinityTest() {
 try {
     infinityTest();
 } catch (e) {
-    print(e.name);
+    print(e.stack || e);
 }
 
 /* Leading plus/minus sign is accepted. */
@@ -457,7 +457,7 @@ function hexOctTest() {
 try {
     hexOctTest();
 } catch (e) {
-    print(e.name);
+    print(e.stack || e);
 }
 
 /*===
@@ -1536,7 +1536,7 @@ function exactnessTest() {
 try {
     exactnessTest();
 } catch (e) {
-    print(e.name);
+    print(e.stack || e);
 }
 
 /* XXX: more tests */

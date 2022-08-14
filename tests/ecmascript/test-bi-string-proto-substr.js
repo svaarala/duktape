@@ -381,11 +381,7 @@ function basicTest() {
     }
 }
 
-try {
-    basicTest();
-} catch (e) {
-    print(e);
-}
+basicTest();
 
 /*===
 string 2 51966 98
@@ -401,11 +397,7 @@ function nonBmpTest() {
     print(typeof t, t.length, t.charCodeAt(0), t.charCodeAt(1));
 }
 
-try {
-    nonBmpTest();
-} catch (e) {
-    print(e);
-}
+nonBmpTest();
 
 /*===
 string 3 def
@@ -451,8 +443,4 @@ function coercionTest() {
            valueOf: function() { print('valueOf() end'); return 5; } });
 }
 
-try {
-    coercionTest();
-} catch (e) {
-    print(e);
-}
+coercionTest();

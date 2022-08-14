@@ -3,24 +3,19 @@
  */
 
 /*---
-{
-    "custom": true,
-    "skip": true
-}
+custom: true
+skip: true
 ---*/
 
 /*===
-clone and transfer test
+no tests yet
 ===*/
 
 function cloneAndTransferTest() {
     // Section 9 of the Khronos specification provides some guidance for cloning
     // and transfering, but it doesn't specify anything that we can test now.
+
+    print('no tests yet');
 }
 
-try {
-    print('clone and transfer test');
-    cloneAndTransferTest();
-} catch (e) {
-    print(e.stack || e);
-}
+cloneAndTransferTest();

@@ -87,11 +87,7 @@ function basicTest() {
           m[4].length, m[5].length, m[6].length);
 }
 
-try {
-    basicTest();
-} catch (e) {
-    print(e);
-}
+basicTest();
 
 /*===
 regexp
@@ -254,11 +250,7 @@ function regExpTest() {
     // XXX: RegExp.prototype.exec() replaced; still calls original function
 }
 
-try {
-    regExpTest();
-} catch (e) {
-    print(e);
-}
+regExpTest();
 
 /*===
 coercion
@@ -335,8 +327,4 @@ function coercionTest() {
     test('xxxAyyy', { foo: 1, bar: 2 });  // no match
 }
 
-try {
-    coercionTest();
-} catch (e) {
-    print(e);
-}
+coercionTest();

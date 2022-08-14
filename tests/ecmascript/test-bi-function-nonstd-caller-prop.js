@@ -13,6 +13,7 @@
  */
 
 /*---
+custom: true
 nonstandard: true
 skip: true
 ---*/

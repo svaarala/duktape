@@ -45,8 +45,4 @@ function propertyListAncestorTest() {
     print(JSON.stringify(obj, plist));
 }
 
-try {
-    propertyListAncestorTest();
-} catch (e) {
-    print(e.name);
-}
+propertyListAncestorTest();

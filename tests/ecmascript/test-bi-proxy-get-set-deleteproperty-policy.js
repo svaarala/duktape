@@ -376,16 +376,12 @@ function deleteHookPostChecksTest() {
 
 print('trap post-checks');
 
-try {
-    print('get trap');
-    getHookPostChecksTest();
-    print('set trap');
-    setHookPostChecksTest();
-    print('deleteProperty trap');
-    deleteHookPostChecksTest();
-} catch (e) {
-    print(e);
-}
+print('get trap');
+getHookPostChecksTest();
+print('set trap');
+setHookPostChecksTest();
+print('deleteProperty trap');
+deleteHookPostChecksTest();
 
 /* A getter as a handler property.  No reason why this wouldn't work but
  * test just in case.
@@ -411,13 +407,7 @@ function getterHandlerTest() {
 }
 
 print('getter handler');
-
-try {
-    getterHandlerTest();
-} catch (e) {
-    print(e);
-}
-
+getterHandlerTest();
 
 /* A non-callable handler property.  This is not checked during proxy creation
  * and should cause a TypeError later.
@@ -430,9 +420,8 @@ function nonCallableHandlerTest() {
     print('proxy.foo:', proxy.foo);
 }
 
-print('non-callable handler');
-
 try {
+    print('non-callable handler');
     nonCallableHandlerTest();
 } catch (e) {
     print(e.name);
@@ -452,9 +441,8 @@ function throwingHandlerTest() {
     print('proxy.foo:', proxy.foo);
 }
 
-print('throwing handler');
-
 try {
+    print('throwing handler');
     throwingHandlerTest();
 } catch (e) {
     print(e.name);

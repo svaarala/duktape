@@ -6,7 +6,6 @@
 /*@include util-string.js@*/
 
 /*===
-symbol creation
 TypeError
 TypeError
 Symbol()
@@ -136,9 +135,4 @@ function symbolCreationTest() {
     safePrintString(String(Symbol('foo\u0000\ucafebar')));
 }
 
-try {
-    print('symbol creation');
-    symbolCreationTest();
-} catch (e) {
-    print(e.stack || e);
-}
+symbolCreationTest();

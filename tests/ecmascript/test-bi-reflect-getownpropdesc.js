@@ -9,7 +9,7 @@ undefined
 ===*/
 
 function test() {
-    var obj  = { foo: "foobar" };
+    var obj  = { foo: 'foobar' };
 
     var desc = Reflect.getOwnPropertyDescriptor(obj, 'foo');
     print(desc.value, desc.writable, desc.enumerable, desc.configurable);
@@ -19,8 +19,4 @@ function test() {
     print(Reflect.getOwnPropertyDescriptor(obj, 'bar'));
 }
 
-try {
-    test();
-} catch (e) {
-    print(e.stack || e);
-}
+test();

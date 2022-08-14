@@ -5,7 +5,6 @@
 /*@include util-buffer.js@*/
 
 /*===
-properties test
 Buffer
 value exists: true
 isEncoding: true
@@ -164,9 +163,4 @@ function propertiesTest() {
     check(b, Buffer_instance_props);
 }
 
-try {
-    print('properties test');
-    propertiesTest();
-} catch (e) {
-    print(e.stack || e);
-}
+propertiesTest();

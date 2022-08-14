@@ -23,8 +23,4 @@ function objectUndefinedTest() {
 
 }
 
-try {
-    objectUndefinedTest();
-} catch (e) {
-    print(e.name);
-}
+objectUndefinedTest();

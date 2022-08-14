@@ -24,14 +24,6 @@ function proxyTargetTest() {
 
 print('recursive proxies');
 
-try {
-    proxyHandlerTest();
-} catch (e) {
-    print(e.name);
-}
+proxyHandlerTest();
 
-try {
-    proxyTargetTest();
-} catch (e) {
-    print(e.name);
-}
+proxyTargetTest();

@@ -3,9 +3,7 @@
  */
 
 /*---
-{
-    "custom": true
-}
+custom: true
 ---*/
 
 /*===
@@ -31,8 +29,4 @@ function dataViewEnumTest() {
     });
 }
 
-try {
-    dataViewEnumTest();
-} catch (e) {
-    print(e.stack || e);
-}
+dataViewEnumTest();

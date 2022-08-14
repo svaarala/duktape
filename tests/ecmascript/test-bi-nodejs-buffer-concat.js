@@ -5,7 +5,6 @@
 /*@include util-buffer.js@*/
 
 /*===
-concat test
 array length: 0, totalLength: undefined
 true object
 0 bytes: 
@@ -369,9 +368,4 @@ function concatTest() {
     print(b2.length);
 }
 
-try {
-    print('concat test');
-    concatTest();
-} catch (e) {
-    print(e.stack || e);
-}
+concatTest();

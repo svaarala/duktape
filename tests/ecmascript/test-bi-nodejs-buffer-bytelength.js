@@ -5,7 +5,6 @@
 /*@include util-buffer.js@*/
 
 /*===
-byteLength test
 0 undefined 0
 0 utf8 0
 0 ascii 0
@@ -79,9 +78,4 @@ function byteLengthTest() {
     });
 }
 
-try {
-    print('byteLength test');
-    byteLengthTest();
-} catch (e) {
-    print(e.stack || e);
-}
+byteLengthTest();

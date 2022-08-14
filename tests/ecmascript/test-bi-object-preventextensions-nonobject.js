@@ -4,9 +4,5 @@
 123
 ===*/
 
-try {
-    var res = Object.freeze(123);
-    print(res);
-} catch (e) {
-    print(e.stack || e);
-}
+var res = Object.freeze(123);
+print(res);

@@ -1,7 +1,10 @@
 /*@include util-buffer.js@*/
 
+/*---
+custom: true
+---*/
+
 /*===
-Duktape methods
 - fin
 TypeError
 TypeError
@@ -81,9 +84,4 @@ function duktapeMethodTest() {
     print(isPlainBuffer(Duktape.compact(pb)));
 }
 
-try {
-    print('Duktape methods');
-    duktapeMethodTest();
-} catch (e) {
-    print(e.stack || e);
-}
+duktapeMethodTest();

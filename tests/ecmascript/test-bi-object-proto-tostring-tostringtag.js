@@ -57,11 +57,7 @@ function basicTest() {
     print(Object.prototype.toString.call(o));
 }
 
-try {
-    basicTest();
-} catch (e) {
-    print(e.stack || e);
-}
+basicTest();
 
 /*===
 [object OverrideNumber]
@@ -167,8 +163,4 @@ function primTypeTest() {
     print(Object.prototype.toString.call(o));
 }
 
-try {
-    primTypeTest();
-} catch (e) {
-    print(e.stack || e);
-}
+primTypeTest();

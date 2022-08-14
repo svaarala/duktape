@@ -76,11 +76,7 @@ function basicTest() {
     print(obj1.isPrototypeOf('foo'));
 }
 
-try {
-    basicTest();
-} catch (e) {
-    print(e);
-}
+basicTest();
 
 /*===
 coercion
@@ -192,8 +188,4 @@ function coercionTest() {
     }
 }
 
-try {
-    coercionTest();
-} catch (e) {
-    print(e);
-}
+coercionTest();

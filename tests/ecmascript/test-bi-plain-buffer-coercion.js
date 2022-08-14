@@ -1,7 +1,10 @@
 /*@include util-buffer.js@*/
 
+/*---
+custom: true
+---*/
+
 /*===
-coercion test
 false
 [object Uint8Array]
 [Overridden]
@@ -82,9 +85,4 @@ function coercionTest() {
     print(Duktape.enc('jx', new Uint8Array(ab)));
 }
 
-try {
-    print('coercion test');
-    coercionTest();
-} catch (e) {
-    print(e.stack || e);
-}
+coercionTest();

@@ -25,8 +25,4 @@ function nulInGapTest() {
     print(res.replace(/\u0000/g, '<NUL>'));
 }
 
-try {
-    nulInGapTest();
-} catch (e) {
-    print(e.stack || e);
-}
+nulInGapTest();

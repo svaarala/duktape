@@ -2,10 +2,13 @@
  *  Decoding non-BMP, valid UTF-8 strings.
  */
 
+/*---
+custom: true
+---*/
+
 /*===
 "foo"
 "A\U0010fedcB"
-done
 ===*/
 
 function test(hexInput) {
@@ -24,5 +27,3 @@ test('63666f6f');
 //
 // Currently decodes to Duktape specific non-BMP codepoint as is.
 test('6641f48fbb9c42');
-
-print('done');

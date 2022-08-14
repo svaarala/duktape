@@ -2,9 +2,7 @@
 // duk_api_readable.c.
 
 /*---
-{
-    "custom": true
-}
+custom: true
 ---*/
 
 /*===

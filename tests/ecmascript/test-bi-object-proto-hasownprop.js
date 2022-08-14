@@ -32,11 +32,7 @@ function basicTest() {
     test(obj, 'non-existent');
 }
 
-try {
-    basicTest();
-} catch (e) {
-    print(e);
-}
+basicTest();
 
 /*===
 coercion
@@ -100,8 +96,4 @@ function coercionTest() {
     test(objThis, objProp);
 }
 
-try {
-    coercionTest();
-} catch (e) {
-    print(e);
-}
+coercionTest();

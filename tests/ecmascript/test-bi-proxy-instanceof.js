@@ -34,11 +34,7 @@ function instanceofWithoutTrapTest() {
     print(c instanceof Error);
 }
 
-try {
-    instanceofWithoutTrapTest();
-} catch (e) {
-    print(e.stack || e);
-}
+instanceofWithoutTrapTest();
 
 // XXX: add test for instanceof with a getPrototypeOf trap
 

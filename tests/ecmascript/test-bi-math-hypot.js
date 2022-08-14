@@ -93,8 +93,4 @@ function test() {
     print(Math.hypot.length);
 }
 
-try {
-    test();
-} catch (e) {
-    print(e.stack || e);
-}
+test();

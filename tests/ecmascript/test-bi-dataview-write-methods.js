@@ -6,11 +6,9 @@
 /*@include util-string.js@*/
 
 /*---
-{
-    "custom": true,
-    "endianness": "little",
-    "slow": true
-}
+custom: true
+endianness: little
+slow: true
 ---*/
 
 /*===

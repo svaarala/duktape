@@ -1,7 +1,10 @@
 /*@include util-buffer.js@*/
 
+/*---
+custom: true
+---*/
+
 /*===
-TypedArray.prototype methods
 - set
 |6162636465666768696a6b6c6d6e6f70|
 |6162636465660102036a6b6c6d6e6f70|
@@ -62,9 +65,4 @@ function typedArrayPrototypeMethodTest() {
     print(Duktape.enc('jx', t));
 }
 
-try {
-    print('TypedArray.prototype methods');
-    typedArrayPrototypeMethodTest();
-} catch (e) {
-    print(e.stack || e);
-}
+typedArrayPrototypeMethodTest();

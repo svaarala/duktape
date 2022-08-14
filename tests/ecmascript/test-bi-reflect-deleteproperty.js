@@ -14,7 +14,7 @@ true
 function test() {
     'use strict';
 
-    var eaty = { pig: "maggie", cow: "Kittycow", ape: "Machel" };
+    var eaty = { pig: 'maggie', cow: 'Kittycow', ape: 'Machel' };
 
     print(Reflect.deleteProperty(eaty, 'pig'));
     print('pig' in eaty);  // false (The cow did it.)
@@ -32,8 +32,4 @@ function test() {
     print(Reflect.deleteProperty(eaty, 'cow'));  // The ape did it.
 }
 
-try {
-    test();
-} catch (e) {
-    print(e.stack || e);
-}
+test();

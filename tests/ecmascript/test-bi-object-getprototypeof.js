@@ -22,11 +22,7 @@ function basicTest() {
     print(typeof obj, typeof t, t === proto, obj.proto);
 }
 
-try {
-    basicTest();
-} catch (e) {
-    print(e);
-}
+basicTest();
 
 /*===
 firstarg
@@ -72,8 +68,4 @@ function firstArgTest() {
     test(function(){});
 }
 
-try {
-    firstArgTest();
-} catch (e) {
-    print(e);
-}
+firstArgTest();

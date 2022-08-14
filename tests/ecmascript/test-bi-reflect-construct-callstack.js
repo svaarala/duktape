@@ -4,9 +4,7 @@
  */
 
 /*---
-{
-    "custom": true
-}
+custom: true
 ---*/
 
 /*===
@@ -32,8 +30,4 @@ function test() {
     Reflect.construct(MyConstructor, [ 1, 2, 3 ]);
 }
 
-try {
-    test();
-} catch (e) {
-    print(e.stack || e);
-}
+test();

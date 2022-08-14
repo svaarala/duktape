@@ -14,10 +14,6 @@ function testValue(name) {
     print(name in g, typeof v, v);
 }
 
-try {
-    testValue('NaN');
-    testValue('Infinity');
-    testValue('undefined');
-} catch (e) {
-    print(e.name);
-}
+testValue('NaN');
+testValue('Infinity');
+testValue('undefined');

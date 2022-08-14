@@ -3,7 +3,6 @@
  */
 
 /*===
-prototype
 [object Function]
 true
 true
@@ -33,9 +32,4 @@ function functionPrototypeTest() {
     print(typeof pd.value, JSON.stringify(pd.value), pd.writable, pd.enumerable, pd.configurable);
 }
 
-try {
-    print('prototype');
-    functionPrototypeTest();
-} catch (e) {
-    print(e.stack || e);
-}
+functionPrototypeTest();

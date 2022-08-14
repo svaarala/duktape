@@ -381,11 +381,7 @@ function basicTest() {
     }
 }
 
-try {
-    basicTest();
-} catch (e) {
-    print(e);
-}
+basicTest();
 
 /*===
 string 2 97 114
@@ -405,11 +401,7 @@ function nonBmpTest() {
     print(typeof t, t.length, t.charCodeAt(0), t.charCodeAt(1));
 }
 
-try {
-    nonBmpTest();
-} catch (e) {
-    print(e);
-}
+nonBmpTest();
 
 /*===
 TypeError
@@ -455,8 +447,4 @@ function coercionTest() {
            valueOf: function() { print('valueOf() end'); return 5; } });
 }
 
-try {
-    coercionTest();
-} catch (e) {
-    print(e);
-}
+coercionTest();

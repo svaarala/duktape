@@ -5,7 +5,6 @@ callthis arg-0 arg-1 arg-2
 arg-499998
 arg-499999
 undefined
-done
 ===*/
 
 function test() {
@@ -27,10 +26,6 @@ function test() {
 
     // Call .call() via .apply() to ensure huge argument count makes it.
     f0.call.apply(f0, args);
-    print('done');
 }
-try {
-    test();
-} catch (e) {
-    print(e.stack || e);
-}
+
+test();

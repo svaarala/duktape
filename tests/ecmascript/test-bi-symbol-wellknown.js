@@ -5,7 +5,6 @@
 /*@include util-symbol.js@*/
 
 /*===
-well-known symbols
 Symbol(Symbol.toPrimitive)
 undefined
 false
@@ -23,9 +22,4 @@ function wellKnownSymbolTest() {
     print(s == Symbol.for('Symbol.toPrimitive'));
 }
 
-try {
-    print('well-known symbols');
-    wellKnownSymbolTest();
-} catch (e) {
-    print(e.stack || e);
-}
+wellKnownSymbolTest();

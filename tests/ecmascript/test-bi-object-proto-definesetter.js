@@ -69,8 +69,4 @@ function testDefineSetter() {
     print(Object.prototype.__defineSetter__.name);
 }
 
-try {
-    testDefineSetter();
-} catch (e) {
-    print(e.stack || e);
-}
+testDefineSetter();

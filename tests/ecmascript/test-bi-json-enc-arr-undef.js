@@ -40,8 +40,4 @@ function arrayUndefinedTest() {
     print(JSON.stringify([undefined, 'foo', undefined, 'bar', undefined], null, 2));
 }
 
-try {
-    arrayUndefinedTest();
-} catch (e) {
-    print(e.name);
-}
+arrayUndefinedTest();

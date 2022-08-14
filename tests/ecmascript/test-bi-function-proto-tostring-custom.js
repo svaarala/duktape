@@ -3,9 +3,7 @@
  */
 
 /*---
-{
-    "custom": true
-}
+custom: true
 ---*/
 
 /*===
@@ -29,8 +27,4 @@ function test() {
     // tests/api/test-dev-func-tostring.c.
 }
 
-try {
-    test();
-} catch (e) {
-    print(e.stack || e);
-}
+test();
