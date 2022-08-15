@@ -171,7 +171,7 @@ function basicTest() {
 try {
     basicTest();
 } catch (e) {
-    print(e);
+    print(e.stack || e);
 }
 
 /*===
@@ -203,5 +203,5 @@ function implantTest() {
 try {
     implantTest();
 } catch (e) {
-    print(e);
+    print(e.stack || e);
 }

@@ -1,7 +1,5 @@
 /*---
-{
-    "skip": true
-}
+skip: true
 ---*/
 
 function test(this_value) {
@@ -17,7 +15,7 @@ function test(this_value) {
 
 /*===
 basic
-string 
+string
 string 1,2,3
 string ,,true,false,123,foo,foo,bar,quux,FOO,BAR,[object Object]
 string 1,2,,,,,,,,,,,,,,,,,,
@@ -61,7 +59,7 @@ function basicTest() {
 try {
     basicTest();
 } catch (e) {
-    print(e);
+    print(e.stack || e);
 }
 
 /*===
@@ -214,5 +212,5 @@ function coercionTest() {
 try {
     coercionTest();
 } catch(e) {
-    print(e);
+    print(e.stack || e);
 }

@@ -222,8 +222,4 @@ function basicTest() {
     printJson(res);
 }
 
-try {
-    basicTest();
-} catch (e) {
-    printJson(e.stack || e);
-}
+basicTest();

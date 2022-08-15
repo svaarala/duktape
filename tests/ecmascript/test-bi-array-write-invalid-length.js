@@ -72,8 +72,4 @@ function test() {
     print(a.length);
 }
 
-try {
-    test();
-} catch (e) {
-    print(e);
-}
+test();

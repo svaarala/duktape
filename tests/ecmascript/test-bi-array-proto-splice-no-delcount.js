@@ -35,8 +35,4 @@ function test() {
     print(JSON.stringify(arr), JSON.stringify(res));
 }
 
-try {
-    test();
-} catch (e) {
-    print(e);
-}
+test();

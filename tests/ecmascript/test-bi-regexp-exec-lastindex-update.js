@@ -8,7 +8,6 @@
 TypeError
 3
 3 false false false
-done
 ===*/
 
 function test() {
@@ -38,10 +37,4 @@ function test() {
     dump();
 }
 
-try {
-    test();
-} catch (e) {
-    print(e.stack || e);
-}
-
-print('done');
+test();

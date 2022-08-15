@@ -8,6 +8,12 @@
 
 /*@include util-buffer.js@*/
 
+/*---
+custom: true
+duktape_extras:
+  logging: true
+---*/
+
 // This test relies on 'duk' being compiled with the external logging
 // framework since Duktape 2.x.  The test should technically be disabled
 // and moved into the test harness of the extras.
@@ -84,12 +90,7 @@ function loggerNameTest() {
 }
 
 print('logger name');
-
-try {
-    loggerNameTest();
-} catch (e) {
-    print(e);
-}
+loggerNameTest();
 
 /*===
 log level
@@ -150,12 +151,7 @@ function logLevelTest() {
 }
 
 print('log level');
-
-try {
-    logLevelTest();
-} catch (e) {
-    print(e);
-}
+logLevelTest();
 
 /*===
 formatting
@@ -302,12 +298,7 @@ function formattingTest() {
 }
 
 print('formatting');
-
-try {
-    formattingTest();
-} catch (e) {
-    print(e);
-}
+formattingTest();
 
 /*===
 multiline
@@ -328,12 +319,7 @@ function multiLineTest() {
 }
 
 print('multiline');
-
-try {
-    multiLineTest();
-} catch (e) {
-    print(e);
-}
+multiLineTest();
 
 /*===
 length test
@@ -495,11 +481,6 @@ function lengthTest() {
 }
 
 print('length test');
-
-try {
-    lengthTest();
-} catch (e) {
-    print(e);
-}
+lengthTest();
 
 Duktape.Logger.prototype.raw = raw_replacement;

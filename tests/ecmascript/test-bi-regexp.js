@@ -17,12 +17,8 @@ function regexpConstructorTest() {
     print('prototype' in RegExp);
 }
 
-try {
-    print('constructor');
-    regexpConstructorTest();
-} catch (e) {
-    print(e.stack || e);
-}
+print('constructor');
+regexpConstructorTest();
 
 /*===
 prototype
@@ -42,12 +38,8 @@ function regexpPrototypeTest() {
     print(typeof RegExp.prototype.toString);
 }
 
-try {
-    print('prototype');
-    regexpPrototypeTest();
-} catch (e) {
-    print(e.stack || e);
-}
+print('prototype');
+regexpPrototypeTest();
 
 /*===
 instance
@@ -83,9 +75,5 @@ function regexpInstanceTest() {
     check('lastIndex');
 }
 
-try {
-    print('instance');
-    regexpInstanceTest();
-} catch (e) {
-    print(e.stack || e);
-}
+print('instance');
+regexpInstanceTest();

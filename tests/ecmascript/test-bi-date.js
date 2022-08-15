@@ -23,8 +23,4 @@ function test() {
     print(Date.prototype.valueOf());
 }
 
-try {
-    test();
-} catch (e) {
-    print(e.stack || e);
-}
+test();

@@ -45,8 +45,4 @@ function test() {
     dump(a);
 }
 
-try {
-    test();
-} catch (e) {
-    print(e.stack || e);
-}
+test();

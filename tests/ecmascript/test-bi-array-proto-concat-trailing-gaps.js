@@ -99,8 +99,4 @@ function test() {
     dump(g);
 }
 
-try {
-    test();
-} catch (e) {
-    print(e);
-}
+test();

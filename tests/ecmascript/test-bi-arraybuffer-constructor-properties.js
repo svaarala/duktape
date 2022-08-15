@@ -3,9 +3,7 @@
  */
 
 /*---
-{
-    "custom": true
-}
+custom: true
 ---*/
 
 function encValue(v) {
@@ -14,7 +12,6 @@ function encValue(v) {
 }
 
 /*===
-ArrayBuffer constructor properties test
 name true string ArrayBuffer
 length true number 1
 prototype true object [object Object]
@@ -43,9 +40,4 @@ function arrayBufferConstructorPropertiesTest() {
     print(ArrayBuffer.prototype.constructor === ArrayBuffer);
 }
 
-try {
-    print('ArrayBuffer constructor properties test');
-    arrayBufferConstructorPropertiesTest();
-} catch (e) {
-    print(e.stack || e);
-}
+arrayBufferConstructorPropertiesTest();

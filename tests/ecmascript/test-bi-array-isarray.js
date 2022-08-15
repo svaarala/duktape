@@ -27,8 +27,4 @@ function basicTest() {
     test(function(){});
 }
 
-try {
-    basicTest();
-} catch (e) {
-    print(e);
-}
+basicTest();

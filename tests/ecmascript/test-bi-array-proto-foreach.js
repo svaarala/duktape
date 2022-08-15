@@ -153,7 +153,7 @@ function basicTest() {
 try {
     basicTest();
 } catch (e) {
-    print(e);
+    print(e.stack || e);
 }
 
 /*===
@@ -215,7 +215,7 @@ function mutationTest() {
 try {
     mutationTest();
 } catch (e) {
-    print(e);
+    print(e.stack || e);
 }
 
 /*===
@@ -339,5 +339,5 @@ function coercionTest() {
 try {
     coercionTest();
 } catch (e) {
-    print(e);
+    print(e.stack || e);
 }

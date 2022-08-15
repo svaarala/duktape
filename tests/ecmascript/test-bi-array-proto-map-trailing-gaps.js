@@ -41,8 +41,4 @@ function test() {
     dump(d);
 }
 
-try {
-    test();
-} catch (e) {
-    print(e);
-}
+test();

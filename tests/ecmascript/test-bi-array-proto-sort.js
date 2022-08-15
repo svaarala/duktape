@@ -7,9 +7,7 @@
  */
 
 /*---
-{
-    "custom": true
-}
+custom: true
 ---*/
 
 function dumpValue(v) {
@@ -160,7 +158,7 @@ function basicTest() {
 try {
     basicTest();
 } catch (e) {
-    print(e);
+    print(e.stack || e);
 }
 
 /*===
@@ -2406,7 +2404,7 @@ try {
     exhaustiveSortTest([1,2,3,3,4,5], true, false);
     exhaustiveSortTest([1,2,3,3,4,5], false, true);
 } catch (e) {
-    print(e);
+    print(e.stack || e);
 }
 
 /*===
@@ -2458,7 +2456,11 @@ function randomStringsTest() {
     print(str1 === str2);
 }
 
-randomStringsTest();
+try {
+    randomStringsTest();
+} catch (e) {
+    print(e.stack || e);
+}
 
 /*===
 attributes
@@ -2551,7 +2553,7 @@ function attributeTest() {
 try {
     attributeTest();
 } catch (e) {
-    print(e);
+    print(e.stack || e);
 }
 
 /*===
@@ -2607,7 +2609,7 @@ function compareFunctionTest() {
 try {
     compareFunctionTest();
 } catch (e) {
-    print(e);
+    print(e.stack || e);
 }
 
 /*===
@@ -2667,7 +2669,7 @@ function inheritedTest() {
 try {
     inheritedTest();
 } catch (e) {
-    print(e);
+    print(e.stack || e);
 }
 
 /*===
@@ -2815,7 +2817,7 @@ function protectedTest() {
 try {
     protectedTest();
 } catch (e) {
-    print(e);
+    print(e.stack || e);
 }
 
 /* XXX: sort test for array whose length is above 32-bit range (e.g. as a result

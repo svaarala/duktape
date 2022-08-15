@@ -64,7 +64,7 @@ function asFunctionTest() {
 try {
     asFunctionTest();
 } catch (e) {
-    print(e);
+    print(e.stack || e);
 }
 
 /*===
@@ -125,5 +125,5 @@ function asConstructorTest() {
 try {
     asConstructorTest();
 } catch (e) {
-    print(e);
+    print(e.stack || e);
 }

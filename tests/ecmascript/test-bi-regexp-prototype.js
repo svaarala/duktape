@@ -165,8 +165,4 @@ function test() {
     print(/foo/gim.flags);
 }
 
-try {
-    test();
-} catch (e) {
-    print(e.stack || e);
-}
+test();

@@ -5,13 +5,10 @@
 /*@include util-buffer.js@*/
 
 /*---
-{
-    "custom": true
-}
+custom: true
 ---*/
 
 /*===
-ArrayBuffer isView() test
 function
 function
 false
@@ -89,9 +86,4 @@ function arrayBufferIsViewTest() {
     });
 }
 
-try {
-    print('ArrayBuffer isView() test');
-    arrayBufferIsViewTest();
-} catch (e) {
-    print(e.stack || e);
-}
+arrayBufferIsViewTest();

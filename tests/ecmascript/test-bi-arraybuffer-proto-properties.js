@@ -3,9 +3,7 @@
  */
 
 /*---
-{
-    "custom": true
-}
+custom: true
 ---*/
 
 function encValue(v) {
@@ -14,7 +12,6 @@ function encValue(v) {
 }
 
 /*===
-ArrayBuffer prototype properties test
 slice true function function
 isView false undefined undefined
 constructor true function function
@@ -41,9 +38,4 @@ function arrayBufferPrototypePropertiesTest() {
     print(ArrayBuffer.prototype.constructor === ArrayBuffer);
 }
 
-try {
-    print('ArrayBuffer prototype properties test');
-    arrayBufferPrototypePropertiesTest();
-} catch (e) {
-    print(e.stack || e);
-}
+arrayBufferPrototypePropertiesTest();
