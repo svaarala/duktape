@@ -1,9 +1,12 @@
 name: Test
 on: [push, pull_request]
 jobs:
-  ecmatest:
-    name: Ecmatest
+  alltest:
+    name: API and ECMA
     runs-on: ubuntu-22.04
+    strategy:
+      matrix:
+        slice: [ '1', '2', '3', '4', '5', '6', '7', '8' ]
     steps:
       - name: Checkout code
         uses: actions/checkout@v2
@@ -15,32 +18,9 @@ jobs:
         uses: actions/setup-node@v3
         with:
           node-version: 16
-      - name: Build
+      - name: Test
         run: |
-          make build/duk
-      - name: Ecmatest
-        run: |
-          TZ=Europe/Helsinki make ecmatest
-  apitest:
-    name: Apitest
-    runs-on: ubuntu-22.04
-    steps:
-      - name: Checkout code
-        uses: actions/checkout@v2
-      - name: Install packages
-        run: |
-          sudo apt -qqy update
-          sudo apt -qqy install build-essential make python3 python3-yaml bc git
-      - name: Install Node.js
-        uses: actions/setup-node@v3
-        with:
-          node-version: 16
-      - name: Build
-        run: |
-          make build/duk
-      - name: Apitest
-        run: |
-          TZ=Europe/Helsinki make apitest
+          TZ=Europe/Helsinki make test-all-${{matrix.slice}}
   misctests:
     name: Misc tests
     runs-on: ubuntu-22.04
