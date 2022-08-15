@@ -679,16 +679,28 @@ test-all: prep-duktool | tmp deps/UglifyJS
 	"$(NODEJS)" src-tools/index.js run-tests --uglifyjs-bin deps/UglifyJS/bin/uglifyjs --test-log-file tmp/test-all.log $(TEST_ALL_DIRS)
 .PHONY: test-all-1
 test-all-1: prep-duktool | tmp deps/UglifyJS
-	"$(NODEJS)" src-tools/index.js run-tests --uglifyjs-bin deps/UglifyJS/bin/uglifyjs --test-log-file tmp/test-all-1.log --test-hash-min 0 --test-hash-max 63 $(TEST_ALL_DIRS)
+	"$(NODEJS)" src-tools/index.js run-tests --uglifyjs-bin deps/UglifyJS/bin/uglifyjs --test-log-file tmp/test-all-1.log --test-hash-min 0 --test-hash-max 31 $(TEST_ALL_DIRS)
 .PHONY: test-all-2
 test-all-2: prep-duktool | tmp deps/UglifyJS
-	"$(NODEJS)" src-tools/index.js run-tests --uglifyjs-bin deps/UglifyJS/bin/uglifyjs --test-log-file tmp/test-all-2.log --test-hash-min 64 --test-hash-max 127 $(TEST_ALL_DIRS)
+	"$(NODEJS)" src-tools/index.js run-tests --uglifyjs-bin deps/UglifyJS/bin/uglifyjs --test-log-file tmp/test-all-2.log --test-hash-min 32 --test-hash-max 63 $(TEST_ALL_DIRS)
 .PHONY: test-all-3
 test-all-3: prep-duktool | tmp deps/UglifyJS
-	"$(NODEJS)" src-tools/index.js run-tests --uglifyjs-bin deps/UglifyJS/bin/uglifyjs --test-log-file tmp/test-all-3.log --test-hash-min 128 --test-hash-max 191 $(TEST_ALL_DIRS)
+	"$(NODEJS)" src-tools/index.js run-tests --uglifyjs-bin deps/UglifyJS/bin/uglifyjs --test-log-file tmp/test-all-3.log --test-hash-min 64 --test-hash-max 95 $(TEST_ALL_DIRS)
 .PHONY: test-all-4
 test-all-4: prep-duktool | tmp deps/UglifyJS
-	"$(NODEJS)" src-tools/index.js run-tests --uglifyjs-bin deps/UglifyJS/bin/uglifyjs --test-log-file tmp/test-all-4.log --test-hash-min 192 --test-hash-max 255 $(TEST_ALL_DIRS)
+	"$(NODEJS)" src-tools/index.js run-tests --uglifyjs-bin deps/UglifyJS/bin/uglifyjs --test-log-file tmp/test-all-4.log --test-hash-min 96 --test-hash-max 127 $(TEST_ALL_DIRS)
+.PHONY: test-all-5
+test-all-5: prep-duktool | tmp deps/UglifyJS
+	"$(NODEJS)" src-tools/index.js run-tests --uglifyjs-bin deps/UglifyJS/bin/uglifyjs --test-log-file tmp/test-all-1.log --test-hash-min 128 --test-hash-max 159 $(TEST_ALL_DIRS)
+.PHONY: test-all-6
+test-all-6: prep-duktool | tmp deps/UglifyJS
+	"$(NODEJS)" src-tools/index.js run-tests --uglifyjs-bin deps/UglifyJS/bin/uglifyjs --test-log-file tmp/test-all-2.log --test-hash-min 160 --test-hash-max 191 $(TEST_ALL_DIRS)
+.PHONY: test-all-7
+test-all-7: prep-duktool | tmp deps/UglifyJS
+	"$(NODEJS)" src-tools/index.js run-tests --uglifyjs-bin deps/UglifyJS/bin/uglifyjs --test-log-file tmp/test-all-3.log --test-hash-min 192 --test-hash-max 223 $(TEST_ALL_DIRS)
+.PHONY: test-all-8
+test-all-8: prep-duktool | tmp deps/UglifyJS
+	"$(NODEJS)" src-tools/index.js run-tests --uglifyjs-bin deps/UglifyJS/bin/uglifyjs --test-log-file tmp/test-all-4.log --test-hash-min 224 --test-hash-max 255 $(TEST_ALL_DIRS)
 
 .PHONY: perftest
 perftest: prep-duktool | tmp deps/UglifyJS
