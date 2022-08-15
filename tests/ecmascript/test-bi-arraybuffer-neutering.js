@@ -3,10 +3,8 @@
  */
 
 /*---
-{
-    "custom": true,
-    "skip": true
-}
+custom: true
+skip: true
 ---*/
 
 /* Currently there is no neutering support, so just sketching what could be
@@ -43,8 +41,4 @@ function neuteredTest() {
     // XXX: behavior when used as method arguments (e.g. .set(), .subarray())?
 }
 
-try {
-    neuteredTest();
-} catch (e) {
-    print(e.stack || e);
-}
+neuteredTest();

@@ -8,7 +8,6 @@ function encValue(v) {
 }
 
 /*===
-ArrayBuffer instance properties test
 byteLength true number 2
 byteOffset false undefined undefined
 length false undefined undefined
@@ -42,9 +41,4 @@ function arrayBufferInstancePropertiesTest() {
     });
 }
 
-try {
-    print('ArrayBuffer instance properties test');
-    arrayBufferInstancePropertiesTest();
-} catch (e) {
-    print(e.stack || e);
-}
+arrayBufferInstancePropertiesTest();

@@ -76,8 +76,4 @@ function test() {
     print(arr);
 }
 
-try {
-    test();
-} catch (e) {
-    print(e.stack || e);
-}
+test();

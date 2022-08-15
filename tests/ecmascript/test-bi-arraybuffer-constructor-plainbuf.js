@@ -5,9 +5,7 @@
 /*@include util-buffer.js@*/
 
 /*---
-{
-    "custom": true
-}
+custom: true
 ---*/
 
 /*===
@@ -49,8 +47,4 @@ function arrayBufferPlainBufTest() {
     print(new Uint8Array(buf)[10]);
 }
 
-try {
-    arrayBufferPlainBufTest();
-} catch (e) {
-    print(e.stack || e);
-}
+arrayBufferPlainBufTest();

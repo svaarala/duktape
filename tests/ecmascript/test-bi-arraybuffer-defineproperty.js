@@ -31,8 +31,4 @@ function test() {
     print(typeof u8, u8.length, Object.prototype.toString.call(u8));
 }
 
-try {
-    test();
-} catch (e) {
-    print(e.stack || e);
-}
+test();

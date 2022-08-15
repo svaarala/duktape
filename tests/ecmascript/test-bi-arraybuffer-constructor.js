@@ -5,10 +5,8 @@
 /*@include util-buffer.js@*/
 
 /*---
-{
-    "custom": true,
-    "slow": true
-}
+custom: true
+slow: true
 ---*/
 
 function str(x) {

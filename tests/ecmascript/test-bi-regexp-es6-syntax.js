@@ -3,6 +3,12 @@
  *  DUK_USE_ES6_REGEXP_SYNTAX.
  */
 
+/*---
+custom: true
+duktape_config:
+  DUK_USE_ES6_REGEXP_SYNTAX: true
+---*/
+
 /*===
 ["{"]
 ["}"]
@@ -37,8 +43,4 @@ function test() {
     test('\\$', 'foo$bar');
 }
 
-try {
-    test();
-} catch (e) {
-    print(e.stack || e);
-}
+test();

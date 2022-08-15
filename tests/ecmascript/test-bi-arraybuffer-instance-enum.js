@@ -3,9 +3,7 @@
  */
 
 /*---
-{
-    "custom": true
-}
+custom: true
 ---*/
 
 /*===
@@ -36,8 +34,4 @@ function arrayBufferEnumTest() {
     print('done');
 }
 
-try {
-    arrayBufferEnumTest();
-} catch (e) {
-    print(e.stack || e);
-}
+arrayBufferEnumTest();

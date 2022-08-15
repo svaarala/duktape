@@ -92,5 +92,5 @@ function basicTest() {
 try {
     basicTest();
 } catch (e) {
-    print(e);
+    print(e.stack || e);
 }

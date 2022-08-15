@@ -3,13 +3,10 @@
  */
 
 /*---
-{
-    "custom": true
-}
+custom: true
 ---*/
 
 /*===
-regexp test
 SyntaxError
 ===*/
 
@@ -53,9 +50,4 @@ function regexpTest() {
 */
 }
 
-try {
-    print('regexp test');
-    regexpTest();
-} catch (e) {
-    print(e.stack || e);
-}
+regexpTest();

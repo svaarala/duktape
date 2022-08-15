@@ -35,8 +35,4 @@ function test() {
     print(y.toString());
 }
 
-try {
-    test();
-} catch (e) {
-    print(e.stack || e);
-}
+test();
