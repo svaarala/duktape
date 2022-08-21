@@ -105,9 +105,17 @@ function basicTest() {
 
     t = { length: 256*256*256*256 - 1 };  // max array length
     print(t.length);
-    Array.prototype.push.call(t, 1, 2, 3, 4, 5);
+    try {
+        Array.prototype.push.call(t, 1, 2, 3, 4, 5);
+    } catch (e) {
+        print(e.name);
+    }
     print(t.length);  // -> 256*256*256*256 + 4
-    Array.prototype.push.call(t, 1, 2, 3, 4, 5);
+    try {
+        Array.prototype.push.call(t, 1, 2, 3, 4, 5);
+    } catch (e) {
+        print(e.name);
+    }
     print(t.length);  // -> 4 + 5 = 9
 
     // length side effect - only written once at the end
@@ -175,7 +183,7 @@ function basicTest() {
 try {
     basicTest();
 } catch (e) {
-    print(e);
+    print(e.stack || e);
 }
 
 /*===
@@ -210,7 +218,7 @@ function coercionTest() {
 try {
     coercionTest();
 } catch (e) {
-    print(e);
+    print(e.stack || e);
 }
 
 /*===
@@ -240,5 +248,5 @@ function nonExtensibleTest() {
 try {
     nonExtensibleTest();
 } catch (e) {
-    print(e);
+    print(e.stack || e);
 }

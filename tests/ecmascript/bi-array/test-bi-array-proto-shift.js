@@ -578,7 +578,7 @@ function basicTest() {
 try {
     basicTest();
 } catch (e) {
-    print(e);
+    print(e.stack || e);
 }
 
 /*===
@@ -654,7 +654,7 @@ function inheritedTest() {
 try {
     inheritedTest();
 } catch (e) {
-    print(e);
+    print(e.stack || e);
 }
 
 /*===
@@ -724,7 +724,7 @@ function mutationTest() {
 try {
     mutationTest();
 } catch (e) {
-    print(e);
+    print(e.stack || e);
 }
 
 /*===
@@ -802,7 +802,7 @@ function protectedTest() {
 try {
     protectedTest();
 } catch (e) {
-    print(e);
+    print(e.stack || e);
 }
 
 /*===
@@ -906,7 +906,7 @@ function coercionTest() {
 try {
     coercionTest();
 } catch (e) {
-    print(e);
+    print(e.stack || e);
 }
 
 /* XXX: enumeration order effects, when sparse: deleting and adding properties

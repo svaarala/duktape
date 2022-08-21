@@ -188,7 +188,7 @@ function basicTest() {
 try {
     basicTest();
 } catch (e) {
-    print(e);
+    print(e.stack || e);
 }
 
 /*===
@@ -301,7 +301,7 @@ function attributesTest() {
 try {
     attributesTest();
 } catch (e) {
-    print(e);
+    print(e.stack || e);
 }
 
 /*===
@@ -317,7 +317,7 @@ function mutationTest() {
 try {
     mutationTest();
 } catch (e) {
-    print(e);
+    print(e.stack || e);
 }
 
 /*===

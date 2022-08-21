@@ -46,7 +46,7 @@ async function runTestcase({ repoDirectory, testcaseFilename, knownIssues, ignor
         polyfillFilenames,
         promiseHack: true,
         tryCatchWrapper: true,
-        tryCatchRethrow: false,
+        tryCatchRethrow: true,
         uglifyJsExePath,
         uglifyJs2ExePath,
         closureJarPath
@@ -82,7 +82,9 @@ async function runTestcase({ repoDirectory, testcaseFilename, knownIssues, ignor
     }
 
     // Execute testcase.
-    var { execResult, execDurations } = await executeTestcase({ testcaseType, dukCommandFilename, dukLibraryFilename, prepDirectory, preparedFilename, tempDirectory });
+    var runCount = 1;
+    var runSleep = true;
+    var { execResult, execDurations } = await executeTestcase({ testcaseType, testcaseName, dukCommandFilename, dukLibraryFilename, prepDirectory, preparedFilename, tempDirectory, runCount, runSleep });
 
     // Test result analysis.
     var { analysisResult } = analyzeTestcaseResult({ execResult, testcaseMetadata, testcaseExpect, ignoreExpect, knownIssues });
