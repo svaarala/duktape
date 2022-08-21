@@ -1,5 +1,7 @@
 'use strict';
 
+var enableDebug = false;
+
 function makeLogDocument(args, level) {
     return {
         time: Date.now() / 1000,
@@ -10,7 +12,7 @@ function makeLogDocument(args, level) {
 
 function writeLogDocument(doc) {
     //console.log(JSON.stringify(doc));
-    if (doc.level !== 'DEBUG') {
+    if (doc.level !== 'DEBUG' || enableDebug) {
         console.log(doc.message);
     }
 }

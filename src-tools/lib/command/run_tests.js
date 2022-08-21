@@ -27,7 +27,7 @@ async function runTestsCommand({ commandOpts, commandPositional }, autoDuktapeRo
         autoDuktapeRoot = pathJoin(opts['source-directory'], '..');
     }
 
-    var filenames = findTestCasesSync(commandPositional);
+    var filenames = findTestCasesSync({ argList: commandPositional, recursive: true });
 
     var testLogFile = commandOpts['test-log-file'];
     if (typeof testLogFile === 'string') {

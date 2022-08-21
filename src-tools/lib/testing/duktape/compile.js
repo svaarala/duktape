@@ -85,7 +85,7 @@ async function compileDuktapeCommand({ repoDirectory, prepDirectory, tempDirecto
     var extraPrintAlert = true;
     var extraModuleDuktape = true;
     var extraLogging = true;
-    var compileStdout;
+    var compileStdout, compileStderr;
     var compileStartTime;
     var compileEndTime;
     var cmd = [];
@@ -134,7 +134,7 @@ async function compileDuktapeCommand({ repoDirectory, prepDirectory, tempDirecto
 
     compileStartTime = getNowMillis();
     try {
-        ({ stdout: compileStdout } = await asyncExecStdoutUtf8(cmd, {}));
+        ({ stdout: compileStdout, stderr: compileStderr } = await asyncExecStdoutUtf8(cmd, {}));
         compileEndTime = getNowMillis();
     } catch (e) {
         compileEndTime = getNowMillis();
