@@ -71,5 +71,5 @@ function test() {
 try {
     test();
 } catch (e) {
-    print(e);  // avoid .stack for now, as test fails
+    print(e);
 }

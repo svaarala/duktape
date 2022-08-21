@@ -5425,7 +5425,7 @@ function basicTest() {
 try {
     basicTest();
 } catch (e) {
-    print(e);
+    print(e.stack || e);
 }
 
 /*===
@@ -5455,7 +5455,7 @@ function protectedTest() {
 try {
     protectedTest();
 } catch (e) {
-    print(e);
+    print(e.stack || e);
 }
 
 /*===
@@ -5543,7 +5543,7 @@ function coercionTest() {
 try {
     coercionTest();
 } catch (e) {
-    print(e);
+    print(e.stack || e);
 }
 
 // XXX: attributes test
