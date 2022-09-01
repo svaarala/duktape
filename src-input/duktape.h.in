@@ -1250,7 +1250,7 @@ DUK_EXTERNAL_DECL duk_double_t duk_components_to_time(duk_context *ctx, duk_time
  * depend on the specific ordering, so change with care.  16 bits are not
  * enough for all parts (year, specifically).
  *
- * Must be in-sync with genbuiltins.py.
+ * Must be in-sync with configure tooling.
  */
 #define DUK_DATE_IDX_YEAR           0  /* year */
 #define DUK_DATE_IDX_MONTH          1  /* month: 0 to 11 */
@@ -1270,7 +1270,7 @@ DUK_EXTERNAL_DECL duk_double_t duk_components_to_time(duk_context *ctx, duk_time
  * The unused top bits of the flags field are also used to pass values
  * to helpers (duk__get_part_helper() and duk__set_part_helper()).
  *
- * Must be in-sync with genbuiltins.py.
+ * Must be in-sync with configure tooling.
  */
 
 /* NOTE: when writing a Date provider you only need a few specific

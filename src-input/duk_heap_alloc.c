@@ -448,7 +448,7 @@ DUK_INTERNAL void duk_heap_free(duk_heap *heap) {
 /*
  *  Allocate a heap.
  *
- *  String table is initialized with built-in strings from genbuiltins.py,
+ *  String table is initialized with built-in strings from configure tooling
  *  either by dynamically creating the strings or by referring to ROM strings.
  */
 

@@ -1374,7 +1374,7 @@ DUK_LOCAL void duk__set_parts_from_args(duk_hthread *thr, duk_double_t *dparts, 
  *  magic value is set to an index pointing to the array of control flags
  *  below.
  *
- *  This must be kept in strict sync with genbuiltins.py!
+ *  This must be kept in strict sync with configure tooling!
  */
 
 static duk_uint16_t duk__date_magics[] = {

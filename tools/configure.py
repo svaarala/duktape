@@ -101,7 +101,7 @@ def main():
     parser.add_option('--separate-sources', dest='separate_sources', action='store_true', default=False, help='Output separate sources instead of combined source (default is combined)')
     parser.add_option('--line-directives', dest='line_directives', action='store_true', default=False, help='Output #line directives in combined source (default is false)')
 
-    # Options forwarded to genbuiltins.py.
+    # Options for built-ins.
     parser.add_option('--rom-support', dest='rom_support', action='store_true', help='Add support for ROM strings/objects (increases duktape.c size considerably)')
     parser.add_option('--rom-auto-lightfunc', dest='rom_auto_lightfunc', action='store_true', default=False, help='Convert ROM built-in function properties into lightfuncs automatically whenever possible')
     parser.add_option('--user-builtin-metadata', dest='obsolete_builtin_metadata', default=None, help=optparse.SUPPRESS_HELP)
