@@ -680,7 +680,7 @@ DUK_INTERNAL duk_ret_t duk_bi_typedarray_constructor(duk_hthread *thr) {
 	duk_require_constructor_call(thr);
 
 	/* We could fit built-in index into magic but that'd make the magic
-	 * number dependent on built-in numbering (genbuiltins.py doesn't
+	 * number dependent on built-in numbering (configure tooling doesn't
 	 * handle that yet).  So map both class and prototype from the
 	 * element type.
 	 */

@@ -1,6 +1,6 @@
 /*
  *  Prototypes for built-in functions not automatically covered by the
- *  header declarations emitted by genbuiltins.py.
+ *  header declarations emitted by configure tooling.
  */
 
 #if !defined(DUK_BUILTIN_PROTOS_H_INCLUDED)

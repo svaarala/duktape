@@ -258,7 +258,7 @@ DUK_LOCAL double duk__atan2_fixed(double x, double y) {
 }
 #endif /* DUK_USE_AVOID_PLATFORM_FUNCPTRS */
 
-/* order must match constants in genbuiltins.py */
+/* order must match constants in configure tooling */
 DUK_LOCAL const duk__one_arg_func duk__one_arg_funcs[] = {
 #if defined(DUK_USE_AVOID_PLATFORM_FUNCPTRS)
 	duk__fabs,  duk__acos, duk__asin,        duk__atan, duk__ceil, duk__cos, duk__exp,
@@ -275,7 +275,7 @@ DUK_LOCAL const duk__one_arg_func duk__one_arg_funcs[] = {
 #endif /* DUK_USE_AVOID_PLATFORM_FUNCPTRS */
 };
 
-/* order must match constants in genbuiltins.py */
+/* order must match constants in configure tooling */
 DUK_LOCAL const duk__two_arg_func duk__two_arg_funcs[] = {
 #if defined(DUK_USE_AVOID_PLATFORM_FUNCPTRS)
 	duk__atan2_fixed,

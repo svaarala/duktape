@@ -1558,7 +1558,7 @@ slow_path:
 
 		/*
 		 *  Interned identifier is compared against reserved words, which are
-		 *  currently interned into the heap context.  See genbuiltins.py.
+		 *  currently interned into the heap context.  See configure tooling.
 		 *
 		 *  Note that an escape in the identifier disables recognition of
 		 *  keywords; e.g. "\u0069f = 1;" is a valid statement (assigns to

@@ -7,7 +7,7 @@
 #include "duk_internal.h"
 
 /*
- *  Encoding constants, must match genbuiltins.py
+ *  Encoding constants, must match configure tooling.
  */
 
 #define DUK__PROP_FLAGS_BITS  3
@@ -28,7 +28,7 @@
 
 /*
  *  Create built-in objects by parsing an init bitstream generated
- *  by genbuiltins.py.
+ *  by configure tooling.
  */
 
 #if defined(DUK_USE_ROM_OBJECTS)
@@ -183,7 +183,7 @@ DUK_LOCAL void duk__push_double(duk_hthread *thr, duk_bitdecoder_ctx *bd) {
 
 	for (i = 0; i < 8; i++) {
 		/* Encoding endianness must match target memory layout,
-		 * build scripts and genbuiltins.py must ensure this.
+		 * build scripts and configure tooling must ensure this.
 		 */
 		du.uc[i] = (duk_uint8_t) duk_bd_decode(bd, 8);
 	}
@@ -366,8 +366,8 @@ DUK_INTERNAL void duk_hthread_create_builtin_objects(duk_hthread *thr) {
 	}
 
 	/*
-	 *  Then decode the builtins init data (see genbuiltins.py) to
-	 *  init objects.  Internal prototypes are set at this stage,
+	 *  Then decode the builtins init data (see configure tooling)
+	 *  to init objects.  Internal prototypes are set at this stage,
 	 *  with thr->builtins[] populated.
 	 */
 
@@ -532,7 +532,7 @@ DUK_INTERNAL void duk_hthread_create_builtin_objects(duk_hthread *thr) {
 				}
 
 				/* Writable flag doesn't make sense for an accessor. */
-				DUK_ASSERT((defprop_flags & DUK_PROPDESC_FLAG_WRITABLE) == 0); /* genbuiltins.py ensures */
+				DUK_ASSERT((defprop_flags & DUK_PROPDESC_FLAG_WRITABLE) == 0); /* configure tooling ensures */
 
 				defprop_flags &= ~(DUK_DEFPROP_HAVE_VALUE | DUK_DEFPROP_HAVE_WRITABLE);
 				defprop_flags |= DUK_DEFPROP_HAVE_ENUMERABLE | DUK_DEFPROP_HAVE_CONFIGURABLE;
