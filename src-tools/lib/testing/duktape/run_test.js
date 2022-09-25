@@ -16,7 +16,7 @@ const { compileDukCommandCached, compileDukLibraryCached } = require('./compile'
 const { executeTestcase } = require('./execute');
 const { analyzeTestcaseResult } = require('./analyze_result');
 
-async function runTestcase({ repoDirectory, testcaseFilename, knownIssues, ignoreExpect, ignoreSkip, polyfillFilenames, uglifyJsExePath, uglifyJs2ExePath, closureJarPath, dukCommandFilename, dukLibraryFilename, testRunState }) {
+async function runTestcase({ engineExePath, repoDirectory, testcaseFilename, knownIssues, ignoreExpect, ignoreSkip, polyfillFilenames, uglifyJsExePath, uglifyJs2ExePath, closureJarPath, dukCommandFilename, dukLibraryFilename, testRunState, runCount, runSleep, sleepMultiplier, sleepAdder, sleepMinimum, numThreads }) {
     var testcaseFilename = assert(testcaseFilename);
     var includeDirectory = pathJoin(repoDirectory, 'tests', 'ecmascript');
     var prepDirectory;
@@ -54,7 +54,7 @@ async function runTestcase({ repoDirectory, testcaseFilename, knownIssues, ignor
     var preparedFilename = pathJoin(tempDirectory, testcaseName);
     writeFileUtf8(preparedFilename, preparedSource);
 
-    // Initialize result object.
+    // Initialize result object.  Keys should all be snake_case.
     testResult = createBareObject({
         testcase_file: testcaseFilename,
         testcase_name: testcaseName,
@@ -74,24 +74,39 @@ async function runTestcase({ repoDirectory, testcaseFilename, knownIssues, ignor
     // Compile Duktape or libduktape if necessary.  Sources may need to be prepared
     // or compiled multiple times if test cases have forced Duktape options.  Compiled
     // binaries and libraries are cached.
-    if (!dukCommandFilename && testcaseType === 'ecmascript') {
+    if (engineExePath && testcaseType === 'ecmascript') {
+        dukCommandFilename = engineExePath;
+        prepDirectory = void 0; // not available, not needed for ECMAScript tests
+    } else if (!dukCommandFilename && testcaseType === 'ecmascript') {
         ({ dukCommandFilename, prepDirectory } = await compileDukCommandCached({ repoDirectory, tempDirectory, testcaseMetadata, testRunState }));
-    }
-    if (!dukLibraryFilename && testcaseType === 'c') {
+    } else if (!dukLibraryFilename && testcaseType === 'c') {
         ({ dukLibraryFilename, prepDirectory } = await compileDukLibraryCached({ repoDirectory, tempDirectory, testcaseMetadata, testRunState }));
     }
 
     // Execute testcase.
-    var runCount = 1;
-    var runSleep = true;
-    var { execResult, execDurations } = await executeTestcase({ testcaseType, testcaseName, dukCommandFilename, dukLibraryFilename, prepDirectory, preparedFilename, tempDirectory, runCount, runSleep });
+    var { execResult, durations, sleepTimes } = await executeTestcase({ testcaseType, testcaseName, dukCommandFilename, dukLibraryFilename, prepDirectory, preparedFilename, tempDirectory, runCount, runSleep, sleepMultiplier, sleepAdder, sleepMinimum });
 
     // Test result analysis.
     var { analysisResult } = analyzeTestcaseResult({ execResult, testcaseMetadata, testcaseExpect, ignoreExpect, knownIssues });
-    logDebug('testcase result:', JSON.stringify(analysisResult));
+    logDebug('testcase analysis result:', JSON.stringify(analysisResult));
+
     testResult.success = analysisResult.success;
-    testResult.knownIssue = analysisResult.knownIssue;
+    testResult.known_issue = analysisResult.knownIssue;
     testResult.duration = execResult.endTime - execResult.startTime;
+    testResult.durations = {
+        values: durations.values,
+        average: durations.average,
+        minimum: durations.minimum,
+        maximum: durations.maximum,
+        standard_deviation: durations.standardDeviation // Convert to snake_case for output.
+    };
+    testResult.sleep_times = sleepTimes;
+    testResult.run_count = runCount;
+    testResult.run_sleep = runSleep;
+    testResult.sleep_multiplier = sleepMultiplier;
+    testResult.sleep_adder = sleepAdder;
+    testResult.sleep_minimum = sleepMinimum;
+    testResult.num_threads = numThreads; // Not test related but good to know for e.g. performance tests.
 
     return testResult;
 }
@@ -205,7 +220,7 @@ function computeFileContentHashByte(fn) {
     return hash;
 }
 
-async function runMultipleTests({ repoDirectory, knownIssuesDirectory, filenames, progressCallback, logFileCallback, numThreads = 8, ignoreSkip, polyfillFilenames, uglifyJsExePath, uglifyJs2ExePath, closureJarPath, testHashMin, testHashMax }) {
+async function runMultipleTests({ engineExePath, repoDirectory, knownIssuesDirectory, filenames, progressCallback, logFileCallback, numThreads = 8, ignoreSkip, polyfillFilenames, uglifyJsExePath, uglifyJs2ExePath, closureJarPath, testHashMin, testHashMax, runCount = 1, runSleep = false, sleepMultiplier = 2.0, sleepAdder = 1.0, sleepMinimum = 1.0 }) {
     // For compile caching and other global run state.
     var testRunState = Object.create(null);
     testRunState.dukPrepareCount = 0;
@@ -226,6 +241,7 @@ async function runMultipleTests({ repoDirectory, knownIssuesDirectory, filenames
     var jobs = filenames.map((fn) => {
         return () => {
             return runTestcase({
+                engineExePath,
                 repoDirectory,
                 testcaseFilename: fn,
                 knownIssues,
@@ -234,7 +250,13 @@ async function runMultipleTests({ repoDirectory, knownIssuesDirectory, filenames
                 uglifyJsExePath,
                 uglifyJs2ExePath,
                 closureJarPath,
-                testRunState
+                testRunState,
+                runCount,
+                runSleep,
+                sleepMultiplier,
+                sleepAdder,
+                sleepMinimum,
+                numThreads
             });
         };
     });
