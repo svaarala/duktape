@@ -12,12 +12,18 @@ const defaultNumThreads = 8;
 const runTestsCommandSpec = createBareObject({
     description: 'Run Duktape testcases(s)',
     options: createBareObject({
+        'engine-bin': { type: 'path', default: void 0, description: 'Path to external ECMAScript engine executable, e.g. for comparison tests' },
         'source-directory': { type: 'path', default: void 0, description: 'Directory with raw input sources (defaulted based on script path)' },
         'num-threads': { short: 'j', type: 'number', default: estimateCoreCount() ?? defaultNumThreads, description: 'Number of threads to use for running tests' },
         'uglifyjs-bin': { type: 'path', default: void 0, description: 'Path to UglifyJS binary for minifying' },
         'test-log-file': { type: 'path', default: void 0, description: 'Path to ndjson test log file' },
         'test-hash-min': { type: 'number', default: void 0, description: 'Minimum value for testcase content hash' },
-        'test-hash-max': { type: 'number', default: void 0, description: 'Maximum value (inclusive) for testcase content hash' }
+        'test-hash-max': { type: 'number', default: void 0, description: 'Maximum value (inclusive) for testcase content hash' },
+        'run-count': { type: 'number', default: 1, description: 'Number of times to run each test, >1 useful for performance testing' },
+        'run-sleep': { type: 'boolean', default: false, value: true, description: 'Enable sleeping between runs, useful for performance testing' },
+        'sleep-multiplier': { type: 'number', default: 2.0, description: 'Sleep duration multiplier, multiply duration of run' },
+        'sleep-adder': { type: 'number', default: 1.0, description: 'Sleep duration adder, added to sleep duration multiplier result' },
+        'sleep-minimum': { type: 'number', default: 1.0, description: 'Sleep duration minimum' }
     })
 });
 exports.runTestsCommandSpec = runTestsCommandSpec;
@@ -49,14 +55,21 @@ async function runTestsCommand({ commandOpts, commandPositional }, autoDuktapeRo
                 require('fs').appendFileSync(testLogFile, JSON.stringify(doc) + '\n');
             }
         },
-        numThreads: commandOpts['num-threads'] ?? defaultNumThreads,
+        numThreads: +commandOpts['num-threads'] ?? defaultNumThreads,
+        //ignoreSkip: true,
         polyfillFilenames: [],
         uglifyJs2ExePath: commandOpts['uglifyjs-bin'],
         repoDirectory: autoDuktapeRoot,
         includeDirectory: pathJoin(autoDuktapeRoot, 'tests/ecmascript'),
         knownIssuesDirectory: pathJoin(autoDuktapeRoot, 'tests/knownissues'),
         testHashMin: commandOpts['test-hash-min'] ? +commandOpts['test-hash-min'] : void 0,
-        testHashMax: commandOpts['test-hash-max'] ? +commandOpts['test-hash-max'] : void 0
+        testHashMax: commandOpts['test-hash-max'] ? +commandOpts['test-hash-max'] : void 0,
+        runCount: +commandOpts['run-count'],
+        runSleep: commandOpts['run-sleep'],
+        sleepMultiplier: +commandOpts['sleep-multiplier'],
+        sleepAdder: +commandOpts['sleep-adder'],
+        sleepMinimum: +commandOpts['sleep-minimum'],
+        engineExePath: commandOpts['engine-bin']
     });
 
     var success = 0,

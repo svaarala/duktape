@@ -32,7 +32,7 @@ function analyzeTestcaseResult({ execResult, testcaseMetadata, testcaseExpect, i
             if (known) {
                 logDebug('known issue:', known.filename);
                 res.success = true;
-                res.knownIssue = true;
+                res.knownIssue = known;
             } else {
                 res.success = false;
             }
