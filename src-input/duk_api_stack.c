@@ -5930,6 +5930,7 @@ DUK_EXTERNAL duk_idx_t duk_push_heapptr(duk_hthread *thr, void *ptr) {
 	 *       back to heap_allocated with a few flags cleared, in effect
 	 *       cancelling the finalizer.
 	 */
+#if defined(DUK_USE_FINALIZER_SUPPORT)
 	if (DUK_UNLIKELY(DUK_HEAPHDR_HAS_FINALIZABLE((duk_heaphdr *) ptr))) {
 		duk_heaphdr *curr;
 
@@ -5956,6 +5957,7 @@ DUK_EXTERNAL duk_idx_t duk_push_heapptr(duk_hthread *thr, void *ptr) {
 
 		/* Continue with the rest. */
 	}
+#endif /* DUK_USE_FINALIZER_SUPPORT */
 
 	switch (DUK_HEAPHDR_GET_HTYPE((duk_heaphdr *) ptr)) {
 	case DUK_HTYPE_STRING_INTERNAL:
