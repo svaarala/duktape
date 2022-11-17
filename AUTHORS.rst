@@ -115,6 +115,7 @@ bugs, provided ideas, etc; roughly in order of appearance):
 * Andrew Janke (https://github.com/apjanke)
 * Unamer (https://github.com/unamer)
 * Karl Dahlke (eklhad@gmail.com)
+* https://github.com/k3a
 
 If you are accidentally missing from this list, send me an e-mail
 (``sami.vaarala@iki.fi``) and I'll fix the omission.
