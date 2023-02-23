@@ -162,15 +162,17 @@ typedef void (*duk_re_range_callback)(void *user, duk_codepoint_t r1, duk_codepo
 #define DUK_TOK_BAND_EQ    96
 #define DUK_TOK_BOR_EQ     97
 #define DUK_TOK_BXOR_EQ    98
+#define DUK_TOK_LAND_EQ    99
+#define DUK_TOK_LOR_EQ     100
 
 /* literals (E5 Section 7.8), except null, true, false, which are treated
  * like reserved words (above).
  */
-#define DUK_TOK_NUMBER 99
-#define DUK_TOK_STRING 100
-#define DUK_TOK_REGEXP 101
+#define DUK_TOK_NUMBER 101
+#define DUK_TOK_STRING 102
+#define DUK_TOK_REGEXP 103
 
-#define DUK_TOK_MAXVAL 101 /* inclusive */
+#define DUK_TOK_MAXVAL 103 /* inclusive */
 
 #define DUK_TOK_INVALID DUK_SMALL_UINT_MAX
 

@@ -433,6 +433,8 @@ DUK_LOCAL const duk_uint8_t duk__token_lbp[] = {
 	DUK__MK_LBP(DUK__BP_ASSIGNMENT), /* DUK_TOK_BAND_EQ */
 	DUK__MK_LBP(DUK__BP_ASSIGNMENT), /* DUK_TOK_BOR_EQ */
 	DUK__MK_LBP(DUK__BP_ASSIGNMENT), /* DUK_TOK_BXOR_EQ */
+	DUK__MK_LBP(DUK__BP_ASSIGNMENT), /* DUK_TOK_LAND_EQ */
+	DUK__MK_LBP(DUK__BP_ASSIGNMENT), /* DUK_TOK_LOR_EQ */
 	DUK__MK_LBP_FLAGS(DUK__BP_INVALID, DUK__TOKEN_LBP_FLAG_NO_REGEXP), /* DUK_TOK_NUMBER */
 	DUK__MK_LBP_FLAGS(DUK__BP_INVALID, DUK__TOKEN_LBP_FLAG_NO_REGEXP), /* DUK_TOK_STRING */
 	DUK__MK_LBP_FLAGS(DUK__BP_INVALID, DUK__TOKEN_LBP_FLAG_NO_REGEXP), /* DUK_TOK_REGEXP */
@@ -4255,6 +4257,15 @@ DUK_LOCAL void duk__expr_led(duk_compiler_ctx *comp_ctx, duk_ivalue *left, duk_i
 		goto binary_logical;
 	}
 
+	case DUK_TOK_LAND_EQ: {
+		args = (1 << 9) + (1 << 8) + DUK__BP_ASSIGNMENT - 1;
+		goto binary_logical;
+	}
+	case DUK_TOK_LOR_EQ: {
+		args = (1 << 9) + (0 << 8) + DUK__BP_ASSIGNMENT - 1;
+		goto binary_logical;
+	}
+
 		/* CONDITIONAL EXPRESSION */
 
 	case DUK_TOK_QUESTION: {
@@ -4455,6 +4466,52 @@ binary_logical:
 		duk_small_uint_t args_truthval = args >> 8;
 		duk_small_uint_t args_rbp = args & 0xff;
 
+		duk_small_uint_t leftt;
+		duk_hstring *h_varname;
+		duk_regconst_t reg_varbind;
+		duk_regconst_t rc_varname;
+
+		duk_regconst_t reg_obj;
+		duk_regconst_t rc_key;
+
+		if (args_truthval & 2) { // assignment
+			leftt = left->t;
+			if (leftt == DUK_IVAL_VAR) {
+				DUK_ASSERT(left->x1.t == DUK_ISPEC_VALUE); /* LHS is already side effect free */
+
+				h_varname = duk_known_hstring(thr, left->x1.valstack_idx);
+				if (duk__hstring_is_eval_or_arguments_in_strict_mode(comp_ctx, h_varname)) {
+					/* E5 Section 11.13.1 (and others for other assignments), step 4. */
+					goto syntax_error_lvalue;
+				}
+				duk_dup(thr, left->x1.valstack_idx);
+				(void) duk__lookup_lhs(comp_ctx, &reg_varbind, &rc_varname);
+			}
+			if (leftt == DUK_IVAL_PROP) {
+				/* Property access expressions ('a[b]') are critical to correct
+				 * LHS evaluation ordering, see test-dev-assign-eval-order*.js.
+				 * We must make sure that the LHS target slot (base object and
+				 * key) don't change during RHS evaluation.  The only concrete
+				 * problem is a register reference to a variable-bound register
+				 * (i.e., non-temp).  Require temp regs for both key and base.
+				 *
+				 * Don't allow a constant for the object (even for a number
+				 * etc), as it goes into the 'A' field of the opcode.
+				 */
+
+				reg_obj = duk__ispec_toregconst_raw(comp_ctx,
+				                                    &left->x1,
+				                                    -1 /*forced_reg*/,
+				                                    DUK__IVAL_FLAG_REQUIRE_TEMP /*flags*/);
+
+				rc_key =
+				    duk__ispec_toregconst_raw(comp_ctx,
+				                              &left->x2,
+				                              -1 /*forced_reg*/,
+				                              DUK__IVAL_FLAG_REQUIRE_TEMP | DUK__IVAL_FLAG_ALLOW_CONST /*flags*/);
+			}
+		}
+
 		/* XXX: unoptimal use of temps, resetting */
 
 		reg_temp = DUK__ALLOCTEMP(comp_ctx);
@@ -4462,10 +4519,39 @@ binary_logical:
 		duk__ivalue_toforcedreg(comp_ctx, left, reg_temp);
 		DUK_ASSERT(DUK__ISREG(reg_temp));
 		duk__emit_bc(comp_ctx,
-		             (args_truthval ? DUK_OP_IFTRUE_R : DUK_OP_IFFALSE_R),
+		             ((args_truthval & 1) ? DUK_OP_IFTRUE_R : DUK_OP_IFFALSE_R),
 		             reg_temp); /* skip jump conditionally */
 		pc_jump = duk__emit_jump_empty(comp_ctx);
 		duk__expr_toforcedreg(comp_ctx, res, args_rbp /*rbp_flags*/, reg_temp /*forced_reg*/);
+
+		if (args_truthval & 2) { // assignment
+			if (leftt == DUK_IVAL_VAR) {
+				if (reg_varbind >= 0) {
+					duk__emit_a_bc(comp_ctx, DUK_OP_LDREG, reg_varbind, reg_temp);
+				} else {
+					duk__emit_a_bc(comp_ctx, DUK_OP_PUTVAR | DUK__EMIT_FLAG_A_IS_SOURCE, reg_temp, rc_varname);
+				}
+			} else if (leftt == DUK_IVAL_PROP) {
+				duk__emit_a_b_c(comp_ctx,
+				                DUK_OP_PUTPROP | DUK__EMIT_FLAG_A_IS_SOURCE | DUK__EMIT_FLAG_BC_REGCONST,
+				                reg_obj,
+				                rc_key,
+				                reg_temp);
+			} else {
+				/* No support for lvalues returned from new or function call expressions.
+				 * However, these must NOT cause compile-time SyntaxErrors, but run-time
+				 * ReferenceErrors.  Both left and right sides of the assignment must be
+				 * evaluated before throwing a ReferenceError.  For instance:
+				 *
+				 *     f() = g();
+				 *
+				 * must result in f() being evaluated, then g() being evaluated, and
+				 * finally, a ReferenceError being thrown.  See E5 Section 11.13.1.
+				 */
+				duk__emit_op_only(comp_ctx, DUK_OP_INVLHS);
+			}
+		}
+
 		duk__patch_jump_here(comp_ctx, pc_jump);
 
 		duk__ivalue_regconst(res, reg_temp);
