@@ -12,6 +12,7 @@ number NaN [object Number]
 number NaN [object Number]
 number NaN [object Number]
 number NaN [object Number]
+number NaN [object Number]
 arg valueOf
 number 321 [object Number]
 ===*/
@@ -46,6 +47,7 @@ function functionTest() {
     test('');
     test('123');
     test('  123foo');
+    test('123_456');
     test('foo');
     test([1,2]);
     test({ foo: 1, bar: 2 });
@@ -70,6 +72,7 @@ object 0 [object Number] true true
 object 123 [object Number] true true
 object 0 [object Number] true true
 object 123 [object Number] true true
+object NaN [object Number] true true
 object NaN [object Number] true true
 object NaN [object Number] true true
 object NaN [object Number] true true
@@ -110,6 +113,7 @@ function constructorTest() {
     test('');
     test('123');
     test('  123foo');
+    test('123_456');
     test('foo');
     test([1,2]);
     test({ foo: 1, bar: 2 });
