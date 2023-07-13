@@ -11,7 +11,14 @@
 #include <string.h>
 #include <stdint.h>
 #include <sys/time.h>
+
+#if defined(_WIN32)
+#include <WinSock2.h>
+#define poll WSAPoll
+#pragma comment(lib, "ws2_32")
+#else
 #include <poll.h>
+#endif
 
 #include "duktape.h"
 #include "c_eventloop.h"
