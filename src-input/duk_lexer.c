@@ -1616,6 +1616,7 @@ slow_path:
 
 		duk_double_t val;
 		duk_bool_t legacy_oct = 0;
+		duk_bool_t last_was_digit = 0;
 		duk_small_int_t state; /* 0=before period/exp,
 		                        * 1=after period, before exp
 		                        * 2=after exp, allow '+' or '-'
@@ -1641,6 +1642,7 @@ slow_path:
 				s2n_radix = 2;
 			} else {
 				pre_adv = 0;
+				last_was_digit = 1;
 				if (DUK__ISDIGIT(y)) {
 					if (strict_mode) {
 						/* Reject octal like \07 but also octal-lookalike
@@ -1687,27 +1689,37 @@ slow_path:
 				if (state == 2) {
 					state = 3;
 				}
+				last_was_digit = 1;
 			} else if (s2n_radix == 16 && DUK__ISHEXDIGIT(x)) {
 				/* Note: 'e' and 'E' are also accepted here. */
-				;
+				last_was_digit = 1;
 			} else if (x == DUK_ASC_PERIOD) {
 				if (state >= 1 || s2n_radix != 10) {
 					break;
 				} else {
 					state = 1;
 				}
+				last_was_digit = 0;
 			} else if (x == DUK_ASC_LC_E || x == DUK_ASC_UC_E) {
 				if (state >= 2 || s2n_radix != 10) {
 					break;
 				} else {
 					state = 2;
 				}
+				last_was_digit = 0;
 			} else if (x == DUK_ASC_MINUS || x == DUK_ASC_PLUS) {
 				if (state != 2) {
 					break;
 				} else {
 					state = 3;
 				}
+				last_was_digit = 0;
+			} else if (x == DUK_ASC_UNDERSCORE) {
+				if (!last_was_digit) goto fail_number_literal;
+				if (s2n_radix != 16 ? !DUK__ISDIGIT(DUK__L1()) : !DUK__ISHEXDIGIT(DUK__L1())) goto fail_number_literal;
+				DUK__ADVANCECHARS(lex_ctx, 1);
+				last_was_digit = 0;
+				continue;
 			} else {
 				break;
 			}
