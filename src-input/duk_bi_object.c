@@ -72,9 +72,8 @@ DUK_INTERNAL duk_ret_t duk_bi_object_constructor_assign(duk_hthread *thr) {
 			duk_put_prop(thr, 0);
 			/* [ target ... enum ] */
 		}
-		/* Could pop enumerator, but unnecessary because of duk_set_top()
-		 * below.
-		 */
+		/* pop the enumerator, because otherwise a large number of argumens will exhaust the valstack */
+		duk_pop_known(thr);
 	}
 
 	duk_set_top(thr, 1);
