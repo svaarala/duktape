@@ -1715,8 +1715,12 @@ slow_path:
 				}
 				last_was_digit = 0;
 			} else if (x == DUK_ASC_UNDERSCORE) {
-				if (!last_was_digit) goto fail_number_literal;
-				if (s2n_radix != 16 ? !DUK__ISDIGIT(DUK__L1()) : !DUK__ISHEXDIGIT(DUK__L1())) goto fail_number_literal;
+				if (!last_was_digit) {
+					goto fail_number_literal;
+				}
+				if (s2n_radix != 16 ? !DUK__ISDIGIT(DUK__L1()) : !DUK__ISHEXDIGIT(DUK__L1())) {
+					goto fail_number_literal;
+				}
 				DUK__ADVANCECHARS(lex_ctx, 1);
 				last_was_digit = 0;
 				continue;
