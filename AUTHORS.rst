@@ -73,6 +73,7 @@ and agreed to irrevocably license their contributions under the Duktape
 * Luca Boccassi (https://github.com/bluca)
 * Radu Rendec (https://github.com/rrendec)
 * tinywrkb (https://github.com/tinywrkb)
+* Christoph Kaser (https://github.com/ChristophKaser)
 * Jonne Ransijn <jonne@yyny.dev>
 
 Other contributions
