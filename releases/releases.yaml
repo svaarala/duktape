@@ -1397,3 +1397,5 @@ duktape_releases:
     - "Add support for DJGPP (MSDOS) platform (GH-2472, GH-2473)"
     - "Remove .caller and .arguments own properties from both strict and non-strict function objects, and add .caller and .arguments throwers to Function.prototype to match ES2015+ (GH-2482)"
     - "Add support for ES2021 digit separator (GH-2537)"
+    - "Add support for logical assignment operators &&= and ||= (GH-2527)"
+    - "Fix RangeError in Object.assign for a large number of arguments (GH-2530)"

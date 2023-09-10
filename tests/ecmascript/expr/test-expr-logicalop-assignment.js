@@ -35,8 +35,6 @@ var b = a ||= testSideEffect(0, '3') || testSideEffect(0, '4') || testSideEffect
 print(a); // Should be false, not 0
 print(b); // Should be false, not 0
 
-
-
 /*===
 [object Object]
 false
@@ -53,7 +51,6 @@ true
 ===*/
 testSideEffect(obj, '6').b ||= true;
 print(obj.b);
-
 
 /*===
 tse 7

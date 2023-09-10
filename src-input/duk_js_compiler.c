@@ -4463,7 +4463,8 @@ binary_logical:
 	{
 		duk_regconst_t reg_temp;
 		duk_int_t pc_jump;
-		duk_small_uint_t args_truthval = args >> 8;
+		duk_small_uint_t args_truthval = args & 0x100;
+		duk_small_uint_t args_assignment = args & 0x200;
 		duk_small_uint_t args_rbp = args & 0xff;
 
 		duk_small_uint_t leftt;
@@ -4474,7 +4475,7 @@ binary_logical:
 		duk_regconst_t reg_obj;
 		duk_regconst_t rc_key;
 
-		if (args_truthval & 2) { // assignment
+		if (args_assignment) {
 			leftt = left->t;
 			if (leftt == DUK_IVAL_VAR) {
 				DUK_ASSERT(left->x1.t == DUK_ISPEC_VALUE); /* LHS is already side effect free */
@@ -4519,12 +4520,12 @@ binary_logical:
 		duk__ivalue_toforcedreg(comp_ctx, left, reg_temp);
 		DUK_ASSERT(DUK__ISREG(reg_temp));
 		duk__emit_bc(comp_ctx,
-		             ((args_truthval & 1) ? DUK_OP_IFTRUE_R : DUK_OP_IFFALSE_R),
+		             (args_truthval ? DUK_OP_IFTRUE_R : DUK_OP_IFFALSE_R),
 		             reg_temp); /* skip jump conditionally */
 		pc_jump = duk__emit_jump_empty(comp_ctx);
 		duk__expr_toforcedreg(comp_ctx, res, args_rbp /*rbp_flags*/, reg_temp /*forced_reg*/);
 
-		if (args_truthval & 2) { // assignment
+		if (args_assignment) {
 			if (leftt == DUK_IVAL_VAR) {
 				if (reg_varbind >= 0) {
 					duk__emit_a_bc(comp_ctx, DUK_OP_LDREG, reg_varbind, reg_temp);
