@@ -74,6 +74,7 @@ and agreed to irrevocably license their contributions under the Duktape
 * Radu Rendec (https://github.com/rrendec)
 * tinywrkb (https://github.com/tinywrkb)
 * Christoph Kaser (https://github.com/ChristophKaser)
+* Jonne Ransijn <jonne@yyny.dev>
 
 Other contributions
 ===================
