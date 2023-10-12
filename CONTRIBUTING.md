@@ -91,6 +91,8 @@ To make a code contribution to Duktape
 To report bugs or request features
 ----------------------------------
 
+See [SECURITY.md](https://github.com/svaarala/duktape/blob/master/SECURITY.md) for reporting security vulnerabilities.
+
 Use GitHub issues to report bugs or request features:
 
 * Please include a compilation or execution log to help diagnosis.
