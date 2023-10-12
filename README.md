@@ -207,10 +207,7 @@ not backwards compatible.  See
 Reporting bugs
 --------------
 
-See [CONTRIBUTING.md](https://github.com/svaarala/duktape/blob/master/CONTRIBUTING.md).
-
-Security critical GitHub issues (for example anything leading to a segfault)
-are tagged `security`.
+See [CONTRIBUTING.md](https://github.com/svaarala/duktape/blob/master/CONTRIBUTING.md) and [SECURITY.md](https://github.com/svaarala/duktape/blob/master/SECURITY.md).
 
 Contributing
 ------------
