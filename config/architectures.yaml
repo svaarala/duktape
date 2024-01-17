@@ -54,6 +54,10 @@ autodetect:
     check: DUK_F_RISCV64
     include: architecture_riscv64.h.in
   -
+    name: LOONGARCH 64-bit
+    check: DUK_F_LOONGARCH64
+    include: architecture_loongarch64.h.in
+  -
     name: SuperH
     check: DUK_F_SUPERH
     include: architecture_superh.h.in
