@@ -31,7 +31,7 @@ jobs:
         uses: actions/checkout@v2
       - name: Install packages
         run: |
-          python2 -m pip install PyYAML
+          python -m pip install PyYAML
       - name: Install Node.js
         uses: actions/setup-node@v3
         with:
@@ -43,6 +43,26 @@ jobs:
         run: |
           build/duk -e "print(Duktape.env); print('Hello world!');"
           build/duk dist-files/mandel.js
+#  build_duk_macos_arm64:
+#    name: Duk macOS 13 ARM64
+#    runs-on: macos-13-arm64
+#    steps:
+#      - name: Checkout code
+#        uses: actions/checkout@v2
+#      - name: Install packages
+#        run: |
+#          python -m pip install PyYAML
+#      - name: Install Node.js
+#        uses: actions/setup-node@v3
+#        with:
+#          node-version: 16
+#      - name: Build
+#        run: |
+#          make build/duk
+#      - name: Test
+#        run: |
+#          build/duk -e "print(Duktape.env); print('Hello world!');"
+#          build/duk dist-files/mandel.js
   build_duk_windows:
     name: Duk VS2022
     runs-on: windows-2022
