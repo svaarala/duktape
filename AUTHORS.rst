@@ -75,6 +75,7 @@ and agreed to irrevocably license their contributions under the Duktape
 * tinywrkb (https://github.com/tinywrkb)
 * Christoph Kaser (https://github.com/ChristophKaser)
 * Jonne Ransijn <jonne@yyny.dev>
+* Liu Xiang <liuxiang@loongson.cn>
 
 Other contributions
 ===================
