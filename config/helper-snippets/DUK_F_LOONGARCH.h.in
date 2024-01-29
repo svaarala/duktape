@@ -1,0 +1,4 @@
+/* LOONGARCH64, https://loongson.github.io/LoongArch-Documentation/LoongArch-ELF-ABI-EN.html */
+#if defined(__loongarch64)
+#define DUK_F_LOONGARCH64
+#endif
