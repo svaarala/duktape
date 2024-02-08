@@ -536,6 +536,11 @@ def context_linux_x64_test262test():
     # GitHub status.
     return 'TEST262 SUCCESS\n' in res['stdout']
 
+def context_linux_x64_releasetest():
+    cwd = os.getcwd()
+
+    return execute([ 'make', 'releasetest' ], catch=True)['success']
+
 def context_linux_x64_duk_dddprint():
     cwd = os.getcwd()
     prep(options_yaml=r"""
@@ -1043,13 +1048,10 @@ context_handlers = {
     'linux-x64-apitest-assert': context_linux_x64_apitest_assert,
     'linux-x64-apitest-valgrind': context_linux_x64_apitest_valgrind,
     'linux-x64-test262test': context_linux_x64_test262test,
+    'linux-x64-releasetest': context_linux_x64_releasetest,
     # XXX: torture options
 
     # XXX: regfuzztest
-    # XXX: luajstest
-    # XXX: jsinterpretertest
-    # XXX: bluebirdtest
-    # XXX: emscripteninceptiontest
 
     'linux-x64-duk-clang': context_linux_x64_duk_clang,
     'linux-x64-duk-gxx': context_linux_x64_duk_gxx,
