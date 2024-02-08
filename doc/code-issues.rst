@@ -1406,6 +1406,8 @@ Examples of snprintf() calls which don't NUL terminate on truncation:
 
 * Windows ``_snprintf()``: http://msdn.microsoft.com/en-us/library/2ts7cx93.aspx
 
+FIXME: return value differences on truncation.
+
 s(n)printf %s and NULL value
 ::::::::::::::::::::::::::::
 
