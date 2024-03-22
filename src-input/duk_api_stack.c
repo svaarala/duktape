@@ -638,7 +638,10 @@ DUK_LOCAL DUK_COLD DUK_NOINLINE duk_bool_t duk__resize_valstack(duk_hthread *thr
 	duk_tval *pre_top;
 	duk_tval *pre_end;
 	duk_tval *pre_alloc_end;
-	duk_ptrdiff_t ptr_diff;
+	duk_ptrdiff_t diff_bottom;
+	duk_ptrdiff_t diff_top;
+	duk_ptrdiff_t diff_end;
+	duk_ptrdiff_t diff_alloc_end;
 	duk_tval *new_valstack;
 	duk_size_t new_alloc_size;
 	duk_tval *tv_prev_alloc_end;
@@ -736,12 +739,16 @@ DUK_LOCAL DUK_COLD DUK_NOINLINE duk_bool_t duk__resize_valstack(duk_hthread *thr
 	/* Write new pointers.  Most pointers can be handled as a pointer
 	 * difference.
 	 */
-	ptr_diff = (duk_ptrdiff_t) ((duk_uint8_t *) new_valstack - (duk_uint8_t *) thr->valstack);
-	tv_prev_alloc_end = (duk_tval *) (void *) ((duk_uint8_t *) thr->valstack_alloc_end + ptr_diff);
+	diff_bottom = (duk_ptrdiff_t) ((duk_uint8_t *) thr->valstack_bottom - (duk_uint8_t *) thr->valstack);
+	diff_top = (duk_ptrdiff_t) ((duk_uint8_t *) thr->valstack_top - (duk_uint8_t *) thr->valstack);
+	diff_end = (duk_ptrdiff_t) ((duk_uint8_t *) thr->valstack_end - (duk_uint8_t *) thr->valstack);
+	diff_alloc_end = (duk_ptrdiff_t) ((duk_uint8_t *) thr->valstack_alloc_end - (duk_uint8_t *) thr->valstack);
+	tv_prev_alloc_end = (duk_tval *) (void *) ((duk_uint8_t *) new_valstack + diff_alloc_end);
+
 	thr->valstack = new_valstack;
-	thr->valstack_bottom = (duk_tval *) (void *) ((duk_uint8_t *) thr->valstack_bottom + ptr_diff);
-	thr->valstack_top = (duk_tval *) (void *) ((duk_uint8_t *) thr->valstack_top + ptr_diff);
-	thr->valstack_end = (duk_tval *) (void *) ((duk_uint8_t *) thr->valstack_end + ptr_diff);
+	thr->valstack_bottom = (duk_tval *) (void *) ((duk_uint8_t *) new_valstack + diff_bottom);
+	thr->valstack_top = (duk_tval *) (void *) ((duk_uint8_t *) new_valstack + diff_top);
+	thr->valstack_end = (duk_tval *) (void *) ((duk_uint8_t *) new_valstack + diff_end);
 	thr->valstack_alloc_end = (duk_tval *) (void *) ((duk_uint8_t *) new_valstack + new_alloc_size);
 
 	/* Assertions: pointer sanity after pointer updates. */
