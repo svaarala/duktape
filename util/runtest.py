@@ -8,6 +8,8 @@
 #  linking.
 #
 
+# FIXME: nodejs comparison
+
 # XXX: encoding issues
 # XXX: external minifier
 # XXX: use strict support; perhaps via test metadata
