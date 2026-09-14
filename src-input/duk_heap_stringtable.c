@@ -2,6 +2,8 @@
  *  Heap string table handling, string interning.
  */
 
+/*FIXME*/
+
 #include "duk_internal.h"
 
 /* Resize checks not needed if minsize == maxsize, typical for low memory
