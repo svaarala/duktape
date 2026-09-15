@@ -167,6 +167,11 @@ void duk_trans_socket_finish(void) {
 	}
 }
 
+duk_bool_t duk_trans_socket_active(void)
+{
+	return server_sock != INVALID_SOCKET;
+}
+
 void duk_trans_socket_waitconn(void) {
 	if (server_sock == INVALID_SOCKET) {
 		fprintf(stderr, "%s: no server socket, skip waiting for connection\n",
