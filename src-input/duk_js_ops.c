@@ -351,6 +351,13 @@ DUK_INTERNAL duk_int32_t duk_js_toint32(duk_hthread *thr, duk_tval *tv) {
 	}
 #endif
 
+	if (DUK_TVAL_IS_DOUBLE(tv)) {
+		d = DUK_TVAL_GET_DOUBLE(tv);
+		if (d >= -2147483648.0 && d <= 2147483647.0) {
+			return (duk_int32_t) d; /* truncates towards zero, -0 -> 0 */
+		}
+	}
+
 	d = duk_js_tonumber(thr, tv); /* invalidates tv */
 	d = duk__toint32_touint32_helper(d, 1);
 	DUK_ASSERT(DUK_FPCLASSIFY(d) == DUK_FP_ZERO || DUK_FPCLASSIFY(d) == DUK_FP_NORMAL);
@@ -367,6 +374,13 @@ DUK_INTERNAL duk_uint32_t duk_js_touint32(duk_hthread *thr, duk_tval *tv) {
 		return DUK_TVAL_GET_FASTINT_U32(tv);
 	}
 #endif
+
+	if (DUK_TVAL_IS_DOUBLE(tv)) {
+		d = DUK_TVAL_GET_DOUBLE(tv);
+		if (d >= 0.0 && d <= 4294967295.0) {
+			return (duk_uint32_t) d; /* truncates towards zero */
+		}
+	}
 
 	d = duk_js_tonumber(thr, tv); /* invalidates tv */
 	d = duk__toint32_touint32_helper(d, 0);
