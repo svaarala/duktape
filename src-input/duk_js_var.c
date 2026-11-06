@@ -1065,6 +1065,29 @@ duk_bool_t duk__get_identifier_reference(duk_hthread *thr,
 			 * binding target object.
 			 */
 
+			if (DUK_LIKELY((DUK_HOBJECT_GET_HTYPE(target) == DUK_HTYPE_GLOBAL ||
+			                DUK_HOBJECT_GET_HTYPE(target) == DUK_HTYPE_OBJECT) &&
+			               !DUK_HSTRING_HAS_ARRIDX(name))) {
+				/* Fast path: ordinary target with an own data property
+				 * (typical for global variable access).  Existence is
+				 * known and the value can be accessed directly; anything
+				 * else (miss, accessor, inherited, exotic) uses the
+				 * generic path below.
+				 */
+				duk_propvalue *pv;
+				duk_uint8_t pattrs;
+
+				if (DUK_LIKELY(duk_hobject_lookup_strprop_val_attrs(thr, target, name, &pv, &pattrs)) &&
+				    DUK_LIKELY((pattrs & DUK_PROPDESC_FLAG_ACCESSOR) == 0)) {
+					out->value = &pv->v;
+					out->attrs = (duk_uint_t) pattrs;
+					out->env = env;
+					out->holder = target;
+					out->has_this = ((duk_hobjenv *) env)->has_this;
+					return 1;
+				}
+			}
+
 			if (1) {
 				duk_tval tv_name;
 				duk_tval tv_target_tmp;
@@ -1212,7 +1235,11 @@ duk_bool_t duk__getvar_helper(duk_hthread *thr, duk_hobject *env, duk_activation
 	if (duk__get_identifier_reference(thr, env, name, act, parents, &ref)) {
 		if (ref.value) {
 			duk_push_tval(thr, ref.value);
-			duk_push_undefined(thr);
+			if (ref.has_this) {
+				duk_push_hobject(thr, ref.holder);
+			} else {
+				duk_push_undefined(thr);
+			}
 		} else {
 			duk_idx_t top_idx;
 			DUK_ASSERT(ref.holder != NULL);
