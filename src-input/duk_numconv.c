@@ -525,13 +525,32 @@ DUK_LOCAL void duk__bi_mul(duk__bigint *x, duk__bigint *y, duk__bigint *z) {
 
 /* x <- y * z */
 DUK_LOCAL void duk__bi_mul_small(duk__bigint *x, duk__bigint *y, duk_uint32_t z) {
+#if defined(DUK_USE_64BIT_OPS)
+	duk_small_int_t i, ny;
+	duk_uint64_t carry = 0U;
+
+	DUK_ASSERT(duk__bi_is_valid(y));
+
+	ny = y->n;
+	DUK_ASSERT(ny + 1 <= DUK__BI_MAX_PARTS);
+	for (i = 0; i < ny; i++) {
+		carry += (duk_uint64_t) y->v[i] * (duk_uint64_t) z;
+		x->v[i] = (duk_uint32_t) (carry & 0xffffffffUL);
+		carry = carry >> 32;
+	}
+	if (carry > 0U) {
+		x->v[ny] = (duk_uint32_t) carry;
+		ny++;
+	}
+	x->n = (z == 0U ? 0 : ny);
+#else
 	duk__bigint tmp;
 
 	DUK_ASSERT(duk__bi_is_valid(y));
 
-	/* XXX: this could be optimized */
 	duk__bi_set_small(&tmp, z);
 	duk__bi_mul(x, y, &tmp);
+#endif
 
 	DUK_ASSERT(duk__bi_is_valid(x));
 }
