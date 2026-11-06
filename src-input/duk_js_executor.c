@@ -400,11 +400,17 @@ DUK_LOCAL DUK_EXEC_ALWAYS_INLINE_PERF void duk__vm_bitwise_binary_op(duk_hthread
 	} else
 #endif /* DUK_USE_FASTINT */
 	{
-		duk_push_tval_unsafe(thr, tv_x);
-		duk_push_tval_unsafe(thr, tv_y);
-		i1 = duk_to_int32(thr, -2);
-		i2 = duk_to_int32(thr, -1);
-		duk_pop_2_known(thr);
+		if (DUK_TVAL_IS_NUMBER(tv_x) && DUK_TVAL_IS_NUMBER(tv_y)) {
+			/* Number coercion has no side effects, no stabilization needed. */
+			i1 = duk_js_toint32(thr, tv_x);
+			i2 = duk_js_toint32(thr, tv_y);
+		} else {
+			duk_push_tval_unsafe(thr, tv_x);
+			duk_push_tval_unsafe(thr, tv_y);
+			i1 = duk_to_int32(thr, -2);
+			i2 = duk_to_int32(thr, -1);
+			duk_pop_2_known(thr);
+		}
 	}
 
 	switch (opcode_shifted) {
