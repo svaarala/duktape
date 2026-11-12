@@ -30,7 +30,7 @@ jobs:
           make docker-dist-site-wd
           ls -l dist/
       - name: Upload artifacts
-        uses: actions/upload-artifact@v2
+        uses: actions/upload-artifact@v4
         with:
           name: release-artifacts
           path: |
